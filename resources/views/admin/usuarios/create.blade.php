@@ -35,6 +35,22 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="direccion">Dirección</label>
+                                <input type="text" value="{{old('direccion')}}" name="direccion" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="role">Cargo</label>
+                                <select name="role" class="form-control">
+                                    @foreach ($roles as $role)
+                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
@@ -54,6 +70,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <hr>
                         <div class="row">
                             <div class="col-md-12">

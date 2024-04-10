@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Models\Role;
 
 class UsuarioController extends Controller
 {
@@ -14,8 +15,9 @@ class UsuarioController extends Controller
      */
     public function index()
     {
-        $usuarios = User::all();
-        return view('admin.usuarios.index',['usuarios'=>$usuarios]);
+        // $usuarios = User::all();
+        $usuarios = User::with('roles')->get(); // Carga los usuarios y sus roles asociados
+        return view('admin.usuarios.index', ['usuarios' => $usuarios]);
     }
 
     /**
@@ -23,7 +25,8 @@ class UsuarioController extends Controller
      */
     public function create()
     {
-        return view('admin.usuarios.create');
+        $roles = Role::all(); // Obtiene todos los roles
+        return view('admin.usuarios.create', compact('roles'));
     }
 
     /**
@@ -31,26 +34,33 @@ class UsuarioController extends Controller
      */
     public function store(Request $request)
     {
-        //$datos = request()->all();
-        //return response()->json($datos);
-
         $request->validate([
             'name' => 'required|max:100',
-            'email' => 'required|unique:users',
-            'password' => 'required|confirmed',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6|confirmed',
+            'direccion' => 'nullable|max:255',  // Asegúrate de validar como email y que sea único en la tabla de usuarios
+            'role' => 'required|exists:roles,id',  // Asegúrate de que el ID del rol exista en la tabla de roles
         ]);
 
         $usuario = new User();
         $usuario->name = $request->name;
         $usuario->email = $request->email;
         $usuario->password = Hash::make($request['password']);
+        $usuario->direccion = $request->direccion;  // Guarda la dirección
         $usuario->save();
 
-        return redirect()->route('usuarios.index')
-            ->with('mensaje','Se registro al usuario de la manera correcta')
-            ->with('icono','success');
+        // Asignar rol por ID
+        $role = Role::findById($request->role);
+        if ($role) {
+            $usuario->assignRole($role->name);
+        }
 
+
+        return redirect()->route('usuarios.index')
+            ->with('mensaje', 'Se registró al usuario de manera correcta')
+            ->with('icono', 'success');
     }
+
 
     /**
      * Display the specified resource.
@@ -58,7 +68,7 @@ class UsuarioController extends Controller
     public function show($id)
     {
         $usuario = User::findOrFail($id);
-        return view ('admin.usuarios.show',['usuario'=>$usuario]);
+        return view('admin.usuarios.show', ['usuario' => $usuario]);
     }
 
     /**
@@ -67,7 +77,7 @@ class UsuarioController extends Controller
     public function edit($id)
     {
         $usuario = User::findOrFail($id);
-        return view ('admin.usuarios.edit',['usuario'=>$usuario]);
+        return view('admin.usuarios.edit', ['usuario' => $usuario]);
     }
 
     /**
@@ -88,9 +98,8 @@ class UsuarioController extends Controller
         $usuario->save();
 
         return redirect()->route('usuarios.index')
-            ->with('mensaje','Se actualizó al usuario de la manera correcta')
-            ->with('icono','success');
-
+            ->with('mensaje', 'Se actualizó al usuario de la manera correcta')
+            ->with('icono', 'success');
     }
 
     /**
@@ -100,7 +109,7 @@ class UsuarioController extends Controller
     {
         User::destroy($id);
         return redirect()->route('usuarios.index')
-            ->with('mensaje','Se eliminó al usuario de la manera correcta')
-            ->with('icono','success');
+            ->with('mensaje', 'Se eliminó al usuario de la manera correcta')
+            ->with('icono', 'success');
     }
 }

@@ -10,11 +10,11 @@
 
             <div class="small-box bg-warning">
                 <div class="inner">
-                    @php $contador_de_usuarios=0; @endphp
+                    {{-- @php $contador_de_usuarios=0; @endphp
                     @foreach($usuarios as $usuario)
                         @php $contador_de_usuarios++; @endphp
                     @endforeach
-                    <h3>{{$contador_de_usuarios}}</h3>
+                    <h3>{{$contador_de_usuarios}}</h3> --}}
                     <p>Usuarios registrados</p>
                 </div>
                 <div class="icon">

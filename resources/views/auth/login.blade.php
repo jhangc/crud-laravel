@@ -70,6 +70,10 @@
   </div>
 </div>
 <!-- /.login-box -->
+{{-- @php
+    $password = bcrypt('contraseña123');
+echo $password;
+@endphp --}}
 
 <!-- jQuery -->
 <script src="{{asset('plugins/jquery/jquery.min.js')}}"></script>
