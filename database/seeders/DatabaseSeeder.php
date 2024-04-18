@@ -21,7 +21,12 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        $this->call([RoleSeeder::class]);
+        // $this->call([RoleSeeder::class]);
+
+        $this->call([
+            RoleSeeder::class,        // Este es el seeder que ya tienes
+            UnifyAdminRolesSeeder::class,  // Agrega aquí tu nuevo seeder
+        ]);
 
 
         
@@ -29,12 +34,13 @@ class DatabaseSeeder extends Seeder
             'name'=>'admin',
             'email'=>'admin@admin.com',
             'password'=>Hash::make('12345678'),
-        ])->assignRole('admin');
+        ])->assignRole('administrador');
+
         User::create([
-            'name'=>'prestamista',
-            'email'=>'prestamista@prestamista.com',
+            'name'=>'asesor',
+            'email'=>'asesor@asesor.com',
             'password'=>Hash::make('12345678'),
-        ])->assignRole('prestamista');
+        ])->assignRole('Asesor de creditos');
 
         
 

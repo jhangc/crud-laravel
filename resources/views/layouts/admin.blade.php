@@ -47,12 +47,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 
-
-                {{-- <li class="nav-item">
-                    <a class="nav-link" data-widget="fullscreen" href="#" role="button">
-                        <i class="fas fa-expand-arrows-alt"></i>
-                    </a>
-                </li> --}}
                 
                 @guest
                 @if (Route::has('login'))
@@ -93,9 +87,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
             <a href="{{ url('/') }}" class="brand-link">
-                <img src="{{ asset('dist/img/AdminLTELogo.png') }}" alt="AdminLTE Logo"
-                    class="brand-image img-circle elevation-3" style="opacity: .8">
-                <span class="brand-text font-weight-light">Empresa hh</span>
+                {{-- <img src="{{ asset('dist/img/logo.png') }}" alt="AdminLTE Logo"
+                    class="brand-image img-circle elevation-3" style="opacity: .8"> --}}
+                <span class="brand-text font-weight-light">GRUPO CREDIPALMO</span>
             </a>
 
             <!-- Sidebar -->
@@ -138,6 +132,177 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </ul>
                             </li>
                         @endcan
+
+                        
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active">
+                                <i class="nav-icon fas"><i class="bi bi-credit-card"></i></i>
+                                <p>
+                                    Creditos
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/admin/creditos/') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Listado de Creditos</p>
+                                    </a>
+                                    <a href="{{ url('/admin/creditos/aprobar') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Aprobación</p>
+                                    </a>
+                                    <a href="{{ url('/admin/creditos/supervisar') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Supervisar</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active">
+                                <i class="nav-icon fas"><i class="bi bi-person-check-fill"></i></i>
+                                <p>
+                                    Clientes
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/admin/clientes') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Lista de clientes</p>
+                                    </a>
+                                    <a href="{{ url('/admin/clientes/evaluar') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Evaluar al cliente</p>
+                                    </a>
+                                    
+                                    <a href="{{ url('/admin/clientes/ratios') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Ratios FInancieros</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active">
+                                <i class="nav-icon fas"><i class="bi bi-bank2"></i></i>
+                                <p>
+                                    Caja
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/admin/caja/pagarcredito') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Pagar Crédito</p>
+                                    </a>
+                                    <a href="{{ url('/admin/caja/habilitar') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Habilitar caja</p>
+                                    </a>
+                                    <a href="{{ url('/admin/caja/arqueo') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Arqueo de Caja</p>
+                                    </a>
+                                    
+                                    <a href="{{ url('/admin/caja/pagares') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Pagares</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active">
+                                <i class="nav-icon fas"><i class="bi bi-collection"></i></i>
+                                <p>
+                                    Cobranza
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/admin/cobranza/carta') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Carta de Cobranza</p>
+                                    </a>
+                                    <a href="{{ url('/admin/cobranza/generarnotificacion') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Generar Notificación</p>
+                                    </a>
+                                    <a href="{{ url('/admin/cobranza/generarcompromiso') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Generar Compromiso</p>
+                                    </a>
+                                    
+                                    <a href="{{ url('/admin/cobranza/cargarcompromiso') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Cargar Compromiso</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active">
+                                <i class="nav-icon fas"><i class="bi bi-activity"></i></i>
+                                <p>
+                                    Transacciones
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Ingresos</p>
+                                    </a>
+                                    <a href="{{ url('/admin/transacciones/egresos') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Egresos</p>
+                                    </a>
+                                    
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active">
+                                <i class="nav-icon fas"><i class="bi bi-archive"></i></i>
+                                <p>
+                                    Reportes
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/admin/reportes/clientes') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Clientes</p>
+                                    </a>
+                                    <a href="{{ url('/admin/reportes/prestamosactivos') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Prestamos activos</p>
+                                    </a>
+                                    {{-- <a href="{{ url('/admin/usuarios') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Transacciones</p>
+                                    </a> --}}
+                                    
+                                    <a href="{{ url('/admin/reportes/prestamosvencidos') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Prestamos vencidos</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
 
 
 
@@ -184,12 +349,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <!-- Main Footer -->
         <footer class="main-footer">
             <!-- To the right -->
-            <div class="float-right d-none d-sm-inline">
+            {{-- <div class="float-right d-none d-sm-inline">
                 Anything you want
-            </div>
+            </div> --}}
             <!-- Default to the left -->
-            <strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights
-            reserved.
+            <strong>Copyright &copy; 2024 <a href="·">GRUPO CREDIPALMO</a>.</strong> Todos los derechos reservados.
         </footer>
     </div>
     <!-- ./wrapper -->
