@@ -13,6 +13,7 @@ class creditoController extends Controller
     {
         return view('admin.creditos.index');
     }
+    
 
     public function viewaprobar()
     {
@@ -92,9 +93,8 @@ class creditoController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.creditos.create');
     }
-
     /**
      * Store a newly created resource in storage.
      */

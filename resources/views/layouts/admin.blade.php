@@ -18,6 +18,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('dist/css/adminlte.min.css') }}">
 
+    <link rel="stylesheet" href="{{ asset('dist/css/style.css') }}">
+
     <!-- icono de bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -275,6 +277,24 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         </li>
                         <li class="nav-item">
                             <a href="#" class="nav-link active">
+                                <i class="nav-icon fas"><i class="bi bi-buildings"></i></i>
+                                <p>
+                                    Sucursales
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Listado de Sucursales</p>
+                                    </a>
+                                    
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active">
                                 <i class="nav-icon fas"><i class="bi bi-archive"></i></i>
                                 <p>
                                     Reportes
@@ -329,7 +349,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             @endif
 
 
-            <div class="container">
+            <div class="plantilla">
                 @yield('content')
             </div>
 
@@ -366,6 +386,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <!-- AdminLTE App -->
     <script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
+
+    <script src="{{ asset('dist/js/main.js') }}"></script>
 </body>
 
 </html>

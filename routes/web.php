@@ -36,11 +36,20 @@ Route::put('/admin/usuarios/{id}', [App\Http\Controllers\UsuarioController::clas
 Route::delete('/admin/usuarios/{id}', [App\Http\Controllers\UsuarioController::class, 'destroy'])->name('usuarios.destroy')->middleware('auth');
 
 Route::get('/admin/creditos', [App\Http\Controllers\creditoController::class, 'index'])->name('creditos.index')->middleware('auth');
+Route::get('/admin/creditos/create', [App\Http\Controllers\creditoController::class, 'create'])->name('creditos.create')->middleware('auth');
+Route::post('/admin/creditos', [App\Http\Controllers\creditoController::class, 'store'])->name('creditos.store')->middleware('auth');
 Route::get('/admin/creditos/aprobar', [App\Http\Controllers\creditoController::class, 'viewaprobar'])->name('creditos.aprobar')->middleware('auth');
 Route::get('/admin/creditos/supervisar', [App\Http\Controllers\creditoController::class, 'viewsupervisar'])->name('creditos.supervisar')->middleware('auth');
+Route::post('/buscar-cliente', 'App\Http\Controllers\clienteController@buscarPorDocumento');
 
 
 Route::get('/admin/clientes', [App\Http\Controllers\clienteController::class, 'index'])->name('clientes.index')->middleware('auth');
+Route::get('/admin/clientes/create', [App\Http\Controllers\clienteController::class, 'create'])->name('clientes.create')->middleware('auth');
+Route::post('/admin/clientes', [App\Http\Controllers\clienteController::class, 'store'])->name('clientes.store')->middleware('auth');
+Route::get('/admin/clientes/{id}/edit', [App\Http\Controllers\clienteController::class, 'edit'])->name('clientes.edit')->middleware('auth');
+Route::put('/admin/clientes/{id}', [App\Http\Controllers\clienteController::class, 'update'])->name('clientes.update')->middleware('auth');
+Route::delete('/admin/clientes/{id}', [App\Http\Controllers\clienteController::class, 'destroy'])->name('clientes.destroy')->middleware('auth');
+
 Route::get('/admin/clientes/evaluar', [App\Http\Controllers\clienteController::class, 'viewevaluar'])->name('clientes.evaluar')->middleware('auth');
 Route::get('/admin/clientes/ratios', [App\Http\Controllers\clienteController::class, 'viewratios'])->name('clientes.ratios')->middleware('auth');
 
