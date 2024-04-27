@@ -26,6 +26,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Sweetalert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Añade esto en el <head> de tu HTML o justo antes del cierre de </body>, dependiendo de tus necesidades -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -47,33 +51,31 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
 
-
-
-                
                 @guest
-                @if (Route::has('login'))
+                    @if (Route::has('login'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                        </li>
+                    @endif
+
+                    @if (Route::has('register'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
+                        </li>
+                    @endif
+                @else
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                        <a class="nav-link" href="{{ route('logout') }}"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="nav-icon fas"><i class="bi bi-door-closed"></i></i> Cerrar Sesión
+                        </a>
+
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                            @csrf
+                        </form>
                     </li>
-                @endif
 
-                @if (Route::has('register'))
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                    </li>
-                @endif
-            @else
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        <i class="nav-icon fas"><i class="bi bi-door-closed"></i></i> Cerrar Sesión
-                    </a>
-
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                        @csrf
-                    </form>
-                </li>
-
-            @endguest
+                @endguest
 
                 {{-- <li class="nav-item">
                     <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
@@ -111,7 +113,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <!-- Sidebar Menu -->
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
-                        data-accordion="false">
+                        data-accordion="true">
+                        
                         <!-- Add icons to the links using the .nav-icon class
                          with font-awesome or any other icon font library -->
 
@@ -135,7 +138,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             </li>
                         @endcan
 
-                        
+
                         <li class="nav-item">
                             <a href="#" class="nav-link active">
                                 <i class="nav-icon fas"><i class="bi bi-credit-card"></i></i>
@@ -162,7 +165,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             </ul>
                         </li>
 
-                        
+
                         <li class="nav-item">
                             <a href="#" class="nav-link active">
                                 <i class="nav-icon fas"><i class="bi bi-person-check-fill"></i></i>
@@ -181,7 +184,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Evaluar al cliente</p>
                                     </a>
-                                    
+
                                     <a href="{{ url('/admin/clientes/ratios') }}" class="nav-link active">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Ratios FInancieros</p>
@@ -190,7 +193,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             </ul>
                         </li>
 
-                        
+
                         <li class="nav-item">
                             <a href="#" class="nav-link active">
                                 <i class="nav-icon fas"><i class="bi bi-bank2"></i></i>
@@ -213,7 +216,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Arqueo de Caja</p>
                                     </a>
-                                    
+
                                     <a href="{{ url('/admin/caja/pagares') }}" class="nav-link active">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Pagares</p>
@@ -236,7 +239,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Carta de Cobranza</p>
                                     </a>
-                                    <a href="{{ url('/admin/cobranza/generarnotificacion') }}" class="nav-link active">
+                                    <a href="{{ url('/admin/cobranza/generarnotificacion') }}"
+                                        class="nav-link active">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Generar Notificación</p>
                                     </a>
@@ -244,7 +248,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Generar Compromiso</p>
                                     </a>
-                                    
+
                                     <a href="{{ url('/admin/cobranza/cargarcompromiso') }}" class="nav-link active">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Cargar Compromiso</p>
@@ -271,7 +275,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Egresos</p>
                                     </a>
-                                    
+
                                 </li>
                             </ul>
                         </li>
@@ -289,7 +293,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Listado de Sucursales</p>
                                     </a>
-                                    
+
                                 </li>
                             </ul>
                         </li>
@@ -315,7 +319,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Transacciones</p>
                                     </a> --}}
-                                    
+
                                     <a href="{{ url('/admin/reportes/prestamosvencidos') }}" class="nav-link active">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Prestamos vencidos</p>
@@ -373,7 +377,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 Anything you want
             </div> --}}
             <!-- Default to the left -->
-            <strong>Copyright &copy; 2024 <a href="·">GRUPO CREDIPALMO</a>.</strong> Todos los derechos reservados.
+            <strong>Copyright &copy; 2024 <a href="·">GRUPO CREDIPALMO</a>.</strong> Todos los derechos
+            reservados.
         </footer>
     </div>
     <!-- ./wrapper -->

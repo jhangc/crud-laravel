@@ -10,125 +10,137 @@
             <div class="card card-outline">
                 <div class="card-header">
                     <div class="row">
-                        {{-- <div class="col-md-3">
-                            <div class="input-group">
-                                <input type="text" id="buscar-cliente" class="form-control"
-                                    placeholder="Buscar cliente...">
-                                <button class="btn btn-outline-primary" type="button" id="btn-buscar-cliente"><i
-                                        class="bi bi-search"></i> Buscar</button>
-                            </div>
-                        </div> --}}
-                        <div class="col-md-3">
-                            <label>Desde: </label>
-                            <div class="input-group">
-
-                                <input type="date" id="buscar-fecha" class="form-control">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <label>Hasta: </label>
-                            <div class="input-group">
-                                <input type="date" id="buscar-fecha" class="form-control">
-                            </div>
-                        </div>
-                        <div class="col-md-2 d-flex flex-column justify-content-end">
-                            <button class="btn btn-primary" type="button" id="btn-buscar-fecha"><i
-                                    class="bi bi-calendar"></i> Buscar</button>
-                        </div>
-
-
-                        <div class="col-md-4 d-flex flex-column justify-content-end align-items-end">
-                            <div class="card-tools float-right">
+                        <div class="col-md-3 ">
+                            <div class="card-tools ">
                                 <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i
                                         class="bi bi-person-fill-add"></i> Crear Prestamo</a>
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <select name="tipo_ingreso" id="tipo_ingreso" class="form-control" required
+                                    onchange="filtrarPorTipo()">
+                                    <option value="">Tipo de crédito...</option>
+                                    <option value="Individual">Individual</option>
+                                    <option value="Grupal">Grupal</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-
-
                 </div>
             </div>
 
-            {{-- <div class="card-body">
+            <div class="card-body">
                 <table class="table table-bordered table-sm table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>
-                                <center>Nro</center>
-                            </th>
-                            <th>
-                                <center>Nombres</center>
-                            </th>
-                            <th>
-                                <center>Dni</center>
-                            </th>
-                            <th>
-                                <center>Teléfono</center>
-                            </th>
-                            <th>
-                                <center>Email</center>
-                            </th>
-                            <th>
-                                <center>Dirección</center>
-                            </th>
-                            <th>
-                                <center>Acciones</center>
-                            </th>
+                            <th><center>Nro</center></th>
+                            <th><center>Tipo de credito</center></th>
+                            <th><center>Solicitante</center></th>
+                            <th><center>Monto</center></th>
+                            <th><center>Intervalo</center></th>
+                            <th><center>Tasa (S/.)</center></th>
+                            <th><center>Estado</center></th>
+                            <th><center>Acciones</center></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @php $contador = 0; @endphp
-
-                        @foreach ($clientes as $cliente)
-                            @php
-                                $contador = $contador + 1;
-                                $id = $cliente->id;
-                            @endphp
-                            <tr>
-                                <td style="text-align: center">{{ $contador }}</td>
-                                <td>{{ $cliente->nombre }}</td>
-                                <td>{{ $cliente->documento_identidad }}</td>
-                                <td>{{ $cliente->telefono }}</td>
-                                <td>{{ $cliente->email }}</td>
-                                <td>{{ $cliente->direccion }}</td>
-                                <td style="text-align:center">
-                                    <div class="btn-group" role="group" aria-label="Basic example">
-                                        <a href="{{ route('clientes.edit', $cliente->id) }}" type="button"
-                                            class="btn btn-success"><i class="bi bi-pencil"></i></a>
-                                        <form action="{{ route('clientes.destroy', $cliente->id) }}"
-                                            onclick="preguntar<?= $id ?>(event)" method="post" id="miFormulario<?= $id ?>">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger"
-                                                style="border-radius: 0px 5px 5px 0px"><i class="bi bi-trash"></i></button>
-                                        </form>
-                                        <script>
-                                            function preguntar<?= $id ?>(event) {
-                                                event.preventDefault();
-                                                Swal.fire({
-                                                    title: 'Eliminar registro',
-                                                    text: '¿Desea eliminar este registro?',
-                                                    icon: 'question',
-                                                    showDenyButton: true,
-                                                    confirmButtonText: 'Eliminar',
-                                                    confirmButtonColor: '#a5161d',
-                                                    denyButtonColor: '#270a0a',
-                                                    denyButtonText: 'Cancelar',
-                                                }).then((result) => {
-                                                    if (result.isConfirmed) {
-                                                        var form = $('#miFormulario<?= $id ?>');
-                                                        form.submit();
-                                                    }
-                                                });
-                                            }
-                                        </script>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
+                        <!-- Ejemplo de fila 1 -->
+                        <tr>
+                            <td style="text-align: center">1</td>
+                            <td>Individual</td>
+                            <td>Jhan Garcia</td>
+                            <td>10000</td>
+                            <td>mensual</td>
+                            <td>15%</td>
+                            <td style="color: green">Pendiente</td>
+                            <td style="text-align:center">
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <button type="button" class="btn btn-success"><i class="bi bi-pencil"></i>
+                                        Editar</button>
+                                    <button type="button" class="btn btn-danger" onclick="preguntar(1)"><i
+                                            class="bi bi-trash"></i> Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Ejemplo de fila 2 -->
+                        <tr>
+                            <td style="text-align: center">2</td>
+                            <td>Grupal</td>
+                            <td>Los emprendedores</td>
+                            <td>50000</td>
+                            <td>mensual</td>
+                            <td>13%</td>
+                            <td style="color:dodgerblue">Aprobado</td>
+                            <td style="text-align:center">
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <button type="button" class="btn btn-success"><i class="bi bi-pencil"></i>
+                                        Editar</button>
+                                    <button type="button" class="btn btn-danger" onclick="preguntar(2)"><i
+                                            class="bi bi-trash"></i> Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center">2</td>
+                            <td>Individual</td>
+                            <td>Benito laporta</td>
+                            <td>3000</td>
+                            <td>mensual</td>
+                            <td>20%</td>
+                            <td style="color:red">Rechazado</td>
+                            <td style="text-align:center">
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <button type="button" class="btn btn-success"><i class="bi bi-pencil"></i>
+                                        Editar</button>
+                                    <button type="button" class="btn btn-danger" onclick="preguntar(2)"><i
+                                            class="bi bi-trash"></i> Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
-            </div> --}}
+            </div>
         </div>
     </div>
+
+
+    <script>
+        function preguntar(id) {
+            Swal.fire({
+                title: 'Eliminar registro',
+                text: '¿Desea eliminar este registro?',
+                icon: 'question',
+                showDenyButton: true,
+                confirmButtonText: 'Eliminar',
+                confirmButtonColor: '#a5161d',
+                denyButtonColor: '#270a0a',
+                denyButtonText: 'Cancelar',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Agrega la lógica para eliminar el registro, por ejemplo, mediante una petición POST
+                    console.log("Eliminar registro con ID:", id);
+                    // Aquí podrías hacer una petición AJAX para eliminar el registro
+                }
+            });
+        }
+    </script>
+
+    <script>
+        function filtrarPorTipo() {
+            var seleccion = document.getElementById('tipo_ingreso').value;
+            var filas = document.querySelectorAll("table tbody tr"); // Selecciona todas las filas de la tabla
+
+            filas.forEach(fila => {
+                var tipoCredito = fila.cells[1]
+                .textContent; // Asume que el tipo de crédito está en la segunda columna
+                if (seleccion === "" || tipoCredito.includes(seleccion)) {
+                    fila.style.display =
+                    ""; // Muestra la fila si coincide con el filtro o si el filtro está en blanco
+                } else {
+                    fila.style.display = "none"; // Oculta la fila si no coincide con el filtro
+                }
+            });
+        }
+    </script>
 @endsection

@@ -40,13 +40,13 @@
                                 <th><center>Dirección de Domicilio</center></th>
                                 <th><center>Dirección Laboral</center></th>
                                 <th><center>Lugar de Nacimiento</center></th>
-                                <th><center>Fecha de Nacimiento</center></th>
+                                {{-- <th><center>Fecha de Nacimiento</center></th> --}}
                                 <th><center>Profesión</center></th>
                                 <th><center>Estado Civil</center></th>
                                 <th><center>Conyugue</center></th>
                                 <th><center>Dni Conyugue</center></th>
-                                <th><center>Foto</center></th>
-                                <th><center>Dni PDF</center></th>
+                                {{-- <th><center>Foto</center></th>
+                                <th><center>Dni PDF</center></th> --}}
                                 <th><center>Acciones</center></th>
                         </tr>
                     </thead>
@@ -67,14 +67,14 @@
                                 <td>{{ $cliente->direccion }}</td>
                                 <td>{{ $cliente->direccion_laboral }}</td>
                                 <td>{{ $cliente->lugar_nacimiento }}</td>
-                                <td>
+                                {{-- <td>
                                     {{ optional($cliente->fecha_nacimiento)->format('d/m/Y') ?? 'No especificada' }}
-                                </td>
+                                </td> --}}
                                 <td>{{ $cliente->profesion }}</td>
                                 <td>{{ $cliente->estado_civil }}</td>
                                 <td>{{ $cliente->conyugue }}</td>
                                 <td>{{ $cliente->dni_conyugue }}</td>
-                                <td>
+                                {{-- <td>
                                     @if ($cliente->foto)
                                         <a href="{{ Storage::url($cliente->foto) }}" target="_blank">
                                             <img src="{{ Storage::url($cliente->foto) }}" alt="Foto del Cliente" style="width: 100px; height: auto;">
@@ -86,7 +86,7 @@
                                 
                                 <td> @if ($cliente->dni_pdf)<a href="{{ Storage::url($cliente->dni_pdf) }}" target="_blank">Descargar DNI</a>
                                     @else Sin PDF @endif
-                                </td>
+                                </td> --}}
                                 <td style="text-align:center">
                                     <div class="btn-group" role="group" aria-label="Basic example">
                                         {{-- <a href="{{ route('clientes.show', $cliente->id) }}" type="button"

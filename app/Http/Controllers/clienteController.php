@@ -67,7 +67,7 @@ class clienteController extends Controller
             'direccion' => 'required|max:255',
             'direccion_laboral' => 'nullable|max:255',
             'lugar_nacimiento' => 'nullable|max:255',
-            'fecha_nacimiento' => 'nullable|date_format:d/m/Y',
+            // 'fecha_nacimiento' => 'nullable|date_format:d/m/Y',
             'profesion' => 'nullable|max:100',
             'estado_civil' => 'nullable|max:50',
             'conyugue' => 'nullable|max:100',
@@ -86,10 +86,10 @@ class clienteController extends Controller
         $cliente->direccion = $request->direccion;
         $cliente->direccion_laboral = $request->direccion_laboral;
         $cliente->lugar_nacimiento = $request->lugar_nacimiento;
-        if ($request->fecha_nacimiento) {
-            $cliente->fecha_nacimiento = Carbon::createFromFormat('d/m/Y', $request->fecha_nacimiento)
-                ->format('Y-m-d');
-        }
+        // if ($request->fecha_nacimiento) {
+        //     $cliente->fecha_nacimiento = Carbon::createFromFormat('d/m/Y', $request->fecha_nacimiento)
+        //         ->format('Y-m-d');
+        // }
         $cliente->profesion = $request->profesion;
         $cliente->estado_civil = $request->estado_civil;
         $cliente->conyugue = $request->conyugue;
@@ -188,13 +188,30 @@ class clienteController extends Controller
             ->with('icono', 'success');
     }
 
-    public function buscarPorDocumento(Request $request)
-    {
-        $cliente = Cliente::where('documento_identidad', $request->documento_identidad)->first();
+    
+
+    public function buscarPorDocumento(Request $request) {
+        $dni = $request->input('documento_identidad');
+        $cliente = cliente::where('documento_identidad', $dni)->first(['nombre', 'telefono', 'email', 'direccion', 'direccion_laboral', 'profesion']);
+    
         if ($cliente) {
-            return response()->json(['success' => true, 'nombre' => $cliente->nombre]);
+            return response()->json($cliente);
         } else {
-            return response()->json(['success' => false]);
+            return response()->json(['error' => 'Cliente no encontrado'], 404);
         }
     }
+
+    public function agregarpordni(Request $request) {
+        $dni = $request->input('documento_identidad');
+        $cliente = cliente::where('documento_identidad', $dni)->first(['nombre', 'telefono', 'direccion', 'profesion']);
+    
+        if ($cliente) {
+            return response()->json($cliente);
+        } else {
+            return response()->json(['error' => 'Cliente no encontrado'], 404);
+        }
+    }
+
+    
+    
 }
