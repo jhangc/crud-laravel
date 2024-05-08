@@ -118,25 +118,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <!-- Add icons to the links using the .nav-icon class
                          with font-awesome or any other icon font library -->
 
-                        @can('usuarios.index')
-                            <li class="nav-item">
-                                <a href="#" class="nav-link active">
-                                    <i class="nav-icon fas"><i class="bi bi-people"></i></i>
-                                    <p>
-                                        Usuarios
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a href="{{ url('/admin/usuarios') }}" class="nav-link active">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Listado de usuarios</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        @endcan
+                        
 
 
                         <li class="nav-item">
@@ -327,6 +309,26 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </li>
                             </ul>
                         </li>
+
+                        @can('usuarios.index')
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas"><i class="bi bi-people"></i></i>
+                                    <p>
+                                        Usuarios
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/usuarios') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Listado de usuarios</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endcan
 
 
 

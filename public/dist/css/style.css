@@ -2,3 +2,15 @@
     padding-left: 50px;
     max-width: 100% !important;
 }
+.row{
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+
+@media (max-width: 576px) {
+    .plantilla{
+        padding: 0px 10px;
+    }
+}

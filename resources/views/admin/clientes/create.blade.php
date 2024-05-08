@@ -71,21 +71,21 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="direccion">Sexo</label>
-                                    <select name="estado_civil" id="estado_civil" class="form-control" required>
+                                    <select name="sexo" id="sexo" class="form-control" required>
                                         <option value="">Seleccione una opción...</option>
-                                        <option value="Soltero" {{ old('estado_civil') == 'Soltero' ? 'selected' : '' }}>
+                                        <option value="Masculino" {{ old('sexo') == 'Soltero' ? 'selected' : '' }}>
                                             Masculino</option>
-                                        <option value="Casado" {{ old('estado_civil') == 'Casado' ? 'selected' : '' }}>
+                                        <option value="Casado" {{ old('sexo') == 'Casado' ? 'selected' : '' }}>
                                             Femenino</option>
-                                        
+
                                     </select>
                                 </div>
                             </div>
-                           
+
                         </div>
 
                         <div class="row">
-                            
+
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="direccion_laboral">Dirección laboral</label>
@@ -154,7 +154,8 @@
                                             Soltero</option>
                                         <option value="Casado" {{ old('estado_civil') == 'Casado' ? 'selected' : '' }}>
                                             Casado</option>
-                                        <option value="Conviviente" {{ old('estado_civil') == 'Conviviente' ? 'selected' : '' }}>
+                                        <option value="Conviviente"
+                                            {{ old('estado_civil') == 'Conviviente' ? 'selected' : '' }}>
                                             Conviviente</option>
                                         <option value="Divorciado"
                                             {{ old('estado_civil') == 'Divorciado' ? 'selected' : '' }}>Divorciado</option>
@@ -168,13 +169,39 @@
 
 
                         <!-- Inicialmente ocultos -->
-                        <div class="row" id="conyugueField" style="display: none;">
+                        <div id="conyugueField" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="conyugue">Cónyuge</label>
+                                        <input type="text" value="{{ old('conyugue') }}" name="conyugue"
+                                            id="conyugue" class="form-control">
+                                        @error('conyugue')
+                                            <small style="color: red">{{ $message }}</small>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="dni_conyugue">DNI del Cónyuge</label>
+                                        <input type="text" value="{{ old('dni_conyugue') }}" name="dni_conyugue"
+                                            id="dni_conyugue" class="form-control">
+                                        @error('dni_conyugue')
+                                            <small style="color: red">{{ $message }}</small>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="conyugue">Cónyuge</label>
-                                    <input type="text" value="{{ old('conyugue') }}" name="conyugue" id="conyugue"
-                                        class="form-control">
-                                    @error('conyugue')
+                                    <label for="aval">Nombres del aval</label>
+                                    <input type="text" value="{{ old('aval') }}" name="aval"
+                                        id="aval" class="form-control">
+                                    @error('aval')
                                         <small style="color: red">{{ $message }}</small>
                                     @enderror
                                 </div>
@@ -182,15 +209,16 @@
 
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="dni_conyugue">DNI del Cónyuge</label>
-                                    <input type="text" value="{{ old('dni_conyugue') }}" name="dni_conyugue"
-                                        id="dni_conyugue" class="form-control">
-                                    @error('dni_conyugue')
+                                    <label for="dni_aval">DNI del Aval</label>
+                                    <input type="text" value="{{ old('dni_aval') }}" name="dni_aval"
+                                        id="dni_aval" class="form-control">
+                                    @error('dni_aval')
                                         <small style="color: red">{{ $message }}</small>
                                     @enderror
                                 </div>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
