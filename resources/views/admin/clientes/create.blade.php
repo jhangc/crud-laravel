@@ -24,7 +24,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="documento_identidad">Documento de identidad</label>
                                     <input type="text" value="{{ old('documento_identidad') }}"
@@ -34,7 +34,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="telefono">Teléfono</label>
                                     <input type="text" value="{{ old('telefono') }}" name="telefono"
@@ -44,7 +44,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="email">Correo electrónico</label>
                                     <input type="email" value="{{ old('email') }}" name="email" class="form-control">
@@ -53,7 +53,19 @@
                                     @enderror
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="actividad_economica">Actividad económica </label>
+                                    <input type="text" value="{{ old('actividad_economica') }}" name="actividad_economica" id="actividad_economica" class="form-control">
+                                    @error('actividad_economica')
+                                    <small style="color: red">{{ $message }}</small>
+                                    @enderror
+
+                                </div>
+                            </div>
                         </div>
+
+                        
 
 
 

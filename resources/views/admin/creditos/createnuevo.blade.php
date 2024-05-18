@@ -15,31 +15,43 @@
                     <form action="{{ url('/admin/creditos') }}" method="post" enctype="multipart/form-data">
                         @csrf
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="tipo_credito">Tipo de crédito</label>
+                                    <label for="tipo_credito">Tipos de créditos</label>
                                     <select name="tipo_credito" id="tipo_credito" class="form-control" required
                                         onchange="toggleFields()">
                                         <option value="">Seleccione una opción...</option>
-                                        <option value="microempresa"
-                                            {{ old('tipo_credito') == 'microempresa' ? 'selected' : '' }}>
-                                            Microempresa
-                                        </option>
-                                        <option value="agricola" {{ old('tipo_credito') == 'agricola' ? 'selected' : '' }}>
-                                            Agrícola
-                                        </option>
-                                        <option value="consumo" {{ old('tipo_credito') == 'consumo' ? 'selected' : '' }}>
-                                            Consumo
-                                        </option>
-                                        <option value="grupal" {{ old('tipo_credito') == 'grupal' ? 'selected' : '' }}>
-                                            Grupal
-                                        </option>
+                                        <option value="comercio" {{ old('tipo_credito') == 'comercio' ? 'selected' : '' }}>
+                                            Comercio</option>
+                                        <option value="servicio" {{ old('tipo_credito') == 'servicio' ? 'selected' : '' }}>
+                                            Servicio</option>
+                                        <option value="produccion"
+                                            {{ old('tipo_credito') == 'produccion' ? 'selected' : '' }}>Producción</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+
+                            <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="producto">Productos</label>
+                                    <label for="tipo_producto">Productos</label>
+                                    <select name="tipo_producto" id="tipo_producto" class="form-control" required
+                                        onchange="toggleFields()">
+                                        <option value="">Seleccione una opción...</option>
+                                        <option value="microempresa"
+                                            {{ old('tipo_producto') == 'microempresa' ? 'selected' : '' }}>Microempresa
+                                        </option>
+                                        <option value="agricola" {{ old('tipo_producto') == 'agricola' ? 'selected' : '' }}>
+                                            Agrícola</option>
+                                        <option value="consumo" {{ old('tipo_producto') == 'consumo' ? 'selected' : '' }}>
+                                            Consumo</option>
+                                        <option value="grupal" {{ old('tipo_producto') == 'grupal' ? 'selected' : '' }}>
+                                            Grupal</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="producto">SubProductos</label>
                                     <select name="producto" id="producto" class="form-control" required
                                         onchange="toggleFields()">
                                         <option value="">Seleccione una opción...</option>
@@ -71,7 +83,7 @@
                             </div>
 
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="destino_credito">Destino de crédito</label>
                                     <select name="destino_credito" id="destino_credito" class="form-control" required
@@ -83,13 +95,15 @@
                                         <option value="capital de trabajo"
                                             {{ old('destino_credito') == 'capital de trabajo' ? 'selected' : '' }}>
                                             Capital de trabajo</option>
+                                        <option value="consumo" {{ old('consumo') == 'consumo' ? 'selected' : '' }}>
+                                            Consumo</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                         <div id="individualFields" style="display:none;">
 
-                            //daots de los clientes
+                            {{-- //daots de los clientes --}}
                             <div class="card card-outline card-warning">
                                 <div class="card-header">
                                     <h3 class="card-title">Datos del cliente</h3>
@@ -224,11 +238,21 @@
                                         </div>
                                     </div>
 
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="direccion">Descripción del negocio</label>
+                                                <input type="email" value="{{ old('email') }}" name="email"
+                                                    id="email" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
 
-                            //Datos del credito
-                            <div class="card card-outline card-warning">
+                            {{-- //Datos del credito --}}
+                            <div class="card card-outline card-secondary">
                                 <div class="card-header">
                                     <h3 class="card-title">Datos del Credito</h3>
                                 </div>
@@ -277,21 +301,35 @@
                                     </div>
                                     <div class="row">
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="form-group">
-                                                <label for="nombre">Descripcion de la Garantia</label>
-                                                <input type="text" value="{{ old('tasa_interes') }}"
-                                                    name="tasa_interes" id="" class="form-control" required>
+                                                <label for="descripcion_garantia">Descripcion de la Garantia</label>
+                                                <input type="text" name="descripcion_garantia"
+                                                    id="descripcion_garantia" class="form-control" required>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-2">
                                             <div class="form-group">
-                                                <label for="nombre">Valorización (S/.)</label>
-                                                <input type="text" value="{{ old('tasa_interes') }}"
-                                                    name="tasa_interes" id="" class="form-control" required>
+                                                <label for="valor_mercado">Valor del mercado (S/.)</label>
+                                                <input type="number" name="valor_mercado" id="valor_mercado"
+                                                    class="form-control" required>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="valor_realizacion">Valor de realización (S/.)</label>
+                                                <input type="number" name="valor_realizacion" id="valor_realizacion"
+                                                    class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="valor_gravamen">Valor de Gravamen (S/.)</label>
+                                                <input type="number" name="valor_gravamen" id="valor_gravamen"
+                                                    class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="dni_pdf">Archivo en pdf</label>
                                                 <input type="file" name="dni_pdf" accept=".pdf"
@@ -310,8 +348,8 @@
                             </div>
 
 
-                            //Registro de los productos que venden
-                            <div class="card card-outline card-warning">
+                            {{-- //Registro de detalle de sus ventas --}}
+                            {{-- <div class="card card-outline card-primary" id="detalle_negocio">
                                 <div class="card-header">
                                     <h3 class="card-title">Detalle de su negocio</h3>
                                 </div>
@@ -320,35 +358,31 @@
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="producto_descripcion_0">Descripción del producto</label>
-                                                <input type="text" id="producto_descripcion_0"
-                                                    name="producto_descripcion[]" class="form-control" required>
+                                                <input type="text" id="producto_descripcion" class="form-control"
+                                                    required>
                                             </div>
                                         </div>
+                                        
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="precio_compra_0">Precio de Compra</label>
-                                                <input type="number" id="precio_compra_0" name="precio_compra[]"
-                                                    class="form-control" required>
+                                                <input type="number" id="precio_compra" class="form-control" required>
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="precio_venta_0">Precio de Venta</label>
-                                                <input type="number" id="precio_venta_0" name="precio_venta[]"
-                                                    class="form-control" required>
+                                                <input type="number" id="precio_venta" class="form-control" required>
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="cantidad_0">Cantidad</label>
-                                                <input type="number" id="cantidad_0" name="cantidad[]"
-                                                    class="form-control" required>
+                                                <input type="number" id="cantidad" class="form-control" required>
                                             </div>
                                         </div>
-                                        <div class="col-md-2">
-                                            <button type="button" onclick="addProduct()" class="btn btn-primary">Añadir
-                                                Producto</button>
-                                        </div>
+                                        <div class="col-md-2"><button type="button" onclick="agregarProducto()"
+                                                class="btn btn-primary">Añadir Producto</button></div>
                                     </div>
 
                                     <hr>
@@ -359,7 +393,7 @@
                                                 <th>Precio de Compra</th>
                                                 <th>Precio de Venta</th>
                                                 <th>Cantidad</th>
-                                                <th>Margen</th>
+                                                <th>Margen (en %)</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
@@ -368,9 +402,372 @@
                                         </tbody>
                                     </table>
                                 </div>
+                            </div> --}}
+
+                            {{-- //Registro de Proyeccionres de ventas --}}
+                            <div class="card card-outline card-primary" id="detalle_negocio">
+                                <div class="card-header">
+                                    <h3 class="card-title">Proyecciones de ventas</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="producto_descripcion_0">Descripción del producto</label>
+                                                <input type="text" id="producto_descripcion" class="form-control"
+                                                    required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="unidad_medida">Unidad de medida</label>
+                                                <select name="unidad_medida" id="unidad_medida" class="form-control" required>
+                                                    <option value="und" selected>Und</option>
+                                                    <option value="kg">Kg</option>
+                                                    <option value="m">m</option>
+                                                    <option value="l">l</option>
+                                                </select>
+                                            </div>
+                                            
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="frecuencia_compra">Frecuencia de compra</label>
+                                                <input type="number" id="frecuencia_compra" name="frecuencia_compra" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="unidades_compradas">Unidades compradas</label>
+                                                <input type="number" id="unidades_compradas" name="unidades_compradas" class="form-control" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="unidades_vendidas">Unidades Vendidas</label>
+                                                <input type="number" id="unidades_vendidas" name="unidades_vendidas" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="stock_verificado_inspeccion">Stock verificado inspección</label>
+                                                <input type="number" id="stock_verificado_inspeccion" name="stock_verificado_inspeccion" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        
+                                        
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="precio_compra_0">Precio de Compra S/.</label>
+                                                <input type="number" id="precio_compra" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="precio_venta_0">Precio de Venta S/.</label>
+                                                <input type="number" id="precio_venta" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-2"><button type="button" onclick="agregarProducto()"
+                                                class="btn btn-primary">Añadir Producto</button></div>
+                                    </div>
+
+                                    <hr>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover table-bordered" id="datosTabla">
+                                            <thead class="thead-blue">
+                                                <tr>
+                                                    <th>Descripción</th>
+                                                    <th>Unidad de Medida</th>
+                                                    <th>Frecuencia de Compra</th>
+                                                    <th>Unidades Compradas</th>
+                                                    <th>Unidades Vendidas</th>
+                                                    <th>Stock Verificado</th>
+                                                    <th>Precio de Compra</th>
+                                                    <th>Precio de Venta</th>
+                                                    <th>Inventario Valorizado</th>
+                                                    <th>Unidades Vendidas por Mes</th>
+                                                    <th>Ingresos Mensuales por Venta</th>
+                                                    <th>Unidades Compradas por Mes</th>
+                                                    <th>Ingresos Mensuales por Compra</th>
+                                                    <th>Margen Bruto Mensual</th>
+                                                    <th>Margen (%)</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tablaCuerpo">
+                                                <!-- Las filas se agregarán aquí dinámicamente -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                </div>
                             </div>
 
 
+                            {{-- Regsitro de boletas solo para produccion y servicio --}}
+                            <div class="card card-outline card-primary" id="registro_boletas">
+                                <div class="card-header">
+                                    <h3 class="card-title">Registro de Boletas</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="numero_boleta">Numero de Boleta</label>
+                                                <input type="text" id="numero_boleta" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="monto_boleta">Monto Boleta</label>
+                                                <input type="number" id="monto_boleta" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="descuento_boleta">Descuento</label>
+                                                <input type="number" id="descuento_boleta" class="form-control"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" onclick="agregarBoleta()"
+                                                class="btn btn-primary">Añadir Boleta</button>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <table class="table table-striped table-hover table-bordered" id="datosTabla">
+                                        <thead class="thead-blue">
+                                            <tr>
+                                                <th>Nombre de la boleta</th>
+                                                <th>Monto</th>
+                                                <th>Descuento</th>
+                                                <th>Total</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="datos_tabla_boleta">
+                                            <!-- Las filas se agregarán aquí dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+                            {{-- //Registro de Gastos a Producir --}}
+                            <div class="card card-outline card-info" id="registro_gastos_producir">
+                                <div class="card-header">
+                                    <h3 class="card-title">Registro de Gastos a Producir</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="nombre_actividad">Nombre de actividad</label>
+                                                <input type="text" id="nombre_actividad" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="cantidad_terreno">Cantidad de terreno (hectáreas)</label>
+                                                <input type="number" id="cantidad_terreno" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="cantidad_terreno">Produccion Total (Kg)</label>
+                                                <input type="number" id="cantidad_terreno" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="cantidad_terreno">Precio (kg)</label>
+                                                <input type="number" id="cantidad_terreno" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="cantidad_terreno">Total en soles</label>
+                                                <input type="number" id="cantidad_terreno" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <div class="form-group">
+                                                <label for="descripcion_gasto">Descripción del insumo</label>
+                                                <input type="text" id="descripcion_gasto_producir" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="precio_unitario_gasto">Precio unitario</label>
+                                                <input type="number" id="precio_unitario_gasto_producir" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="cantidad_gasto">Cantidad</label>
+                                                <input type="number" id="cantidad_gasto_producir" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" onclick="agregarGastoProducir()" class="btn btn-info">Añadir Gasto</button>
+                                        </div>
+                                    </div>
+                                    
+
+                                    <hr>
+                                    <table class="table table-striped table-hover table-bordered" id="datosTablaGastos">
+                                        <thead class="thead-blue">
+                                            <tr>
+                                                <th>Descripción del insumo</th>
+                                                <th>Precio unitario</th>
+                                                <th>Cantidad</th>
+                                                <th>Total</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tablaGastosProducir">
+                                            <!-- Las filas se agregarán aquí dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                    {{-- <div class="text" style="background-color: #f0f0f0; padding: 10px;">
+                                        <strong>Total de Gastos Operativos:</strong> <span id="totalGatosOperativos"
+                                            style="font-size: 18px;">0.00</span>
+                                    </div> --}}
+                                </div>
+                            </div>
+
+                            {{-- //Registro de inventario del producto --}}
+                            <div class="card card-outline card-warning" id="inventario_producto">
+                                <div class="card-header">
+                                    <h3 class="card-title">Registro de inventario</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <div class="form-group">
+                                                <label for="descripcion_producto">Descripción del producto</label>
+                                                <input type="text" id="descripcion_producto" class="form-control"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="precio_unitario">Precio unitario</label>
+                                                <input type="number" id="precio_unitario" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="cantidad_producto">Cantidad</label>
+                                                <input type="number" id="cantidad_producto" class="form-control"
+                                                    required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            <button type="button" onclick="agregarInventario()"
+                                                class="btn btn-warning">Añadir Producto</button>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+                                    <table class="table table-striped table-hover table-bordered"
+                                        id="datosTablaInventario">
+                                        <thead class="thead-blue">
+                                            <tr>
+                                                <th>Descripción</th>
+                                                <th>Precio unitario</th>
+                                                <th>Cantidad</th>
+                                                <th>Monto</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tablaInventario">
+                                            <!-- Las filas se agregarán aquí dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                    <div class="text" style="background-color: #f0f0f0; padding: 10px;">
+                                        <strong>Total de inventario:</strong> <span id="totalMonto"
+                                            style="font-size: 18px;">0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+
+                            {{-- //Registro de Gastos Operativos --}}
+                            <div class="card card-outline card-info">
+                                <div class="card-header">
+                                    <h3 class="card-title">Registro de Gastos Operativos</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <div class="form-group">
+                                                <label for="descripcion_gasto">Descripción</label>
+                                                <input type="text" id="descripcion_gasto" class="form-control"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="precio_unitario_gasto">Precio unitario</label>
+                                                <input type="number" id="precio_unitario_gasto" class="form-control"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label for="cantidad_gasto">Cantidad</label>
+                                                <input type="number" id="cantidad_gasto" class="form-control" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            <button type="button" onclick="agregarGasto()" class="btn btn-info">Añadir
+                                                Gasto</button>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+                                    <table class="table table-striped table-hover table-bordered" id="datosTablaGastos">
+                                        <thead class="thead-blue">
+                                            <tr>
+                                                <th>Descripción</th>
+                                                <th>Precio unitario</th>
+                                                <th>Cantidad</th>
+                                                <th>Total</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tablaGastos">
+                                            <!-- Las filas se agregarán aquí dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                    <div class="text" style="background-color: #f0f0f0; padding: 10px;">
+                                        <strong>Total de Gastos Operativos:</strong> <span id="totalGatosOperativos"
+                                            style="font-size: 18px;">0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+
+                            {{-- Deudas Financieros --}}
                             <div class="card card-outline card-warning">
                                 <div class="card-header" style="display:flex;">
                                     <h3 class="card-title">Deudas Financieras</h3>
@@ -409,7 +806,7 @@
                                             </div>
                                         </div>
 
-                                        
+
 
                                     </div>
 
@@ -446,7 +843,7 @@
                                             </div>
                                         </div>
 
-                                        
+
 
                                     </div>
 
@@ -483,7 +880,7 @@
                                             </div>
                                         </div>
 
-                                        
+
 
                                     </div>
 
@@ -788,7 +1185,6 @@
         </div>
     </div>
 
-    
 
 
 
@@ -796,9 +1192,10 @@
 
 
 
+    {{-- para filtrar por tipo de credito --}}
     <script>
         function toggleFields() {
-            var selection = document.getElementById('tipo_credito').value;
+            var selection = document.getElementById('tipo_producto').value;
             var individualFields = document.getElementById('individualFields');
             var grupalFields = document.getElementById('grupalFields');
             if (selection === 'microempresa' || selection === 'agricola' || selection === 'consumo') {
@@ -811,6 +1208,34 @@
                 individualFields.style.display = 'none';
                 grupalFields.style.display = 'none';
             }
+
+            var selectionTipoCredito = document.getElementById('tipo_credito').value;
+            var inventario_producto = document.getElementById('inventario_producto');
+
+            if (selectionTipoCredito === 'servicio') {
+                inventario_producto.style.display = 'none';
+            } else {
+                inventario_producto.style.display = 'block';
+            }
+
+
+            if (selectionTipoCredito === 'servicio' && selection === 'consumo') {
+                detalle_negocio.style.display = 'none';
+                registro_boletas.style.display = 'block';
+            } else {
+                detalle_negocio.style.display = 'block';
+                registro_boletas.style.display = 'none';
+            }
+
+            if (selection === 'agricola') {
+                registro_gastos_producir.style.display = 'block';
+                detalle_negocio.style.display = 'none';
+            } else {
+                registro_gastos_producir.style.display = 'none';
+            }
+
+
+
 
 
 
@@ -858,7 +1283,7 @@
 
 
 
-
+    {{-- busca por cliente --}}
     <script>
         $(document).ready(function() {
             console.log("presionar", )
@@ -922,7 +1347,7 @@
                                 '<td>' + (response.direccion || '') + '</td>' +
                                 '<td>' + ('200') + '</td>' +
                                 '<td>' +
-                                 '<button class="btn btn-danger btn-sm removeRow"><i class="fa fa-trash"></i></button>' +
+                                '<button class="btn btn-danger btn-sm removeRow"><i class="fa fa-trash"></i></button>' +
                                 '</td>' +
                                 '</tr>'
                             ); // Añade la fila al final del cuerpo de la tabla
@@ -937,7 +1362,7 @@
                 }
             });
 
-            
+
 
             $('#datosTabla').on('click', '.removeRow', function() {
                 $(this).closest('tr').remove(); // Elimina la fila más cercana en el DOM a este botón
@@ -956,71 +1381,162 @@
         });
     </script>
 
+
+    {{-- //para agregar fila --}}
     <script>
-        let productIndex = 1; // Inicia en 1 porque ya tienes un producto en el formulario
+        function agregarFila(tablaId, campos) {
+            var tabla = document.getElementById(tablaId);
+            var fila = tabla.insertRow();
 
-        function addProduct() {
-            const description = document.getElementById(`producto_descripcion_${productIndex-1}`).value;
-            const purchasePrice = document.getElementById(`precio_compra_${productIndex-1}`).value;
-            const salePrice = document.getElementById(`precio_venta_${productIndex-1}`).value;
-            const quantity = document.getElementById(`cantidad_${productIndex-1}`).value;
+            campos.forEach(function(valor) {
+                var celda = fila.insertCell();
+                celda.innerHTML = valor;
+            });
 
-            // Añadir el producto a la tabla
-            const tableBody = document.getElementById('tablaCuerpo');
-            const row = document.createElement('tr');
-            row.innerHTML = `
-        <td>${description}</td>
-        <td>${purchasePrice}</td>
-        <td>${salePrice}</td>
-        <td>${quantity}</td>
-        <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Eliminar</button></td>
-    `;
-            tableBody.appendChild(row);
+            // Agregar evento al botón de eliminar
+            var botonEliminar = document.createElement('button');
+            botonEliminar.type = 'button';
+            botonEliminar.className = 'btn btn-danger';
+            botonEliminar.textContent = 'Eliminar';
+            botonEliminar.onclick = function() {
+                eliminarFila(this);
+            };
 
-            // Crear nuevos campos para el siguiente producto
-            const newRow = document.createElement('div');
-            newRow.className = 'row';
-            newRow.innerHTML = `
-        <div class="col-md-3">
-            <div class="form-group">
-                <label for="producto_descripcion_${productIndex}">Descripción del producto</label>
-                <input type="text" id="producto_descripcion_${productIndex}" name="producto_descripcion[]" class="form-control" required>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <label for="precio_compra_${productIndex}">Precio de Compra</label>
-                <input type="number" id="precio_compra_${productIndex}" name="precio_compra[]" class="form-control" required>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <label for="precio_venta_${productIndex}">Precio de Venta</label>
-                <input type="number" id="precio_venta_${productIndex}" name="precio_venta[]" class="form-control" required>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <label for="cantidad_${productIndex}">Cantidad</label>
-                <input type="number" id="cantidad_${productIndex}" name="cantidad[]" class="form-control" required>
-            </div>
-        </div>
-        <div class="col-md-2">
-            <div class="form-group">
-                <label for="cantidad_${productIndex}">Cantidad</label>
-                <input type="number" id="cantidad_${productIndex}" name="cantidad[]" class="form-control" required>
-            </div>
-        </div>
-    `;
-            const container = document.querySelector('.card-body');
-            container.insertBefore(newRow, document.querySelector('hr'));
+            var celdaEliminar = fila.insertCell();
+            celdaEliminar.appendChild(botonEliminar);
 
-            productIndex++; // Incrementa el índice para el próximo producto
+            // Limpiar campos de entrada
+            limpiarCamposEntrada(campos);
         }
 
-        function removeRow(button) {
-            button.closest('tr').remove(); // Elimina la fila del producto en la tabla
+        function limpiarCamposEntrada(campos) {
+            campos.forEach(function(id) {
+                var elemento = document.getElementById(id);
+                if (elemento) {
+                    elemento.value = '';
+                }
+            });
+        }
+
+        function eliminarFila(boton) {
+            var fila = boton.parentNode.parentNode;
+            fila.parentNode.removeChild(fila);
+        }
+
+        function calcularMargen(precioVenta, precioCompra) {
+            return (((precioVenta - precioCompra) / precioCompra) * 100).toFixed(2) + '%';
+        }
+
+        function agregarProducto() {
+            var descripcion = document.getElementById('producto_descripcion').value;
+            var unidadMedida = document.getElementById('unidad_medida').value;
+            var frecuenciaCompra = document.getElementById('frecuencia_compra').value;
+            var unidadesCompradas = document.getElementById('unidades_compradas').value;
+            var unidadesVendidas = document.getElementById('unidades_vendidas').value;
+            var stockVerificadoInspeccion = document.getElementById('stock_verificado_inspeccion').value;
+            var precioCompra = document.getElementById('precio_compra').value;
+            var precioVenta = document.getElementById('precio_venta').value;
+            var inventario_valorizado = stockVerificadoInspeccion * precioCompra;
+            var uni_vendidad_mes = (30/frecuenciaCompra)*unidadesVendidas;
+            var ingresos_mes_venta = uni_vendidad_mes * precioVenta;
+            var uni_compra_mes = (30/frecuenciaCompra)*unidadesCompradas;
+            var ingresos_mes_compra = uni_compra_mes*precioCompra;
+            var margen_bruto_mensual = ingresos_mes_venta - ingresos_mes_compra;
+            var margen = (margen_bruto_mensual / ingresos_mes_venta)*100;
+
+            agregarFila('tablaCuerpo', [
+                descripcion, 
+                unidadMedida, 
+                frecuenciaCompra, 
+                unidadesCompradas, 
+                unidadesVendidas, 
+                stockVerificadoInspeccion, 
+                precioCompra, 
+                precioVenta, 
+                inventario_valorizado.toFixed(2), 
+                uni_vendida_mes.toFixed(2), 
+                ingresos_mes_venta.toFixed(2), 
+                uni_compra_mes.toFixed(2), 
+                ingresos_mes_compra.toFixed(2), 
+                margen_bruto_mensual.toFixed(2), 
+                (margen).toFixed(2) + '%']);
+
+            limpiarCamposEntrada([
+                'producto_descripcion', 
+                'unidad_medida', 
+                'frecuencia_compra', 
+                'unidades_compradas', 
+                'unidades_vendidas', 
+                'stock_verificado_inspeccion', 
+                'precio_compra', 
+                'precio_venta' ]);
+        }
+
+
+        function agregarInventario() {
+            var descripcion = document.getElementById('descripcion_producto').value;
+            var precioUnitario = document.getElementById('precio_unitario').value;
+            var cantidad = document.getElementById('cantidad_producto').value;
+            var montoTotal = (precioUnitario * cantidad).toFixed(2);
+
+            agregarFila('datosTablaInventario', [descripcion, precioUnitario, cantidad, montoTotal]);
+            limpiarCamposEntrada(['descripcion_producto', 'precio_unitario', 'cantidad_producto']);
+
+            // Actualizar el total sumando el monto total del nuevo producto
+            var totalActual = parseFloat(document.getElementById('totalMonto').textContent);
+            var nuevoTotal = totalActual + parseFloat(montoTotal);
+            document.getElementById('totalMonto').textContent = nuevoTotal.toFixed(2);
+
+        }
+
+        function agregarGasto() {
+            var descripcion = document.getElementById('descripcion_gasto').value;
+            var precioUnitario = document.getElementById('precio_unitario_gasto').value;
+            var cantidad = document.getElementById('cantidad_gasto').value;
+            var montoTotal = (precioUnitario * cantidad).toFixed(2);
+
+            agregarFila('datosTablaGastos', [descripcion, precioUnitario, cantidad, montoTotal]);
+            limpiarCamposEntrada(['descripcion_gasto', 'precio_unitario_gasto', 'cantidad_gasto']);
+
+            // Actualizar el total sumando el monto total del nuevo producto
+            var totalActual = parseFloat(document.getElementById('totalGatosOperativos').textContent);
+            var nuevoTotal = totalActual + parseFloat(montoTotal);
+            document.getElementById('totalGatosOperativos').textContent = nuevoTotal.toFixed(2);
+        }
+
+        function agregarBoleta() {
+            var descripcion = document.getElementById('numero_boleta').value;
+            var precioUnitario = document.getElementById('monto_boleta').value;
+            var cantidad = document.getElementById('descuento_boleta').value;
+            var montoTotal = (precioUnitario - cantidad).toFixed(2);
+
+            agregarFila('datos_tabla_boleta', [descripcion, precioUnitario, cantidad, montoTotal]);
+            limpiarCamposEntrada(['numero_boleta', 'monto_boleta', 'descuento_boleta']);
+
+            // Actualizar el total sumando el monto total del nuevo producto
+            var totalActual = parseFloat(document.getElementById('totalGatosOperativos').textContent);
+            var nuevoTotal = totalActual + parseFloat(montoTotal);
+            document.getElementById('totalGatosOperativos').textContent = nuevoTotal.toFixed(2);
+        }
+
+        function agregarGastoProducir() {
+            var descripcion = document.getElementById('descripcion_gasto_producir').value;
+            var precioUnitario = document.getElementById('precio_unitario_gasto_producir').value;
+            var cantidad = document.getElementById('cantidad_gasto_producir').value;
+            var montoTotal = (precioUnitario * cantidad).toFixed(2);
+
+            agregarFila('tablaGastosProducir', [descripcion, precioUnitario, cantidad, montoTotal]);
+            limpiarCamposEntrada(['descripcion_gasto_producir', 'precio_unitario_gasto_producir', 'cantidad_gasto_producir']);
+
+            // // Actualizar el total sumando el monto total del nuevo producto
+            // var totalActual = parseFloat(document.getElementById('totalGatosOperativos').textContent);
+            // var nuevoTotal = totalActual + parseFloat(montoTotal);
+            // document.getElementById('totalGatosOperativos').textContent = nuevoTotal.toFixed(2);
         }
     </script>
+
+
+
+
 
 @endsection
