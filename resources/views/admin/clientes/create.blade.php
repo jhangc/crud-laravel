@@ -55,19 +55,15 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="actividad_economica">Actividad económica </label>
-                                    <input type="text" value="{{ old('actividad_economica') }}" name="actividad_economica" id="actividad_economica" class="form-control">
+                                    <label for="actividad_economica">Actividad económica</label>
+                                    <input type="text" value="{{ old('actividad_economica') }}"
+                                        name="actividad_economica" id="actividad_economica" class="form-control">
                                     @error('actividad_economica')
-                                    <small style="color: red">{{ $message }}</small>
+                                        <small style="color: red">{{ $message }}</small>
                                     @enderror
-
                                 </div>
                             </div>
                         </div>
-
-                        
-
-
 
                         <div class="row">
                             <div class="col-md-6">
@@ -82,22 +78,22 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="direccion">Sexo</label>
+                                    <label for="sexo">Sexo</label>
                                     <select name="sexo" id="sexo" class="form-control" required>
                                         <option value="">Seleccione una opción...</option>
-                                        <option value="Masculino" {{ old('sexo') == 'Soltero' ? 'selected' : '' }}>
+                                        <option value="Masculino" {{ old('sexo') == 'Masculino' ? 'selected' : '' }}>
                                             Masculino</option>
-                                        <option value="Casado" {{ old('sexo') == 'Casado' ? 'selected' : '' }}>
-                                            Femenino</option>
-
+                                        <option value="Femenino" {{ old('sexo') == 'Femenino' ? 'selected' : '' }}>Femenino
+                                        </option>
                                     </select>
+                                    @error('sexo')
+                                        <small style="color: red">{{ $message }}</small>
+                                    @enderror
                                 </div>
                             </div>
-
                         </div>
 
                         <div class="row">
-
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="direccion_laboral">Dirección laboral</label>
@@ -111,10 +107,10 @@
 
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="direccion_laboral">Referencia</label>
-                                    <input type="text" value="{{ old('direccion_laboral') }}" name="direccion_laboral"
+                                    <label for="referencia">Referencia</label>
+                                    <input type="text" value="{{ old('referencia') }}" name="referencia"
                                         class="form-control">
-                                    @error('direccion_laboral')
+                                    @error('referencia')
                                         <small style="color: red">{{ $message }}</small>
                                     @enderror
                                 </div>
@@ -167,8 +163,8 @@
                                         <option value="Casado" {{ old('estado_civil') == 'Casado' ? 'selected' : '' }}>
                                             Casado</option>
                                         <option value="Conviviente"
-                                            {{ old('estado_civil') == 'Conviviente' ? 'selected' : '' }}>
-                                            Conviviente</option>
+                                            {{ old('estado_civil') == 'Conviviente' ? 'selected' : '' }}>Conviviente
+                                        </option>
                                         <option value="Divorciado"
                                             {{ old('estado_civil') == 'Divorciado' ? 'selected' : '' }}>Divorciado</option>
                                     </select>
@@ -178,7 +174,6 @@
                                 </div>
                             </div>
                         </div>
-
 
                         <!-- Inicialmente ocultos -->
                         <div id="conyugueField" style="display: none;">
@@ -211,8 +206,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="aval">Nombres del aval</label>
-                                    <input type="text" value="{{ old('aval') }}" name="aval"
-                                        id="aval" class="form-control">
+                                    <input type="text" value="{{ old('aval') }}" name="aval" id="aval"
+                                        class="form-control">
                                     @error('aval')
                                         <small style="color: red">{{ $message }}</small>
                                     @enderror
@@ -221,14 +216,14 @@
 
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="dni_aval">DNI del Aval</label>
-                                    <input type="text" value="{{ old('dni_aval') }}" name="dni_aval"
-                                        id="dni_aval" class="form-control">
+                                    <label for="dni_aval">DNI del Aval (PDF)</label>
+                                    <input type="file" name="dni_aval" id="dni_aval" accept=".pdf" class="form-control-file">
                                     @error('dni_aval')
                                         <small style="color: red">{{ $message }}</small>
                                     @enderror
                                 </div>
                             </div>
+                            
                         </div>
 
                         <div class="row">
@@ -266,6 +261,7 @@
             </div>
         </div>
     </div>
+
 
 
 

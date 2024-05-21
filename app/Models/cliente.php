@@ -27,8 +27,14 @@ class cliente extends Model
         'conyugue',
         'dni_conyugue',
         'foto',
-        'dni_pdf'
+        'dni_pdf',
+        'actividad_economica',
+        'sexo',
+        'referencia',
+        'aval',
+        'dni_aval',
     ];
+    
 
     protected $dates = ['fecha_nacimiento'];
     

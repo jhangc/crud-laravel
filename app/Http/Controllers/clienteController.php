@@ -75,8 +75,15 @@ class clienteController extends Controller
             'foto' => 'nullable|image',  // Asumiendo que se cargará una imagen para el campo foto
             'dni_pdf' => 'nullable|mimes:pdf',  // Asegurando que el archivo sea un PDF
             'activo' => 'boolean',
+            'actividad_economica' => 'nullable|max:255',
+            'sexo' => 'nullable|max:255',  // Asumiendo que solo se aceptan 'M' o 'F'
+            'referencia' => 'nullable|max:255',
+            'aval' => 'nullable|max:255',
+            'dni_aval' => 'nullable|mimes:pdf',
         ]);
 
+
+        // Crear un nuevo cliente en la base de datos
         // Crear un nuevo cliente en la base de datos
         $cliente = new Cliente();
         $cliente->nombre = $request->nombre;
@@ -100,14 +107,21 @@ class clienteController extends Controller
             $cliente->foto = $path; // Guarda la ruta del archivo en la base de datos
         }
 
-
         if ($request->hasFile('dni_pdf')) {
             $cliente->dni_pdf = $request->file('dni_pdf')->store('documentos_clientes');
         }
+
         $cliente->activo = $request->activo ?? true; // Si no se proporciona el valor de activo, se establece en true
         $cliente->sucursal_id = 1; // Asignar el ID de la sucursal recién creada
-        $cliente->save();
 
+        // Asignar los nuevos campos
+        $cliente->actividad_economica = $request->actividad_economica;
+        $cliente->sexo = $request->sexo;
+        $cliente->referencia = $request->referencia;
+        $cliente->aval = $request->aval;
+        $cliente->dni_aval = $request->dni_aval;
+
+        $cliente->save();
         // Redireccionar a la página de inicio
         return redirect()->route('clientes.index')
             ->with('mensaje', 'Se registró al cliente de manera correcta')
@@ -188,12 +202,13 @@ class clienteController extends Controller
             ->with('icono', 'success');
     }
 
-    
 
-    public function buscarPorDocumento(Request $request) {
+
+    public function buscarPorDocumento(Request $request)
+    {
         $dni = $request->input('documento_identidad');
         $cliente = cliente::where('documento_identidad', $dni)->first(['nombre', 'telefono', 'email', 'direccion', 'direccion_laboral', 'profesion']);
-    
+
         if ($cliente) {
             return response()->json($cliente);
         } else {
@@ -201,17 +216,15 @@ class clienteController extends Controller
         }
     }
 
-    public function agregarpordni(Request $request) {
+    public function agregarpordni(Request $request)
+    {
         $dni = $request->input('documento_identidad');
         $cliente = cliente::where('documento_identidad', $dni)->first(['nombre', 'telefono', 'direccion', 'profesion']);
-    
+
         if ($cliente) {
             return response()->json($cliente);
         } else {
             return response()->json(['error' => 'Cliente no encontrado'], 404);
         }
     }
-
-    
-    
 }
