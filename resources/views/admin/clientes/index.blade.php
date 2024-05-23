@@ -29,6 +29,7 @@
             </div>
 
             <div class="card-body">
+            <div class="table-responsive">
                 <table class="table table-bordered table-sm table-striped table-hover">
                     <thead>
                         <tr>
@@ -128,6 +129,7 @@
                         @endforeach
                     </tbody>
                 </table>
+            </table>
             </div>
         </div>
     </div>
