@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\cliente;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class clienteController extends Controller
 {
@@ -58,7 +59,7 @@ class clienteController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar los datos del formulario
+
         $request->validate([
             'nombre' => 'required|max:100',
             'documento_identidad' => 'required|max:50',
@@ -67,7 +68,7 @@ class clienteController extends Controller
             'direccion' => 'required|max:255',
             'direccion_laboral' => 'nullable|max:255',
             'lugar_nacimiento' => 'nullable|max:255',
-            // 'fecha_nacimiento' => 'nullable|date_format:d/m/Y',
+            'fecha_nacimiento' => 'nullable|max:255',
             'profesion' => 'nullable|max:100',
             'estado_civil' => 'nullable|max:50',
             'conyugue' => 'nullable|max:100',
@@ -76,14 +77,13 @@ class clienteController extends Controller
             'dni_pdf' => 'nullable|mimes:pdf',  // Asegurando que el archivo sea un PDF
             'activo' => 'boolean',
             'actividad_economica' => 'nullable|max:255',
-            'sexo' => 'nullable|max:255',  // Asumiendo que solo se aceptan 'M' o 'F'
+            'sexo' => 'nullable|max:255',
             'referencia' => 'nullable|max:255',
             'aval' => 'nullable|max:255',
             'dni_aval' => 'nullable|mimes:pdf',
         ]);
 
 
-        // Crear un nuevo cliente en la base de datos
         // Crear un nuevo cliente en la base de datos
         $cliente = new Cliente();
         $cliente->nombre = $request->nombre;
@@ -93,22 +93,48 @@ class clienteController extends Controller
         $cliente->direccion = $request->direccion;
         $cliente->direccion_laboral = $request->direccion_laboral;
         $cliente->lugar_nacimiento = $request->lugar_nacimiento;
-        // if ($request->fecha_nacimiento) {
-        //     $cliente->fecha_nacimiento = Carbon::createFromFormat('d/m/Y', $request->fecha_nacimiento)
-        //         ->format('Y-m-d');
-        // }
+        if (!empty($request->fecha_nacimiento)) {
+            $cliente->fecha_nacimiento = $request->fecha_nacimiento;
+        }
         $cliente->profesion = $request->profesion;
         $cliente->estado_civil = $request->estado_civil;
         $cliente->conyugue = $request->conyugue;
         $cliente->dni_conyugue = $request->dni_conyugue;
 
+        // $path = $request->file('foto')->store('public/fotos_clientes');
         if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
-            $path = $request->file('foto')->store('public/fotos_clientes'); // Guarda la foto en el storage público
+            $path = $request->file('foto')->store('fotos_clientes'); // Guarda la foto en el storage público
             $cliente->foto = $path; // Guarda la ruta del archivo en la base de datos
         }
 
+        if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
+            // Genera un UUID único para el nombre del archivo
+            $nombreUnico = Str::uuid();
+            // Obtiene la extensión original del archivo
+            $extension = $request->file('foto')->getClientOriginalExtension();
+            // Construye el nombre del archivo utilizando el UUID y la extensión
+            $nombreArchivo = $nombreUnico . '.' . $extension;
+            // Guarda la foto en el directorio especificado con el nombre generado
+            $ruta = $request->file('foto')->storeAs('public/fotos_clientes', $nombreArchivo);
+            // Asigna la ruta del archivo al atributo 'foto' del cliente
+            $cliente->foto = $ruta;
+        }
+
         if ($request->hasFile('dni_pdf')) {
-            $cliente->dni_pdf = $request->file('dni_pdf')->store('documentos_clientes');
+            // Genera un nombre único para el archivo utilizando un UUID
+            $nombreUnico = Str::uuid();
+
+            // Obtiene la extensión original del archivo
+            $extension = $request->file('dni_pdf')->getClientOriginalExtension();
+
+            // Construye el nombre del archivo utilizando el UUID y la extensión
+            $nombreArchivo = $nombreUnico . '.' . $extension;
+
+            // Guarda el PDF en el directorio especificado con el nombre generado
+            $ruta = $request->file('dni_pdf')->storeAs('public/documentos_clientes', $nombreArchivo);
+
+            // Asigna la ruta del archivo al atributo 'dni_pdf' del cliente
+            $cliente->dni_pdf = $ruta;
         }
 
         $cliente->activo = $request->activo ?? true; // Si no se proporciona el valor de activo, se establece en true
@@ -119,7 +145,23 @@ class clienteController extends Controller
         $cliente->sexo = $request->sexo;
         $cliente->referencia = $request->referencia;
         $cliente->aval = $request->aval;
-        $cliente->dni_aval = $request->dni_aval;
+
+        if ($request->hasFile('dni_aval')) {
+            // Genera un nombre único para el archivo utilizando un UUID
+            $nombreUnico = Str::uuid();
+
+            // Obtiene la extensión original del archivo
+            $extension = $request->file('dni_aval')->getClientOriginalExtension();
+
+            // Construye el nombre del archivo utilizando el UUID y la extensión
+            $nombreArchivo = $nombreUnico . '.' . $extension;
+
+            // Guarda el archivo en el directorio especificado con el nombre generado
+            $ruta = $request->file('dni_aval')->storeAs('public/documentos_aval', $nombreArchivo);
+
+            // Asigna la ruta del archivo al atributo 'dni_aval' del cliente
+            $cliente->dni_aval = $ruta;
+        }
 
         $cliente->save();
         // Redireccionar a la página de inicio
