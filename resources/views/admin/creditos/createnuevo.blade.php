@@ -51,31 +51,31 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="producto">SubProductos</label>
-                                    <select name="producto" id="producto" class="form-control" required
+                                    <label for="subproducto">SubProductos</label>
+                                    <select name="subproducto" id="subproducto" class="form-control" required
                                         onchange="toggleFields()">
                                         <option value="">Seleccione una opción...</option>
                                         <option value="credimujerpalmo"
-                                            {{ old('producto') == 'credimujerpalmo' ? 'selected' : '' }}>
+                                            {{ old('subproducto') == 'credimujerpalmo' ? 'selected' : '' }}>
                                             Credimujerpalmo
                                         </option>
                                         <option value="creditoempresarial"
-                                            {{ old('producto') == 'creditoempresarial' ? 'selected' : '' }}>
+                                            {{ old('subproducto') == 'creditoempresarial' ? 'selected' : '' }}>
                                             Crédito empresarial
                                         </option>
                                         <option value="creditoempresarialhipotecario"
-                                            {{ old('producto') == 'creditoempresarialhipotecario' ? 'selected' : '' }}>
+                                            {{ old('subproducto') == 'creditoempresarialhipotecario' ? 'selected' : '' }}>
                                             Crédito empresarial con garantía hipotecaria empresarial
                                         </option>
-                                        <option value="palmoagro" {{ old('producto') == 'palmoagro' ? 'selected' : '' }}>
+                                        <option value="palmoagro" {{ old('subproducto') == 'palmoagro' ? 'selected' : '' }}>
                                             Palmo agro con garantía hipotecaria agrícola
                                         </option>
                                         <option value="superconsumo"
-                                            {{ old('producto') == 'superconsumo' ? 'selected' : '' }}>
+                                            {{ old('subproducto') == 'superconsumo' ? 'selected' : '' }}>
                                             Superconsumo
                                         </option>
                                         <option value="superconsumohipotecario"
-                                            {{ old('producto') == 'superconsumohipotecario' ? 'selected' : '' }}>
+                                            {{ old('subproducto') == 'superconsumohipotecario' ? 'selected' : '' }}>
                                             Superconsumo con garantía hipotecaria
                                         </option>
                                     </select>
@@ -95,7 +95,7 @@
                                         <option value="capital de trabajo"
                                             {{ old('destino_credito') == 'capital de trabajo' ? 'selected' : '' }}>
                                             Capital de trabajo</option>
-                                        <option value="consumo" {{ old('consumo') == 'consumo' ? 'selected' : '' }}>
+                                        <option value="consumo" {{ old('destino_credito') == 'consumo' ? 'selected' : '' }}>
                                             Consumo</option>
                                     </select>
                                 </div>
@@ -104,7 +104,7 @@
                         <div id="individualFields" style="display:none;">
 
                             {{-- //daots de los clientes --}}
-                            <div class="card card-outline card-warning">
+                            {{-- <div class="card card-outline card-warning">
                                 <div class="card-header">
                                     <h3 class="card-title">Datos del cliente</h3>
                                 </div>
@@ -213,21 +213,21 @@
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <select name="tipo_Egreso" id="tipo_Egreso" class="form-control"
-                                                            required onchange="toggleFields()">
+                                                            onchange="toggleFields()">
                                                             <option value="">Seleccione una opción...</option>
                                                             <option value="diario"
-                                                                {{ old('tipo_credito') == 'diario' ? 'selected' : '' }}>
+                                                                {{ old('tipo_Egreso') == 'diario' ? 'selected' : '' }}>
                                                                 Diario</option>
                                                             <option value="mensual"
-                                                                {{ old('tipo_credito') == 'mensual' ? 'selected' : '' }}>
+                                                                {{ old('tipo_Egreso') == 'mensual' ? 'selected' : '' }}>
                                                                 Mensual</option>
                                                         </select>
                                                     </div>
 
                                                     <div class="col-md-6">
-                                                        <input type="text" value="{{ old('direccion') }}"
-                                                            name="direccion" id="inputMensualEgresos"
-                                                            class="form-control" required placeholder="monto en S/.">
+                                                        <input type="text" value="{{ old('inputMensualEgresos') }}"
+                                                            name="inputMensualEgresos" id="inputMensualEgresos"
+                                                            class="form-control"  placeholder="monto en S/.">
                                                         <button type="button" class="btn btn-primary"
                                                             id="botonDiarioEgresos" data-toggle="modal"
                                                             data-target="#miModalEgresos"><i class="bi bi-floppy2"></i>
@@ -249,7 +249,7 @@
                                     </div>
 
                                 </div>
-                            </div>
+                            </div> --}}
 
                             {{-- //Datos del credito --}}
                             <div class="card card-outline card-secondary">
@@ -264,69 +264,68 @@
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="nombre">Recurrencia</label>
-                                                <select name="tipo_credito" id="tipo_credito" class="form-control"
-                                                    required onchange="toggleFields()">
+                                                <label for="recurrencia">Recurrencia</label>
+                                                <select name="recurrencia" id="recurrencia" class="form-control" required onchange="toggleFields()">
                                                     <option value="">Seleccione una opción...</option>
-                                                    <option value="individual"
-                                                        {{ old('tipo_credito') == 'individual' ? 'selected' : '' }}>
-                                                        Mensual</option>
-                                                    <option value="grupal"
-                                                        {{ old('tipo_credito') == 'grupal' ? 'selected' : '' }}>
-                                                        Quincenal</option>
+                                                    <option value="mensual" {{ old('recurrencia') == 'mensual' ? 'selected' : '' }}>Mensual</option>
+                                                    <option value="quincenal" {{ old('recurrencia') == 'quincenal' ? 'selected' : '' }}>Quincenal</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="nombre">Tasa de interes (%)</label>
-                                                <input type="text" value="{{ old('tasa_interes') }}"
-                                                    name="tasa_interes" id="tasa_interes" class="form-control" required>
+                                                <label for="tasa_interes">Tasa de interés (%)</label>
+                                                <input type="text" value="{{ old('tasa_interes') }}" name="tasa_interes" id="tasa_interes" class="form-control" required>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="nombre">Tiempo del credito</label>
-                                                <input type="text" value="{{ old('tiempo_credito') }}" name="nombre"
-                                                    id="tiempo_credito'" class="form-control" required>
+                                                <label for="tiempo_credito">Tiempo del crédito</label>
+                                                <input type="text" value="{{ old('tiempo_credito') }}" name="tiempo_credito" id="tiempo_credito" class="form-control" required>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="nombre">Monto total (S/.)</label>
-                                                <input type="text" value="{{ old('monto') }}" name="nombre"
-                                                    id="monto" class="form-control" required>
+                                                <label for="fecha_desembolso">Fecha de desembolso</label>
+                                                <input type="text" value="{{ old('fecha_desembolso') }}" name="fecha_desembolso" id="fecha_desembolso" class="form-control" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="monto">Monto total (S/.)</label>
+                                                <input type="text" value="{{ old('monto') }}" name="monto" id="monto" class="form-control" required>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
 
-                                        <div class="col-md-4">
+                                        {{-- <div class="col-md-4">
                                             <div class="form-group">
                                                 <label for="descripcion_garantia">Descripcion de la Garantia</label>
                                                 <input type="text" name="descripcion_garantia"
-                                                    id="descripcion_garantia" class="form-control" required>
+                                                    id="descripcion_garantia" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="valor_mercado">Valor del mercado (S/.)</label>
                                                 <input type="number" name="valor_mercado" id="valor_mercado"
-                                                    class="form-control" required>
+                                                    class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="valor_realizacion">Valor de realización (S/.)</label>
                                                 <input type="number" name="valor_realizacion" id="valor_realizacion"
-                                                    class="form-control" required>
+                                                    class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="valor_gravamen">Valor de Gravamen (S/.)</label>
                                                 <input type="number" name="valor_gravamen" id="valor_gravamen"
-                                                    class="form-control" required>
+                                                    class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
@@ -338,7 +337,7 @@
                                                     <small style="color: red">{{ $message }}</small>
                                                 @enderror
                                             </div>
-                                        </div>
+                                        </div> --}}
 
 
                                     </div>
@@ -359,26 +358,26 @@
                                             <div class="form-group">
                                                 <label for="producto_descripcion_0">Descripción del producto</label>
                                                 <input type="text" id="producto_descripcion" class="form-control"
-                                                    required>
+                                                    >
                                             </div>
                                         </div>
                                         
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="precio_compra_0">Precio de Compra</label>
-                                                <input type="number" id="precio_compra" class="form-control" required>
+                                                <input type="number" id="precio_compra" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="precio_venta_0">Precio de Venta</label>
-                                                <input type="number" id="precio_venta" class="form-control" required>
+                                                <input type="number" id="precio_venta" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="cantidad_0">Cantidad</label>
-                                                <input type="number" id="cantidad" class="form-control" required>
+                                                <input type="number" id="cantidad" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2"><button type="button" onclick="agregarProducto()"
@@ -405,7 +404,9 @@
                             </div> --}}
 
                             {{-- //Registro de Proyeccionres de ventas --}}
-                            <div class="card card-outline card-primary" id="detalle_negocio">
+
+
+                            {{-- <div class="card card-outline card-primary" id="detalle_negocio">
                                 <div class="card-header">
                                     <h3 class="card-title">Proyecciones de ventas</h3>
                                 </div>
@@ -415,14 +416,14 @@
                                             <div class="form-group">
                                                 <label for="producto_descripcion_0">Descripción del producto</label>
                                                 <input type="text" id="producto_descripcion" class="form-control"
-                                                    required>
+                                                    >
                                             </div>
                                         </div>
 
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="unidad_medida">Unidad de medida</label>
-                                                <select name="unidad_medida" id="unidad_medida" class="form-control" required>
+                                                <select name="unidad_medida" id="unidad_medida" class="form-control" >
                                                     <option value="und" selected>Und</option>
                                                     <option value="kg">Kg</option>
                                                     <option value="m">m</option>
@@ -435,28 +436,28 @@
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="frecuencia_compra">Frecuencia de compra</label>
-                                                <input type="number" id="frecuencia_compra" name="frecuencia_compra" class="form-control" required>
+                                                <input type="number" id="frecuencia_compra" name="frecuencia_compra" class="form-control" >
                                             </div>
                                         </div>
                                         
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="unidades_compradas">Unidades compradas</label>
-                                                <input type="number" id="unidades_compradas" name="unidades_compradas" class="form-control" required>
+                                                <input type="number" id="unidades_compradas" name="unidades_compradas" class="form-control" >
                                             </div>
                                         </div>
 
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="unidades_vendidas">Unidades Vendidas</label>
-                                                <input type="number" id="unidades_vendidas" name="unidades_vendidas" class="form-control" required>
+                                                <input type="number" id="unidades_vendidas" name="unidades_vendidas" class="form-control" >
                                             </div>
                                         </div>
                                         
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="stock_verificado_inspeccion">Stock verificado inspección</label>
-                                                <input type="number" id="stock_verificado_inspeccion" name="stock_verificado_inspeccion" class="form-control" required>
+                                                <input type="number" id="stock_verificado_inspeccion" name="stock_verificado_inspeccion" class="form-control" >
                                             </div>
                                         </div>
                                         
@@ -464,13 +465,13 @@
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="precio_compra_0">Precio de Compra S/.</label>
-                                                <input type="number" id="precio_compra" class="form-control" required>
+                                                <input type="number" id="precio_compra" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="precio_venta_0">Precio de Venta S/.</label>
-                                                <input type="number" id="precio_venta" class="form-control" required>
+                                                <input type="number" id="precio_venta" class="form-control" >
                                             </div>
                                         </div>
                                         
@@ -508,11 +509,11 @@
                                     </div>
                                     
                                 </div>
-                            </div>
+                            </div> --}}
 
 
                             {{-- Regsitro de boletas solo para produccion y servicio --}}
-                            <div class="card card-outline card-primary" id="registro_boletas">
+                            {{-- <div class="card card-outline card-primary" id="registro_boletas">
                                 <div class="card-header">
                                     <h3 class="card-title">Registro de Boletas</h3>
                                 </div>
@@ -521,20 +522,20 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="numero_boleta">Numero de Boleta</label>
-                                                <input type="text" id="numero_boleta" class="form-control" required>
+                                                <input type="text" id="numero_boleta" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="monto_boleta">Monto Boleta</label>
-                                                <input type="number" id="monto_boleta" class="form-control" required>
+                                                <input type="number" id="monto_boleta" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="descuento_boleta">Descuento</label>
                                                 <input type="number" id="descuento_boleta" class="form-control"
-                                                    required>
+                                                    >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
@@ -558,11 +559,11 @@
                                         </tbody>
                                     </table>
                                 </div>
-                            </div>
+                            </div> --}}
 
 
                             {{-- //Registro de Gastos a Producir --}}
-                            <div class="card card-outline card-info" id="registro_gastos_producir">
+                            {{-- <div class="card card-outline card-info" id="registro_gastos_producir">
                                 <div class="card-header">
                                     <h3 class="card-title">Registro de Gastos a Producir</h3>
                                 </div>
@@ -571,31 +572,31 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label for="nombre_actividad">Nombre de actividad</label>
-                                                <input type="text" id="nombre_actividad" class="form-control" required>
+                                                <input type="text" id="nombre_actividad" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="cantidad_terreno">Cantidad de terreno (hectáreas)</label>
-                                                <input type="number" id="cantidad_terreno" class="form-control" required>
+                                                <input type="number" id="cantidad_terreno" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="cantidad_terreno">Produccion Total (Kg)</label>
-                                                <input type="number" id="cantidad_terreno" class="form-control" required>
+                                                <input type="number" id="cantidad_terreno" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="cantidad_terreno">Precio (kg)</label>
-                                                <input type="number" id="cantidad_terreno" class="form-control" required>
+                                                <input type="number" id="cantidad_terreno" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="cantidad_terreno">Total en soles</label>
-                                                <input type="number" id="cantidad_terreno" class="form-control" required>
+                                                <input type="number" id="cantidad_terreno" class="form-control" >
                                             </div>
                                         </div>
                                         
@@ -605,19 +606,19 @@
                                         <div class="col-md-5">
                                             <div class="form-group">
                                                 <label for="descripcion_gasto">Descripción del insumo</label>
-                                                <input type="text" id="descripcion_gasto_producir" class="form-control" required>
+                                                <input type="text" id="descripcion_gasto_producir" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="precio_unitario_gasto">Precio unitario</label>
-                                                <input type="number" id="precio_unitario_gasto_producir" class="form-control" required>
+                                                <input type="number" id="precio_unitario_gasto_producir" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="cantidad_gasto">Cantidad</label>
-                                                <input type="number" id="cantidad_gasto_producir" class="form-control" required>
+                                                <input type="number" id="cantidad_gasto_producir" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
@@ -641,15 +642,12 @@
                                             <!-- Las filas se agregarán aquí dinámicamente -->
                                         </tbody>
                                     </table>
-                                    {{-- <div class="text" style="background-color: #f0f0f0; padding: 10px;">
-                                        <strong>Total de Gastos Operativos:</strong> <span id="totalGatosOperativos"
-                                            style="font-size: 18px;">0.00</span>
-                                    </div> --}}
+                                  
                                 </div>
-                            </div>
+                            </div> --}}
 
                             {{-- //Registro de inventario del producto --}}
-                            <div class="card card-outline card-warning" id="inventario_producto">
+                            {{-- <div class="card card-outline card-warning" id="inventario_producto">
                                 <div class="card-header">
                                     <h3 class="card-title">Registro de inventario</h3>
                                 </div>
@@ -659,20 +657,20 @@
                                             <div class="form-group">
                                                 <label for="descripcion_producto">Descripción del producto</label>
                                                 <input type="text" id="descripcion_producto" class="form-control"
-                                                    required>
+                                                    >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="precio_unitario">Precio unitario</label>
-                                                <input type="number" id="precio_unitario" class="form-control" required>
+                                                <input type="number" id="precio_unitario" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="cantidad_producto">Cantidad</label>
                                                 <input type="number" id="cantidad_producto" class="form-control"
-                                                    required>
+                                                    >
                                             </div>
                                         </div>
 
@@ -703,14 +701,14 @@
                                             style="font-size: 18px;">0.00</span>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
 
 
 
 
 
                             {{-- //Registro de Gastos Operativos --}}
-                            <div class="card card-outline card-info">
+                            {{-- <div class="card card-outline card-info">
                                 <div class="card-header">
                                     <h3 class="card-title">Registro de Gastos Operativos</h3>
                                 </div>
@@ -720,20 +718,20 @@
                                             <div class="form-group">
                                                 <label for="descripcion_gasto">Descripción</label>
                                                 <input type="text" id="descripcion_gasto" class="form-control"
-                                                    required>
+                                                    >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="precio_unitario_gasto">Precio unitario</label>
                                                 <input type="number" id="precio_unitario_gasto" class="form-control"
-                                                    required>
+                                                    >
                                             </div>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-group">
                                                 <label for="cantidad_gasto">Cantidad</label>
-                                                <input type="number" id="cantidad_gasto" class="form-control" required>
+                                                <input type="number" id="cantidad_gasto" class="form-control" >
                                             </div>
                                         </div>
 
@@ -763,12 +761,12 @@
                                             style="font-size: 18px;">0.00</span>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
 
                             
 
                             {{-- Deudas Financieros --}}
-                            <div class="card card-outline card-warning">
+                            {{-- <div class="card card-outline card-warning">
                                 <div class="card-header" style="display:flex;">
                                     <h3 class="card-title">Deudas Financieras</h3>
                                 </div>
@@ -779,7 +777,7 @@
                                                 <label for="documento_identidad">Nombre de la entidad 1</label>
                                                 <input type="text" id="documento_identidad"
                                                     value="{{ old('documento_identidad') }}" name="documento_identidad"
-                                                    class="form-control" required>
+                                                    class="form-control" >
                                             </div>
                                         </div>
 
@@ -787,7 +785,7 @@
                                             <div class="form-group">
                                                 <label for="nombre">Saldo Capital</label>
                                                 <input type="text" value="{{ old('nombre') }}" name="nombre"
-                                                    id="nombre" class="form-control" required>
+                                                    id="nombre" class="form-control" >
                                             </div>
                                         </div>
 
@@ -795,14 +793,14 @@
                                             <div class="form-group">
                                                 <label for="nombre">Cuota</label>
                                                 <input type="text" value="{{ old('nombre') }}" name="nombre"
-                                                    id="nombre" class="form-control" required>
+                                                    id="nombre" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="nombre">Tiempo restante (meses)</label>
                                                 <input type="text" value="{{ old('nombre') }}" name="nombre"
-                                                    id="nombre" class="form-control" required>
+                                                    id="nombre" class="form-control" >
                                             </div>
                                         </div>
 
@@ -816,7 +814,7 @@
                                                 <label for="documento_identidad">Nombre de la entidad 1</label>
                                                 <input type="text" id="documento_identidad"
                                                     value="{{ old('documento_identidad') }}" name="documento_identidad"
-                                                    class="form-control" required>
+                                                    class="form-control" >
                                             </div>
                                         </div>
 
@@ -824,7 +822,7 @@
                                             <div class="form-group">
                                                 <label for="nombre">Saldo Capital</label>
                                                 <input type="text" value="{{ old('nombre') }}" name="nombre"
-                                                    id="nombre" class="form-control" required>
+                                                    id="nombre" class="form-control" >
                                             </div>
                                         </div>
 
@@ -832,14 +830,14 @@
                                             <div class="form-group">
                                                 <label for="nombre">Cuota</label>
                                                 <input type="text" value="{{ old('nombre') }}" name="nombre"
-                                                    id="nombre" class="form-control" required>
+                                                    id="nombre" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="nombre">Tiempo restante (meses)</label>
                                                 <input type="text" value="{{ old('nombre') }}" name="nombre"
-                                                    id="nombre" class="form-control" required>
+                                                    id="nombre" class="form-control" >
                                             </div>
                                         </div>
 
@@ -853,7 +851,7 @@
                                                 <label for="documento_identidad">Nombre de la entidad 1</label>
                                                 <input type="text" id="documento_identidad"
                                                     value="{{ old('documento_identidad') }}" name="documento_identidad"
-                                                    class="form-control" required>
+                                                    class="form-control" >
                                             </div>
                                         </div>
 
@@ -861,7 +859,7 @@
                                             <div class="form-group">
                                                 <label for="nombre">Saldo Capital</label>
                                                 <input type="text" value="{{ old('nombre') }}" name="nombre"
-                                                    id="nombre" class="form-control" required>
+                                                    id="nombre" class="form-control" >
                                             </div>
                                         </div>
 
@@ -869,14 +867,14 @@
                                             <div class="form-group">
                                                 <label for="nombre">Cuota</label>
                                                 <input type="text" value="{{ old('nombre') }}" name="nombre"
-                                                    id="nombre" class="form-control" required>
+                                                    id="nombre" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="nombre">Tiempo restante (meses)</label>
                                                 <input type="text" value="{{ old('nombre') }}" name="nombre"
-                                                    id="nombre" class="form-control" required>
+                                                    id="nombre" class="form-control" >
                                             </div>
                                         </div>
 
@@ -886,7 +884,7 @@
 
 
                                 </div>
-                            </div>
+                            </div> --}}
 
 
 
@@ -895,7 +893,7 @@
 
 
 
-                        <div id="grupalFields" style="display:none;">
+                        {{-- <div id="grupalFields" style="display:none;">
                             <div class="card card-outline card-warning">
                                 <div class="card-header">
                                     <h3 class="card-title">Datos del Credito</h3>
@@ -906,7 +904,7 @@
                                             <div class="form-group">
                                                 <label for="nombre">Nombre del Grupo</label>
                                                 <input type="text" value="{{ old('nombre_grupo') }}"
-                                                    name="nombre_grupo" id="nombre_grupo" class="form-control" required>
+                                                    name="nombre_grupo" id="nombre_grupo" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-4">
@@ -914,7 +912,7 @@
                                                 <label for="nombre">Cantidad de integrantes</label>
                                                 <input type="number" value="{{ old('cantidad_grupo') }}"
                                                     name="cantidad_grupo" id="cantidad_grupo" class="form-control"
-                                                    required>
+                                                    >
                                             </div>
                                         </div>
 
@@ -924,7 +922,7 @@
                                             <div class="form-group">
                                                 <label for="nombre">Recurrencia</label>
                                                 <select name="tipo_credito" id="tipo_credito" class="form-control"
-                                                    required onchange="toggleFields()">
+                                                     onchange="toggleFields()">
                                                     <option value="">Seleccione una opción...</option>
                                                     <option value="individual"
                                                         {{ old('tipo_credito') == 'individual' ? 'selected' : '' }}>
@@ -943,21 +941,21 @@
                                             <div class="form-group">
                                                 <label for="nombre">Tasa de interes (%)</label>
                                                 <input type="text" value="{{ old('tasa_interes') }}"
-                                                    name="tasa_interes" id="tasa_interes" class="form-control" required>
+                                                    name="tasa_interes" id="tasa_interes" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="nombre">Tiempo del credito</label>
                                                 <input type="text" value="{{ old('tiempo_credito') }}" name="nombre"
-                                                    id="tiempo_credito'" class="form-control" required>
+                                                    id="tiempo_credito'" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="nombre">Monto total (S/.)</label>
                                                 <input type="text" value="{{ old('monto') }}" name="nombre"
-                                                    id="monto" class="form-control" required>
+                                                    id="monto" class="form-control" >
                                             </div>
                                         </div>
                                     </div>
@@ -967,14 +965,14 @@
                                             <div class="form-group">
                                                 <label for="nombre">Descripcion de la Garantia</label>
                                                 <input type="text" value="{{ old('tasa_interes') }}"
-                                                    name="tasa_interes" id="" class="form-control" required>
+                                                    name="tasa_interes" id="" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="nombre">Valorización (S/.)</label>
                                                 <input type="text" value="{{ old('tasa_interes') }}"
-                                                    name="tasa_interes" id="" class="form-control" required>
+                                                    name="tasa_interes" id="" class="form-control" >
                                             </div>
                                         </div>
                                         <div class="col-md-3">
@@ -1014,7 +1012,7 @@
                                         <div class="col-md-8">
                                             <div class="input-group">
                                                 <input type="text" id="dni" name="dni"
-                                                    placeholder="Agregar por Dni" class="form-control" required>
+                                                    placeholder="Agregar por Dni" class="form-control" >
                                                 <div class="input-group-append">
                                                     <button class="btn btn-primary" type="button"
                                                         id="agregarButton">Agregar</button>
@@ -1048,7 +1046,7 @@
 
 
 
-                        </div>
+                        </div> --}}
 
                         <div class="row">
                             <div class="col-md-12">
@@ -1200,78 +1198,79 @@
             var grupalFields = document.getElementById('grupalFields');
             if (selection === 'microempresa' || selection === 'agricola' || selection === 'consumo') {
                 individualFields.style.display = 'block';
-                grupalFields.style.display = 'none';
-            } else if (selection === 'grupal') {
-                individualFields.style.display = 'none';
-                grupalFields.style.display = 'block';
-            } else {
-                individualFields.style.display = 'none';
-                grupalFields.style.display = 'none';
-            }
+                // grupalFields.style.display = 'none';
+            } 
+            // else if (selection === 'grupal') {
+            //     individualFields.style.display = 'none';
+            //     grupalFields.style.display = 'block';
+            // } else {
+            //     individualFields.style.display = 'none';
+            //     grupalFields.style.display = 'none';
+            // }
 
-            var selectionTipoCredito = document.getElementById('tipo_credito').value;
-            var inventario_producto = document.getElementById('inventario_producto');
+            // var selectionTipoCredito = document.getElementById('tipo_credito').value;
+            // var inventario_producto = document.getElementById('inventario_producto');
 
-            if (selectionTipoCredito === 'servicio') {
-                inventario_producto.style.display = 'none';
-            } else {
-                inventario_producto.style.display = 'block';
-            }
-
-
-            if (selectionTipoCredito === 'servicio' && selection === 'consumo') {
-                detalle_negocio.style.display = 'none';
-                registro_boletas.style.display = 'block';
-            } else {
-                detalle_negocio.style.display = 'block';
-                registro_boletas.style.display = 'none';
-            }
-
-            if (selection === 'agricola') {
-                registro_gastos_producir.style.display = 'block';
-                detalle_negocio.style.display = 'none';
-            } else {
-                registro_gastos_producir.style.display = 'none';
-            }
+            // if (selectionTipoCredito === 'servicio') {
+            //     inventario_producto.style.display = 'none';
+            // } else {
+            //     inventario_producto.style.display = 'block';
+            // }
 
 
+            // if (selectionTipoCredito === 'servicio' && selection === 'consumo') {
+            //     detalle_negocio.style.display = 'none';
+            //     registro_boletas.style.display = 'block';
+            // } else {
+            //     detalle_negocio.style.display = 'block';
+            //     registro_boletas.style.display = 'none';
+            // }
 
+            // if (selection === 'agricola') {
+            //     registro_gastos_producir.style.display = 'block';
+            //     detalle_negocio.style.display = 'none';
+            // } else {
+            //     registro_gastos_producir.style.display = 'none';
+            // }
 
 
 
-            var selection1 = document.getElementById('tipo_ingreso').value;
-            var botonDiario = document.getElementById('botonDiario');
-            var inputMensual = document.getElementById('inputMensual');
 
 
 
-            if (selection1 === 'diario') {
-                botonDiario.style.display = 'block'; // Muestra el botón para 'Diario'
-                inputMensual.style.display = 'none'; // Oculta el input para 'Mensual'
-            } else if (selection1 === 'mensual') {
-                botonDiario.style.display = 'none'; // Oculta el botón para 'Diario'
-                inputMensual.style.display = 'block'; // Muestra el input para 'Mensual'
-            } else {
-                // Esconde ambos si se selecciona la opción por defecto o ninguna
-                botonDiario.style.display = 'none';
-                inputMensual.style.display = 'none';
-            }
+            // var selection1 = document.getElementById('tipo_ingreso').value;
+            // var botonDiario = document.getElementById('botonDiario');
+            // var inputMensual = document.getElementById('inputMensual');
 
-            var selectionEgreso = document.getElementById('tipo_Egreso').value;
-            var botonDiarioEgresos = document.getElementById('botonDiarioEgresos');
-            var inputMensualEgresos = document.getElementById('inputMensualEgresos');
 
-            if (selectionEgreso === 'diario') {
-                botonDiarioEgresos.style.display = 'block'; // Muestra el botón para 'Diario'
-                inputMensualEgresos.style.display = 'none'; // Oculta el input para 'Mensual'
-            } else if (selectionEgreso === 'mensual') {
-                botonDiarioEgresos.style.display = 'none'; // Oculta el botón para 'Diario'
-                inputMensualEgresos.style.display = 'block'; // Muestra el input para 'Mensual'
-            } else {
-                // Esconde ambos si se selecciona la opción por defecto o ninguna
-                botonDiarioEgresos.style.display = 'none';
-                inputMensualEgresos.style.display = 'none';
-            }
+
+            // if (selection1 === 'diario') {
+            //     botonDiario.style.display = 'block'; // Muestra el botón para 'Diario'
+            //     inputMensual.style.display = 'none'; // Oculta el input para 'Mensual'
+            // } else if (selection1 === 'mensual') {
+            //     botonDiario.style.display = 'none'; // Oculta el botón para 'Diario'
+            //     inputMensual.style.display = 'block'; // Muestra el input para 'Mensual'
+            // } else {
+            //     // Esconde ambos si se selecciona la opción por defecto o ninguna
+            //     botonDiario.style.display = 'none';
+            //     inputMensual.style.display = 'none';
+            // }
+
+            // var selectionEgreso = document.getElementById('tipo_Egreso').value;
+            // var botonDiarioEgresos = document.getElementById('botonDiarioEgresos');
+            // var inputMensualEgresos = document.getElementById('inputMensualEgresos');
+
+            // if (selectionEgreso === 'diario') {
+            //     botonDiarioEgresos.style.display = 'block'; // Muestra el botón para 'Diario'
+            //     inputMensualEgresos.style.display = 'none'; // Oculta el input para 'Mensual'
+            // } else if (selectionEgreso === 'mensual') {
+            //     botonDiarioEgresos.style.display = 'none'; // Oculta el botón para 'Diario'
+            //     inputMensualEgresos.style.display = 'block'; // Muestra el input para 'Mensual'
+            // } else {
+            //     // Esconde ambos si se selecciona la opción por defecto o ninguna
+            //     botonDiarioEgresos.style.display = 'none';
+            //     inputMensualEgresos.style.display = 'none';
+            // }
 
 
 
@@ -1279,7 +1278,7 @@
 
         // Call toggleFields on document ready to handle form repopulation on page reload (with old inputs)
         document.addEventListener('DOMContentLoaded', toggleFields);
-    </script>
+    </script> 
 
 
 

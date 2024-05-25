@@ -5,20 +5,36 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class credito extends Model
+class Credito extends Model
 {
     use HasFactory;
 
-    protected $table = 'credito'; // Nombre de la tabla en la base de datos
+    protected $table = 'prestamos'; // Nombre de la tabla en la base de datos
 
     protected $fillable = [
-        'cliente_id',
-        'tipo_credito',
-        'monto',
-        'tasa_interes',
-        'fecha_inicio',
+        'tipo',
+        'producto',
+        'subproducto',
+        'destino',
+        'id_cliente',
+        'recurrencia',
+        'tasa',
+        'tiempo',
+        'monto_total',
+        'fecha_desembolso',
+        'fecha_registro',
         'fecha_fin',
+        'nombre_prestamo',
+        'cantidad_integrantes',
         'estado',
-        'activo'
+        'categoria',
+        'foto_grupal',
+        'activo',
+    ];
+
+    protected $dates = [
+        'fecha_desembolso',
+        'fecha_registro',
+        'fecha_fin',
     ];
 }

@@ -262,10 +262,6 @@
         </div>
     </div>
 
-
-
-
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var estadoCivilSelect = document.getElementById('estado_civil');
