@@ -102,10 +102,10 @@ class clienteController extends Controller
         $cliente->dni_conyugue = $request->dni_conyugue;
 
         // $path = $request->file('foto')->store('public/fotos_clientes');
-        if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
-            $path = $request->file('foto')->store('fotos_clientes'); // Guarda la foto en el storage público
-            $cliente->foto = $path; // Guarda la ruta del archivo en la base de datos
-        }
+        // if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
+        //     $path = $request->file('foto')->store('fotos_clientes'); // Guarda la foto en el storage público
+        //     $cliente->foto = $path; // Guarda la ruta del archivo en la base de datos
+        // }
 
         if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
             // Genera un UUID único para el nombre del archivo

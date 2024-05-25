@@ -107,8 +107,8 @@
                             <td>
                                 @if ($cliente->foto)
                                 <a href="{{ Storage::url($cliente->foto) }}" target="_blank">
-    <img src="{{ Storage::url($cliente->foto) }}" alt="Foto del Cliente" style="width: 50px; height: 50px;">
-</a>
+                                    <img src="{{ Storage::url($cliente->foto) }}" alt="Foto del Cliente" style="width: 50px; height: 50px;">
+                                </a>
 
                                 @else
                                 Sin Foto
