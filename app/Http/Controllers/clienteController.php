@@ -249,7 +249,9 @@ class clienteController extends Controller
     public function buscarPorDocumento(Request $request)
     {
         $dni = $request->input('documento_identidad');
-        $cliente = cliente::where('documento_identidad', $dni)->first(['nombre', 'telefono', 'email', 'direccion', 'direccion_laboral', 'profesion']);
+        $cliente = Cliente::where('documento_identidad', $dni)
+                      ->where('activo', 1) // Agregar condición para buscar solo clientes activos
+                      ->first(['nombre', 'telefono', 'email', 'direccion', 'direccion_laboral', 'profesion']);
 
         if ($cliente) {
             return response()->json($cliente);

@@ -24,6 +24,7 @@ class Credito extends Model
         'fecha_desembolso',
         'fecha_registro',
         'fecha_fin',
+        'descripcion_negocio',
         'nombre_prestamo',
         'cantidad_integrantes',
         'estado',
