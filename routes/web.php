@@ -41,10 +41,17 @@ Route::get('/admin/creditos/createnuevo', [App\Http\Controllers\creditoControlle
 Route::post('/admin/creditos', [App\Http\Controllers\creditoController::class, 'store'])->name('creditos.store')->middleware('auth');
 Route::get('/admin/creditos/aprobar', [App\Http\Controllers\creditoController::class, 'viewaprobar'])->name('creditos.aprobar')->middleware('auth');
 Route::get('/admin/creditos/supervisar', [App\Http\Controllers\creditoController::class, 'viewsupervisar'])->name('creditos.supervisar')->middleware('auth');
+Route::get('/admin/creditos/{id}/edit', [App\Http\Controllers\creditoController::class, 'edit'])->name('creditos.edit')->middleware('auth');
+Route::put('/admin/creditos/{id}', [App\Http\Controllers\creditoController::class, 'update'])->name('creditos.update')->middleware('auth');
+Route::delete('/admin/creditos/{id}', [App\Http\Controllers\creditoController::class, 'destroy'])->name('creditos.destroy')->middleware('auth');
+
+Route::get('/admin/cronograma/{id}/cuotas', [App\Http\Controllers\CronogramaController::class, 'vercuota'])->name('credito.cuotas')->middleware('auth');
 
 
 Route::get('/admin/creditos/buscardni', [App\Http\Controllers\clienteController::class, 'buscarPorDocumento'])->name('creditos.buscardni')->middleware('auth');
 Route::get('/admin/creditos/agregardni', [App\Http\Controllers\clienteController::class, 'agregarpordni'])->name('creditos.agregardni')->middleware('auth');
+// Route::get('/admin/usuarios/{id}', [App\Http\Controllers\UsuarioController::class, 'show'])->name('usuarios.show')->middleware('auth');
+
 
 
 Route::get('/admin/clientes', [App\Http\Controllers\clienteController::class, 'index'])->name('clientes.index')->middleware('auth');

@@ -390,7 +390,7 @@
                         {{-- //Registro de Proyeccionres de ventas --}}
 
 
-                        <div class="card card-outline card-primary" id="detalle_negocio">
+                        {{-- <div class="card card-outline card-primary" id="detalle_negocio">
                             <div class="card-header">
                                 <h3 class="card-title">Proyecciones de ventas</h3>
                             </div>
@@ -491,11 +491,11 @@
                                 </div>
 
                             </div>
-                        </div>
+                        </div> --}}
 
 
                         {{-- Regsitro de boletas solo para produccion y servicio --}}
-                        <div class="card card-outline card-primary" id="registro_boletas">
+                        {{-- <div class="card card-outline card-primary" id="registro_boletas">
                             <div class="card-header">
                                 <h3 class="card-title">Registro de Boletas</h3>
                             </div>
@@ -539,11 +539,11 @@
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </div> --}}
 
 
                         {{-- //Registro de Gastos a Producir --}}
-                        <div class="card card-outline card-info" id="registro_gastos_producir">
+                        {{-- <div class="card card-outline card-info" id="registro_gastos_producir">
                             <div class="card-header">
                                 <h3 class="card-title">Registro de Gastos a Producir</h3>
                             </div>
@@ -624,10 +624,10 @@
                                 </table>
 
                             </div>
-                        </div>
+                        </div> --}}
 
                         {{-- //Registro de inventario del producto --}}
-                        <div class="card card-outline card-warning" id="inventario_producto">
+                        {{-- <div class="card card-outline card-warning" id="inventario_producto">
                             <div class="card-header">
                                 <h3 class="card-title">Registro de inventario</h3>
                             </div>
@@ -676,14 +676,14 @@
                                     <strong>Total de inventario:</strong> <span id="totalMonto" style="font-size: 18px;">0.00</span>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
 
 
 
 
                         {{-- //Registro de Gastos Operativos --}}
-                        <div class="card card-outline card-info">
+                        {{-- <div class="card card-outline card-info">
                             <div class="card-header">
                                 <h3 class="card-title">Registro de Gastos Operativos</h3>
                             </div>
@@ -733,12 +733,12 @@
                                     <strong>Total de Gastos Operativos:</strong> <span id="totalGatosOperativos" style="font-size: 18px;">0.00</span>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
 
 
                         {{-- Deudas Financieros --}}
-                        <div class="card card-outline card-warning">
+                        {{-- <div class="card card-outline card-warning">
                             <div class="card-header" style="display:flex;">
                                 <h3 class="card-title">Deudas Financieras</h3>
                             </div>
@@ -845,7 +845,7 @@
 
 
 
-                    </div>
+                    </div> --}}
 
 
                     <div class="row">

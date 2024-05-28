@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\credito;
+use App\Models\Cronograma;
 
 class CronogramaController extends Controller
 {
@@ -61,4 +63,24 @@ class CronogramaController extends Controller
     {
         //
     }
+
+    // public function vercuota($id){
+    // Obtener todas las cuotas asociadas al crédito desde la tabla cronograma
+    public function vercuota($id){
+    // Obtener todas las cuotas asociadas al crédito desde la tabla cronograma
+    $cuotas = Cronograma::where('id_prestamo', $id)->get();
+
+    // Retornar la vista parcial con las cuotas
+    return view('admin.creditos.cuotas', compact('cuotas'));
+}
+
+    // $cuotas = Cronograma::where('id_prestamo', $id)->get();
+
+    // // Retornar las cuotas a la vista
+    // // Pasar los clientes activos a la vista
+    // // return view('admin.creditos.cuotas', ['cuotas' => $cuotas]);
+    // return view('admin.creditos.cuotas', compact('cuotas'));
+    // //
+    
+    // }
 }

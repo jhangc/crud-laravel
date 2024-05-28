@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Cronograma extends Model
 {
     use HasFactory;
+    protected $table = 'cronograma'; // Nombre de la tabla en la base de datos
 
     protected $fillable = [
         'fecha',
