@@ -1,249 +1,305 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="row">
-    <h1>Nuevo Prestamo</h1>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="card card-outline card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Datos Generales</h3>
+    <div class="row">
+        <h1>Nuevo Prestamo</h1>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card card-outline card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Datos Generales</h3>
 
-            </div>
-            <div class="card-body">
-                <form action="{{ url('/admin/creditos') }}" method="post" enctype="multipart/form-data">
-                    @csrf
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="tipo_credito">Tipos de créditos</label>
-                                <select name="tipo_credito" id="tipo_credito" class="form-control" required onchange="toggleFields()">
-                                    <option value="">Seleccione una opción...</option>
-                                    <option value="comercio" {{ old('tipo_credito') == 'comercio' ? 'selected' : '' }}>
-                                        Comercio</option>
-                                    <option value="servicio" {{ old('tipo_credito') == 'servicio' ? 'selected' : '' }}>
-                                        Servicio</option>
-                                    <option value="produccion" {{ old('tipo_credito') == 'produccion' ? 'selected' : '' }}>Producción</option>
-                                </select>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url('/admin/creditos') }}" method="post" enctype="multipart/form-data">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="tipo_credito">Tipos de créditos</label>
+                                    <select name="tipo_credito" id="tipo_credito" class="form-control" required
+                                        onchange="toggleFields()">
+                                        <option value="">Seleccione una opción...</option>
+                                        <option value="comercio" {{ old('tipo_credito') == 'comercio' ? 'selected' : '' }}>
+                                            Comercio</option>
+                                        <option value="servicio" {{ old('tipo_credito') == 'servicio' ? 'selected' : '' }}>
+                                            Servicio</option>
+                                        <option value="produccion"
+                                            {{ old('tipo_credito') == 'produccion' ? 'selected' : '' }}>Producción</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="tipo_producto">Productos</label>
+                                    <select name="tipo_producto" id="tipo_producto" class="form-control" required
+                                        onchange="toggleFields()">
+                                        <option value="">Seleccione una opción...</option>
+                                        <option value="microempresa"
+                                            {{ old('tipo_producto') == 'microempresa' ? 'selected' : '' }}>Microempresa
+                                        </option>
+                                        <option value="agricola" {{ old('tipo_producto') == 'agricola' ? 'selected' : '' }}>
+                                            Agrícola</option>
+                                        <option value="consumo" {{ old('tipo_producto') == 'consumo' ? 'selected' : '' }}>
+                                            Consumo</option>
+                                        <option value="grupal" {{ old('tipo_producto') == 'grupal' ? 'selected' : '' }}>
+                                            Grupal</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="subproducto">SubProductos</label>
+                                    <select name="subproducto" id="subproducto" class="form-control" required
+                                        onchange="toggleFields()">
+                                        <option value="">Seleccione una opción...</option>
+                                        <option value="credimujerpalmo"
+                                            {{ old('subproducto') == 'credimujerpalmo' ? 'selected' : '' }}>
+                                            Credimujerpalmo
+                                        </option>
+                                        <option value="creditoempresarial"
+                                            {{ old('subproducto') == 'creditoempresarial' ? 'selected' : '' }}>
+                                            Crédito empresarial
+                                        </option>
+                                        <option value="creditoempresarialhipotecario"
+                                            {{ old('subproducto') == 'creditoempresarialhipotecario' ? 'selected' : '' }}>
+                                            Crédito empresarial con garantía hipotecaria empresarial
+                                        </option>
+                                        <option value="palmoagro"
+                                            {{ old('subproducto') == 'palmoagro' ? 'selected' : '' }}>
+                                            Palmo agro con garantía hipotecaria agrícola
+                                        </option>
+                                        <option value="superconsumo"
+                                            {{ old('subproducto') == 'superconsumo' ? 'selected' : '' }}>
+                                            Superconsumo
+                                        </option>
+                                        <option value="superconsumohipotecario"
+                                            {{ old('subproducto') == 'superconsumohipotecario' ? 'selected' : '' }}>
+                                            Superconsumo con garantía hipotecaria
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="destino_credito">Destino de crédito</label>
+                                    <select name="destino_credito" id="destino_credito" class="form-control" required
+                                        onchange="toggleFields()">
+                                        <option value="">Seleccione una opción...</option>
+                                        <option value="activo fijo"
+                                            {{ old('destino_credito') == 'activo fijo' ? 'selected' : '' }}>
+                                            Activo fijo</option>
+                                        <option value="capital de trabajo"
+                                            {{ old('destino_credito') == 'capital de trabajo' ? 'selected' : '' }}>
+                                            Capital de trabajo</option>
+                                        <option value="consumo"
+                                            {{ old('destino_credito') == 'consumo' ? 'selected' : '' }}>
+                                            Consumo</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="tipo_producto">Productos</label>
-                                <select name="tipo_producto" id="tipo_producto" class="form-control" required onchange="toggleFields()">
-                                    <option value="">Seleccione una opción...</option>
-                                    <option value="microempresa" {{ old('tipo_producto') == 'microempresa' ? 'selected' : '' }}>Microempresa
-                                    </option>
-                                    <option value="agricola" {{ old('tipo_producto') == 'agricola' ? 'selected' : '' }}>
-                                        Agrícola</option>
-                                    <option value="consumo" {{ old('tipo_producto') == 'consumo' ? 'selected' : '' }}>
-                                        Consumo</option>
-                                    <option value="grupal" {{ old('tipo_producto') == 'grupal' ? 'selected' : '' }}>
-                                        Grupal</option>
-                                </select>
+
+
+
+
+
+
+                        {{-- //daots de los clientes --}}
+                        <div class="card card-outline card-warning">
+                            <div class="card-header">
+                                <h3 class="card-title">Datos del cliente</h3>
                             </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="subproducto">SubProductos</label>
-                                <select name="subproducto" id="subproducto" class="form-control" required onchange="toggleFields()">
-                                    <option value="">Seleccione una opción...</option>
-                                    <option value="credimujerpalmo" {{ old('subproducto') == 'credimujerpalmo' ? 'selected' : '' }}>
-                                        Credimujerpalmo
-                                    </option>
-                                    <option value="creditoempresarial" {{ old('subproducto') == 'creditoempresarial' ? 'selected' : '' }}>
-                                        Crédito empresarial
-                                    </option>
-                                    <option value="creditoempresarialhipotecario" {{ old('subproducto') == 'creditoempresarialhipotecario' ? 'selected' : '' }}>
-                                        Crédito empresarial con garantía hipotecaria empresarial
-                                    </option>
-                                    <option value="palmoagro" {{ old('subproducto') == 'palmoagro' ? 'selected' : '' }}>
-                                        Palmo agro con garantía hipotecaria agrícola
-                                    </option>
-                                    <option value="superconsumo" {{ old('subproducto') == 'superconsumo' ? 'selected' : '' }}>
-                                        Superconsumo
-                                    </option>
-                                    <option value="superconsumohipotecario" {{ old('subproducto') == 'superconsumohipotecario' ? 'selected' : '' }}>
-                                        Superconsumo con garantía hipotecaria
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="destino_credito">Destino de crédito</label>
-                                <select name="destino_credito" id="destino_credito" class="form-control" required onchange="toggleFields()">
-                                    <option value="">Seleccione una opción...</option>
-                                    <option value="activo fijo" {{ old('destino_credito') == 'activo fijo' ? 'selected' : '' }}>
-                                        Activo fijo</option>
-                                    <option value="capital de trabajo" {{ old('destino_credito') == 'capital de trabajo' ? 'selected' : '' }}>
-                                        Capital de trabajo</option>
-                                    <option value="consumo" {{ old('destino_credito') == 'consumo' ? 'selected' : '' }}>
-                                        Consumo</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-
-
-
-
-                    {{-- //daots de los clientes --}}
-                    <div class="card card-outline card-warning">
-                        <div class="card-header">
-                            <h3 class="card-title">Datos del cliente</h3>
-                        </div>
-                        <div class="card-body">
-                            <div id="individual1Fields">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label for="documento_identidad">Documento de identidad</label>
-                                            <div class="input-group">
-                                                <input type="text" id="documento_identidad" value="{{ old('documento_identidad') }}" name="documento_identidad" class="form-control" required>
-                                                <div class="input-group-append">
-                                                    <button class="btn btn-outline-secondary" type="button" id="buscarCliente"><i class="fas fa-search"></i> Buscar </button>
+                            <div class="card-body">
+                                <div id="individual1Fields">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="documento_identidad">Documento de identidad</label>
+                                                <div class="input-group">
+                                                    <input type="text" id="documento_identidad"
+                                                        value="{{ old('documento_identidad') }}" name="documento_identidad"
+                                                        class="form-control" required>
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-outline-secondary" type="button"
+                                                            id="buscarCliente"><i class="fas fa-search"></i> Buscar
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="nombre">Nombre del cliente</label>
-                                            <input type="text" value="{{ old('nombre') }}" name="nombre" id="nombre" class="form-control" required>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="nombre">Nombre del cliente</label>
+                                                <input type="text" value="{{ old('nombre') }}" name="nombre"
+                                                    id="nombre" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="profesion">Profesión</label>
+                                                <input type="text" value="{{ old('profesion') }}" name="profesion"
+                                                    id="profesion" class="form-control" required>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="profesion">Profesión</label>
-                                            <input type="text" value="{{ old('profesion') }}" name="profesion" id="profesion" class="form-control" required>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="telefono">Teléfono</label>
+                                                <input type="text" value="{{ old('telefono') }}" name="telefono"
+                                                    id="telefono" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="email">Correo electrónico</label>
+                                                <input type="email" value="{{ old('email') }}" name="email"
+                                                    id="email" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="direccion">Dirección</label>
+                                                <input type="text" value="{{ old('direccion') }}" name="direccion"
+                                                    id="direccion" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="direccion_laboral">Dirección laboral</label>
+                                                <input type="text" value="{{ old('direccion_laboral') }}"
+                                                    name="direccion_laboral" id="direccion_laboral" class="form-control">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="telefono">Teléfono</label>
-                                            <input type="text" value="{{ old('telefono') }}" name="telefono" id="telefono" class="form-control">
+                                <div id="grupal1Fields" style="display:none;">
+
+                                    <!-- Campos para crédito GRUPAL -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="nombre_prestamo">Nombre del Grupo</label>
+                                                <input type="text" value="{{ old('nombre_prestamo') }}"
+                                                    name="nombre_prestamo" id="nombre_prestamo" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="cantidad_grupo">Cantidad de integrantes</label>
+                                                <input type="number" value="{{ old('cantidad_grupo') }}"
+                                                    name="cantidad_grupo" id="cantidad_grupo" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="foto_grupal">Foto Grupal</label>
+                                                <input type="file" name="foto_grupal" accept="image/*"
+                                                    class="form-control-file">
+                                                @error('foto_grupal')
+                                                    <small style="color: red">{{ $message }}</small>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="input-group">
+                                                <input type="text" id="dni" name="dni"
+                                                    placeholder="Agregar por Dni" class="form-control">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-primary" type="button"
+                                                        id="agregarButton">Agregar</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="email">Correo electrónico</label>
-                                            <input type="email" value="{{ old('email') }}" name="email" id="email" class="form-control">
-                                        </div>
-                                    </div>
+                                    <hr>
+                                    <table class="table table-striped table-hover table-bordered" id="datosTabla">
+                                        <thead class="thead-blue">
+                                            <tr>
+                                                
+                                                <th>Nombre del cliente</th>
+                                                <th>DNI</th>
+                                                <th>Profesión</th>
+                                                <th>Teléfono</th>
+                                                <th>Dirección</th>
+                                                <th>monto</th>
+                                                <th>Acciones</th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tablaCuerpo">
+                                            <!-- Las filas se agregarán aquí dinámicamente -->
+                                        </tbody>
+                                    </table>
                                 </div>
 
-                                <div class="row">
+                                <!-- <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="direccion">Dirección</label>
-                                            <input type="text" value="{{ old('direccion') }}" name="direccion" id="direccion" class="form-control" required>
+                                            <label for="direccion">Ingresos</label>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <select name="tipo_ingreso" id="tipo_ingreso" class="form-control" required onchange="toggleFields()">
+                                                        <option value="">Seleccione una opción...</option>
+                                                        <option value="diario" {{ old('tipo_credito') == 'diario' ? 'selected' : '' }}>
+                                                            Diario</option>
+                                                        <option value="mensual" {{ old('tipo_credito') == 'mensual' ? 'selected' : '' }}>
+                                                            Mensual</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <input type="text" value="{{ old('direccion') }}" name="direccion" id="inputMensual" class="form-control" required placeholder="monto en S/.">
+                                                    <button type="button" class="btn btn-primary" id="botonDiario" data-toggle="modal" data-target="#miModal"><i class="bi bi-floppy2"></i> Registrar Diario</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="direccion_laboral">Dirección laboral</label>
-                                            <input type="text" value="{{ old('direccion_laboral') }}" name="direccion_laboral" id="direccion_laboral" class="form-control">
+                                            <label for="direccion">Egresos</label>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <select name="tipo_Egreso" id="tipo_Egreso" class="form-control" onchange="toggleFields()">
+                                                        <option value="">Seleccione una opción...</option>
+                                                        <option value="diario" {{ old('tipo_Egreso') == 'diario' ? 'selected' : '' }}>
+                                                            Diario</option>
+                                                        <option value="mensual" {{ old('tipo_Egreso') == 'mensual' ? 'selected' : '' }}>
+                                                            Mensual</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <input type="text" value="{{ old('inputMensualEgresos') }}" name="inputMensualEgresos" id="inputMensualEgresos" class="form-control" placeholder="monto en S/.">
+                                                    <button type="button" class="btn btn-primary" id="botonDiarioEgresos" data-toggle="modal" data-target="#miModalEgresos"><i class="bi bi-floppy2"></i>
+                                                        Registrar Diario</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
+
+
+
                             </div>
-
-                            <div id="grupal1Fields" style="display:none;">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <div class="input-group">
-                                            <input type="text" id="dni" name="dni" placeholder="Agregar por Dni" class="form-control">
-                                            <div class="input-group-append">
-                                                <button class="btn btn-primary" type="button" id="agregarButton">Agregar</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <hr>
-                                <table class="table table-striped table-hover table-bordered" id="datosTabla">
-                                    <thead class="thead-blue">
-                                        <tr>
-                                            <th>Nombre del cliente</th>
-                                            <th>Profesión</th>
-                                            <th>Teléfono</th>
-                                            <th>Dirección</th>
-                                            <th>monto</th>
-                                            <th>Acciones</th>
-
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tablaCuerpo">
-                                        <!-- Las filas se agregarán aquí dinámicamente -->
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="direccion">Ingresos</label>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <select name="tipo_ingreso" id="tipo_ingreso" class="form-control" required onchange="toggleFields()">
-                                                    <option value="">Seleccione una opción...</option>
-                                                    <option value="diario" {{ old('tipo_credito') == 'diario' ? 'selected' : '' }}>
-                                                        Diario</option>
-                                                    <option value="mensual" {{ old('tipo_credito') == 'mensual' ? 'selected' : '' }}>
-                                                        Mensual</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="col-md-6">
-                                                <input type="text" value="{{ old('direccion') }}" name="direccion" id="inputMensual" class="form-control" required placeholder="monto en S/.">
-                                                <button type="button" class="btn btn-primary" id="botonDiario" data-toggle="modal" data-target="#miModal"><i class="bi bi-floppy2"></i> Registrar Diario</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="direccion">Egresos</label>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <select name="tipo_Egreso" id="tipo_Egreso" class="form-control" onchange="toggleFields()">
-                                                    <option value="">Seleccione una opción...</option>
-                                                    <option value="diario" {{ old('tipo_Egreso') == 'diario' ? 'selected' : '' }}>
-                                                        Diario</option>
-                                                    <option value="mensual" {{ old('tipo_Egreso') == 'mensual' ? 'selected' : '' }}>
-                                                        Mensual</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="col-md-6">
-                                                <input type="text" value="{{ old('inputMensualEgresos') }}" name="inputMensualEgresos" id="inputMensualEgresos" class="form-control" placeholder="monto en S/.">
-                                                <button type="button" class="btn btn-primary" id="botonDiarioEgresos" data-toggle="modal" data-target="#miModalEgresos"><i class="bi bi-floppy2"></i>
-                                                    Registrar Diario</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
-
-
-
                         </div>
-
-
-
 
                         {{-- //Datos del credito --}}
                         <div class="card card-outline card-secondary">
@@ -251,80 +307,67 @@
                                 <h3 class="card-title">Datos del Credito</h3>
                             </div>
                             <div class="card-body">
-
-                                <!-- Campos para crédito GRUPAL -->
-                                <div id="grupalFields" style="display:none;">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="nombre_prestamo">Nombre del Grupo</label>
-                                                <input type="text" value="{{ old('nombre_prestamo') }}" name="nombre_prestamo" id="nombre_prestamo" class="form-control">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label for="cantidad_grupo">Cantidad de integrantes</label>
-                                                <input type="number" value="{{ old('cantidad_grupo') }}" name="cantidad_grupo" id="cantidad_grupo" class="form-control">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label for="foto_grupal">Foto Grupal</label>
-                                                <input type="file" name="foto_grupal" accept="image/*" class="form-control-file">
-                                                @error('foto_grupal')
-                                                <small style="color: red">{{ $message }}</small>
-                                                @enderror
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-
-
-
-
                                 <div class="row">
 
                                     <div class="col-md-6" id="credito_individual">
                                         <div class="form-group">
                                             <label for="descripcion_negocio">Descripción del negocio</label>
-                                            <input type="text" value="{{ old('descripcion_negocio') }}" name="descripcion_negocio" id="descripcion_negocio" class="form-control">
+                                            <input type="text" value="{{ old('descripcion_negocio') }}"
+                                                name="descripcion_negocio" id="descripcion_negocio" class="form-control">
                                         </div>
                                     </div>
 
                                     <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="recurrencia">Recurrencia</label>
-                                            <select name="recurrencia" id="recurrencia" class="form-control" required onchange="toggleFields()">
+                                            <select name="recurrencia" id="recurrencia" class="form-control" required
+                                                onchange="toggleFields()">
                                                 <option value="">Seleccione una opción...</option>
-                                                <option value="mensual" {{ old('recurrencia') == 'mensual' ? 'selected' : '' }}>Mensual</option>
-                                                <option value="quincenal" {{ old('recurrencia') == 'quincenal' ? 'selected' : '' }}>Quincenal</option>
+                                                <option value="mensual"
+                                                    {{ old('recurrencia') == 'mensual' ? 'selected' : '' }}>Mensual
+                                                </option>
+                                                <option value="quincenal"
+                                                    {{ old('recurrencia') == 'quincenal' ? 'selected' : '' }}>Quincenal
+                                                </option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="tasa_interes">Tasa de interés (%)</label>
-                                            <input type="text" value="{{ old('tasa_interes') }}" name="tasa_interes" id="tasa_interes" class="form-control" required>
+                                            <label for="tasa_interes">Tasa de interés anual (%)</label>
+                                            <input type="text" value="{{ old('tasa_interes') }}" name="tasa_interes"
+                                                id="tasa_interes" class="form-control" required>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="tiempo_credito">Tiempo del crédito</label>
-                                            <input type="text" value="{{ old('tiempo_credito') }}" name="tiempo_credito" id="tiempo_credito" class="form-control" required>
+                                            <input type="text" value="{{ old('tiempo_credito') }}"
+                                                name="tiempo_credito" id="tiempo_credito" class="form-control" required>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="fecha_desembolso">Fecha de desembolso</label>
-                                            <input type="date" value="{{ old('fecha_desembolso') }}" name="fecha_desembolso" id="fecha_desembolso" class="form-control" required>
+                                            <input type="date" value="{{ old('fecha_desembolso') }}"
+                                                name="fecha_desembolso" id="fecha_desembolso" class="form-control"
+                                                required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="periodo_gracia_dias">Periodo de Gracia (días)</label>
+                                            <input type="number" value="{{ old('periodo_gracia_dias') }}"
+                                                name="periodo_gracia_dias" id="periodo_gracia_dias" class="form-control"
+                                                required>
                                         </div>
                                     </div>
 
                                     <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="monto">Monto total (S/.)</label>
-                                            <input type="text" value="{{ old('monto') }}" name="monto" id="monto" class="form-control" required>
+                                            <input type="text" value="{{ old('monto') }}" name="monto"
+                                                id="monto" class="form-control" required>
                                         </div>
                                     </div>
                                 </div>
@@ -336,55 +379,55 @@
 
                         {{-- //Datos del garantia --}}
                         <!-- <div class="card card-outline card-secondary">
-                        <div class="card-header">
-                            <h3 class="card-title">Datos del la Garantia</h3>
-                        </div>
-                        <div class="card-body">
+                            <div class="card-header">
+                                <h3 class="card-title">Datos del la Garantia</h3>
+                            </div>
+                            <div class="card-body">
 
-                            <div class="row">
+                                <div class="row">
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="descripcion_garantia">Descripcion de la Garantia</label>
-                                        <input type="text" name="descripcion_garantia" id="descripcion_garantia" class="form-control">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="descripcion_garantia">Descripcion de la Garantia</label>
+                                            <input type="text" name="descripcion_garantia" id="descripcion_garantia" class="form-control">
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="valor_mercado">Valor del mercado (S/.)</label>
-                                        <input type="number" name="valor_mercado" id="valor_mercado" class="form-control">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="valor_mercado">Valor del mercado (S/.)</label>
+                                            <input type="number" name="valor_mercado" id="valor_mercado" class="form-control">
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="valor_realizacion">Valor de realización (S/.)</label>
-                                        <input type="number" name="valor_realizacion" id="valor_realizacion" class="form-control">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="valor_realizacion">Valor de realización (S/.)</label>
+                                            <input type="number" name="valor_realizacion" id="valor_realizacion" class="form-control">
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="valor_gravamen">Valor de Gravamen (S/.)</label>
-                                        <input type="number" name="valor_gravamen" id="valor_gravamen" class="form-control">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="valor_gravamen">Valor de Gravamen (S/.)</label>
+                                            <input type="number" name="valor_gravamen" id="valor_gravamen" class="form-control">
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="archivo_garantia">Archivo en pdf</label>
-                                        <input type="file" name="archivo_garantia" accept=".pdf" class="form-control-file">
-                                        @error('archivo_garantia')
-                                        <small style="color: red">{{ $message }}</small>
-                                        @enderror
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="archivo_garantia">Archivo en pdf</label>
+                                            <input type="file" name="archivo_garantia" accept=".pdf" class="form-control-file">
+                                            @error('archivo_garantia')
+        <small style="color: red">{{ $message }}</small>
+    @enderror
+                                        </div>
                                     </div>
+
+
                                 </div>
 
 
                             </div>
-
-
-                        </div>
-                    </div> -->
+                        </div> -->
 
 
                         {{-- //Registro de Proyeccionres de ventas --}}
@@ -848,174 +891,177 @@
                     </div> --}}
 
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <a href="{{ url('admin/creditos') }}" class="btn btn-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-primary"><i class="bi bi-floppy2"></i>
-                                Guardar registro</button>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <a href="{{ url('admin/creditos') }}" class="btn btn-secondary">Cancelar</a>
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-floppy2"></i>
+                                    Guardar registro</button>
+                            </div>
                         </div>
-                    </div>
-                    <hr>
+                        <hr>
 
-                </form>
+                    </form>
+                </div>
+
             </div>
 
         </div>
-
     </div>
-</div>
 
 
-{{-- para filtrar por tipo de credito --}}
-<script>
-    function toggleFields() {
-        var selection = document.getElementById('tipo_producto').value;
-        var credito_individual = document.getElementById('credito_individual');
-        var grupalFields = document.getElementById('grupalFields');
-        var grupal1Fields = document.getElementById('grupal1Fields');
-        var individual1Fields = document.getElementById('individual1Fields');
+    {{-- para filtrar por tipo de credito --}}
+    <script>
+        function toggleFields() {
+            var selection = document.getElementById('tipo_producto').value;
+            var credito_individual = document.getElementById('credito_individual');
+            // var grupalFields = document.getElementById('grupalFields');
+            var grupal1Fields = document.getElementById('grupal1Fields');
+            var individual1Fields = document.getElementById('individual1Fields');
 
-        if (selection === 'grupal') {
-            grupalFields.style.display = 'block';
-            grupal1Fields.style.display = 'block';
-            credito_individual.style.display = 'none';
-            individual1Fields.style.display = 'none';
-        } else {
-            grupalFields.style.display = 'none';
-            grupal1Fields.style.display = 'none';
-            credito_individual.style.display = 'block';
-            individual1Fields.style.display = 'block';
+            if (selection === 'grupal') {
+                // grupalFields.style.display = 'block';
+                grupal1Fields.style.display = 'block';
+                credito_individual.style.display = 'none';
+                individual1Fields.style.display = 'none';
+            } else {
+                // grupalFields.style.display = 'none';
+                grupal1Fields.style.display = 'none';
+                credito_individual.style.display = 'block';
+                individual1Fields.style.display = 'block';
+
+            }
+
+
+            var selectionTipoCredito = document.getElementById('tipo_credito').value;
+            var inventario_producto = document.getElementById('inventario_producto');
+
+            if (selectionTipoCredito === 'servicio') {
+                inventario_producto.style.display = 'none';
+            } else {
+                inventario_producto.style.display = 'block';
+            }
+
+
+            if (selectionTipoCredito === 'servicio' && selection === 'consumo') {
+                detalle_negocio.style.display = 'none';
+                registro_boletas.style.display = 'block';
+            } else {
+                detalle_negocio.style.display = 'block';
+                registro_boletas.style.display = 'none';
+            }
+
+            if (selection === 'agricola') {
+                registro_gastos_producir.style.display = 'block';
+                detalle_negocio.style.display = 'none';
+            } else {
+                registro_gastos_producir.style.display = 'none';
+            }
 
         }
 
+        document.addEventListener('DOMContentLoaded', toggleFields);
+    </script>
 
-        var selectionTipoCredito = document.getElementById('tipo_credito').value;
-        var inventario_producto = document.getElementById('inventario_producto');
-
-        if (selectionTipoCredito === 'servicio') {
-            inventario_producto.style.display = 'none';
-        } else {
-            inventario_producto.style.display = 'block';
-        }
-
-
-        if (selectionTipoCredito === 'servicio' && selection === 'consumo') {
-           detalle_negocio.style.display = 'none';
-           registro_boletas.style.display = 'block';
-        } else {
-           detalle_negocio.style.display = 'block';
-           registro_boletas.style.display = 'none';
-        }
-
-        if (selection === 'agricola') {
-          registro_gastos_producir.style.display = 'block';
-          detalle_negocio.style.display = 'none';
-          } else {
-        registro_gastos_producir.style.display = 'none';
-        }
-
-    }
-
-    document.addEventListener('DOMContentLoaded', toggleFields);
-</script>
-
-{{-- busca por cliente --}}
-<script>
-    $(document).ready(function() {
-        console.log("presionar", )
-        $('#buscarCliente').click(function() {
-            var documentoIdentidad = $('#documento_identidad').val(); // Captura el valor del DNI
-            console.log("Intentando buscar cliente con DNI:",
-                documentoIdentidad); // Muestra el valor enviado en consola
-            $.ajax({
-                url: '{{route('creditos.buscardni')}}',
-                type: 'GET',
-                data: {
-                    documento_identidad: documentoIdentidad
-                },
-                success: function(response) {
-                    $('#nombre').val(response.nombre || ''); // Ya existente
-                    $('#telefono').val(response.telefono || ''); // Nuevo campo
-                    $('#email').val(response.email || ''); // Nuevo campo
-                    $('#direccion').val(response.direccion || ''); // Nuevo campo
-                    $('#direccion_laboral').val(response.direccion_laboral || ''); // Nuevo campo
-                    $('#profesion').val(response.profesion || ''); // Nuevo campo
-                },
-                error: function(xhr) {
-                    console.error("Error al recuperar información: " + xhr.statusText);
-                    // Limpiar todos los campos si hay un error
-                    $('#nombre, #telefono, #email, #direccion, #direccion_laboral,#profesion').val('');
-                }
-            });
-        });
-    });
-</script>
-
-<script>
-    $(document).ready(function() {
-        let cantidadMaxima = 0; // Variable para almacenar el máximo de personas permitidas
-        let contadorPersonas = 0; // Contador de personas agregadas
-
-        // Actualizar la cantidad máxima cada vez que cambie el input
-        $('#cantidad_grupo').change(function() {
-            cantidadMaxima = parseInt($(this).val(), 10); // Actualiza la cantidad máxima permitida
-            validarBotonAgregar(); // Validar si el botón debe estar habilitado o deshabilitado
-        });
-
-        $('#agregarButton').click(function() {
-            if (contadorPersonas < cantidadMaxima) {
-                var documentoIdentidad = $('#dni').val();
+    {{-- busca por cliente individual --}}
+    <script>
+        $(document).ready(function() {
+            console.log("presionar", )
+            $('#buscarCliente').click(function() {
+                var documentoIdentidad = $('#documento_identidad').val(); // Captura el valor del DNI
+                console.log("Intentando buscar cliente con DNI:",
+                    documentoIdentidad); // Muestra el valor enviado en consola
                 $.ajax({
-                    url: '{{route('creditos.buscardni')}}',
+                    url: '{{ route('creditos.buscardni') }}',
                     type: 'GET',
                     data: {
                         documento_identidad: documentoIdentidad
                     },
                     success: function(response) {
-                        $('#datosTabla tbody').append(
-                            '<tr>' +
-                            '<td>' + (response.nombre || '') + '</td>' +
-                            '<td>' + (response.profesion || '') + '</td>' +
-                            '<td>' + (response.telefono || '') + '</td>' +
-                            '<td>' + (response.direccion || '') + '</td>' +
-                            '<td>' + ('200') + '</td>' +
-                            '<td>' +
-                            '<button class="btn btn-danger btn-sm removeRow"><i class="fa fa-trash"></i></button>' +
-                            '</td>' +
-                            '</tr>'
-                        ); // Añade la fila al final del cuerpo de la tabla
-                        $('#dni').val(''); // Limpiar campo DNI
-                        contadorPersonas++; // Incrementar el contador de personas
-                        validarBotonAgregar(); // Revalidar el estado del botón
+                        $('#nombre').val(response.nombre || ''); // Ya existente
+                        $('#telefono').val(response.telefono || ''); // Nuevo campo
+                        $('#email').val(response.email || ''); // Nuevo campo
+                        $('#direccion').val(response.direccion || ''); // Nuevo campo
+                        $('#direccion_laboral').val(response.direccion_laboral ||
+                        ''); // Nuevo campo
+                        $('#profesion').val(response.profesion || ''); // Nuevo campo
                     },
                     error: function(xhr) {
-                        console.error("Error: " + xhr.statusText);
+                        console.error("Error al recuperar información: " + xhr.statusText);
+                        // Limpiar todos los campos si hay un error
+                        $('#nombre, #telefono, #email, #direccion, #direccion_laboral,#profesion')
+                            .val('');
                     }
                 });
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            let cantidadMaxima = 0; // Variable para almacenar el máximo de personas permitidas
+            let contadorPersonas = 0; // Contador de personas agregadas
+
+            // Actualizar la cantidad máxima cada vez que cambie el input
+            $('#cantidad_grupo').change(function() {
+                cantidadMaxima = parseInt($(this).val(), 10); // Actualiza la cantidad máxima permitida
+                validarBotonAgregar(); // Validar si el botón debe estar habilitado o deshabilitado
+            });
+
+            $('#agregarButton').click(function() {
+                var documentoIdentidad = $('#dni').val();
+                console.log("Intentando agregar cliente con DNI:", documentoIdentidad);
+                if (contadorPersonas < cantidadMaxima) {
+                    var documentoIdentidad = $('#dni').val();
+                    $.ajax({
+                        url: '{{ route('creditos.buscardni') }}',
+                        type: 'GET',
+                        data: {
+                            documento_identidad: documentoIdentidad
+                        },
+                        success: function(response) {
+                            $('#datosTabla tbody').append(
+                                '<tr>' +
+                                '<td>' +  (response.nombre || '') + '</td>' +
+                                '<td>' + documentoIdentidad + '</td>' +
+                                '<td>' + (response.profesion || '') + '</td>' +
+                                '<td>' + (response.telefono || '') + '</td>' +
+                                '<td>' + (response.direccion || '') + '</td>' +
+                                '<td>' + ('200') + '</td>' +
+                                '<td>' +
+                                '<button class="btn btn-danger btn-sm removeRow"><i class="fa fa-trash"></i></button>' +
+                                '</td>' +
+                                '</tr>'
+                            ); // Añade la fila al final del cuerpo de la tabla
+                            $('#dni').val(''); // Limpiar campo DNI
+                            contadorPersonas++; // Incrementar el contador de personas
+                            validarBotonAgregar(); // Revalidar el estado del botón
+                        },
+                        error: function(xhr) {
+                            console.error("Error: " + xhr.statusText);
+                        }
+                    });
+                }
+            });
+
+            $('#datosTabla').on('click', '.removeRow', function() {
+                $(this).closest('tr').remove(); // Elimina la fila más cercana en el DOM a este botón
+                contadorPersonas--; // Decrementa el contador al quitar una persona
+                validarBotonAgregar(); // Revisa nuevamente el estado del botón Agregar
+            });
+
+            function validarBotonAgregar() {
+                if (contadorPersonas >= cantidadMaxima) {
+                    $('#agregarButton').prop('disabled', true); // Deshabilitar el botón si se alcanza el máximo
+                } else {
+                    $('#agregarButton').prop('disabled',
+                        false); // Habilitar el botón si aún no se alcanza el máximo
+                }
             }
         });
+    </script>
 
-
-
-        $('#datosTabla').on('click', '.removeRow', function() {
-            $(this).closest('tr').remove(); // Elimina la fila más cercana en el DOM a este botón
-            contadorPersonas--; // Decrementa el contador al quitar una persona
-            validarBotonAgregar(); // Revisa nuevamente el estado del botón Agregar
-        });
-
-        function validarBotonAgregar() {
-            if (contadorPersonas >= cantidadMaxima) {
-                $('#agregarButton').prop('disabled', true); // Deshabilitar el botón si se alcanza el máximo
-            } else {
-                $('#agregarButton').prop('disabled',
-                    false); // Habilitar el botón si aún no se alcanza el máximo
-            }
-        }
-    });
-</script>
-
-{{-- //para agregar fila --}}
-<script>
+    {{-- //para agregar fila --}}
+    <script>
         function agregarFila(tablaId, campos) {
             var tabla = document.getElementById(tablaId);
             var fila = tabla.insertRow();
@@ -1069,39 +1115,41 @@
             var precioCompra = document.getElementById('precio_compra').value;
             var precioVenta = document.getElementById('precio_venta').value;
             var inventario_valorizado = stockVerificadoInspeccion * precioCompra;
-            var uni_vendidad_mes = (30/frecuenciaCompra)*unidadesVendidas;
+            var uni_vendidad_mes = (30 / frecuenciaCompra) * unidadesVendidas;
             var ingresos_mes_venta = uni_vendidad_mes * precioVenta;
-            var uni_compra_mes = (30/frecuenciaCompra)*unidadesCompradas;
-            var ingresos_mes_compra = uni_compra_mes*precioCompra;
+            var uni_compra_mes = (30 / frecuenciaCompra) * unidadesCompradas;
+            var ingresos_mes_compra = uni_compra_mes * precioCompra;
             var margen_bruto_mensual = ingresos_mes_venta - ingresos_mes_compra;
-            var margen = (margen_bruto_mensual / ingresos_mes_venta)*100;
+            var margen = (margen_bruto_mensual / ingresos_mes_venta) * 100;
 
             agregarFila('tablaCuerpo', [
-                descripcion, 
-                unidadMedida, 
-                frecuenciaCompra, 
-                unidadesCompradas, 
-                unidadesVendidas, 
-                stockVerificadoInspeccion, 
-                precioCompra, 
-                precioVenta, 
-                inventario_valorizado.toFixed(2), 
-                uni_vendida_mes.toFixed(2), 
-                ingresos_mes_venta.toFixed(2), 
-                uni_compra_mes.toFixed(2), 
-                ingresos_mes_compra.toFixed(2), 
-                margen_bruto_mensual.toFixed(2), 
-                (margen).toFixed(2) + '%']);
+                descripcion,
+                unidadMedida,
+                frecuenciaCompra,
+                unidadesCompradas,
+                unidadesVendidas,
+                stockVerificadoInspeccion,
+                precioCompra,
+                precioVenta,
+                inventario_valorizado.toFixed(2),
+                uni_vendida_mes.toFixed(2),
+                ingresos_mes_venta.toFixed(2),
+                uni_compra_mes.toFixed(2),
+                ingresos_mes_compra.toFixed(2),
+                margen_bruto_mensual.toFixed(2),
+                (margen).toFixed(2) + '%'
+            ]);
 
             limpiarCamposEntrada([
-                'producto_descripcion', 
-                'unidad_medida', 
-                'frecuencia_compra', 
-                'unidades_compradas', 
-                'unidades_vendidas', 
-                'stock_verificado_inspeccion', 
-                'precio_compra', 
-                'precio_venta' ]);
+                'producto_descripcion',
+                'unidad_medida',
+                'frecuencia_compra',
+                'unidades_compradas',
+                'unidades_vendidas',
+                'stock_verificado_inspeccion',
+                'precio_compra',
+                'precio_venta'
+            ]);
         }
 
 
@@ -1158,7 +1206,8 @@
             var montoTotal = (precioUnitario * cantidad).toFixed(2);
 
             agregarFila('tablaGastosProducir', [descripcion, precioUnitario, cantidad, montoTotal]);
-            limpiarCamposEntrada(['descripcion_gasto_producir', 'precio_unitario_gasto_producir', 'cantidad_gasto_producir']);
+            limpiarCamposEntrada(['descripcion_gasto_producir', 'precio_unitario_gasto_producir',
+                'cantidad_gasto_producir']);
 
             // // Actualizar el total sumando el monto total del nuevo producto
             // var totalActual = parseFloat(document.getElementById('totalGatosOperativos').textContent);
@@ -1166,22 +1215,4 @@
             // document.getElementById('totalGatosOperativos').textContent = nuevoTotal.toFixed(2);
         }
     </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @endsection

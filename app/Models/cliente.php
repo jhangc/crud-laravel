@@ -38,5 +38,9 @@ class cliente extends Model
 
     protected $dates = ['fecha_nacimiento'];
     
+    public function creditos()
+    {
+        return $this->belongsToMany(credito::class, 'Credito_Cliente', 'cliente_id', 'prestamo_id');
+    }
 
 }

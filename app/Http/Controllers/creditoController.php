@@ -19,8 +19,8 @@ class creditoController extends Controller
     public function index()
     {
         // Obtener solo los clientes activos (activo = 1)
-        $creditos = credito::where('activo', 1)->get();
-      
+        $creditos = credito::with('clientes')->where('activo', 1)->get();
+
         // Pasar los clientes activos a la vista
         return view('admin.creditos.index', ['creditos' => $creditos]);
     }
@@ -123,13 +123,15 @@ class creditoController extends Controller
             'monto_total' => 'nullable|numeric|min:0',
             'fecha_desembolso' => 'nullable|date',
             'descripcion_negocio' => 'nullable|max:255',
+            'periodo_gracia_dias' => 'nullable|numeric|min:0',
+
             // 'fecha_registro' => 'nullable|date',
             // 'fecha_fin' => 'nullable|date',
-            // 'nombre_prestamo' => 'nullable|max:200',
-            // 'cantidad_grupo' => 'nullable|integer|min:1',
+            'nombre_prestamo' => 'nullable|max:200',
+            'cantidad_grupo' => 'nullable|integer|min:1',
             // 'estado' => 'nullable|max:20',
             // 'categoria' => 'nullable|max:20',
-            // 'foto_grupal' => 'nullable|image',
+            'foto_grupal' => 'nullable|image',
             'activo' => 'boolean',
         ]);
 
@@ -143,16 +145,18 @@ class creditoController extends Controller
         $prestamo->producto = $request->tipo_producto;
         $prestamo->subproducto = $request->subproducto;
         $prestamo->destino = $request->destino_credito;
-        
+
 
         $prestamo->recurrencia = $request->recurrencia;
         $prestamo->tasa = $request->tasa_interes;
         $prestamo->tiempo = $request->tiempo_credito;
         $prestamo->monto_total = $request->monto;
         $prestamo->fecha_desembolso = $request->fecha_desembolso;
+        $prestamo->periodo_gracia_dias = $request->periodo_gracia_dias;
+
         // $prestamo->fecha_registro = $request->fecha_registro;
         // $prestamo->fecha_fin = $request->fecha_fin;
-        
+
         $prestamo->estado = "pendiente";
         // Condicional para asignar la categoría
         if ($request->tipo_producto !== 'grupal') {
@@ -164,20 +168,21 @@ class creditoController extends Controller
             $prestamo->categoria = 'grupal';
             $prestamo->nombre_prestamo = $request->nombre_prestamo;
             $prestamo->cantidad_integrantes = $request->cantidad_grupo;
+            $prestamo->descripcion_negocio = "sin descripcion";
         }
 
         // Calcular la fecha de finalización
         $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
         $tiempo_credito = $request->tiempo_credito;
         $prestamo->fecha_fin = $fecha_desembolso->copy()->addMonths($tiempo_credito);
-        
+
         // Manejo de la subida de archivos para 'foto_grupal'
         if ($request->hasFile('foto_grupal') && $request->file('foto_grupal')->isValid()) {
             $nombreUnico = Str::uuid();
             $extension = $request->file('foto_grupal')->getClientOriginalExtension();
             $nombreArchivo = $nombreUnico . '.' . $extension;
             $ruta = $request->file('foto_grupal')->storeAs('public/fotos_grupales', $nombreArchivo);
-           $prestamo->foto_grupal = $ruta;
+            $prestamo->foto_grupal = $ruta;
         }
 
         // Asignación del valor de 'activo'
@@ -197,52 +202,67 @@ class creditoController extends Controller
 
 
         // Obtener la fecha de desembolso y el tiempo de crédito del request
-      
+
 
         $fechaDesembolso = Carbon::parse($request->fecha_desembolso);
-        $tiempoMeses = $request->tiempo_credito;
+        //fecha incluyendo periodo de gracias
+        $fechaconperiodogracia = clone $fechaDesembolso;
+        $fechaconperiodogracia->modify("+$request->periodo_gracia_dias days");
+        $tiempo = $request->tiempo_credito;
 
-        $tasaInteresMensual = $request->tasa_interes/12;
+        $tasaInteresMensual = $request->tasa_interes / 12;
 
         $tasaInteresQuincenal = $tasaInteresMensual * 2; // Convertir a tasa mensual
+
+        $tasaInteresdia = $request->tasa_interes / 365; // Convertir a tasa mensual
 
         $montoTotal = $request->monto;
         // $montoPorCuota = ($montoTotal / $tiempoMeses);
 
-        $fechaCuota = $fechaDesembolso->copy()->addMonth();
-        for ($i = 1; $i <= $tiempoMeses; $i++) {
+        $monto_interes_diario = $montoTotal * (pow((1 + $tasaInteresdia / 100), $request->periodo_gracia_dias));
 
-         //Calcular el interés dependiendo del tipo de tasa de interés
-          if ($request->tasa_interes === 'mensual') {
-            $monto_interes = $montoTotal * pow((1 + $tasaInteresMensual/100), $tiempoMeses);
-           } else { // Si es quincenal
-            $monto_interes = $montoTotal * pow((1 + $tasaInteresQuincenal/100), $tiempoMeses);
+        $fechaCuota = $fechaconperiodogracia->copy()->addMonth();
+
+        for ($i = 1; $i <= $tiempo; $i++) {
+
+            //Calcular el interés dependiendo del tipo de tasa de interés
+            if ($request->recurrencia === 'mensual') {
+                $monto_interes = $montoTotal * (pow((1 + $tasaInteresMensual / 100), $tiempo));
+            } else { // Si es quincenal
+                $monto_interes = $montoTotal * (pow((1 + $tasaInteresQuincenal / 100), $tiempo));
+            }
+
+
+            // Crear una nueva instancia de Cronograma
+            $cronograma = new Cronograma();
+
+            // Asignar los datos correspondientes
+            $cronograma->fecha = $fechaCuota;
+
+            if ($i == 1) {
+                $cronograma->monto = ($monto_interes / $tiempo) + $monto_interes_diario - $montoTotal;
+            } else {
+                $cronograma->monto = $monto_interes / $tiempo; // Sumar el interés al monto de la cuota
+            }
+
+            // $cronograma->monto = $montoPorCuota + $interes;
+            $cronograma->numero = $i;
+            $cronograma->id_prestamo = $prestamo->id;
+
+            // Guardar el cronograma en la base de datos
+            $cronograma->save();
+
+            // Añadir un mes a la fecha de la cuota para la siguiente iteración
+            $fechaCuota = $fechaCuota->addMonth();
         }
 
-        // Crear una nueva instancia de Cronograma
-        $cronograma = new Cronograma();
-        
-        // Asignar los datos correspondientes
-        $cronograma->fecha = $fechaCuota;
-        $cronograma->monto = $monto_interes/$tiempoMeses; // Sumar el interés al monto de la cuota
-        // $cronograma->monto = $montoPorCuota + $interes;
-        $cronograma->numero = $i;
-        $cronograma->id_prestamo = $prestamo->id;
 
-        // Guardar el cronograma en la base de datos
-        $cronograma->save();
-
-        // Añadir un mes a la fecha de la cuota para la siguiente iteración
-        $fechaCuota = $fechaCuota->addMonth();
-    }
-
-        
         // $prestamo->fecha_registro = $request->fecha_registro;
         // $prestamo->fecha_fin = $request->fecha_fin;
 
         // Redireccionar a la página de inicio con un mensaje de éxito
         return redirect()->route('creditos.index')
-            ->with('mensaje', 'Se registró el préstamo de manera correcta')
+            ->with('mensaje', 'Se registró el préstamo de manera correcta ')
             ->with('icono', 'success');
     }
 
@@ -301,19 +321,17 @@ class creditoController extends Controller
         $fechaDesembolso = $credito->fecha_desembolso; // Obtener la fecha de desembolso del crédito
         $tiempoMeses = $credito->tiempo; // Obtener el tiempo en meses del crédito
 
-    // Calcular las cuotas
-    $cuotas = [];
-    $fechaCuota = $fechaDesembolso;
-    for ($i = 1; $i <= $tiempoMeses; $i++) {
-        $cuotas[] = [
-            'numero' => $i,
-            'fecha' => $fechaCuota->addMonth()->format('Y-m-d') // Agregar un mes a la fecha de desembolso
-        ];
+        // Calcular las cuotas
+        $cuotas = [];
+        $fechaCuota = $fechaDesembolso;
+        for ($i = 1; $i <= $tiempoMeses; $i++) {
+            $cuotas[] = [
+                'numero' => $i,
+                'fecha' => $fechaCuota->addMonth()->format('Y-m-d') // Agregar un mes a la fecha de desembolso
+            ];
+        }
+
+        // return view('creditos.index', compact('cuotas'));
+        return view('creditos.index', compact('cuotas', 'credito'));
     }
-
-    // return view('creditos.index', compact('cuotas'));
-    return view('creditos.index', compact('cuotas', 'credito'));
-
-    }
-
 }

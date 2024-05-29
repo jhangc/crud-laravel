@@ -22,6 +22,7 @@ class Credito extends Model
         'tiempo',
         'monto_total',
         'fecha_desembolso',
+        'periodo_gracia_dias',
         'fecha_registro',
         'fecha_fin',
         'descripcion_negocio',
@@ -38,4 +39,10 @@ class Credito extends Model
         'fecha_registro',
         'fecha_fin',
     ];
+
+
+    public function clientes()
+    {
+        return $this->belongsToMany(cliente::class, 'Credito_Cliente', 'prestamo_id', 'cliente_id');
+    }
 }

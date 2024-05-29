@@ -222,8 +222,7 @@ class clienteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
+    public function destroy(string $id){
         // Buscar al cliente por su ID
         $cliente = cliente::find($id);
 
@@ -263,7 +262,7 @@ class clienteController extends Controller
     public function agregarpordni(Request $request)
     {
         $dni = $request->input('documento_identidad');
-        $cliente = cliente::where('documento_identidad', $dni)->first(['nombre', 'telefono', 'direccion', 'profesion']);
+        $cliente = cliente::where('documento_identidad', $dni)->first(['nombre', 'documento_identidad','telefono', 'direccion', 'profesion']);
 
         if ($cliente) {
             return response()->json($cliente);

@@ -53,6 +53,12 @@
                                 <center>ID</center>
                             </th>
                             <th>
+                                <center>Nombres</center>
+                            </th>
+                            <th>
+                                <center>Negocio</center>
+                            </th>
+                            <th>
                                 <center>Tipo de credito</center>
                             </th>
                             <th>
@@ -70,7 +76,7 @@
                                 <center>Intervalo</center>
                             </th>
                             <th>
-                                <center>Tasa (S/.)</center>
+                                <center>Tasa (%)</center>
                             </th>
                             <th>
                                 <center>Tiempo</center>
@@ -94,13 +100,15 @@
                                 $id = $credito->id;
                             @endphp
                             <tr>
+                                <td><center>{{ $contador }}</center></td>
+                                <td><center>{{ $credito->id }}</center></td>
                                 <td>
-                                    <center>{{ $contador }}</center>
+                                    @foreach($credito->clientes as $cliente)
+                                        {{ $cliente->nombre }}<br>
+                                    @endforeach
                                 </td>
-                                <td>
-                                    <center>{{ $credito->id }}</center>
-                                </td>
-                                <td>
+                                <td><center>{{ $credito->descripcion_negocio}}</center></td>
+                                    <td>
                                     <center>{{ $credito->tipo }}</center>
                                 </td>
                                 <td>
@@ -188,7 +196,6 @@
             </div>
         </div>
     </div>
-
 
 
     <script>
