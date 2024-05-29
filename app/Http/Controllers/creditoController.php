@@ -171,7 +171,6 @@ class creditoController extends Controller
         $tiempo_credito = $request->tiempo_credito;
         $prestamo->fecha_fin = $fecha_desembolso->copy()->addMonths($tiempo_credito);
         
-
         // Manejo de la subida de archivos para 'foto_grupal'
         if ($request->hasFile('foto_grupal') && $request->file('foto_grupal')->isValid()) {
             $nombreUnico = Str::uuid();
@@ -200,37 +199,32 @@ class creditoController extends Controller
         // Obtener la fecha de desembolso y el tiempo de crédito del request
       
 
-    $fechaDesembolso = Carbon::parse($request->fecha_desembolso);
-    $tiempoMeses = $request->tiempo_credito;
-    // Calcular la tasa de interés mensual y quincenal
-    $tasaInteresMensual = $request->tasa_interes/1200;
-    $tasaInteresQuincenal = $request->tasa_interes/1200 * 2; // Convertir a tasa mensual
+        $fechaDesembolso = Carbon::parse($request->fecha_desembolso);
+        $tiempoMeses = $request->tiempo_credito;
 
-    $montoTotal = $request->monto;
-    $montoPorCuota = ($montoTotal / $tiempoMeses);
+        $tasaInteresMensual = $request->tasa_interes/12;
 
-    $fechaCuota = $fechaDesembolso->copy()->addMonth();
-    for ($i = 1; $i <= $tiempoMeses; $i++) {
+        $tasaInteresQuincenal = $tasaInteresMensual * 2; // Convertir a tasa mensual
+
+        $montoTotal = $request->monto;
+        // $montoPorCuota = ($montoTotal / $tiempoMeses);
+
+        $fechaCuota = $fechaDesembolso->copy()->addMonth();
+        for ($i = 1; $i <= $tiempoMeses; $i++) {
 
          //Calcular el interés dependiendo del tipo de tasa de interés
           if ($request->tasa_interes === 'mensual') {
-               $interes = $montoPorCuota * $tasaInteresMensual;
+            $monto_interes = $montoTotal * pow((1 + $tasaInteresMensual/100), $tiempoMeses);
            } else { // Si es quincenal
-             $interes = $montoPorCuota * $tasaInteresQuincenal;
+            $monto_interes = $montoTotal * pow((1 + $tasaInteresQuincenal/100), $tiempoMeses);
         }
-
-        //  if ($request->tasa_interes === 'mensual') {
-        //       $interes = $montoPorCuota * (pow(1 + $tasaInteresMensual, $tiempoMeses) - 1);
-        //  } else { // Si es quincenal
-        //       $interes = $montoPorCuota * (pow(1 + $tasaInteresQuincenal, $tiempoMeses) - 1);
-        //  }
 
         // Crear una nueva instancia de Cronograma
         $cronograma = new Cronograma();
         
         // Asignar los datos correspondientes
         $cronograma->fecha = $fechaCuota;
-        $cronograma->monto = $montoPorCuota + $interes; // Sumar el interés al monto de la cuota
+        $cronograma->monto = $monto_interes/$tiempoMeses; // Sumar el interés al monto de la cuota
         // $cronograma->monto = $montoPorCuota + $interes;
         $cronograma->numero = $i;
         $cronograma->id_prestamo = $prestamo->id;
