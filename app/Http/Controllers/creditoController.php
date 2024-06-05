@@ -111,54 +111,43 @@ class creditoController extends Controller
      */
     public function store(Request $request)
     {
+        $decodedData = $request->all();
+        foreach (['clientesArray', 'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'boletasArray', 'gastosProducirArray'] as $key) {
+            if ($request->filled($key)) {
+                $decodedData[$key] = json_decode($request->input($key), true);
+            }
+        }
         $request->validate([
             'tipo_credito' => 'required|max:50',
             'tipo_producto' => 'required|max:100',
             'subproducto' => 'nullable|max:100',
             'destino_credito' => 'nullable|max:100',
-            // 'id_cliente' => 'required|exists:clientes,id',
             'recurrencia' => 'nullable|max:50',
             'tasa_interes' => 'nullable|numeric|min:0|max:100',
             'tiempo_credito' => 'nullable|integer|min:1',
-            'monto_total' => 'nullable|numeric|min:0',
+            'monto' => 'nullable|numeric|min:0',
             'fecha_desembolso' => 'nullable|date',
             'descripcion_negocio' => 'nullable|max:255',
             'periodo_gracia_dias' => 'nullable|numeric|min:0',
-
-            // 'fecha_registro' => 'nullable|date',
-            // 'fecha_fin' => 'nullable|date',
             'nombre_prestamo' => 'nullable|max:200',
             'cantidad_grupo' => 'nullable|integer|min:1',
-            // 'estado' => 'nullable|max:20',
-            // 'categoria' => 'nullable|max:20',
             'foto_grupal' => 'nullable|image',
             'activo' => 'boolean',
         ]);
 
-        // Creación de una nueva instancia del modelo Prestamos
         $prestamo = new Credito();
-
-        $credito_cliente = new CreditoCliente();
-
-        // Asignación de los valores a los atributos del modelo
         $prestamo->tipo = $request->tipo_credito;
         $prestamo->producto = $request->tipo_producto;
         $prestamo->subproducto = $request->subproducto;
         $prestamo->destino = $request->destino_credito;
-
-
         $prestamo->recurrencia = $request->recurrencia;
         $prestamo->tasa = $request->tasa_interes;
         $prestamo->tiempo = $request->tiempo_credito;
         $prestamo->monto_total = $request->monto;
         $prestamo->fecha_desembolso = $request->fecha_desembolso;
         $prestamo->periodo_gracia_dias = $request->periodo_gracia_dias;
-
-        // $prestamo->fecha_registro = $request->fecha_registro;
-        // $prestamo->fecha_fin = $request->fecha_fin;
-
         $prestamo->estado = "pendiente";
-        // Condicional para asignar la categoría
+
         if ($request->tipo_producto !== 'grupal') {
             $prestamo->categoria = 'individual';
             $prestamo->nombre_prestamo = "prestamo indivual";
@@ -171,12 +160,34 @@ class creditoController extends Controller
             $prestamo->descripcion_negocio = "sin descripcion";
         }
 
-        // Calcular la fecha de finalización
+        $prestamo->save();
+
+        if ($request->tipo_producto !== 'grupal') {
+            $cliente = Cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
+            if ($cliente) {
+                $credito_cliente = new CreditoCliente();
+                $credito_cliente->prestamo_id = $prestamo->id;
+                $credito_cliente->cliente_id = $cliente->id;
+                $credito_cliente->save();
+            }
+        } else {
+            if (is_array($decodedData['clientesArray'])) {
+                foreach ($decodedData['clientesArray'] as $clienteData) {
+                    $cliente = Cliente::where('documento_identidad', $clienteData['documento'])->where('activo', 1)->first();
+                    if ($cliente) {
+                        $credito_cliente = new CreditoCliente();
+                        $credito_cliente->prestamo_id = $prestamo->id;
+                        $credito_cliente->cliente_id = $cliente->id;
+                        $credito_cliente->save();
+                    }
+                }
+            }
+        }
+        $this->saveArrayData($decodedData, $prestamo->id);
         $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
         $tiempo_credito = $request->tiempo_credito;
         $prestamo->fecha_fin = $fecha_desembolso->copy()->addMonths($tiempo_credito);
 
-        // Manejo de la subida de archivos para 'foto_grupal'
         if ($request->hasFile('foto_grupal') && $request->file('foto_grupal')->isValid()) {
             $nombreUnico = Str::uuid();
             $extension = $request->file('foto_grupal')->getClientOriginalExtension();
@@ -184,86 +195,148 @@ class creditoController extends Controller
             $ruta = $request->file('foto_grupal')->storeAs('public/fotos_grupales', $nombreArchivo);
             $prestamo->foto_grupal = $ruta;
         }
-
-        // Asignación del valor de 'activo'
         $prestamo->activo = $request->activo ?? true;
-
-        // Guardar el nuevo préstamo en la base de datos
         $prestamo->save();
+        $fechaDesembolso = Carbon::parse($request->fecha_desembolso);
 
+        // $fechaconperiodogracia = clone $fechaDesembolso;
+        // $fechaconperiodogracia->addDays($request->periodo_gracia_dias);
+        // $tasaInteresMensual = $request->tasa_interes / 12;
+        // $tasaInteresQuincenal = $tasaInteresMensual * 2;
+        // $tasaInteresdia = $request->tasa_interes / 365;
+        // $montoTotal = $request->monto;
+        // $monto_interes_diario = $montoTotal * (pow((1 + $tasaInteresdia / 100), $request->periodo_gracia_dias));
+        // $fechaCuota = $fechaconperiodogracia->copy()->addMonth();
 
-        // Obtén el cliente por su DNI
-        $cliente = cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
-        // $prestamo->id_cliente = 1;
-        $credito_cliente->prestamo_id = $prestamo->id;
-        $credito_cliente->cliente_id = $cliente->id;
-        $credito_cliente->save();
+        // for ($i = 1; $i <= $tiempo_credito; $i++) {
+        //     if ($request->recurrencia === 'mensual') {
+        //         $monto_interes = $montoTotal * (pow((1 + $tasaInteresMensual / 100), $tiempo_credito));
+        //     } else {
+        //         $monto_interes = $montoTotal * (pow((1 + $tasaInteresQuincenal / 100), $tiempo_credito));
+        //     }
 
+        //     $cronograma = new Cronograma();
+        //     $cronograma->fecha = $fechaCuota;
 
+        //     if ($i == 1) {
+        //         $cronograma->monto = ($monto_interes / $tiempo_credito) + $monto_interes_diario - $montoTotal;
+        //     } else {
+        //         $cronograma->monto = $monto_interes / $tiempo_credito;
+        //     }
 
-        // Obtener la fecha de desembolso y el tiempo de crédito del request
+        //     $cronograma->numero = $i;
+        //     $cronograma->id_prestamo = $prestamo->id;
+        //     $cronograma->save();
 
-
+        //     $fechaCuota->addMonth();
+        // }
         $fechaDesembolso = Carbon::parse($request->fecha_desembolso);
         //fecha incluyendo periodo de gracias
         $fechaconperiodogracia = clone $fechaDesembolso;
         $fechaconperiodogracia->modify("+$request->periodo_gracia_dias days");
         $tiempo = $request->tiempo_credito;
-
-        $tasaInteresMensual = $request->tasa_interes / 12;
-
-        $tasaInteresQuincenal = $tasaInteresMensual * 2; // Convertir a tasa mensual
-
-        $tasaInteresdia = $request->tasa_interes / 365; // Convertir a tasa mensual
-
         $montoTotal = $request->monto;
-        // $montoPorCuota = ($montoTotal / $tiempoMeses);
-
-        $monto_interes_diario = $montoTotal * (pow((1 + $tasaInteresdia / 100), $request->periodo_gracia_dias));
-
         $fechaCuota = $fechaconperiodogracia->copy()->addMonth();
-
+        $cuota = $this->calcularCuota($montoTotal, $request->tasa_interes, $tiempo);
         for ($i = 1; $i <= $tiempo; $i++) {
-
-            //Calcular el interés dependiendo del tipo de tasa de interés
-            if ($request->recurrencia === 'mensual') {
-                $monto_interes = $montoTotal * (pow((1 + $tasaInteresMensual / 100), $tiempo));
-            } else { // Si es quincenal
-                $monto_interes = $montoTotal * (pow((1 + $tasaInteresQuincenal / 100), $tiempo));
-            }
-
-
-            // Crear una nueva instancia de Cronograma
             $cronograma = new Cronograma();
-
-            // Asignar los datos correspondientes
             $cronograma->fecha = $fechaCuota;
-
-            if ($i == 1) {
-                $cronograma->monto = ($monto_interes / $tiempo) + $monto_interes_diario - $montoTotal;
-            } else {
-                $cronograma->monto = $monto_interes / $tiempo; // Sumar el interés al monto de la cuota
-            }
-
-            // $cronograma->monto = $montoPorCuota + $interes;
+            $cronograma->monto = $cuota; // Sumar el interés al monto de la cuota
             $cronograma->numero = $i;
             $cronograma->id_prestamo = $prestamo->id;
-
-            // Guardar el cronograma en la base de datos
             $cronograma->save();
+           $fechaCuota = $fechaCuota->addMonth();
+        }
+        return response()->json([
+            'state' => '0',
+            'mensaje' => 'Prestamo creado con exito',
+            'prestamo' => $prestamo
+        ])->setStatusCode(200);
+    }
 
-            // Añadir un mes a la fecha de la cuota para la siguiente iteración
-            $fechaCuota = $fechaCuota->addMonth();
+    protected function saveArrayData(array $data, $prestamoId)
+    {
+        if (is_array($data['proyeccionesArray'])) {
+            foreach ($data['proyeccionesArray'] as $proyeccionData) {
+                \App\Models\ProyeccionesVentas::create([
+                    'descripcion_producto' => $proyeccionData['descripcion'],
+                    'unidad_medida' => $proyeccionData['unidadMedida'],
+                    'frecuencia_compra' => $proyeccionData['frecuenciaCompra'],
+                    'unidades_compradas' => $proyeccionData['unidadesCompradas'],
+                    'unidades_vendidas' => $proyeccionData['unidadesVendidas'],
+                    'stock_verificado' => $proyeccionData['stockVerificado'],
+                    'precio_compra' => $proyeccionData['precioCompra'],
+                    'precio_venta' => $proyeccionData['precioVenta'],
+                    'id_prestamo' => $prestamoId,
+                    'estado' => 'activo'
+                ]);
+            }
         }
 
+        if (is_array($data['deudasFinancierasArray'])) {
+            foreach ($data['deudasFinancierasArray'] as $deudaData) {
+                \App\Models\DeudasFinancieras::create([
+                    'nombre_entidad' => $deudaData['entidad'],
+                    'saldo_capital' => $deudaData['saldoCapital'],
+                    'cuota' => $deudaData['cuota'],
+                    'tiempo_restante' => $deudaData['tiempoRestante'],
+                    'prestamo_id' => $prestamoId,
+                    'estado' => 'activo'
+                ]);
+            }
+        }
 
-        // $prestamo->fecha_registro = $request->fecha_registro;
-        // $prestamo->fecha_fin = $request->fecha_fin;
+        if (is_array($data['gastosOperativosArray'])) {
+            foreach ($data['gastosOperativosArray'] as $gastoData) {
+                \App\Models\GastosOperativos::create([
+                    'descripcion' => $gastoData['descripcion'],
+                    'precio_unitario' => $gastoData['precioUnitario'],
+                    'cantidad' => $gastoData['cantidad'],
+                    'id_prestamo' => $prestamoId,
+                    'acciones' => 'activo'
+                ]);
+            }
+        }
 
-        // Redireccionar a la página de inicio con un mensaje de éxito
-        return redirect()->route('creditos.index')
-            ->with('mensaje', 'Se registró el préstamo de manera correcta ')
-            ->with('icono', 'success');
+        if (is_array($data['inventarioArray'])) {
+            foreach ($data['inventarioArray'] as $inventarioData) {
+                \App\Models\Inventario::create([
+                    'descripcion' => $inventarioData['descripcion'],
+                    'precio_unitario' => $inventarioData['precioUnitario'],
+                    'cantidad' => $inventarioData['cantidad'],
+                    'id_prestamo' => $prestamoId
+                ]);
+            }
+        }
+
+        if (is_array($data['boletasArray'])) {
+            foreach ($data['boletasArray'] as $boletaData) {
+                \App\Models\Boleta::create([
+                    'numero_boleta' => $boletaData['numeroBoleta'],
+                    'monto_boleta' => $boletaData['montoBoleta'],
+                    'descuento_boleta' => $boletaData['descuentoBoleta'],
+                    'total_boleta' => $boletaData['totalBoleta'],
+                    'id_prestamo' => $prestamoId
+                ]);
+            }
+        }
+
+        if (is_array($data['gastosProducirArray'])) {
+            foreach ($data['gastosProducirArray'] as $gastoProducirData) {
+                \App\Models\GastosProducir::create([
+                    'descripcion_gasto' => $gastoProducirData['descripcionGasto'],
+                    'precio_unitario' => $gastoProducirData['precioUnitario'],
+                    'cantidad' => $gastoProducirData['cantidad'],
+                    'total_gasto' => $gastoProducirData['totalGasto'],
+                    'id_prestamo' => $prestamoId
+                ]);
+            }
+        }
+    }
+    
+     public function calcularCuota($monto, $tea, $periodos) {
+        $tasaMensual = pow(1 + ($tea/100), 1 / 12) - 1;
+        return   ($monto * $tasaMensual * pow((1 + $tasaMensual), $periodos)) / (pow((1 + $tasaMensual), $periodos) - 1);
     }
 
     /**
