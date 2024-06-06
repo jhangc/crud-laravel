@@ -2,8 +2,8 @@
 
 @section('content')
     <div class="row">
-        <h1>Listado de Creditos</h1>
-    </div>
+        <h1>Listado de Creditos </h1>
+    </div> 
     <hr>
     <div class="row">
         <div class="col-md-12">
