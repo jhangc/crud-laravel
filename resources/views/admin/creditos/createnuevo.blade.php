@@ -85,13 +85,13 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="nombre">Nombre del cliente</label>
-                                        <input type="text" value="{{ old('nombre') }}" name="nombre" id="nombre" class="form-control" required>
+                                        <input type="text" value="{{ old('nombre') }}" name="nombre" id="nombre" class="form-control" >
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="profesion">Profesión</label>
-                                        <input type="text" value="{{ old('profesion') }}" name="profesion" id="profesion" class="form-control" required>
+                                        <input type="text" value="{{ old('profesion') }}" name="profesion" id="profesion" class="form-control" >
                                     </div>
                                 </div>
                             </div>
@@ -113,7 +113,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="direccion">Dirección</label>
-                                        <input type="text" value="{{ old('direccion') }}" name="direccion" id="direccion" class="form-control" required>
+                                        <input type="text" value="{{ old('direccion') }}" name="direccion" id="direccion" class="form-control" >
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -126,6 +126,30 @@
                         </div>
                     </div>
                     <div id="grupal1Fields" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nombre_prestamo">Nombre del Grupo</label>
+                                    <input type="text" value="{{ old('nombre_prestamo') }}" name="nombre_prestamo" id="nombre_prestamo" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="cantidad_grupo">Cantidad de integrantes</label>
+                                    <input type="number" value="{{ old('cantidad_grupo') }}" name="cantidad_grupo" id="cantidad_grupo" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="foto_grupal">Foto Grupal</label>
+                                    <input type="file" name="foto_grupal" accept="image/*" class="form-control-file">
+                                    @error('foto_grupal')
+                                    <small style="color: red">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                            </div>
+
+                        </div>
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="input-group">
@@ -163,10 +187,13 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-6" id="credito_individual">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="descripcion_negocio">Descripción del negocio</label>
-                                        <input type="text" value="{{ old('descripcion_negocio') }}" name="descripcion_negocio" id="descripcion_negocio" class="form-control">
+                                        <!-- <input type="text" value="{{ old('descripcion_negocio') }}" name="descripcion_negocio" id="descripcion_negocio" class="form-control"> -->
+                                        <select name="descripcion_negocio" id="descripcion_negocio" class="form-control">
+                                            <option value="" disabled>Seleccione una descripción...</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -210,6 +237,56 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <div class="card card-outline card-secondary">
+                        <div class="card-header">
+                            <h3 class="card-title">Datos del la Garantia</h3>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="descripcion_garantia">Descripcion de la Garantia</label>
+                                        <input type="text" name="descripcion_garantia" id="descripcion_garantia" class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="valor_mercado">Valor del mercado (S/.)</label>
+                                        <input type="number" name="valor_mercado" id="valor_mercado" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="valor_realizacion">Valor de realización (S/.)</label>
+                                        <input type="number" name="valor_realizacion" id="valor_realizacion" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="valor_gravamen">Valor de Gravamen (S/.)</label>
+                                        <input type="number" name="valor_gravamen" id="valor_gravamen" class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="archivo_garantia">Archivo en pdf</label>
+                                        <input type="file" name="archivo_garantia" accept=".pdf" class="form-control-file">
+                                        @error('archivo_garantia')
+                                        <small style="color: red">{{ $message }}</small>
+                                        @enderror
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+
                         </div>
                     </div>
                     <div class="card card-outline card-primary" id="detalle_negocio">
@@ -474,7 +551,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card card-outline card-info">
+                    <div class="card card-outline card-info" id="gastos_ope">
                         <div class="card-header">
                             <h3 class="card-title">Registro de Gastos Operativos</h3>
                         </div>
@@ -522,7 +599,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card card-outline card-warning">
+                    <div class="card card-outline card-warning" id="deudas_finan">
                         <div class="card-header" style="display:flex;">
                             <h3 class="card-title">Deudas Financieras</h3>
                         </div>
@@ -639,6 +716,7 @@
             totalMonto += parseFloat(cliente.monto) || 0;
         });
         document.getElementById('totalMonto').textContent = totalMonto.toFixed(2);
+        document.getElementById('monto').value = totalMonto.toFixed(2);
     }
 
     function editarCliente(index, campo, valor) {
@@ -646,6 +724,7 @@
         if (campo === 'monto') {
             totalMonto = clientesArray.reduce((total, cliente) => total + (parseFloat(cliente.monto) || 0), 0);
             document.getElementById('totalMonto').textContent = totalMonto.toFixed(2);
+            document.getElementById('monto').value = totalMonto.toFixed(2);
         }
     }
 
@@ -1011,7 +1090,9 @@
             $.ajax({
                 url: '{{route('creditos.buscardni')}}',
                 type: 'GET',
-                data: { documento_identidad: documentoIdentidad },
+                data: {
+                    documento_identidad: documentoIdentidad
+                },
                 success: function(response) {
                     $('#nombre').val(response.nombre || '');
                     $('#telefono').val(response.telefono || '');
@@ -1065,46 +1146,79 @@
             });
         });
     });
+    let descripciones = [];
 
     function toggleFields() {
         var selection = document.getElementById('tipo_producto').value;
         var credito_individual = document.getElementById('credito_individual');
         var grupal1Fields = document.getElementById('grupal1Fields');
         var individual1Fields = document.getElementById('individual1Fields');
-
+        var selectionTipoCredito = document.getElementById('tipo_credito').value;
+        console.log(selectionTipoCredito);
+        if (selectionTipoCredito != '') {
+            $.ajax({
+                url: '{{ url('/admin/credito/descripcion')}}',
+                type: 'GET',
+                data: {
+                    opcion: selectionTipoCredito
+                },
+                success: function(response) {
+                    var descripciones = response.data;
+                    console.log(descripciones);
+                    var descripcionSelect = document.getElementById('descripcion_negocio');
+                    descripcionSelect.innerHTML = '<option value="" disabled>Seleccione una descripción...</option>';
+                    descripciones.forEach(function(descripcion) {
+                        var option = document.createElement('option');
+                        option.value = descripcion.giro_economico;
+                        option.text = descripcion.giro_economico;
+                        descripcionSelect.appendChild(option);
+                    });
+                },
+                error: function(xhr) {
+                    console.error(xhr);
+                }
+            });
+        } else {
+            var descripcionSelect = document.getElementById('descripcion_negocio');
+            descripcionSelect.innerHTML = '<option value="">Seleccione una descripción...</option>';
+        }
+        var inventario_producto = document.getElementById('inventario_producto');
         if (selection === 'grupal') {
             grupal1Fields.style.display = 'block';
-            credito_individual.style.display = 'none';
+            // credito_individual.style.display = 'none';
             individual1Fields.style.display = 'none';
+            detalle_negocio.style.display = 'none'
+            registro_boletas.style.display = 'none'
+            registro_gastos_producir.style.display = 'none'
+            inventario_producto.style.display = 'none'
+            gastos_ope.style.display = 'none'
+            deudas_finan.style.display = 'none'
         } else {
             grupal1Fields.style.display = 'none';
-            credito_individual.style.display = 'block';
+            // credito_individual.style.display = 'block';
             individual1Fields.style.display = 'block';
+            if (selectionTipoCredito === 'servicio') {
+                inventario_producto.style.display = 'none';
+            } else {
+                inventario_producto.style.display = 'block';
+            }
+
+            if (selectionTipoCredito === 'servicio' && selection === 'consumo') {
+                detalle_negocio.style.display = 'none';
+                registro_boletas.style.display = 'block';
+            } else {
+                detalle_negocio.style.display = 'block';
+                registro_boletas.style.display = 'none';
+            }
+
+            if (selection === 'agricola') {
+                registro_gastos_producir.style.display = 'block';
+                detalle_negocio.style.display = 'none';
+            } else {
+                registro_gastos_producir.style.display = 'none';
+            }
         }
 
-        var selectionTipoCredito = document.getElementById('tipo_credito').value;
-        var inventario_producto = document.getElementById('inventario_producto');
-
-        if (selectionTipoCredito === 'servicio') {
-            inventario_producto.style.display = 'none';
-        } else {
-            inventario_producto.style.display = 'block';
-        }
-
-        if (selectionTipoCredito === 'servicio' && selection === 'consumo') {
-            detalle_negocio.style.display = 'none';
-            registro_boletas.style.display = 'block';
-        } else {
-            detalle_negocio.style.display = 'block';
-            registro_boletas.style.display = 'none';
-        }
-
-        if (selection === 'agricola') {
-            registro_gastos_producir.style.display = 'block';
-            detalle_negocio.style.display = 'none';
-        } else {
-            registro_gastos_producir.style.display = 'none';
-        }
     }
 
     document.addEventListener('DOMContentLoaded', toggleFields);

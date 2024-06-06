@@ -25,7 +25,15 @@ class creditoController extends Controller
         return view('admin.creditos.index', ['creditos' => $creditos]);
     }
 
+    public function getdescripciones(Request $request){
+        $descripciones =\App\Models\MargenVenta::where('actividad_economica',$request->opcion)->get();
 
+        return response()->json([
+            'state' => '0',
+            'mensaje' => 'Prestamo creado con exito',
+            'data' => $descripciones
+        ])->setStatusCode(200);
+    }
     public function viewaprobar()
     {
         return view('admin.creditos.aprobar');
@@ -161,6 +169,24 @@ class creditoController extends Controller
         }
 
         $prestamo->save();
+        //garantia
+         $garantia=\App\Models\Garantia::create([
+            'descripcion' =>$request->descripcion_garantia,
+            'valor_mercado' =>$request->valor_mercado ,
+            'valor_realizacion' => $request->valor_realizacion,
+            'valor_gravamen' =>$request->valor_gravamen ,
+            'id_prestamo' => $prestamo->id,
+            'estado' => 'activo'
+        ]);
+        //existe archivo de garantia
+        if ($request->hasFile('archivo_garantia') && $request->file('archivo_garantia')->isValid()) {
+            $nombreUnico = Str::uuid();
+            $extension = $request->file('archivo_garantia')->getClientOriginalExtension();
+            $nombreArchivo = $nombreUnico . '.' . $extension;
+            $ruta = $request->file('archivo_garantia')->storeAs('public/documentos_garantia', $nombreArchivo);
+            $garantia->documento_pdf = $ruta;
+            $garantia->save();
+        }
 
         if ($request->tipo_producto !== 'grupal') {
             $cliente = Cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
@@ -236,17 +262,37 @@ class creditoController extends Controller
         $fechaconperiodogracia->modify("+$request->periodo_gracia_dias days");
         $tiempo = $request->tiempo_credito;
         $montoTotal = $request->monto;
+        $tasaInteres=$request->tasa_interes;
+        // Calcular la tasa diaria
+        $tasaDiaria = pow(1 + ($tasaInteres / 100), 1 / 360) - 1;
+        // Calcular los intereses del período de gracia
+        $interesesPeriodoGracia = $montoTotal * $tasaDiaria * $request->periodo_gracia_dias;
+        // Calcular la cuota mensual fija sin intereses del período de gracia
+        $cuotaSinGracia = $this->calcularCuota($montoTotal, $tasaInteres, $tiempo);
+        // Calcular el monto adicional por intereses de gracia a agregar a cada cuota
+        $interesesMensualesPorGracia = $interesesPeriodoGracia / $tiempo;
+        // Generar el cronograma de pagos
         $fechaCuota = $fechaconperiodogracia->copy()->addMonth();
-        $cuota = $this->calcularCuota($montoTotal, $request->tasa_interes, $tiempo);
         for ($i = 1; $i <= $tiempo; $i++) {
             $cronograma = new Cronograma();
             $cronograma->fecha = $fechaCuota;
-            $cronograma->monto = $cuota; // Sumar el interés al monto de la cuota
+            $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
             $cronograma->numero = $i;
             $cronograma->id_prestamo = $prestamo->id;
             $cronograma->save();
-           $fechaCuota = $fechaCuota->addMonth();
+            // Incrementar la fecha para la siguiente cuota
+            $fechaCuota = $fechaCuota->addMonth();
         }
+        // $cuota = $this->calcularCuota($montoTotal, $$tasaInteres, $tiempo);
+        // for ($i = 1; $i <= $tiempo; $i++) {
+        //     $cronograma = new Cronograma();
+        //     $cronograma->fecha = $fechaCuota;
+        //     $cronograma->monto = $cuota; // Sumar el interés al monto de la cuota
+        //     $cronograma->numero = $i;
+        //     $cronograma->id_prestamo = $prestamo->id;
+        //     $cronograma->save();
+        //    $fechaCuota = $fechaCuota->addMonth();
+        // }
         return response()->json([
             'state' => '0',
             'mensaje' => 'Prestamo creado con exito',

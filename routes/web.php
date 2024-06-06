@@ -44,7 +44,8 @@ Route::get('/admin/creditos/supervisar', [App\Http\Controllers\creditoController
 Route::get('/admin/creditos/{id}/edit', [App\Http\Controllers\creditoController::class, 'edit'])->name('creditos.edit')->middleware('auth');
 Route::put('/admin/creditos/{id}', [App\Http\Controllers\creditoController::class, 'update'])->name('creditos.update')->middleware('auth');
 Route::delete('/admin/creditos/{id}', [App\Http\Controllers\creditoController::class, 'destroy'])->name('creditos.destroy')->middleware('auth');
-
+//traer descricpones
+Route::get('/admin/credito/descripcion', [App\Http\Controllers\creditoController::class, 'getdescripciones'])->name('creditos.getdescripciones')->middleware('auth');
 Route::get('/admin/cronograma/{id}/cuotas', [App\Http\Controllers\CronogramaController::class, 'vercuota'])->name('credito.cuotas')->middleware('auth');
 
 
