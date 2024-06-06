@@ -10,173 +10,106 @@
             <div class="card card-outline">
                 <div class="card-header">
                     <div class="row">
-                        <div class="col-md-2 ">
+                        <div class="col-md-2">
                             <div class="card-tools ">
-                                <a href="{{ url('/admin/creditos/createnuevo') }}" class="btn btn-primary"><i
-                                        class="bi bi-person-fill-add"></i> Nuevo crédito</a>
+                                <a href="{{ url('/admin/creditos/createnuevo') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Nuevo crédito</a>
                             </div>
                         </div>
-                        <div class="col-md-2 ">
+                        <div class="col-md-2">
                             <div class="card-tools ">
-                                <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i
-                                        class="bi bi-person-fill-add"></i> Crédito recurrente</a>
+                                <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Crédito recurrente</a>
                             </div>
                         </div>
-                        <div class="col-md-2 ">
+                        <div class="col-md-2">
                             <div class="card-tools ">
-                                <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i
-                                        class="bi bi-person-fill-add"></i> Crédito refinanciado</a>
+                                <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Crédito refinanciado</a>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <!-- <div class="col-md-3">
                             <div class="input-group">
-                                <select name="tipo_ingreso" id="tipo_ingreso" class="form-control" required
-                                    onchange="filtrarPorTipo()">
+                                <select name="tipo_ingreso" id="tipo_ingreso" class="form-control" required onchange="filtrarPorTipo()">
                                     <option value="">Tipo de crédito...</option>
                                     <option value="Individual">Individual</option>
                                     <option value="Grupal">Grupal</option>
                                 </select>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
 
             <div class="card-body">
-                <table class="table table-bordered table-sm table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>
-                                <center>Nro</center>
-                            </th>
-                            <th>
-                                <center>ID</center>
-                            </th>
-                            <th>
-                                <center>Nombres</center>
-                            </th>
-                            <th>
-                                <center>Negocio</center>
-                            </th>
-                            <th>
-                                <center>Tipo de credito</center>
-                            </th>
-                            <th>
-                                <center>Producto</center>
-                            </th>
-                            <th>
-                                <center>SubProducto</center>
-                            </th>
-                            <th>
-                                <center>Destino de credito</center>
-                            </th>
-                            {{-- <th><center>DNI</center></th> --}}
-                            {{-- <th><center>Solicitante</center></th> --}}
-                            <th>
-                                <center>Intervalo</center>
-                            </th>
-                            <th>
-                                <center>Tasa (%)</center>
-                            </th>
-                            <th>
-                                <center>Tiempo</center>
-                            </th>
-                            <th>
-                                <center>Monto</center>
-                            </th>
-                            <th>
-                                <center>Estado</center>
-                            </th>
-                            <th>
-                                <center>Acciones</center>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php $contador = 0; @endphp
-                        @foreach ($creditos as $credito)
-                            @php
-                                $contador = $contador + 1;
-                                $id = $credito->id;
-                            @endphp
+                <div class="table-responsive">
+                    <table id="creditosTable" class="table table-bordered table-sm table-striped table-hover">
+                        <thead>
                             <tr>
-                                <td><center>{{ $contador }}</center></td>
-                                <td><center>{{ $credito->id }}</center></td>
-                                <td>
-                                    @foreach($credito->clientes as $cliente)
-                                        {{ $cliente->nombre }}<br>
-                                    @endforeach
-                                </td>
-                                <td><center>{{ $credito->descripcion_negocio}}</center></td>
-                                    <td>
-                                    <center>{{ $credito->tipo }}</center>
-                                </td>
-                                <td>
-                                    <center>{{ $credito->producto }}</center>
-                                </td>
-                                <td>
-                                    <center>{{ $credito->subproducto }}</center>
-                                </td>
-                                <td>
-                                    <center>{{ $credito->destino }}</center>
-                                </td>
-                                {{-- <td><center>{{ $credito->documento_identidad }}</center></td> --}}
-                                {{-- <td><center>{{ $credito->solicitante }}</center></td> --}}
-                                <td>
-                                    <center>{{ $credito->recurrencia }}</center>
-                                </td>
-                                <td>
-                                    <center>{{ $credito->tasa }}</center>
-                                </td>
-                                <td>
-                                    <center>{{ $credito->tiempo }}</center>
-                                </td>
-                                <td>
-                                    <center>{{ $credito->monto_total }}</center>
-                                </td>
-                                <td>
-                                    <center>
-                                        @if ($credito->estado == 'pendiente')
-                                            <span
-                                                style="background-color: yellow; padding: 3px 10px; border-radius: 5px;">Pendiente</span>
-                                        @elseif($credito->estado == 'rechazado')
-                                            <span
-                                                style="background-color: red; padding: 3px 10px; border-radius: 5px;">Rechazado</span>
-                                        @elseif($credito->estado == 'aprobado')
-                                            <span
-                                                style="background-color: green; padding: 3px 10px; border-radius: 5px;">Aprobado</span>
-                                        @endif
-                                    </center>
-                                </td>
-                                <td style="display: flex; align-items: center; justify-content:center;">
-
-                                    <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#cuotasModal"
-                                        data-url="{{ route('credito.cuotas', $credito->id) }}">Cuotas</a>
-
-
-                                    <a href="{{ route('creditos.edit', $credito->id) }}"
-                                        class="btn btn-secondary">Resultado</a>
-
-                                    <a href="{{ route('creditos.edit', $credito->id) }}" type="button"
-                                        class="btn btn-success"><i class="bi bi-pencil"></i></a>
-                                    <form action="{{ route('creditos.destroy', $credito->id) }}"
-                                        onclick="preguntar<?= $id ?>(event)" method="post" id="miFormulario<?= $id ?>">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger"
-                                            style="border-radius: 0px 5px 5px 0px"><i class="bi bi-trash"></i></button>
-                                    </form>
-
-                                </td> <!-- Puedes agregar aquí tus acciones -->
+                                <th>Nro</th>
+                                <th>ID</th>
+                                <th>Nombres</th>
+                                <th>Negocio</th>
+                                <th>Tipo de credito</th>
+                                <th>Producto</th>
+                                <th>SubProducto</th>
+                                <th>Destino de credito</th>
+                                <th>Intervalo</th>
+                                <th>Tasa (%)</th>
+                                <th>Tiempo</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
                             </tr>
-                        @endforeach
-
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @php $contador = 0; @endphp
+                            @foreach ($creditos as $credito)
+                                @php
+                                    $contador++;
+                                    $id = $credito->id;
+                                @endphp
+                                <tr>
+                                    <td>{{ $contador }}</td>
+                                    <td>{{ $credito->id }}</td>
+                                    <td>
+                                        @foreach($credito->clientes as $cliente)
+                                            {{ $cliente->nombre }}<br>
+                                        @endforeach
+                                    </td>
+                                    <td>{{ $credito->descripcion_negocio}}</td>
+                                    <td>{{ $credito->tipo }}</td>
+                                    <td>{{ $credito->producto }}</td>
+                                    <td>{{ $credito->subproducto }}</td>
+                                    <td>{{ $credito->destino }}</td>
+                                    <td>{{ $credito->recurrencia }}</td>
+                                    <td>{{ $credito->tasa }}</td>
+                                    <td>{{ $credito->tiempo }}</td>
+                                    <td>{{ $credito->monto_total }}</td>
+                                    <td>
+                                        @if ($credito->estado == 'pendiente')
+                                            <span style="background-color: yellow; padding: 3px 10px; border-radius: 5px;">Pendiente</span>
+                                        @elseif($credito->estado == 'rechazado')
+                                            <span style="background-color: red; padding: 3px 10px; border-radius: 5px;">Rechazado</span>
+                                        @elseif($credito->estado == 'aprobado')
+                                            <span style="background-color: green; padding: 3px 10px; border-radius: 5px;">Aprobado</span>
+                                        @endif
+                                    </td>
+                                    <td style="display: flex; align-items: center; justify-content:center;">
+                                        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#cuotasModal" data-url="{{ route('credito.cuotas', $credito->id) }}">Cuotas</a>
+                                        <a href="{{  route('creditos.proyecciones', ['id' => $credito->id]) }}" class="btn btn-secondary">Resultado</a>
+                                        <a href="{{ route('creditos.edit', $credito->id) }}" type="button" class="btn btn-success"><i class="bi bi-pencil"></i></a>
+                                        <form action="{{ route('creditos.destroy', $credito->id) }}" onclick="preguntar(event, '{{ $id }}')" method="post" id="miFormulario{{ $id }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger" style="border-radius: 0px 5px 5px 0px"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-
 
     <div class="modal fade" id="cuotasModal" tabindex="-1" role="dialog" aria-labelledby="cuotasModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -197,68 +130,45 @@
         </div>
     </div>
 
-
     <script>
-        function preguntar(id) {
-            Swal.fire({
-                title: 'Eliminar registro',
-                text: '¿Desea eliminar este registro?',
-                icon: 'question',
-                showDenyButton: true,
-                confirmButtonText: 'Eliminar',
-                confirmButtonColor: '#a5161d',
-                denyButtonColor: '#270a0a',
-                denyButtonText: 'Cancelar',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Agrega la lógica para eliminar el registro, por ejemplo, mediante una petición POST
-                    console.log("Eliminar registro con ID:", id);
-                    // Aquí podrías hacer una petición AJAX para eliminar el registro
-                }
-            });
-        }
-    </script>
-
-    <script>
-        function filtrarPorTipo() {
-            var seleccion = document.getElementById('tipo_ingreso').value;
-            var filas = document.querySelectorAll("table tbody tr"); // Selecciona todas las filas de la tabla
-
-            filas.forEach(fila => {
-                var tipoCredito = fila.cells[1]
-                    .textContent; // Asume que el tipo de crédito está en la segunda columna
-                if (seleccion === "" || tipoCredito.includes(seleccion)) {
-                    fila.style.display =
-                        ""; // Muestra la fila si coincide con el filtro o si el filtro está en blanco
-                } else {
-                    fila.style.display = "none"; // Oculta la fila si no coincide con el filtro
-                }
-            });
-        }
-    </script>
-    <script>
-        function preguntar<?= $id ?>(event) {
-            event.preventDefault();
-            Swal.fire({
-                title: 'Eliminar registro',
-                text: '¿Desea eliminar este registro?',
-                icon: 'question',
-                showDenyButton: true,
-                confirmButtonText: 'Eliminar',
-                confirmButtonColor: '#a5161d',
-                denyButtonColor: '#270a0a',
-                denyButtonText: 'Cancelar',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    var form = $('#miFormulario<?= $id ?>');
-                    form.submit();
-                }
-            });
-        }
-    </script>
-
-    <script>
+        
         $(document).ready(function() {
+            var spanish = {
+                "sProcessing": "Procesando...",
+                "sLengthMenu": "Mostrar _MENU_ registros",
+                "sZeroRecords": "No se encontraron resultados",
+                "sEmptyTable": "Ningún dato disponible en esta tabla",
+                "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                "sInfoPostFix": "",
+                "sSearch": "Buscar:",
+                "sUrl": "",
+                "sInfoThousands": ",",
+                "sLoadingRecords": "Cargando...",
+                "oPaginate": {
+                    "sFirst": "Primero",
+                    "sLast": "Último",
+                    "sNext": "Siguiente",
+                    "sPrevious": "Anterior"
+                },
+                "oAria": {
+                    "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                    "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                }
+            };
+
+            $('#creditosTable').DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "language": spanish,
+                "autoWidth": true,
+                "pageLength": 10
+            });
+
             $('#cuotasModal').on('show.bs.modal', function(event) {
                 var button = $(event.relatedTarget); // Botón que activó el modal
                 var url = button.data('url'); // Extrae la URL del atributo data-url
@@ -274,12 +184,36 @@
                         modal.find('.modal-body').html(data);
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
-                        console.log('Error al cargar el contenido del modal:', textStatus,
-                            errorThrown);
+                        console.log('Error al cargar el contenido del modal:', textStatus, errorThrown);
                         modal.find('.modal-body').html('<p>Error al cargar el contenido.</p>');
                     }
                 });
             });
         });
+
+        function preguntar(event, id) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Eliminar registro',
+                text: '¿Desea eliminar este registro?',
+                icon: 'question',
+                showDenyButton: true,
+                confirmButtonText: 'Eliminar',
+                confirmButtonColor: '#a5161d',
+                denyButtonColor: '#270a0a',
+                denyButtonText: 'Cancelar',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = $('#miFormulario' + id);
+                    form.submit();
+                }
+            });
+        }
+
+        function filtrarPorTipo() {
+            var seleccion = document.getElementById('tipo_ingreso').value;
+            var tabla = $('#creditosTable').DataTable();
+            tabla.columns(4).search(seleccion).draw();
+        }
     </script>
 @endsection

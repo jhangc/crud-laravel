@@ -28,6 +28,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     <!-- Añade esto en el <head> de tu HTML o justo antes del cierre de </body>, dependiendo de tus necesidades -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <!-- <link href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css" rel="stylesheet"> -->
+    <link href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+
 
 
 </head>
@@ -395,6 +399,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
 
     <script src="{{ asset('dist/js/main.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script>
+
 </body>
 
 </html>

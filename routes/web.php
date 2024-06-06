@@ -38,6 +38,7 @@ Route::delete('/admin/usuarios/{id}', [App\Http\Controllers\UsuarioController::c
 Route::get('/admin/creditos', [App\Http\Controllers\creditoController::class, 'index'])->name('creditos.index')->middleware('auth');
 //ir al credito nuevo
 Route::get('/admin/creditos/createnuevo', [App\Http\Controllers\creditoController::class, 'createnuevo'])->name('creditos.createnuevo')->middleware('auth');
+Route::get('/admin/creditos/proyecciones/{id}', [App\Http\Controllers\creditoController::class, 'proyecciones'])->name('creditos.proyecciones')->middleware('auth');
 Route::post('/admin/creditos/store', [App\Http\Controllers\creditoController::class, 'store'])->name('creditos.store')->middleware('auth');
 Route::get('/admin/creditos/aprobar', [App\Http\Controllers\creditoController::class, 'viewaprobar'])->name('creditos.aprobar')->middleware('auth');
 Route::get('/admin/creditos/supervisar', [App\Http\Controllers\creditoController::class, 'viewsupervisar'])->name('creditos.supervisar')->middleware('auth');

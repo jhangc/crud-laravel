@@ -38,6 +38,49 @@ class creditoController extends Controller
     {
         return view('admin.creditos.aprobar');
     }
+    public function proyecciones($id){
+    $prestamo = \App\Models\Credito::find($id);
+
+    $proyecciones = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
+    $deudas = \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
+    $gastosOperativos = \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
+    $inventario = \App\Models\Inventario::where('id_prestamo', $id)->get();
+    $boletas = \App\Models\Boleta::where('id_prestamo', $id)->get();
+    $gastosProducir = \App\Models\GastosProducir::where('id_prestamo', $id)->get();
+
+    // Calcular Totales
+    $totalVentas = $proyecciones->sum('precio_venta * unidades_compradas');
+    $totalCompras = $proyecciones->sum('precio_compra* unidades_compradas');
+    $totalCuotasCreditos = $deudas->sum('cuota');
+    $totalGastosOperativos = $gastosOperativos->sum('precio_unitario * cantidad');
+    $totalGastosFamiliares = 0; // Supongamos que es otro campo si existe
+    $totalPrestamos = $prestamo->monto_total;
+    $patrimonio = 10000; // Supongamos un valor para patrimonio
+
+    // Calculos
+    $utilidadBruta = $totalVentas - $totalCompras;
+    $utilidadOperativa = $utilidadBruta - $totalGastosOperativos;
+    $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
+    $cuotaEndeudamiento = $utilidadNeta - $totalGastosFamiliares;
+    $solvencia = $totalPrestamos / $patrimonio;
+    
+    // Verificación de división por cero
+    $rentabilidad = $totalVentas != 0 ? $utilidadNeta / $totalVentas : 0;
+    $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
+    $capitalTrabajo = 20000; // Supongamos un valor para capital de trabajo
+    $indicadorCapitalTrabajo = $capitalTrabajo != 0 ? $totalPrestamos / $capitalTrabajo : 0;
+        return view('admin.creditos.proyeccionesmargen',compact(
+            'id',
+            'utilidadBruta',
+            'utilidadOperativa',
+            'utilidadNeta',
+            'cuotaEndeudamiento',
+            'solvencia',
+            'rentabilidad',
+            'indicadorInventario',
+            'indicadorCapitalTrabajo'
+        ));
+    }
 
     public function viewsupervisar()
     {
