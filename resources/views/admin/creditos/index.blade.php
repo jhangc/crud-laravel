@@ -11,29 +11,20 @@
                 <div class="card-header">
                     <div class="row">
                         <div class="col-md-2">
-                            <div class="card-tools ">
+                            <div class="card-tools">
                                 <a href="{{ url('/admin/creditos/createnuevo') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Nuevo crédito</a>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="card-tools ">
+                            <div class="card-tools">
                                 <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Crédito recurrente</a>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <div class="card-tools ">
+                            <div class="card-tools">
                                 <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Crédito refinanciado</a>
                             </div>
                         </div>
-                        <!-- <div class="col-md-3">
-                            <div class="input-group">
-                                <select name="tipo_ingreso" id="tipo_ingreso" class="form-control" required onchange="filtrarPorTipo()">
-                                    <option value="">Tipo de crédito...</option>
-                                    <option value="Individual">Individual</option>
-                                    <option value="Grupal">Grupal</option>
-                                </select>
-                            </div>
-                        </div> -->
                     </div>
                 </div>
             </div>
@@ -93,7 +84,7 @@
                                         @endif
                                     </td>
                                     <td style="display: flex; align-items: center; justify-content:center;">
-                                        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#cuotasModal" data-url="{{ route('credito.cuotas', $credito->id) }}">Cuotas</a>
+                                        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#cuotasModal" onclick="loadCuotas('{{ route('credito.cuotas', $credito->id) }}')">Cuotas</a>
                                         <a href="{{  route('creditos.proyecciones', ['id' => $credito->id]) }}" class="btn btn-secondary">Resultado</a>
                                         <a href="{{ route('creditos.edit', $credito->id) }}" type="button" class="btn btn-success"><i class="bi bi-pencil"></i></a>
                                         <form action="{{ route('creditos.destroy', $credito->id) }}" onclick="preguntar(event, '{{ $id }}')" method="post" id="miFormulario{{ $id }}">
@@ -131,7 +122,6 @@
     </div>
 
     <script>
-        
         $(document).ready(function() {
             var spanish = {
                 "sProcessing": "Procesando...",
@@ -168,28 +158,25 @@
                 "autoWidth": true,
                 "pageLength": 10
             });
-
-            $('#cuotasModal').on('show.bs.modal', function(event) {
-                var button = $(event.relatedTarget); // Botón que activó el modal
-                var url = button.data('url'); // Extrae la URL del atributo data-url
-
-                var modal = $(this);
-                modal.find('.modal-body').html(''); // Limpiar el contenido anterior
-
-                // Hacer una solicitud AJAX para cargar el contenido del modal
-                $.ajax({
-                    url: url,
-                    method: 'GET',
-                    success: function(data) {
-                        modal.find('.modal-body').html(data);
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        console.log('Error al cargar el contenido del modal:', textStatus, errorThrown);
-                        modal.find('.modal-body').html('<p>Error al cargar el contenido.</p>');
-                    }
-                });
-            });
         });
+
+        function loadCuotas(url) {
+            var modal = $('#cuotasModal');
+            modal.find('.modal-body').html(''); // Limpiar el contenido anterior
+
+            // Hacer una solicitud AJAX para cargar el contenido del modal
+            $.ajax({
+                url: url,
+                method: 'GET',
+                success: function(data) {
+                    modal.find('.modal-body').html(data);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Error al cargar el contenido del modal:', textStatus, errorThrown);
+                    modal.find('.modal-body').html('<p>Error al cargar el contenido.</p>');
+                }
+            });
+        }
 
         function preguntar(event, id) {
             event.preventDefault();
