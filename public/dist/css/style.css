@@ -35,11 +35,37 @@
 .acciones > * {
     margin: 0 5px;
 }
+.evaluacion{
+    margin-bottom: 20px !important;
+}
+
+.evaluacion h6{
+    color: red;
+    width: 100%;
+    margin-left: 10px;
+}
+.evaluacion h3{
+    width: 100%;
+    font-weight: 600;
+    text-align: center;
+}
+
+.btnprestamo{
+    margin-top: 32px;
+}
+
+.finaltotal {
+    background-color: #f2f2f2; /* Cambia este valor por el color de fondo deseado */
+}
 
 
 
 @media (max-width: 576px) {
     .plantilla{
         padding: 0px 10px;
+    }
+
+    .btnprestamo{
+        margin-top: 0px;
     }
 }

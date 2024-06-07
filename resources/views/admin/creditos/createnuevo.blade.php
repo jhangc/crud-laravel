@@ -349,7 +349,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-2">
-                                    <button type="button" onclick="agregarProductoProyeccion()" class="btn btn-primary">Añadir Producto</button>
+                                    <button type="button" onclick="agregarProductoProyeccion()" class="btn btn-primary btnprestamo">Añadir Producto</button>
                                 </div>
                             </div>
                             <hr>
@@ -406,7 +406,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-2">
-                                    <button type="button" onclick="agregarBoleta()" class="btn btn-primary">Añadir Boleta</button>
+                                    <button type="button" onclick="agregarBoleta()" class="btn btn-primary btnprestamo">Añadir Boleta</button>
                                 </div>
                             </div>
                             <hr>
@@ -483,7 +483,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-2">
-                                    <button type="button" onclick="agregarGastoProducir()" class="btn btn-info">Añadir Gasto</button>
+                                    <button type="button" onclick="agregarGastoProducir()" class="btn btn-info btnprestamo">Añadir Gasto</button>
                                 </div>
                             </div>
                             <hr>
@@ -528,7 +528,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-2">
-                                    <button type="button" onclick="agregarInventariotabla()" class="btn btn-warning">Añadir Producto</button>
+                                    <button type="button" onclick="agregarInventariotabla()" class="btn btn-warning btnprestamo">Añadir Producto</button>
                                 </div>
                             </div>
                             <hr>
@@ -575,8 +575,8 @@
                                         <input type="number" id="cantidad_gasto" class="form-control">
                                     </div>
                                 </div>
-                                <div class="col-md-2">
-                                    <button type="button" onclick="agregarGastoOperativoc()" class="btn btn-info">Añadir Gasto</button>
+                                <div class="col-md-2" >
+                                    <button type="button" onclick="agregarGastoOperativoc()" class="btn btn-info btnprestamo">Añadir Gasto</button>
                                 </div>
                             </div>
                             <hr>
@@ -613,7 +613,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="saldo_capital">Saldo Capital</label>
+                                        <label for="saldo_capital">Saldo Restante</label>
                                         <input type="text" id="saldo_capital" class="form-control">
                                     </div>
                                 </div>
@@ -623,16 +623,9 @@
                                         <input type="text" id="cuota" class="form-control">
                                     </div>
                                 </div>
-                                <div class="col-md3">
-                                    <div class="form-group">
-                                        <label for="tiempo_restante">Tiempo restante (meses)</label>
-                                        <input type="text" id="tiempo_restante" class="form-control">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-2">
-                                    <button type="button" onclick="agregarDeudaFinanciera()" class="btn btn-primary">Añadir Deuda</button>
+
+                                <div class="col-md-3">
+                                    <button type="button" onclick="agregarDeudaFinanciera()" class="btn btn-primary btnprestamo">Añadir Deuda</button>
                                 </div>
                             </div>
                             <hr>
@@ -640,9 +633,9 @@
                                 <thead class="thead-blue">
                                     <tr>
                                         <th>Nombre de la entidad</th>
-                                        <th>Saldo Capital</th>
+                                        <th>Saldo Restante</th>
                                         <th>Cuota</th>
-                                        <th>Tiempo restante</th>
+                                        <!-- <th>Tiempo restante</th> -->
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -903,7 +896,7 @@
         const entidad = document.getElementById('entidad_financiera').value;
         const saldoCapital = parseFloat(document.getElementById('saldo_capital').value);
         const cuota = parseFloat(document.getElementById('cuota').value);
-        const tiempoRestante = parseInt(document.getElementById('tiempo_restante').value, 10);
+        const tiempoRestante = 0;
 
         const deuda = {
             entidad,
@@ -920,7 +913,7 @@
         document.getElementById('entidad_financiera').value = '';
         document.getElementById('saldo_capital').value = '';
         document.getElementById('cuota').value = '';
-        document.getElementById('tiempo_restante').value = '';
+        // document.getElementById('tiempo_restante').value = '';
     }
 
     function actualizarTablaDeudasFinancieras() {
@@ -933,7 +926,7 @@
                 <td>${deuda.entidad}</td>
                 <td>${deuda.saldoCapital}</td>
                 <td>${deuda.cuota}</td>
-                <td>${deuda.tiempoRestante}</td>
+                
                 <td><button class="btn btn-danger btn-sm" onclick="eliminarDeudaFinanciera(${index})"><i class="fa fa-trash"></i></button></td>`;
         });
     }

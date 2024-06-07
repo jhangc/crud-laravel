@@ -9,18 +9,19 @@
         <div class="col-md-12">
             <div class="card card-outline">
                 <div class="card-header">
-                    <div class="row">
-                        <div class="col-md-2">
+                    <div class="row" style="text-align: center;">
+                        <div class="col-md-4">
                             <div class="card-tools">
                                 <a href="{{ url('/admin/creditos/createnuevo') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Nuevo crédito</a>
                             </div>
+                            
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4">
                             <div class="card-tools">
                                 <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Crédito recurrente</a>
                             </div>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4">
                             <div class="card-tools">
                                 <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Crédito refinanciado</a>
                             </div>
@@ -46,7 +47,7 @@
                                 <th>Intervalo</th>
                                 <th>Tasa (%)</th>
                                 <th>Tiempo</th>
-                                <th>Monto</th>
+                                <th>Monto (S/.)</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
