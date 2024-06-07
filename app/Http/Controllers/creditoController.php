@@ -211,7 +211,7 @@ class creditoController extends Controller
             $prestamo->categoria = 'grupal';
             $prestamo->nombre_prestamo = $request->nombre_prestamo;
             $prestamo->cantidad_integrantes = $request->cantidad_grupo;
-            $prestamo->descripcion_negocio = "sin descripcion";
+            $prestamo->descripcion_negocio =  $request->descripcion_negocio;
         }
         $prestamo->user_id = Auth::id();
         $prestamo->save();
