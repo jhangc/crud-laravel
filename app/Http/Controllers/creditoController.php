@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use App\Models\credito;
 use App\Models\cliente;
 use App\Models\CreditoCliente;
-use App\Models\Cronograma;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Models\Cronograma;
 
 class creditoController extends Controller
 {
@@ -39,48 +41,48 @@ class creditoController extends Controller
         return view('admin.creditos.aprobar');
     }
     public function proyecciones($id){
-    $prestamo = \App\Models\Credito::find($id);
+        $prestamo = \App\Models\credito::find($id);
 
-    $proyecciones = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
-    $deudas = \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
-    $gastosOperativos = \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
-    $inventario = \App\Models\Inventario::where('id_prestamo', $id)->get();
-    $boletas = \App\Models\Boleta::where('id_prestamo', $id)->get();
-    $gastosProducir = \App\Models\GastosProducir::where('id_prestamo', $id)->get();
+        $proyecciones = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
+        $deudas = \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
+        $gastosOperativos = \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
+        $inventario = \App\Models\Inventario::where('id_prestamo', $id)->get();
+        $boletas = \App\Models\Boleta::where('id_prestamo', $id)->get();
+        $gastosProducir = \App\Models\GastosProducir::where('id_prestamo', $id)->get();
 
-    // Calcular Totales
-    $totalVentas = $proyecciones->sum('precio_venta * unidades_compradas');
-    $totalCompras = $proyecciones->sum('precio_compra* unidades_compradas');
-    $totalCuotasCreditos = $deudas->sum('cuota');
-    $totalGastosOperativos = $gastosOperativos->sum('precio_unitario * cantidad');
-    $totalGastosFamiliares = 0; // Supongamos que es otro campo si existe
-    $totalPrestamos = $prestamo->monto_total;
-    $patrimonio = 10000; // Supongamos un valor para patrimonio
+        // Calcular Totales
+        $totalVentas = $proyecciones->sum('precio_venta * unidades_compradas');
+        $totalCompras = $proyecciones->sum('precio_compra* unidades_compradas');
+        $totalCuotasCreditos = $deudas->sum('cuota');
+        $totalGastosOperativos = $gastosOperativos->sum('precio_unitario * cantidad');
+        $totalGastosFamiliares = 0; // Supongamos que es otro campo si existe
+        $totalPrestamos = $prestamo->monto_total;
+        $patrimonio = 10000; // Supongamos un valor para patrimonio
 
-    // Calculos
-    $utilidadBruta = $totalVentas - $totalCompras;
-    $utilidadOperativa = $utilidadBruta - $totalGastosOperativos;
-    $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
-    $cuotaEndeudamiento = $utilidadNeta - $totalGastosFamiliares;
-    $solvencia = $totalPrestamos / $patrimonio;
-    
-    // Verificación de división por cero
-    $rentabilidad = $totalVentas != 0 ? $utilidadNeta / $totalVentas : 0;
-    $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
-    $capitalTrabajo = 20000; // Supongamos un valor para capital de trabajo
-    $indicadorCapitalTrabajo = $capitalTrabajo != 0 ? $totalPrestamos / $capitalTrabajo : 0;
-        return view('admin.creditos.proyeccionesmargen',compact(
-            'id',
-            'utilidadBruta',
-            'utilidadOperativa',
-            'utilidadNeta',
-            'cuotaEndeudamiento',
-            'solvencia',
-            'rentabilidad',
-            'indicadorInventario',
-            'indicadorCapitalTrabajo'
-        ));
-    }
+        // Calculos
+        $utilidadBruta = $totalVentas - $totalCompras;
+        $utilidadOperativa = $utilidadBruta - $totalGastosOperativos;
+        $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
+        $cuotaEndeudamiento = $utilidadNeta - $totalGastosFamiliares;
+        $solvencia = $totalPrestamos / $patrimonio;
+        
+        // Verificación de división por cero
+        $rentabilidad = $totalVentas != 0 ? $utilidadNeta / $totalVentas : 0;
+        $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
+        $capitalTrabajo = 20000; // Supongamos un valor para capital de trabajo
+        $indicadorCapitalTrabajo = $capitalTrabajo != 0 ? $totalPrestamos / $capitalTrabajo : 0;
+            return view('admin.creditos.proyeccionesmargen',compact(
+                'id',
+                'utilidadBruta',
+                'utilidadOperativa',
+                'utilidadNeta',
+                'cuotaEndeudamiento',
+                'solvencia',
+                'rentabilidad',
+                'indicadorInventario',
+                'indicadorCapitalTrabajo'
+            ));
+        }
 
     public function viewsupervisar()
     {
@@ -185,7 +187,8 @@ class creditoController extends Controller
             'foto_grupal' => 'nullable|image',
             'activo' => 'boolean',
         ]);
-
+        DB::beginTransaction();
+        try {
         $prestamo = new Credito();
         $prestamo->tipo = $request->tipo_credito;
         $prestamo->producto = $request->tipo_producto;
@@ -210,7 +213,7 @@ class creditoController extends Controller
             $prestamo->cantidad_integrantes = $request->cantidad_grupo;
             $prestamo->descripcion_negocio = "sin descripcion";
         }
-
+        $prestamo->user_id = Auth::id();
         $prestamo->save();
         //garantia
          $garantia=\App\Models\Garantia::create([
@@ -231,13 +234,15 @@ class creditoController extends Controller
             $garantia->save();
         }
 
-        if ($request->tipo_producto !== 'grupal') {
+        if ($request->tipo_producto != 'grupal') {
             $cliente = Cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
             if ($cliente) {
                 $credito_cliente = new CreditoCliente();
                 $credito_cliente->prestamo_id = $prestamo->id;
                 $credito_cliente->cliente_id = $cliente->id;
+                $credito_cliente->monto_indivual = $request->monto;
                 $credito_cliente->save();
+                $this->guardarCronograma($prestamo, $cliente, $request);
             }
         } else {
             if (is_array($decodedData['clientesArray'])) {
@@ -247,7 +252,9 @@ class creditoController extends Controller
                         $credito_cliente = new CreditoCliente();
                         $credito_cliente->prestamo_id = $prestamo->id;
                         $credito_cliente->cliente_id = $cliente->id;
+                        $credito_cliente->monto_indivual = $clienteData['monto'];
                         $credito_cliente->save();
+                        $this->guardarCronograma($prestamo, $cliente, $request);
                     }
                 }
             }
@@ -266,83 +273,48 @@ class creditoController extends Controller
         }
         $prestamo->activo = $request->activo ?? true;
         $prestamo->save();
-        $fechaDesembolso = Carbon::parse($request->fecha_desembolso);
+        DB::commit();
 
-        // $fechaconperiodogracia = clone $fechaDesembolso;
-        // $fechaconperiodogracia->addDays($request->periodo_gracia_dias);
-        // $tasaInteresMensual = $request->tasa_interes / 12;
-        // $tasaInteresQuincenal = $tasaInteresMensual * 2;
-        // $tasaInteresdia = $request->tasa_interes / 365;
-        // $montoTotal = $request->monto;
-        // $monto_interes_diario = $montoTotal * (pow((1 + $tasaInteresdia / 100), $request->periodo_gracia_dias));
-        // $fechaCuota = $fechaconperiodogracia->copy()->addMonth();
+        return response()->json([
+            'state' => '0',
+            'mensaje' => 'Prestamo creado con exito',
+            'prestamo' => $prestamo,
+            'user' => Auth::id()
+        ])->setStatusCode(200);
 
-        // for ($i = 1; $i <= $tiempo_credito; $i++) {
-        //     if ($request->recurrencia === 'mensual') {
-        //         $monto_interes = $montoTotal * (pow((1 + $tasaInteresMensual / 100), $tiempo_credito));
-        //     } else {
-        //         $monto_interes = $montoTotal * (pow((1 + $tasaInteresQuincenal / 100), $tiempo_credito));
-        //     }
-
-        //     $cronograma = new Cronograma();
-        //     $cronograma->fecha = $fechaCuota;
-
-        //     if ($i == 1) {
-        //         $cronograma->monto = ($monto_interes / $tiempo_credito) + $monto_interes_diario - $montoTotal;
-        //     } else {
-        //         $cronograma->monto = $monto_interes / $tiempo_credito;
-        //     }
-
-        //     $cronograma->numero = $i;
-        //     $cronograma->id_prestamo = $prestamo->id;
-        //     $cronograma->save();
-
-        //     $fechaCuota->addMonth();
-        // }
-        $fechaDesembolso = Carbon::parse($request->fecha_desembolso);
-        //fecha incluyendo periodo de gracias
-        $fechaconperiodogracia = clone $fechaDesembolso;
+    } catch (\Exception $e) {
+        DB::rollback();
+        return response()->json([
+            'state' => '1',
+            'mensaje' => 'Error al crear el prestamo: ' . $e->getMessage()
+        ])->setStatusCode(500);
+    }
+    }
+    protected function guardarCronograma($prestamo, $cliente, $request)
+    {
+        $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
+        $fechaconperiodogracia = clone $fecha_desembolso;
         $fechaconperiodogracia->modify("+$request->periodo_gracia_dias days");
         $tiempo = $request->tiempo_credito;
         $montoTotal = $request->monto;
-        $tasaInteres=$request->tasa_interes;
-        // Calcular la tasa diaria
+        $tasaInteres = $request->tasa_interes;
         $tasaDiaria = pow(1 + ($tasaInteres / 100), 1 / 360) - 1;
-        // Calcular los intereses del período de gracia
         $interesesPeriodoGracia = $montoTotal * $tasaDiaria * $request->periodo_gracia_dias;
-        // Calcular la cuota mensual fija sin intereses del período de gracia
         $cuotaSinGracia = $this->calcularCuota($montoTotal, $tasaInteres, $tiempo);
-        // Calcular el monto adicional por intereses de gracia a agregar a cada cuota
         $interesesMensualesPorGracia = $interesesPeriodoGracia / $tiempo;
-        // Generar el cronograma de pagos
         $fechaCuota = $fechaconperiodogracia->copy()->addMonth();
+
         for ($i = 1; $i <= $tiempo; $i++) {
             $cronograma = new Cronograma();
             $cronograma->fecha = $fechaCuota;
             $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
             $cronograma->numero = $i;
             $cronograma->id_prestamo = $prestamo->id;
+            $cronograma->cliente_id = $cliente->id; // Asignar cliente
             $cronograma->save();
-            // Incrementar la fecha para la siguiente cuota
             $fechaCuota = $fechaCuota->addMonth();
         }
-        // $cuota = $this->calcularCuota($montoTotal, $$tasaInteres, $tiempo);
-        // for ($i = 1; $i <= $tiempo; $i++) {
-        //     $cronograma = new Cronograma();
-        //     $cronograma->fecha = $fechaCuota;
-        //     $cronograma->monto = $cuota; // Sumar el interés al monto de la cuota
-        //     $cronograma->numero = $i;
-        //     $cronograma->id_prestamo = $prestamo->id;
-        //     $cronograma->save();
-        //    $fechaCuota = $fechaCuota->addMonth();
-        // }
-        return response()->json([
-            'state' => '0',
-            'mensaje' => 'Prestamo creado con exito',
-            'prestamo' => $prestamo
-        ])->setStatusCode(200);
     }
-
     protected function saveArrayData(array $data, $prestamoId)
     {
         if (is_array($data['proyeccionesArray'])) {
@@ -423,9 +395,10 @@ class creditoController extends Controller
         }
     }
     
-     public function calcularCuota($monto, $tea, $periodos) {
-        $tasaMensual = pow(1 + ($tea/100), 1 / 12) - 1;
-        return   ($monto * $tasaMensual * pow((1 + $tasaMensual), $periodos)) / (pow((1 + $tasaMensual), $periodos) - 1);
+    public function calcularCuota($monto, $tea, $periodos)
+    {
+        $tasaMensual = pow(1 + ($tea / 100), 1 / 12) - 1;
+        return ($monto * $tasaMensual * pow((1 + $tasaMensual), $periodos)) / (pow((1 + $tasaMensual), $periodos) - 1);
     }
 
     /**
@@ -493,7 +466,5 @@ class creditoController extends Controller
             ];
         }
 
-        // return view('creditos.index', compact('cuotas'));
-        return view('creditos.index', compact('cuotas', 'credito'));
-    }
+}
 }

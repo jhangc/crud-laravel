@@ -15,5 +15,10 @@ class Cronograma extends Model
         'monto',
         'numero',
         'id_prestamo',
+        'cliente_id'
     ];
+    public function clientes()
+    {
+        return $this->belongsToMany(cliente::class,'cliente_id');
+    }
 }
