@@ -38,19 +38,20 @@
                 </div>
             </div>
 
+
             <div class="card-body">
                 <div class="table-responsive">
                     <table id="creditosTable" class="table table-bordered table-sm table-striped table-hover">
                         <thead>
                             <tr>
-                                <th>Nro</th>
+                                <th >Nro</th>
                                 <th>ID</th>
-                                <th>Nombres</th>
+                                <th >Nombres</th>
                                 <th>Negocio</th>
                                 <th>Tipo de credito</th>
                                 <th>Producto</th>
-                                <th>SubProducto</th>
-                                <th>Destino de credito</th>
+                                <!-- <th>SubProducto</th>
+                                <th>Destino de credito</th> -->
                                 <th>Intervalo</th>
                                 <th>Tasa (%)</th>
                                 <th>Tiempo</th>
@@ -77,8 +78,8 @@
                                     <td>{{ $credito->descripcion_negocio}}</td>
                                     <td>{{ $credito->tipo }}</td>
                                     <td>{{ $credito->producto }}</td>
-                                    <td>{{ $credito->subproducto }}</td>
-                                    <td>{{ $credito->destino }}</td>
+                                    <!-- <td>{{ $credito->subproducto }}</td>
+                                    <td>{{ $credito->destino }}</td> -->
                                     <td>{{ $credito->recurrencia }}</td>
                                     <td>{{ $credito->tasa }}</td>
                                     <td>{{ $credito->tiempo }}</td>
