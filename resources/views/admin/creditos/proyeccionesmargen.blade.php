@@ -307,6 +307,14 @@
                             <td>Domingo</td>
                             <td></td>
                         </tr>
+                        <tr>
+                            <td><b>Total quincena</b></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><b>Total al mes</b></td>
+                            <td></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -328,34 +336,42 @@
                     </thead>
                     <tbody>
                         <tr>
+                            <!-- suma de total ventas al mes -->
                             <td>Total de Ventas</td>
                             <td></td>
                         </tr>
                         <tr>
+                            <!-- suma de total compras al mes -->
                             <td>Costo de Ventas</td>
                             <td></td>
                         </tr>
                         <tr>
+                            <!-- Ventas - costo -->
                             <td><b>Utilidad Bruta</b></td>
                             <td></td>
                         </tr>
                         <tr>
+                            <!-- total gastos operativos -->
                             <td>Gastos operativos</td>
                             <td></td>
                         </tr>
                         <tr>
+                            <!-- utlidad bruta - gastos operativos -->
                             <td><b>Utilidad operativa</b></td>
                             <td></td>
                         </tr>
                         <tr>
+                            <!-- total gastos familiares-->
                             <td>Gastos Familiares</td>
                             <td></td>
                         </tr>
                         <tr>
+                            <!-- suma de cuotas de deudas en otras entidades-->
                             <td>Cuotas otras entidades</td>
                             <td></td>
                         </tr>
                         <tr>
+                            <!-- utilidad operativa - gastos familaires - cuotas otras entidades-->
                             <td><b>Utilidad Neta</b></td>
                             <td></td>
                         </tr>
@@ -369,35 +385,45 @@
 
 <div class="row">
     <div class="col-md-6">
-        <div class="card card-outline card-warning">
+        <div class="card card-outline card-primary">
             <div class="card-header">
-                <h3 class="card-title">Proyecciones de Ventas y Margen Bruto</h3>
+                <h3 class="card-title">Evaluación de Viabilidad Financiera</h3>
             </div>
             <div class="card-body">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Indicador</th>
-                            <th>Resultado</th>
+                            <th>Descripción</th>
+                            <th>Valor</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Utilidad Bruta</td>
-                            <td>{{ number_format($utilidadBruta, 2) }}</td>
+                            <!-- total de inventario -->
+                            <td>Total patrimonial</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td>Utilidad Operativa</td>
-                            <td>{{ number_format($utilidadOperativa, 2) }}</td>
+                            <!-- total arantia-->
+                            <td>Total Garantia</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td>Utilidad Neta</td>
-                            <td>{{ number_format($utilidadNeta, 2) }}</td>
+                            <!-- total prestamo -->
+                            <td>Total Prestamo</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td>Cuota de Endeudamiento</td>
-                            <td>{{ number_format($cuotaEndeudamiento, 2) }}</td>
+                            <!-- division de patrimonio/prestamos en %-->
+                            <td><b>Viabilidad por patrimonio</b></td>
+                            <td></td>
                         </tr>
+                        <tr>
+                            <!-- division de patrimonio/garantia en %-->
+                            <td><b>Viabilidad por garantia</b></td>
+                            <td></td>
+                        </tr>
+                        
                     </tbody>
                 </table>
             </div>
@@ -439,7 +465,10 @@
             </div>
         </div>
     </div>
+
 </div>
+
+
 
 <div class="row" style="text-align:center;">
     <div class="col-md-12 mb-5">
