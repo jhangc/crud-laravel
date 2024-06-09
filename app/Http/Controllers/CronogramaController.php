@@ -78,6 +78,7 @@ public function vercuota(string $id)
         $credito =\App\Models\credito::findOrFail($id); // Buscar el crédito por ID
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $credito->id)->get(); // Obtener las cuotas del cronograma asociadas al préstamo
         $clientes = $credito->clientes; // Obtener los clientes asociados al crédito
+        
         return view('admin.creditos.cuotas', compact('cuotas', 'credito', 'clientes'));
         
     }

@@ -261,7 +261,7 @@ class creditoController extends Controller
                 $credito_cliente->cliente_id = $cliente->id;
                 $credito_cliente->monto_indivual = $request->monto;
                 $credito_cliente->save();
-                $this->guardarCronograma($prestamo, $cliente, $request);
+                $this->guardarCronograma($prestamo, $cliente, $request,$request->monto);
             }
         } else {
             if (is_array($decodedData['clientesArray'])) {
@@ -273,12 +273,12 @@ class creditoController extends Controller
                         $credito_cliente->cliente_id = $cliente->id;
                         $credito_cliente->monto_indivual = $clienteData['monto'];
                         $credito_cliente->save();
-                        $this->guardarCronograma($prestamo, $cliente, $request);
+                        $this->guardarCronograma($prestamo, $cliente, $request, $clienteData['monto']);
                     }
                 }
             }
         }
-        $this->saveArrayData($decodedData, $prestamo->id);
+        $this->saveArrayData($decodedData, $prestamo->id,$request);
         $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
         $tiempo_credito = $request->tiempo_credito;
         $prestamo->fecha_fin = $fecha_desembolso->copy()->addMonths($tiempo_credito);
@@ -309,13 +309,13 @@ class creditoController extends Controller
         ])->setStatusCode(500);
     }
     }
-    protected function guardarCronograma($prestamo, $cliente, $request)
+    protected function guardarCronograma($prestamo, $cliente, $request,$monto)
     {
         $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
         $fechaconperiodogracia = clone $fecha_desembolso;
         $fechaconperiodogracia->modify("+$request->periodo_gracia_dias days");
         $tiempo = $request->tiempo_credito;
-        $montoTotal = $request->monto;
+        $montoTotal = $monto;
         $tasaInteres = $request->tasa_interes;
         $tasaDiaria = pow(1 + ($tasaInteres / 100), 1 / 360) - 1;
         $interesesPeriodoGracia = $montoTotal * $tasaDiaria * $request->periodo_gracia_dias;
@@ -334,7 +334,7 @@ class creditoController extends Controller
             $fechaCuota = $fechaCuota->addMonth();
         }
     }
-    protected function saveArrayData(array $data, $prestamoId)
+    protected function saveArrayData(array $data, $prestamoId,$request)
     {
         if (is_array($data['proyeccionesArray'])) {
             foreach ($data['proyeccionesArray'] as $proyeccionData) {
@@ -401,14 +401,22 @@ class creditoController extends Controller
             }
         }
 
-        if (is_array($data['gastosProducirArray'])) {
+        if (is_array($data['gastosProducirArray'])&& count($data['proyeccionesArray']) > 0) {
+           $gasto= \App\Models\GastoProducir::create([
+                'nombre_actividad' => $request->nombre_actividad,
+                'cantidad_terreno' => $request->cantidad_terreno,
+                'produccion_total' => $request->produccion_total,
+                'precio_kg' => $request->precio_kg,
+                'id_prestamo' => $prestamoId
+            ]);
             foreach ($data['gastosProducirArray'] as $gastoProducirData) {
                 \App\Models\GastosProducir::create([
                     'descripcion_gasto' => $gastoProducirData['descripcionGasto'],
                     'precio_unitario' => $gastoProducirData['precioUnitario'],
                     'cantidad' => $gastoProducirData['cantidad'],
                     'total_gasto' => $gastoProducirData['totalGasto'],
-                    'id_prestamo' => $prestamoId
+                    'id_prestamo' => $prestamoId,
+                    'id_gasto_producir'=> $gasto->id,
                 ]);
             }
         }
