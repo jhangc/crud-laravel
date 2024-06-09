@@ -185,7 +185,8 @@ class creditoController extends Controller
     public function store(Request $request)
     {
         $decodedData = $request->all();
-        foreach (['clientesArray', 'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'boletasArray', 'gastosProducirArray'] as $key) {
+        foreach (['clientesArray', 'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'boletasArray', 'gastosProducirArray',
+       'inventarioArray1' ] as $key) {
             if ($request->filled($key)) {
                 $decodedData[$key] = json_decode($request->input($key), true);
             }
@@ -378,6 +379,16 @@ class creditoController extends Controller
             }
         }
         //paso a ser  gastos familiar  para avanzar
+        if (is_array($data['inventarioArray1'])) {
+            foreach ($data['inventarioArray1'] as $inventarioData) {
+                \App\Models\GastosFamiliares::create([
+                    'descripcion' => $inventarioData['descripcion'],
+                    'precio_unitario' => $inventarioData['precioUnitario'],
+                    'cantidad' => $inventarioData['cantidad'],
+                    'id_prestamo' => $prestamoId
+                ]);
+            }
+        }
         if (is_array($data['inventarioArray'])) {
             foreach ($data['inventarioArray'] as $inventarioData) {
                 \App\Models\Inventario::create([

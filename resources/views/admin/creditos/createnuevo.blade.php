@@ -289,7 +289,7 @@
 
                         </div>
                     </div>
-                    <div class="card card-outline card-warning" id="inventario_producto">
+                    <div class="card card-outline card-warning"  id="gastos_familiares">
                         <div class="card-header">
                             <h3 class="card-title">Registro De Gastos Familiares</h3>
                         </div>
@@ -298,27 +298,27 @@
                                 <div class="col-md-5">
                                     <div class="form-group">
                                         <label for="descripcion_producto_inventario">Descripción del gasto</label>
-                                        <input type="text" id="descripcion_producto_inventario" class="form-control">
+                                        <input type="text" id="descripcion_producto_inventario1" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="precio_unitario_inventario">Precio unitario</label>
-                                        <input type="number" id="precio_unitario_inventario" class="form-control">
+                                        <input type="number" id="precio_unitario_inventario1" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
                                         <label for="cantidad_producto_inventario">Cantidad</label>
-                                        <input type="number" id="cantidad_producto_inventario" class="form-control">
+                                        <input type="number" id="cantidad_producto_inventario1" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
-                                    <button type="button" onclick="agregarInventariotabla()" class="btn btn-warning btnprestamo">Añadir Producto</button>
+                                    <button type="button" onclick="agregarInventariotabla1()" class="btn btn-warning btnprestamo">Añadir Producto</button>
                                 </div>
                             </div>
                             <hr>
-                            <table class="table table-striped table-hover table-bordered" id="datosTablaInventario">
+                            <table class="table table-striped table-hover table-bordered" id="datosTablaInventario1">
                                 <thead class="thead-blue">
                                     <tr>
                                         <th>Descripción</th>
@@ -328,12 +328,12 @@
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tablaInventario">
+                                <tbody id="tablaInventario1">
                                     <!-- Las filas se agregarán aquí dinámicamente -->
                                 </tbody>
                             </table>
                             <div class="text" style="background-color: #f0f0f0; padding: 10px;">
-                                <strong>Total de inventario:</strong> <span id="totalMontoInventario" style="font-size: 18px;">0.00</span>
+                                <strong>Total de inventario:</strong> <span id="totalMontoInventario1" style="font-size: 18px;">0.00</span>
                             </div>
                         </div>
                     </div>
@@ -426,6 +426,54 @@
                                     <tbody id="tablaProyecciones">
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card card-outline card-warning"  id="inventario_producto">
+                        <div class="card-header">
+                            <h3 class="card-title">Registro De inventario</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <div class="form-group">
+                                        <label for="descripcion_producto_inventario">Descripción del Producto</label>
+                                        <input type="text" id="descripcion_producto_inventario" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="precio_unitario_inventario">Precio unitario</label>
+                                        <input type="number" id="precio_unitario_inventario" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="cantidad_producto_inventario">Cantidad</label>
+                                        <input type="number" id="cantidad_producto_inventario" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" onclick="agregarInventariotabla()" class="btn btn-warning btnprestamo">Añadir Producto</button>
+                                </div>
+                            </div>
+                            <hr>
+                            <table class="table table-striped table-hover table-bordered" id="datosTablaInventario">
+                                <thead class="thead-blue">
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Precio unitario</th>
+                                        <th>Cantidad</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaInventario">
+                                    <!-- Las filas se agregarán aquí dinámicamente -->
+                                </tbody>
+                            </table>
+                            <div class="text" style="background-color: #f0f0f0; padding: 10px;">
+                                <strong>Total de inventario:</strong> <span id="totalMontoInventario" style="font-size: 18px;">0.00</span>
                             </div>
                         </div>
                     </div>
@@ -891,6 +939,66 @@
         document.getElementById('cantidad_producto_inventario').value = '';
     }
 
+    let inventarioArray1 = [];
+    let totalInventario1 = 0;
+
+    function agregarInventariotabla() {
+        const descripcion = document.getElementById('descripcion_producto_inventario1').value;
+        const precioUnitario = document.getElementById('precio_unitario_inventario1').value;
+        const cantidad = document.getElementById('cantidad_producto_inventario1').value;
+        const montoTotal = (precioUnitario * cantidad).toFixed(2);
+
+        const producto = {
+            descripcion,
+            precioUnitario,
+            cantidad,
+            montoTotal: parseFloat(montoTotal)
+        };
+
+        inventarioArray1.push(producto);
+        actualizarTablaInventario1();
+        limpiarCamposInventario1();
+    }
+
+    function actualizarTablaInventario1() {
+        const tablaCuerpo = document.getElementById('tablaInventario1');
+        tablaCuerpo.innerHTML = '';
+        totalInventario = 0;
+
+        inventarioArray.forEach((producto, index) => {
+            const row = tablaCuerpo.insertRow();
+            row.innerHTML = `
+                <td>${producto.descripcion}</td>
+                <td><input type="number" class="form-control" value="${producto.precioUnitario}" onchange="editarProducto1(${index}, 'precioUnitario', this.value)"></td>
+                <td><input type="number" class="form-control" value="${producto.cantidad}" onchange="editarProducto1(${index}, 'cantidad', this.value)"></td>
+                <td>${producto.montoTotal}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="eliminarProducto1(${index})"><i class="fa fa-trash"></i></button></td>
+            `;
+            totalInventario = parseFloat(totalInventario) + parseFloat(producto.montoTotal);
+        });
+        document.getElementById('totalMontoInventario').textContent = totalInventario.toFixed(2);
+    }
+
+    function editarProducto1(index, campo, valor) {
+        inventarioArray[index][campo] = parseFloat(valor);
+        if (campo === 'precioUnitario' || campo === 'cantidad') {
+            inventarioArray[index].montoTotal = (inventarioArray[index].precioUnitario * inventarioArray[index].cantidad).toFixed(2);
+        }
+        actualizarTablaInventario1();
+    }
+
+    function eliminarProducto1(index) {
+        inventarioArray.splice(index, 1);
+        actualizarTablaInventario1();
+    }
+
+    function limpiarCamposInventario1() {
+        document.getElementById('descripcion_producto_inventario1').value = '';
+        document.getElementById('precio_unitario_inventario1').value = '';
+        document.getElementById('cantidad_producto_inventario1').value = '';
+    }
+
+
     let deudasFinancierasArray = [];
 
     function agregarDeudaFinanciera() {
@@ -1187,13 +1295,14 @@
             inventario_producto.style.display = 'none'
             gastos_ope.style.display = 'none'
             deudas_finan.style.display = 'none'
+            gastos_familiares.style.display = 'none'
             
         } else {
             grupal1Fields.style.display = 'none';
             // credito_individual.style.display = 'block';
             individual1Fields.style.display = 'block';
             if (selectionTipoCredito === 'servicio') {
-               // inventario_producto.style.display = 'none';
+               inventario_producto.style.display = 'none';
                 inventario_producto.style.display = 'block';
             } else {
                 inventario_producto.style.display = 'block';
