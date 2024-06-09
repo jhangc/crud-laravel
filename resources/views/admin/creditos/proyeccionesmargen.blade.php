@@ -3,19 +3,23 @@
 @section('content')
 <div class="row evaluacion">
     <h3 class="titulo">EVALUACION FINANCIERA</h3>
-    <h6><b>TIPO DE CREDITO:</b></h6>
-    <h6><b>PRODUCTO:</b></h6>
-    <h6><b>DESTINO:</b></h6>
-    <h6><b>CLIENTE:</b></h6>
-    <h6><b>ACTIVIDAD:</b></h6>
-    <h6><b>RESPONSABLE:</b></h6>
+    <h6><b>TIPO DE CREDITO:</b> {{ $prestamo->tipo }}</h6>
+    <h6><b>PRODUCTO:</b> {{ $prestamo->producto }}</h6>
+    <h6><b>DESTINO:</b> {{ $prestamo->destino }}</h6>
+    <h6><b>CLIENTES:</b>
+        @foreach ($prestamo->clientes as $cliente)
+            {{ $cliente->nombre }}@if(!$loop->last), @endif
+        @endforeach
+    </h6>
+    <h6><b>ACTIVIDAD:</b> {{ $prestamo->descripcion_negocio }}</h6>
+    <h6><b>RESPONSABLE:</b> {{ $responsable->name }}</h6>
 </div>
 
 <div class="row" id="proyeccionventas">
     <div class="col-md-12">
         <div class="card card-outline card-warning">
             <div class="card-header">
-                <h3 class="card-title">Proyecciones de Ventas segun inventario y producción</h3>
+                <h3 class="card-title">Proyecciones de Ventas según inventario y producción</h3>
             </div>
             <div class="card-body">
                 <table class="table table-bordered">
@@ -29,19 +33,27 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($proyecciones as $proyeccion)
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{ $proyeccion->descripcion_producto }}</td>
+                            <td>{{ $proyeccion->unidades_vendidas * $proyeccion->precio_venta }}</td>
+                            <td>{{ $proyeccion->unidades_compradas * $proyeccion->precio_compra }}</td>
+                            <td>{{ $proyeccion->unidades_vendidas * $proyeccion->precio_venta - $proyeccion->unidades_compradas * $proyeccion->precio_compra }}</td>
+                            <td>{{ ($proyeccion->precio_compra != 0) ? (($proyeccion->precio_venta - $proyeccion->precio_compra) / $proyeccion->precio_compra * 100) : 0 }}%</td>
                         </tr>
+                        @endforeach
 
                         <tr class="finaltotal">
                             <td colspan="2"></td>
                             <td class="text-right"><b>Total</b></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{ $totalVentas - $totalCompras }}</td>
+                            <td>
+                                @if($totalCompras != 0)
+                                    {{ (($totalVentas - $totalCompras) / $totalCompras) * 100 }}%
+                                @else
+                                    0%
+                                @endif
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -54,7 +66,7 @@
     <div class="col-md-12">
         <div class="card card-outline card-warning">
             <div class="card-header">
-                <h3 class="card-title">Proyeccion de ingresos por boletas</h3>
+                <h3 class="card-title">Proyección de ingresos por boletas</h3>
             </div>
             <div class="card-body">
                 <table class="table table-bordered">
@@ -67,17 +79,19 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($boletas as $boleta)
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{ $boleta->numero_boleta }}</td>
+                            <td>{{ $boleta->monto_boleta }}</td>
+                            <td>{{ $boleta->descuento_boleta }}</td>
+                            <td>{{ $boleta->total_boleta }}</td>
                         </tr>
+                        @endforeach
 
                         <tr class="finaltotal">
                             <td colspan="2"></td>
                             <td class="text-right"><b>Total</b></td>
-                            <td></td>
+                            <td>{{ $boletas->sum('total_boleta') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -90,8 +104,7 @@
     <div class="col-md-12">
         <div class="card card-outline card-warning">
             <div class="card-header">
-                <h3 class="card-title">Proyeccion de inversion y gastos a producir</h3>
-
+                <h3 class="card-title">Proyección de inversión y gastos a producir</h3>
             </div>
             <div class="card-body">
                 <h5 class="card-title mb-3"><b>Total a producir:</b> </h5>
@@ -105,17 +118,19 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($gastosProducir as $gasto)
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>{{ $gasto->descripcion_gasto }}</td>
+                            <td>{{ $gasto->cantidad }}</td>
+                            <td>{{ $gasto->precio_unitario }}</td>
+                            <td>{{ $gasto->total_gasto }}</td>
                         </tr>
+                        @endforeach
 
                         <tr class="finaltotal">
                             <td colspan="2"></td>
                             <td class="text-right"><b>Total</b></td>
-                            <td></td>
+                            <td>{{ $gastosProducir->sum('total_gasto') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -139,14 +154,16 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($inventario as $item)
                         <tr>
-                            <td>Producto 1</td>
-                            <td>500</td>
+                            <td>{{ $item->descripcion }}</td>
+                            <td>{{ $item->precio_unitario * $item->cantidad }}</td>
                         </tr>
+                        @endforeach
 
                         <tr class="finaltotal">
                             <td class="text-right"><b>Total</b></td>
-                            <td></td>
+                            <td>{{ $inventario->sum(fn($item) => $item->precio_unitario * $item->cantidad) }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -168,14 +185,16 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($gastosOperativos as $gasto)
                         <tr>
-                            <td>Producto 1</td>
-                            <td>500</td>
+                            <td>{{ $gasto->descripcion }}</td>
+                            <td>{{ $gasto->precio_unitario * $gasto->cantidad }}</td>
                         </tr>
+                        @endforeach
 
                         <tr class="finaltotal">
                             <td class="text-right"><b>Total</b></td>
-                            <td></td>
+                            <td>{{ $totalGastosOperativos }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -197,14 +216,16 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($deudas as $deuda)
                         <tr>
-                            <td>Producto 1</td>
-                            <td>500</td>
+                            <td>{{ $deuda->nombre_entidad }}</td>
+                            <td>{{ $deuda->saldo_capital }}</td>
                         </tr>
+                        @endforeach
 
                         <tr class="finaltotal">
                             <td class="text-right"><b>Total</b></td>
-                            <td></td>
+                            <td>{{ $deudas->sum('saldo_capital') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -226,23 +247,22 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @foreach($garantias as $garantia)
                         <tr>
-                            <td>Producto 1</td>
-                            <td>500</td>
+                            <td>{{ $garantia->descripcion }}</td>
+                            <td>{{ $garantia->valor_mercado }}</td>
                         </tr>
+                        @endforeach
                         <tr class="finaltotal">
                             <td class="text-right"><b>Total</b></td>
-                            <td></td>
+                            <td>{{ $garantias->sum('valor_mercado') }}</td>
                         </tr>
                     </tbody>
                 </table>
-
             </div>
         </div>
     </div>
 </div>
-
-
 
 <div class="row">
     <div class="col-md-6">
@@ -318,8 +338,7 @@
     </div>
 </div>
 
-
-<div class="row " style="text-align:center;">
+<div class="row" style="text-align:center;">
     <div class="col-md-12 mb-5">
         <button type="button" class="btn btn-primary btnprestamo">Aprobar</button>
         <button type="button" class="btn btn-warning btnprestamo">Rechazar</button>
