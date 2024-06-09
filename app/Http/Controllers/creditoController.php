@@ -27,8 +27,9 @@ class creditoController extends Controller
         return view('admin.creditos.index', ['creditos' => $creditos]);
     }
 
-    public function getdescripciones(Request $request){
-        $descripciones =\App\Models\MargenVenta::where('actividad_economica',$request->opcion)->get();
+    public function getdescripciones(Request $request)
+    {
+        $descripciones = \App\Models\MargenVenta::where('actividad_economica', $request->opcion)->get();
 
         return response()->json([
             'state' => '0',
@@ -53,10 +54,10 @@ class creditoController extends Controller
         $garantias = \App\Models\Garantia::where('id_prestamo', $id)->get();
 
         // Calcular Totales
-        $totalVentas = $proyecciones->sum(fn($proyeccion) => $proyeccion->precio_venta * $proyeccion->unidades_compradas);
-        $totalCompras = $proyecciones->sum(fn($proyeccion) => $proyeccion->precio_compra * $proyeccion->unidades_compradas);
+        $totalVentas = $proyecciones->sum(fn ($proyeccion) => $proyeccion->precio_venta * $proyeccion->unidades_compradas);
+        $totalCompras = $proyecciones->sum(fn ($proyeccion) => $proyeccion->precio_compra * $proyeccion->unidades_compradas);
         $totalCuotasCreditos = $deudas->sum('cuota');
-        $totalGastosOperativos = $gastosOperativos->sum(fn($gasto) => $gasto->precio_unitario * $gasto->cantidad);
+        $totalGastosOperativos = $gastosOperativos->sum(fn ($gasto) => $gasto->precio_unitario * $gasto->cantidad);
         $totalGastosFamiliares = 0; // Asumiendo otro campo si existe
         $totalPrestamos = $prestamo->monto_total;
         $patrimonio = 10000; // Asumiendo un valor para patrimonio
@@ -67,7 +68,7 @@ class creditoController extends Controller
         $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
         $cuotaEndeudamiento = $utilidadNeta - $totalGastosFamiliares;
         $solvencia = $totalPrestamos / $patrimonio;
-        
+
         // Evitar división por cero
         $rentabilidad = $totalVentas != 0 ? $utilidadNeta / $totalVentas : 0;
         $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
@@ -208,108 +209,107 @@ class creditoController extends Controller
         ]);
         DB::beginTransaction();
         try {
-        $prestamo = new Credito();
-        $prestamo->tipo = $request->tipo_credito;
-        $prestamo->producto = $request->tipo_producto;
-        $prestamo->subproducto = $request->subproducto;
-        $prestamo->destino = $request->destino_credito;
-        $prestamo->recurrencia = $request->recurrencia;
-        $prestamo->tasa = $request->tasa_interes;
-        $prestamo->tiempo = $request->tiempo_credito;
-        $prestamo->monto_total = $request->monto;
-        $prestamo->fecha_desembolso = $request->fecha_desembolso;
-        $prestamo->periodo_gracia_dias = $request->periodo_gracia_dias;
-        $prestamo->estado = "pendiente";
+            $prestamo = new Credito();
+            $prestamo->tipo = $request->tipo_credito;
+            $prestamo->producto = $request->tipo_producto;
+            $prestamo->subproducto = $request->subproducto;
+            $prestamo->destino = $request->destino_credito;
+            $prestamo->recurrencia = $request->recurrencia;
+            $prestamo->tasa = $request->tasa_interes;
+            $prestamo->tiempo = $request->tiempo_credito;
+            $prestamo->monto_total = $request->monto;
+            $prestamo->fecha_desembolso = $request->fecha_desembolso;
+            $prestamo->periodo_gracia_dias = $request->periodo_gracia_dias;
+            $prestamo->estado = "pendiente";
 
-        if ($request->tipo_producto !== 'grupal') {
-            $prestamo->categoria = 'individual';
-            $prestamo->nombre_prestamo = "prestamo indivual";
-            $prestamo->cantidad_integrantes = 1;
-            $prestamo->descripcion_negocio = $request->descripcion_negocio;
-        } else {
-            $prestamo->categoria = 'grupal';
-            $prestamo->nombre_prestamo = $request->nombre_prestamo;
-            $prestamo->cantidad_integrantes = $request->cantidad_grupo;
-            $prestamo->descripcion_negocio =  $request->descripcion_negocio;
-        }
-        $prestamo->user_id = Auth::id();
-        $prestamo->save();
-        //garantia
-         $garantia=\App\Models\Garantia::create([
-            'descripcion' =>$request->descripcion_garantia,
-            'valor_mercado' =>$request->valor_mercado ,
-            'valor_realizacion' => $request->valor_realizacion,
-            'valor_gravamen' =>$request->valor_gravamen ,
-            'id_prestamo' => $prestamo->id,
-            'estado' => 'activo'
-        ]);
-        //existe archivo de garantia
-        if ($request->hasFile('archivo_garantia') && $request->file('archivo_garantia')->isValid()) {
-            $nombreUnico = Str::uuid();
-            $extension = $request->file('archivo_garantia')->getClientOriginalExtension();
-            $nombreArchivo = $nombreUnico . '.' . $extension;
-            $ruta = $request->file('archivo_garantia')->storeAs('public/documentos_garantia', $nombreArchivo);
-            $garantia->documento_pdf = $ruta;
-            $garantia->save();
-        }
-
-        if ($request->tipo_producto != 'grupal') {
-            $cliente = Cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
-            if ($cliente) {
-                $credito_cliente = new CreditoCliente();
-                $credito_cliente->prestamo_id = $prestamo->id;
-                $credito_cliente->cliente_id = $cliente->id;
-                $credito_cliente->monto_indivual = $request->monto;
-                $credito_cliente->save();
-                $this->guardarCronograma($prestamo, $cliente, $request,$request->monto);
+            if ($request->tipo_producto !== 'grupal') {
+                $prestamo->categoria = 'individual';
+                $prestamo->nombre_prestamo = "prestamo indivual";
+                $prestamo->cantidad_integrantes = 1;
+                $prestamo->descripcion_negocio = $request->descripcion_negocio;
+            } else {
+                $prestamo->categoria = 'grupal';
+                $prestamo->nombre_prestamo = $request->nombre_prestamo;
+                $prestamo->cantidad_integrantes = $request->cantidad_grupo;
+                $prestamo->descripcion_negocio =  $request->descripcion_negocio;
             }
-        } else {
-            if (is_array($decodedData['clientesArray'])) {
-                foreach ($decodedData['clientesArray'] as $clienteData) {
-                    $cliente = Cliente::where('documento_identidad', $clienteData['documento'])->where('activo', 1)->first();
-                    if ($cliente) {
-                        $credito_cliente = new CreditoCliente();
-                        $credito_cliente->prestamo_id = $prestamo->id;
-                        $credito_cliente->cliente_id = $cliente->id;
-                        $credito_cliente->monto_indivual = $clienteData['monto'];
-                        $credito_cliente->save();
-                        $this->guardarCronograma($prestamo, $cliente, $request, $clienteData['monto']);
+            $prestamo->user_id = Auth::id();
+            $prestamo->save();
+            //garantia
+            $garantia = \App\Models\Garantia::create([
+                'descripcion' => $request->descripcion_garantia,
+                'valor_mercado' => $request->valor_mercado,
+                'valor_realizacion' => $request->valor_realizacion,
+                'valor_gravamen' => $request->valor_gravamen,
+                'id_prestamo' => $prestamo->id,
+                'estado' => 'activo'
+            ]);
+            //existe archivo de garantia
+            if ($request->hasFile('archivo_garantia') && $request->file('archivo_garantia')->isValid()) {
+                $nombreUnico = Str::uuid();
+                $extension = $request->file('archivo_garantia')->getClientOriginalExtension();
+                $nombreArchivo = $nombreUnico . '.' . $extension;
+                $ruta = $request->file('archivo_garantia')->storeAs('public/documentos_garantia', $nombreArchivo);
+                $garantia->documento_pdf = $ruta;
+                $garantia->save();
+            }
+
+            if ($request->tipo_producto != 'grupal') {
+                $cliente = Cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
+                if ($cliente) {
+                    $credito_cliente = new CreditoCliente();
+                    $credito_cliente->prestamo_id = $prestamo->id;
+                    $credito_cliente->cliente_id = $cliente->id;
+                    $credito_cliente->monto_indivual = $request->monto;
+                    $credito_cliente->save();
+                    $this->guardarCronograma($prestamo, $cliente, $request, $request->monto);
+                }
+            } else {
+                if (is_array($decodedData['clientesArray'])) {
+                    foreach ($decodedData['clientesArray'] as $clienteData) {
+                        $cliente = Cliente::where('documento_identidad', $clienteData['documento'])->where('activo', 1)->first();
+                        if ($cliente) {
+                            $credito_cliente = new CreditoCliente();
+                            $credito_cliente->prestamo_id = $prestamo->id;
+                            $credito_cliente->cliente_id = $cliente->id;
+                            $credito_cliente->monto_indivual = $clienteData['monto'];
+                            $credito_cliente->save();
+                            $this->guardarCronograma($prestamo, $cliente, $request, $clienteData['monto']);
+                        }
                     }
                 }
             }
+            $this->saveArrayData($decodedData, $prestamo->id, $request);
+            $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
+            $tiempo_credito = $request->tiempo_credito;
+            $prestamo->fecha_fin = $fecha_desembolso->copy()->addMonths($tiempo_credito);
+
+            if ($request->hasFile('foto_grupal') && $request->file('foto_grupal')->isValid()) {
+                $nombreUnico = Str::uuid();
+                $extension = $request->file('foto_grupal')->getClientOriginalExtension();
+                $nombreArchivo = $nombreUnico . '.' . $extension;
+                $ruta = $request->file('foto_grupal')->storeAs('public/fotos_grupales', $nombreArchivo);
+                $prestamo->foto_grupal = $ruta;
+            }
+            $prestamo->activo = $request->activo ?? true;
+            $prestamo->save();
+            DB::commit();
+
+            return response()->json([
+                'state' => '0',
+                'mensaje' => 'Prestamo creado con exito',
+                'prestamo' => $prestamo,
+                'user' => Auth::id()
+            ])->setStatusCode(200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'state' => '1',
+                'mensaje' => 'Error al crear el prestamo: ' . $e->getMessage()
+            ])->setStatusCode(500);
         }
-        $this->saveArrayData($decodedData, $prestamo->id,$request);
-        $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
-        $tiempo_credito = $request->tiempo_credito;
-        $prestamo->fecha_fin = $fecha_desembolso->copy()->addMonths($tiempo_credito);
-
-        if ($request->hasFile('foto_grupal') && $request->file('foto_grupal')->isValid()) {
-            $nombreUnico = Str::uuid();
-            $extension = $request->file('foto_grupal')->getClientOriginalExtension();
-            $nombreArchivo = $nombreUnico . '.' . $extension;
-            $ruta = $request->file('foto_grupal')->storeAs('public/fotos_grupales', $nombreArchivo);
-            $prestamo->foto_grupal = $ruta;
-        }
-        $prestamo->activo = $request->activo ?? true;
-        $prestamo->save();
-        DB::commit();
-
-        return response()->json([
-            'state' => '0',
-            'mensaje' => 'Prestamo creado con exito',
-            'prestamo' => $prestamo,
-            'user' => Auth::id()
-        ])->setStatusCode(200);
-
-    } catch (\Exception $e) {
-        DB::rollback();
-        return response()->json([
-            'state' => '1',
-            'mensaje' => 'Error al crear el prestamo: ' . $e->getMessage()
-        ])->setStatusCode(500);
     }
-    }
-    protected function guardarCronograma($prestamo, $cliente, $request,$monto)
+    protected function guardarCronograma($prestamo, $cliente, $request, $monto)
     {
         $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
         $fechaconperiodogracia = clone $fecha_desembolso;
@@ -334,7 +334,7 @@ class creditoController extends Controller
             $fechaCuota = $fechaCuota->addMonth();
         }
     }
-    protected function saveArrayData(array $data, $prestamoId,$request)
+    protected function saveArrayData(array $data, $prestamoId, $request)
     {
         if (is_array($data['proyeccionesArray'])) {
             foreach ($data['proyeccionesArray'] as $proyeccionData) {
@@ -377,7 +377,7 @@ class creditoController extends Controller
                 ]);
             }
         }
-
+        //paso a ser  gastos familiar  para avanzar
         if (is_array($data['inventarioArray'])) {
             foreach ($data['inventarioArray'] as $inventarioData) {
                 \App\Models\Inventario::create([
@@ -401,8 +401,8 @@ class creditoController extends Controller
             }
         }
 
-        if (is_array($data['gastosProducirArray'])&& count($data['proyeccionesArray']) > 0) {
-           $gasto= \App\Models\GastoProducir::create([
+        if (is_array($data['gastosProducirArray']) && count($data['proyeccionesArray']) > 0) {
+            $gasto = \App\Models\GastoProducir::create([
                 'nombre_actividad' => $request->nombre_actividad,
                 'cantidad_terreno' => $request->cantidad_terreno,
                 'produccion_total' => $request->produccion_total,
@@ -416,12 +416,12 @@ class creditoController extends Controller
                     'cantidad' => $gastoProducirData['cantidad'],
                     'total_gasto' => $gastoProducirData['totalGasto'],
                     'id_prestamo' => $prestamoId,
-                    'id_gasto_producir'=> $gasto->id,
+                    'id_gasto_producir' => $gasto->id,
                 ]);
             }
         }
     }
-    
+
     public function calcularCuota($monto, $tea, $periodos)
     {
         $tasaMensual = pow(1 + ($tea / 100), 1 / 12) - 1;
@@ -492,6 +492,5 @@ class creditoController extends Controller
                 'fecha' => $fechaCuota->addMonth()->format('Y-m-d') // Agregar un mes a la fecha de desembolso
             ];
         }
-
-}
+    }
 }
