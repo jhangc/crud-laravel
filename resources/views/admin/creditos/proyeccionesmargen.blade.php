@@ -430,7 +430,7 @@
         </div>
     </div>
 
-    <div class="col-md-6">
+    <!-- <div class="col-md-6">
         <div class="card card-outline card-primary">
             <div class="card-header">
                 <h3 class="card-title">Indicadores Finales</h3>
@@ -464,7 +464,7 @@
                 </table>
             </div>
         </div>
-    </div>
+    </div> -->
 
 </div>
 
