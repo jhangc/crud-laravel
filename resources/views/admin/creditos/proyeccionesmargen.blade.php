@@ -268,32 +268,44 @@
     <div class="col-md-6">
         <div class="card card-outline card-primary">
             <div class="card-header">
-                <h3 class="card-title">Indicadores Finales</h3>
+                <h3 class="card-title">Ventas diarías</h3>
             </div>
             <div class="card-body">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Indicador</th>
-                            <th>Resultado</th>
+                            <th>Dia</th>
+                            <th>Total</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Solvencia</td>
-                            <td>{{ number_format($solvencia, 2) }}</td>
+                            <td>Lunes</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td>Rentabilidad</td>
-                            <td>{{ number_format($rentabilidad, 2) }}</td>
+                            <td>Martes</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td>Indicador Inventario</td>
-                            <td>{{ number_format($indicadorInventario, 2) }}</td>
+                            <td>Miercoles</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td>Indicador Capital de Trabajo</td>
-                            <td>{{ number_format($indicadorCapitalTrabajo, 2) }}</td>
+                            <td>Jueves</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Viernes</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Sábado</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Domingo</td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
@@ -317,35 +329,35 @@
                     <tbody>
                         <tr>
                             <td>Total de Ventas</td>
-                            <td>{{ number_format($utilidadBruta, 2) }}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td>Costo de Ventas</td>
-                            <td>{{ number_format($utilidadOperativa, 2) }}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td><b>Utilidad Bruta</b></td>
-                            <td>{{ number_format($utilidadNeta, 2) }}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td>Gastos operativos</td>
-                            <td>{{ number_format($cuotaEndeudamiento, 2) }}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td><b>Utilidad operativa</b></td>
-                            <td>{{ number_format($cuotaEndeudamiento, 2) }}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td>Gastos Familiares</td>
-                            <td>{{ number_format($cuotaEndeudamiento, 2) }}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td>Cuotas otras entidades</td>
-                            <td>{{ number_format($cuotaEndeudamiento, 2) }}</td>
+                            <td></td>
                         </tr>
                         <tr>
                             <td><b>Utilidad Neta</b></td>
-                            <td>{{ number_format($cuotaEndeudamiento, 2) }}</td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
