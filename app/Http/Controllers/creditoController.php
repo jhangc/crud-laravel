@@ -197,6 +197,7 @@ class creditoController extends Controller
             'subproducto' => 'nullable|max:100',
             'destino_credito' => 'nullable|max:100',
             'recurrencia' => 'nullable|max:50',
+            'recurrencia1' => 'nullable|max:50',
             'tasa_interes' => 'nullable|numeric|min:0|max:100',
             'tiempo_credito' => 'nullable|integer|min:1',
             'monto' => 'nullable|numeric|min:0',
@@ -215,7 +216,7 @@ class creditoController extends Controller
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
             $prestamo->destino = $request->destino_credito;
-            $prestamo->recurrencia = $request->recurrencia;
+            $prestamo->recurrencia = $request->tipo_producto== 'grupal'? $request->recurrencia1 : $request->recurrencia;
             $prestamo->tasa = $request->tasa_interes;
             $prestamo->tiempo = $request->tiempo_credito;
             $prestamo->monto_total = $request->monto;

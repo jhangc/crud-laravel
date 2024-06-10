@@ -197,12 +197,20 @@
                                     </div>
                                 </div>
                                 <div class="col-md-3">
-                                    <div class="form-group">
+                                <div class="form-group" id="recurencia_individual">
                                         <label for="recurrencia">Recurrencia</label>
                                         <select name="recurrencia" id="recurrencia" class="form-control" required>
                                             <option value="">Seleccione una opción...</option>
                                             <option value="mensual" {{ old('recurrencia') == 'mensual' ? 'selected' : '' }}>Mensual</option>
                                             <option value="quincenal" {{ old('recurrencia') == 'quincenal' ? 'selected' : '' }}>Quincenal</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="recurencia_grupal">
+                                        <label for="recurrencia">Recurrencia</label>
+                                        <select name="recurrencia1" id="recurrencia1" class="form-control" required>
+                                            <option value="">Seleccione una opción...</option>
+                                            <option value="catorcenal" {{ old('recurrencia') == 'mensual' ? 'selected' : '' }}> Catorcenal</option>
+                                            <option value="veinteochenal" {{ old('recurrencia') == 'quincenal' ? 'selected' : '' }}>Veinteochenal</option>
                                         </select>
                                     </div>
                                 </div>
@@ -942,7 +950,7 @@
     let inventarioArray1 = [];
     let totalInventario1 = 0;
 
-    function agregarInventariotabla() {
+    function agregarInventariotabla1() {
         const descripcion = document.getElementById('descripcion_producto_inventario1').value;
         const precioUnitario = document.getElementById('precio_unitario_inventario1').value;
         const cantidad = document.getElementById('cantidad_producto_inventario1').value;
@@ -956,6 +964,7 @@
         };
 
         inventarioArray1.push(producto);
+        console.log(inventarioArray1);
         actualizarTablaInventario1();
         limpiarCamposInventario1();
     }
@@ -963,9 +972,9 @@
     function actualizarTablaInventario1() {
         const tablaCuerpo = document.getElementById('tablaInventario1');
         tablaCuerpo.innerHTML = '';
-        totalInventario = 0;
+        totalInventario1 = 0;
 
-        inventarioArray.forEach((producto, index) => {
+        inventarioArray1.forEach((producto, index) => {
             const row = tablaCuerpo.insertRow();
             row.innerHTML = `
                 <td>${producto.descripcion}</td>
@@ -974,9 +983,9 @@
                 <td>${producto.montoTotal}</td>
                 <td><button class="btn btn-danger btn-sm" onclick="eliminarProducto1(${index})"><i class="fa fa-trash"></i></button></td>
             `;
-            totalInventario = parseFloat(totalInventario) + parseFloat(producto.montoTotal);
+            totalInventario1 = parseFloat(totalInventario1) + parseFloat(producto.montoTotal);
         });
-        document.getElementById('totalMontoInventario').textContent = totalInventario.toFixed(2);
+        document.getElementById('totalMontoInventario1').textContent = totalInventario1.toFixed(2);
     }
 
     function editarProducto1(index, campo, valor) {
@@ -1220,6 +1229,7 @@
             formData.append('gastosOperativosArray', JSON.stringify(gastosOperativosArray));
             formData.append('boletasArray', JSON.stringify(boletasArray));
             formData.append('gastosProducirArray', JSON.stringify(gastosProducirArray));
+            formData.append('inventarioArray1', JSON.stringify(inventarioArray1));
             $.ajax({
                 url: '{{url('/admin/creditos/store')}}',
                 type: 'POST',
@@ -1289,17 +1299,22 @@
             grupal1Fields.style.display = 'block';
             // credito_individual.style.display = 'none';
             individual1Fields.style.display = 'none';
-            detalle_negocio.style.display = 'none'
-            registro_boletas.style.display = 'none'
-            registro_gastos_producir.style.display = 'none'
-            inventario_producto.style.display = 'none'
-            gastos_ope.style.display = 'none'
-            deudas_finan.style.display = 'none'
-            gastos_familiares.style.display = 'none'
+            detalle_negocio.style.display = 'none';
+            registro_boletas.style.display = 'none';
+            registro_gastos_producir.style.display = 'none';
+            inventario_producto.style.display = 'none';
+            gastos_ope.style.display = 'none';
+            deudas_finan.style.display = 'none';
+            gastos_familiares.style.display = 'none';
+            recurencia_grupal.style.display='block';
+            recurencia_individual.style.display='none';
             
         } else {
             grupal1Fields.style.display = 'none';
+            recurencia_individual.style.display='block';
+            recurencia_grupal.style.display='none';
             // credito_individual.style.display = 'block';
+            gastos_familiares.style.display = 'block'
             individual1Fields.style.display = 'block';
             if (selectionTipoCredito === 'servicio') {
                inventario_producto.style.display = 'none';
