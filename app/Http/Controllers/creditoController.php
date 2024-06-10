@@ -39,7 +39,13 @@ class creditoController extends Controller
     }
     public function viewaprobar()
     {
-        return view('admin.creditos.aprobar');
+        // Obtener solo los clientes activos (activo = 1)
+        $creditos = Credito::with('clientes')
+            ->where('activo', 1)
+            ->where('estado', "aprobado")
+            ->get();
+        return view('admin.creditos.aprobar',['creditos' => $creditos]);
+
     }
     public function proyecciones($id)
     {
