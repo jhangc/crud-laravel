@@ -441,7 +441,8 @@ class creditoController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        // $cliente = cliente::findOrFail($id);
+        return view('admin.creditos.edit');
     }
 
     /**
