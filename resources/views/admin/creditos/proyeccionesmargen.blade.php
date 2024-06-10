@@ -445,10 +445,12 @@
                     </thead>
                     <tbody>
                         <tr>
+                            <!-- aca coloca el total de utilidad de prpyeccion de ventas -->
                             <td>Margen de utilidad real</td>
                             <td></td>
                         </tr>
                         <tr>
+                            <!-- aca coloca el margen de la tabla de lista de negocio ahi hay un campo de valor utilidad -->
                             <td>Margen de utilidad según negocio</td>
                             <td></td>
                         </tr>
