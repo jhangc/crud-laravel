@@ -430,10 +430,10 @@
         </div>
     </div>
 
-    <!-- <div class="col-md-6">
+    <div class="col-md-6">
         <div class="card card-outline card-primary">
             <div class="card-header">
-                <h3 class="card-title">Indicadores Finales</h3>
+                <h3 class="card-title">Indicador por Margen de Ganancia</h3>
             </div>
             <div class="card-body">
                 <table class="table table-bordered">
@@ -445,26 +445,23 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Solvencia</td>
-                            <td>{{ number_format($solvencia, 2) }}</td>
+                            <td>Margen de utilidad real</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td>Rentabilidad</td>
-                            <td>{{ number_format($rentabilidad, 2) }}</td>
+                            <td>Margen de utilidad según negocio</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td>Indicador Inventario</td>
-                            <td>{{ number_format($indicadorInventario, 2) }}</td>
-                        </tr>
-                        <tr>
-                            <td>Indicador Capital de Trabajo</td>
-                            <td>{{ number_format($indicadorCapitalTrabajo, 2) }}</td>
+                            <!-- es un division de utilidadreal/utilidadnegocio -->
+                            <td><b>Indicador de utilidad</b></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    </div> -->
+    </div>
 
 </div>
 
