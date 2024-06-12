@@ -947,34 +947,28 @@
         const precioVenta = document.getElementById('precio_venta').value;
         const proporcion_ventas = document.getElementById('propocion_venta').value;
 
+        const total_venta_mes = document.getElementById('total_ventas_mes').value;
+
         const utilidad_unidad = precioCompra - precioVenta;
         const margen_unidad = utilidad_unidad/precioVenta;
-        const monto_venta = utilidad_unidad/precioVenta;
+        const monto_venta = total_venta_mes/proporcion_ventas;
+        const relacion_compra_venta = precioCompra/precioVenta;
+        const costo_venta = monto_venta*relacion_compra_venta;
+        const utilidad = monto_venta-costo_venta;
 
-        const inventarioValorizado = stockVerificado * precioCompra;
-        const unidadesVendidasMes = (30 / frecuenciaCompra) * unidadesVendidas;
-        const ingresosMensualesVenta = unidadesVendidasMes * precioVenta;
-        const unidadesCompradasMes = (30 / frecuenciaCompra) * unidadesCompradas;
-        const ingresosMensualesCompra = unidadesCompradasMes * precioCompra;
-        const margenBrutoMensual = ingresosMensualesVenta - ingresosMensualesCompra;
-        const margenPorcentaje = (margenBrutoMensual / ingresosMensualesVenta) * 100;
 
         const proyeccion = {
             descripcion,
             unidadMedida,
-            frecuenciaCompra,
-            unidadesCompradas,
-            unidadesVendidas,
-            stockVerificado,
             precioCompra,
             precioVenta,
-            inventarioValorizado,
-            unidadesVendidasMes,
-            ingresosMensualesVenta,
-            unidadesCompradasMes,
-            ingresosMensualesCompra,
-            margenBrutoMensual,
-            margenPorcentaje
+            proporcion_ventas,
+            total_venta_mes,
+            utilidad_unidad,
+            monto_venta,
+            relacion_compra_venta,
+            costo_venta,
+            utilidad
         };
 
         proyeccionesArray.push(proyeccion);
@@ -991,19 +985,16 @@
             row.innerHTML = `
                 <td><input type="text" class="form-control" value="${proyeccion.descripcion}" onchange="editarProyeccion(${index}, 'descripcion', this.value)"></td>
                 <td><input type="text" class="form-control" value="${proyeccion.unidadMedida}" onchange="editarProyeccion(${index}, 'unidadMedida', this.value)"></td>
-                <td><input type="number" class="form-control" value="${proyeccion.frecuenciaCompra}" onchange="editarProyeccion(${index}, 'frecuenciaCompra', this.value)"></td>
-                <td><input type="number" class="form-control" value="${proyeccion.unidadesCompradas}" onchange="editarProyeccion(${index}, 'unidadesCompradas', this.value)"></td>
-                <td><input type="number" class="form-control" value="${proyeccion.unidadesVendidas}" onchange="editarProyeccion(${index}, 'unidadesVendidas', this.value)"></td>
-                <td><input type="number" class="form-control" value="${proyeccion.stockVerificado}" onchange="editarProyeccion(${index}, 'stockVerificado', this.value)"></td>
-                <td><input type="number" class="form-control" value="${proyeccion.precioCompra}" onchange="editarProyeccion(${index}, 'precioCompra', this.value)"></td>
+                <td><input type="text" class="form-control" value="${proyeccion.precioCompra}" onchange="editarProyeccion(${index}, 'precioCompra', this.value)"></td>
                 <td><input type="number" class="form-control" value="${proyeccion.precioVenta}" onchange="editarProyeccion(${index}, 'precioVenta', this.value)"></td>
-                <td>${proyeccion.inventarioValorizado.toFixed(2)}</td>
-                <td>${proyeccion.unidadesVendidasMes.toFixed(2)}</td>
-                <td>${proyeccion.ingresosMensualesVenta.toFixed(2)}</td>
-                <td>${proyeccion.unidadesCompradasMes.toFixed(2)}</td>
-                <td>${proyeccion.ingresosMensualesCompra.toFixed(2)}</td>
-                <td>${proyeccion.margenBrutoMensual.toFixed(2)}</td>
-                <td>${proyeccion.margenPorcentaje.toFixed(2)}%</td>
+                <td><input type="number" class="form-control" value="${proyeccion.proporcion_ventas}" onchange="editarProyeccion(${index}, 'proporcion_ventas', this.value)"></td>
+
+                <td>${proyeccion.total_venta_mes.toFixed(2)}</td>
+                <td>${proyeccion.utilidad_unidad.toFixed(2)}</td>
+                <td>${proyeccion.monto_venta.toFixed(2)}</td>
+                <td>${proyeccion.relacion_compra_venta.toFixed(2)}</td>
+                <td>${proyeccion.costo_venta.toFixed(2)}</td>
+                <td>${proyeccion.utilidad.toFixed(2)}</td>
                 <td><button class="btn btn-danger btn-sm" onclick="eliminarProyeccion(${index})"><i class="fa fa-trash"></i></button></td>
             `;
         });
