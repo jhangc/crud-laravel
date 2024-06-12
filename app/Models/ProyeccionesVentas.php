@@ -20,5 +20,6 @@ class ProyeccionesVentas extends Model
         'precio_venta',
         'id_prestamo',
         'estado',
+        'proporcion_ventas', // Añadir este campo
     ];
 }

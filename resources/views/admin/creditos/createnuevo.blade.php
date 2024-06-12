@@ -295,7 +295,7 @@
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cuerpo_tabla_registro_ventas_diarias">
+                                <tbody id="ventas_diarias">
                                     <!-- Las filas se agregarán aquí dinámicamente -->
                                 </tbody>
                                 <tfoot>
@@ -317,7 +317,7 @@
                                     <tr>
                                         <td colspan="3"></td>
                                         <td><strong>% Venta al crédito:</strong></td>
-                                        <td><input type="text" id="porcentaje_venta_credito" class="form-control" value="0.00"></td>
+                                        <td><input type="text" id="porcentaje_venta_credito" name="porcentaje_venta_credito" class="form-control" value="0.00"></td>
                                     </tr>
                                     <tr>
                                         <td colspan="3"></td>
@@ -937,25 +937,27 @@
         clientesArray.splice(index, 1);
         actualizarTabla();
     }
-
     let proyeccionesArray = [];
-
     function agregarProductoProyeccion() {
         const descripcion = document.getElementById('producto_descripcion').value;
         const unidadMedida = document.getElementById('unidad_medida').value;
-        const precioCompra = document.getElementById('precio_compra').value;
-        const precioVenta = document.getElementById('precio_venta').value;
-        const proporcion_ventas = document.getElementById('propocion_venta').value;
+        const precioCompra = parseFloat(document.getElementById('precio_compra').value);
+        const precioVenta = parseFloat(document.getElementById('precio_venta').value);
+        const proporcion_ventas = parseFloat(document.getElementById('propocion_venta').value);
+        const total_venta_mes = parseFloat(document.getElementById('total_ventas_mes').value);
 
-        const total_venta_mes = document.getElementById('total_ventas_mes').value;
+        // Validación de valores
+        if (isNaN(precioCompra) || isNaN(precioVenta) || isNaN(proporcion_ventas) || isNaN(total_venta_mes)) {
+            alert("Por favor, asegúrese de que todos los campos numéricos estén llenos y sean válidos.");
+            return;
+        }
 
-        const utilidad_unidad = precioCompra - precioVenta;
-        const margen_unidad = utilidad_unidad/precioVenta;
-        const monto_venta = total_venta_mes/proporcion_ventas;
-        const relacion_compra_venta = precioCompra/precioVenta;
-        const costo_venta = monto_venta*relacion_compra_venta;
-        const utilidad = monto_venta-costo_venta;
-
+        const utilidad_unidad = precioVenta - precioCompra;
+        const margen_unidad = utilidad_unidad / precioVenta;
+        const monto_venta = total_venta_mes * (proporcion_ventas / 100);
+        const relacion_compra_venta = precioCompra / precioVenta;
+        const costo_venta = monto_venta * relacion_compra_venta;
+        const utilidad = monto_venta - costo_venta;
 
         const proyeccion = {
             descripcion,
@@ -968,10 +970,12 @@
             monto_venta,
             relacion_compra_venta,
             costo_venta,
-            utilidad
+            utilidad,
+            margen_unidad
         };
 
         proyeccionesArray.push(proyeccion);
+        console.log(proyeccionesArray);
         actualizarTablaProyecciones();
         limpiarCamposProyeccion();
     }
@@ -980,43 +984,62 @@
         const tablaCuerpo = document.getElementById('tablaProyecciones');
         tablaCuerpo.innerHTML = '';
 
+        let totalProporcionVentas = 0;
+        let totalMontoVenta = 0;
+        let totalCostoVenta = 0;
+        let totalUtilidad = 0;
+
         proyeccionesArray.forEach((proyeccion, index) => {
             const row = tablaCuerpo.insertRow();
             row.innerHTML = `
                 <td><input type="text" class="form-control" value="${proyeccion.descripcion}" onchange="editarProyeccion(${index}, 'descripcion', this.value)"></td>
-                <td><input type="text" class="form-control" value="${proyeccion.unidadMedida}" onchange="editarProyeccion(${index}, 'unidadMedida', this.value)"></td>
                 <td><input type="text" class="form-control" value="${proyeccion.precioCompra}" onchange="editarProyeccion(${index}, 'precioCompra', this.value)"></td>
                 <td><input type="number" class="form-control" value="${proyeccion.precioVenta}" onchange="editarProyeccion(${index}, 'precioVenta', this.value)"></td>
-                <td><input type="number" class="form-control" value="${proyeccion.proporcion_ventas}" onchange="editarProyeccion(${index}, 'proporcion_ventas', this.value)"></td>
-
-                <td>${proyeccion.total_venta_mes.toFixed(2)}</td>
+                <td><input type="text" class="form-control" value="${proyeccion.unidadMedida}" onchange="editarProyeccion(${index}, 'unidadMedida', this.value)"></td>
                 <td>${proyeccion.utilidad_unidad.toFixed(2)}</td>
+                <td>${(proyeccion.margen_unidad * 100).toFixed(2)}%</td>
+                <td><input type="number" class="form-control" value="${proyeccion.proporcion_ventas}" onchange="editarProyeccion(${index}, 'proporcion_ventas', this.value)"></td>
                 <td>${proyeccion.monto_venta.toFixed(2)}</td>
-                <td>${proyeccion.relacion_compra_venta.toFixed(2)}</td>
+                <td>${(proyeccion.relacion_compra_venta * 100).toFixed(2)}%</td>
                 <td>${proyeccion.costo_venta.toFixed(2)}</td>
                 <td>${proyeccion.utilidad.toFixed(2)}</td>
                 <td><button class="btn btn-danger btn-sm" onclick="eliminarProyeccion(${index})"><i class="fa fa-trash"></i></button></td>
             `;
+
+            totalProporcionVentas += proyeccion.proporcion_ventas;
+            totalMontoVenta += proyeccion.monto_venta;
+            totalCostoVenta += proyeccion.costo_venta;
+            totalUtilidad += proyeccion.utilidad;
         });
+
+        document.getElementById('total_proporción_ventas').value = totalProporcionVentas.toFixed(2);
+        document.getElementById('total_monto:venta').value = totalMontoVenta.toFixed(2);
+        document.getElementById('total_costo_venta').value = totalCostoVenta.toFixed(2);
+        document.getElementById('total_utilidad').value = totalUtilidad.toFixed(2);
     }
 
     function editarProyeccion(index, campo, valor) {
+        if (campo === 'precioCompra' || campo === 'precioVenta' || campo === 'proporcion_ventas') {
+            valor = parseFloat(valor);
+        }
+
         proyeccionesArray[index][campo] = valor;
-        if (campo === 'frecuenciaCompra' || campo === 'unidadesCompradas' || campo === 'unidadesVendidas' || campo === 'stockVerificado' || campo === 'precioCompra' || campo === 'precioVenta') {
+
+        if (campo === 'precioCompra' || campo === 'precioVenta' || campo === 'proporcion_ventas' || campo === 'total_venta_mes') {
             recalcularProyeccion(index);
         }
+
         actualizarTablaProyecciones();
     }
 
     function recalcularProyeccion(index) {
         const proyeccion = proyeccionesArray[index];
-        proyeccion.inventarioValorizado = proyeccion.stockVerificado * proyeccion.precioCompra;
-        proyeccion.unidadesVendidasMes = (30 / proyeccion.frecuenciaCompra) * proyeccion.unidadesVendidas;
-        proyeccion.ingresosMensualesVenta = proyeccion.unidadesVendidasMes * proyeccion.precioVenta;
-        proyeccion.unidadesCompradasMes = (30 / proyeccion.frecuenciaCompra) * proyeccion.unidadesCompradas;
-        proyeccion.ingresosMensualesCompra = proyeccion.unidadesCompradasMes * proyeccion.precioCompra;
-        proyeccion.margenBrutoMensual = proyeccion.ingresosMensualesVenta - proyeccion.ingresosMensualesCompra;
-        proyeccion.margenPorcentaje = (proyeccion.margenBrutoMensual / proyeccion.ingresosMensualesVenta) * 100;
+        proyeccion.utilidad_unidad = proyeccion.precioVenta - proyeccion.precioCompra;
+        proyeccion.margen_unidad = proyeccion.utilidad_unidad / proyeccion.precioVenta;
+        proyeccion.monto_venta = proyeccion.total_venta_mes * (proyeccion.proporcion_ventas / 100);
+        proyeccion.relacion_compra_venta = proyeccion.precioCompra / proyeccion.precioVenta;
+        proyeccion.costo_venta = proyeccion.monto_venta * proyeccion.relacion_compra_venta;
+        proyeccion.utilidad = proyeccion.monto_venta - proyeccion.costo_venta;
     }
 
     function eliminarProyeccion(index) {
@@ -1027,13 +1050,11 @@
     function limpiarCamposProyeccion() {
         document.getElementById('producto_descripcion').value = '';
         document.getElementById('unidad_medida').value = 'und';
-        document.getElementById('frecuencia_compra').value = '';
-        document.getElementById('unidades_compradas').value = '';
-        document.getElementById('unidades_vendidas').value = '';
-        document.getElementById('stock_verificado_inspeccion').value = '';
         document.getElementById('precio_compra').value = '';
         document.getElementById('precio_venta').value = '';
+        document.getElementById('propocion_venta').value = '';
     }
+
 
     let inventarioArray = [];
     let totalInventario = 0;
@@ -1507,6 +1528,92 @@
             }
         }
     }
+    let ventasDiarias = [];
+    let totalVentasSemana = 0;
+    let totalVentasQuincena = 0;
+    let totalVentasMes = 0;
+
+    function agregarVentaTabla() {
+        const dia = document.getElementById('dia_venta').value;
+        const min = parseFloat(document.getElementById('venta_minima').value);
+        const max = parseFloat(document.getElementById('venta_maxima').value);
+
+        // Validación de venta mínima y máxima
+        if (min > max) {
+            alert("La venta mínima no puede ser mayor que la venta máxima.");
+            return;
+        }
+
+        // Validación de día único
+        const diaExistente = ventasDiarias.find(venta => venta.dia === dia);
+        if (diaExistente) {
+            alert("El día ya existe en la tabla de ventas diarias.");
+            return;
+        }
+
+        const promedio = ((min + max) / 2).toFixed(2);
+
+        const venta = {
+            dia,
+            min,
+            max,
+            promedio: parseFloat(promedio)
+        };
+
+        ventasDiarias.push(venta);
+        actualizarTablaVenta();
+        limpiarCamposVenta();
+    }
+
+    function actualizarTablaVenta() {
+        const tablaCuerpo = document.getElementById('ventas_diarias');
+        tablaCuerpo.innerHTML = '';
+        totalVentasSemana = 0;
+        totalVentasQuincena = 0;
+        totalVentasMes = 0;
+        factorsemana=15/7;
+        factormes=factorsemana*2;
+
+        ventasDiarias.forEach((venta, index) => {
+            const row = tablaCuerpo.insertRow();
+            row.innerHTML = `
+                <td>${venta.dia}</td>
+                <td>${venta.min}</td>
+                <td>${venta.max}</td>
+                <td>${venta.promedio}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="eliminarVenta(${index})"><i class="fa fa-trash"></i></button></td>
+            `;
+            totalVentasSemana += venta.promedio;
+            totalVentasQuincena = totalVentasSemana*factorsemana;
+            totalVentasMes =  totalVentasSemana*factormes;
+        });
+
+        document.getElementById('total_ventas_semana').value = totalVentasSemana.toFixed(2);
+        document.getElementById('total_ventas_quincena').value = totalVentasQuincena.toFixed(2);
+        document.getElementById('total_ventas_mes').value = totalVentasMes.toFixed(2);
+
+        actualizarVentaCredito();
+    }
+
+    function eliminarVenta(index) {
+        ventasDiarias.splice(index, 1);
+        actualizarTablaVenta();
+    }
+
+    function limpiarCamposVenta() {
+        document.getElementById('dia_venta').value = '';
+        document.getElementById('venta_minima').value = '';
+        document.getElementById('venta_maxima').value = '';
+    }
+
+    function actualizarVentaCredito() {
+        const porcentajeVentaCredito = parseFloat(document.getElementById('porcentaje_venta_credito').value) || 0;
+        const ventaCredito = (totalVentasMes * porcentajeVentaCredito / 100).toFixed(2);
+        document.getElementById('venta_credito').value = ventaCredito;
+    }
+
+    document.getElementById('porcentaje_venta_credito').addEventListener('input', actualizarVentaCredito);
+
 
     document.addEventListener('DOMContentLoaded', toggleFields);
 </script>
