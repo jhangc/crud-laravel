@@ -14,6 +14,7 @@ class Inventario extends Model
         'precio_unitario',
         'id_prestamo',
         'cantidad',
+        'unidad',
     ];
 }
 

@@ -490,7 +490,7 @@
                                 <div class="col-md-2">
                                     <div class="form-group">
                                         <label for="unidad_medida">Unidad de medida</label>
-                                        <select name="unidad_medida" id="unidad_medida" class="form-control">
+                                        <select name="unidad_medida_inventario" id="unidad_medida_inventario" class="form-control">
                                             <option value="und" selected>Unidades</option>
                                             <option value="qq">Quintales</option>
                                             {{-- <option value="qq">Kilos</option> --}}
@@ -1063,12 +1063,14 @@
         const descripcion = document.getElementById('descripcion_producto_inventario').value;
         const precioUnitario = document.getElementById('precio_unitario_inventario').value;
         const cantidad = document.getElementById('cantidad_producto_inventario').value;
+        const  unidad=document.getElementById('unidad_medida_inventario').value;
         const montoTotal = (precioUnitario * cantidad).toFixed(2);
 
         const producto = {
             descripcion,
             precioUnitario,
             cantidad,
+            unidad,
             montoTotal: parseFloat(montoTotal)
         };
 
@@ -1086,6 +1088,7 @@
             const row = tablaCuerpo.insertRow();
             row.innerHTML = `
                 <td>${producto.descripcion}</td>
+                <td>${producto.unidad}</td>
                 <td><input type="number" class="form-control" value="${producto.precioUnitario}" onchange="editarProducto(${index}, 'precioUnitario', this.value)"></td>
                 <td><input type="number" class="form-control" value="${producto.cantidad}" onchange="editarProducto(${index}, 'cantidad', this.value)"></td>
                 <td>${producto.montoTotal}</td>
