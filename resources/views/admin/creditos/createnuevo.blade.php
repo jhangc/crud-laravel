@@ -422,6 +422,127 @@
                         </div>
                     </div>
 
+                    <div class="card card-outline card-info" id="gastos_ope">
+                        <div class="card-header">
+                            <h3 class="card-title">Registro de Gastos Operativos</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <div class="form-group">
+                                        <label for="descripcion_gasto">Descripción</label>
+                                        <input type="text" id="descripcion_gasto" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="precio_unitario_gasto">Precio unitario</label>
+                                        <input type="number" id="precio_unitario_gasto" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="cantidad_gasto">Cantidad</label>
+                                        <input type="number" id="cantidad_gasto" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2" >
+                                    <button type="button" onclick="agregarGastoOperativoc()" class="btn btn-info btnprestamo">Añadir Gasto</button>
+                                </div>
+                            </div>
+                            <hr>
+                            <table class="table table-striped table-hover table-bordered">
+                                <thead class="thead-blue">
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Precio unitario</th>
+                                        <th>Cantidad</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="datos_tabla_gastos_operativos">
+                                    <!-- Las filas se agregarán aquí dinámicamente -->
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2"></td>
+                                        <td><strong>Total:</strong></td>
+                                        <td><input type="text" id="total_gastos_operativos" class="form-control" value="0.00" readonly></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card card-outline card-warning"  id="inventario_producto">
+                        <div class="card-header">
+                            <h3 class="card-title">Registro De inventario</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="descripcion_producto_inventario">Descripción del Producto</label>
+                                        <input type="text" id="descripcion_producto_inventario" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="unidad_medida">Unidad de medida</label>
+                                        <select name="unidad_medida" id="unidad_medida" class="form-control">
+                                            <option value="und" selected>Unidades</option>
+                                            <option value="qq">Quintales</option>
+                                            {{-- <option value="qq">Kilos</option> --}}
+                                            <option value="kg">Kilos</option>
+                                            <option value="m">metros</option>
+                                            <option value="l">litros</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="precio_unitario_inventario">Precio unitario</label>
+                                        <input type="number" id="precio_unitario_inventario" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="cantidad_producto_inventario">Cantidad</label>
+                                        <input type="number" id="cantidad_producto_inventario" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" onclick="agregarInventariotabla()" class="btn btn-warning btnprestamo">Añadir Producto</button>
+                                </div>
+                            </div>
+                            <hr>
+                            <table class="table table-striped table-hover table-bordered" id="datosTablaInventario">
+                                <thead class="thead-blue">
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Unidad</th>
+                                        <th>Precio unitario</th>
+                                        <th>Cantidad</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaInventario">
+                                    <!-- Las filas se agregarán aquí dinámicamente -->
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3"></td>
+                                        <td><strong>Total:</strong></td>
+                                        <td><input type="text" id="totalMontoInventario" class="form-control" value="0.00" readonly></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                          
+                        </div>
+                    </div>
+
 
                     <div class="card card-outline card-secondary">
                         <div class="card-header">
@@ -522,54 +643,7 @@
                         </div>
                     </div>
                     
-                    <div class="card card-outline card-warning"  id="inventario_producto">
-                        <div class="card-header">
-                            <h3 class="card-title">Registro De inventario</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-5">
-                                    <div class="form-group">
-                                        <label for="descripcion_producto_inventario">Descripción del Producto</label>
-                                        <input type="text" id="descripcion_producto_inventario" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="precio_unitario_inventario">Precio unitario</label>
-                                        <input type="number" id="precio_unitario_inventario" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="cantidad_producto_inventario">Cantidad</label>
-                                        <input type="number" id="cantidad_producto_inventario" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="button" onclick="agregarInventariotabla()" class="btn btn-warning btnprestamo">Añadir Producto</button>
-                                </div>
-                            </div>
-                            <hr>
-                            <table class="table table-striped table-hover table-bordered" id="datosTablaInventario">
-                                <thead class="thead-blue">
-                                    <tr>
-                                        <th>Descripción</th>
-                                        <th>Precio unitario</th>
-                                        <th>Cantidad</th>
-                                        <th>Monto</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tablaInventario">
-                                    <!-- Las filas se agregarán aquí dinámicamente -->
-                                </tbody>
-                            </table>
-                            <div class="text" style="background-color: #f0f0f0; padding: 10px;">
-                                <strong>Total de inventario:</strong> <span id="totalMontoInventario" style="font-size: 18px;">0.00</span>
-                            </div>
-                        </div>
-                    </div>
+                    
                     <div class="card card-outline card-primary" id="registro_boletas">
                         <div class="card-header">
                             <h3 class="card-title">Registro de Boletas</h3>
@@ -615,6 +689,8 @@
                             </table>
                         </div>
                     </div>
+
+
                     <div class="card card-outline card-info" id="registro_gastos_producir">
                         <div class="card-header">
                             <h3 class="card-title">Registro de Gastos a Producir</h3>
@@ -693,54 +769,7 @@
                         </div>
                     </div>
                    
-                    <div class="card card-outline card-info" id="gastos_ope">
-                        <div class="card-header">
-                            <h3 class="card-title">Registro de Gastos Operativos</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-5">
-                                    <div class="form-group">
-                                        <label for="descripcion_gasto">Descripción</label>
-                                        <input type="text" id="descripcion_gasto" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="precio_unitario_gasto">Precio unitario</label>
-                                        <input type="number" id="precio_unitario_gasto" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="cantidad_gasto">Cantidad</label>
-                                        <input type="number" id="cantidad_gasto" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2" >
-                                    <button type="button" onclick="agregarGastoOperativoc()" class="btn btn-info btnprestamo">Añadir Gasto</button>
-                                </div>
-                            </div>
-                            <hr>
-                            <table class="table table-striped table-hover table-bordered">
-                                <thead class="thead-blue">
-                                    <tr>
-                                        <th>Descripción</th>
-                                        <th>Precio unitario</th>
-                                        <th>Cantidad</th>
-                                        <th>Total</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="datos_tabla_gastos_operativos">
-                                    <!-- Las filas se agregarán aquí dinámicamente -->
-                                </tbody>
-                            </table>
-                            <div class="text" style="background-color: #f0f0f0; padding: 10px;">
-                                <strong>Total de Gastos Operativos:</strong> <span id="totalGatosOperativos" style="font-size: 18px;">0.00</span>
-                            </div>
-                        </div>
-                    </div>
+                    
                     <div class="card card-outline card-warning" id="deudas_finan">
                         <div class="card-header" style="display:flex;">
                             <h3 class="card-title">Deudas Financieras</h3>
