@@ -192,7 +192,7 @@ class creditoController extends Controller
     {
         $decodedData = $request->all();
         foreach (['clientesArray', 'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'boletasArray', 'gastosProducirArray',
-       'inventarioArray1' ] as $key) {
+       'inventarioArray1','ventasdiarias' ] as $key) {
             if ($request->filled($key)) {
                 $decodedData[$key] = json_decode($request->input($key), true);
             }
@@ -228,6 +228,7 @@ class creditoController extends Controller
             $prestamo->monto_total = $request->monto;
             $prestamo->fecha_desembolso = $request->fecha_desembolso;
             $prestamo->periodo_gracia_dias = $request->periodo_gracia_dias;
+            $prestamo->porcentaje_credito=$request->porcentaje_venta_credito;
             $prestamo->estado = "pendiente";
 
             if ($request->tipo_producto !== 'grupal') {
@@ -252,6 +253,15 @@ class creditoController extends Controller
                 'id_prestamo' => $prestamo->id,
                 'estado' => 'activo'
             ]);
+            //ACTIVOS
+            $activos= \App\Models\Activos::create([
+                'cuentas_por_cobrar' => $request->cuentas_por_cobrar,
+                'saldo_en_caja_bancos' => $request->saldo_caja_bancos,
+                'adelanto_a_proveedores' => $request->adelanto_a_proveedores,
+                'otros' => $request->otros,
+                'prestamo_id' => $prestamo->id,
+            ]);
+
             //existe archivo de garantia
             if ($request->hasFile('archivo_garantia') && $request->file('archivo_garantia')->isValid()) {
                 $nombreUnico = Str::uuid();
@@ -349,17 +359,27 @@ class creditoController extends Controller
                 \App\Models\ProyeccionesVentas::create([
                     'descripcion_producto' => $proyeccionData['descripcion'],
                     'unidad_medida' => $proyeccionData['unidadMedida'],
-                    'frecuencia_compra' => $proyeccionData['frecuenciaCompra'],
-                    'unidades_compradas' => $proyeccionData['unidadesCompradas'],
-                    'unidades_vendidas' => $proyeccionData['unidadesVendidas'],
-                    'stock_verificado' => $proyeccionData['stockVerificado'],
                     'precio_compra' => $proyeccionData['precioCompra'],
                     'precio_venta' => $proyeccionData['precioVenta'],
+                    'proporcion_ventas'=> $proyeccionData['proporcion_ventas'],
                     'id_prestamo' => $prestamoId,
+
                     'estado' => 'activo'
                 ]);
             }
         }
+        if (is_array($data['ventasdiarias'])) {
+            foreach ($data['ventasdiarias'] as $venta) {
+                \App\Models\VentasDiarias::create([
+                    'dia' => $venta['dia'],
+                    'cantidad_maxima' => $venta['max'],
+                    'cantidad_minima' => $venta['min'],
+                    'promedio' => $venta['promedio'],
+                    'prestamo_id' => $prestamoId
+                ]);
+            }
+        }
+
 
         if (is_array($data['deudasFinancierasArray'])) {
             foreach ($data['deudasFinancierasArray'] as $deudaData) {
@@ -419,7 +439,7 @@ class creditoController extends Controller
             }
         }
 
-        if (is_array($data['gastosProducirArray']) && count($data['proyeccionesArray']) > 0) {
+        if (is_array($data['gastosProducirArray']) && count($data['gastosProducirArray']) > 0) {
             $gasto = \App\Models\GastoProducir::create([
                 'nombre_actividad' => $request->nombre_actividad,
                 'cantidad_terreno' => $request->cantidad_terreno,

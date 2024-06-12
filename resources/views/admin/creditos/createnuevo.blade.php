@@ -199,7 +199,7 @@
                                 <div class="col-md-3">
                                 <div class="form-group" id="recurencia_individual">
                                         <label for="recurrencia">Recurrencia</label>
-                                        <select name="recurrencia" id="recurrencia" class="form-control" required>
+                                        <select name="recurrencia" id="recurrencia" class="form-control">
                                             <option value="">Seleccione una opción...</option>
                                             <option value="mensual" {{ old('recurrencia') == 'mensual' ? 'selected' : '' }}>Mensual</option>
                                             <option value="quincenal" {{ old('recurrencia') == 'quincenal' ? 'selected' : '' }}>Quincenal</option>
@@ -207,7 +207,7 @@
                                     </div>
                                     <div class="form-group" id="recurencia_grupal">
                                         <label for="recurrencia">Recurrencia</label>
-                                        <select name="recurrencia1" id="recurrencia1" class="form-control" required>
+                                        <select name="recurrencia1" id="recurrencia1" class="form-control">
                                             <option value="">Seleccione una opción...</option>
                                             <option value="catorcenal" {{ old('recurrencia') == 'mensual' ? 'selected' : '' }}> Catorcenal</option>
                                             <option value="veinteochenal" {{ old('recurrencia') == 'quincenal' ? 'selected' : '' }}>Veinteochenal</option>
@@ -241,7 +241,7 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="monto">Monto total (S/.)</label>
-                                        <input type="text" value="{{ old('monto') }}" name="monto" id="monto" class="form-control" required>
+                                        <input type="text" value="{{ old('monto') }}" name="monto" id="monto" class="form-control" >
                                     </div>
                                 </div>
                             </div>
@@ -468,7 +468,7 @@
                                     <tr>
                                         <td colspan="2"></td>
                                         <td><strong>Total:</strong></td>
-                                        <td><input type="text" id="total_gastos_operativos" class="form-control" value="0.00" readonly></td>
+                                        <td><input type="text" id="totalGatosOperativos" class="form-control" value="0.00" readonly></td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -660,25 +660,25 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="cuentas_por_cobrar">Cuentas por cobrar</label>
-                                        <input type="number" id="cuentas_por_cobrar" class="form-control">
+                                        <input type="number" id="cuentas_por_cobrar"  name="cuentas_por_cobrar"  class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="saldo_caja_bancos">Saldo en caja/bancos</label>
-                                        <input type="number" id="saldo_caja_bancos" class="form-control">
+                                        <input type="number" id="saldo_caja_bancos" name="saldo_caja_bancos" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="adelanto_a_proveedores">Adelanto a proveedores</label>
-                                        <input type="number" id="adelanto_a_proveedores" class="form-control">
+                                        <input type="number" id="adelanto_a_proveedores"  name="adelanto_a_proveedores" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="otros">Otros</label>
-                                        <input type="number" id="otros" class="form-control">
+                                        <input type="number" id="otros" name="otros" class="form-control">
                                     </div>
                                 </div>
                             </div>
@@ -1093,7 +1093,7 @@
             `;
             totalInventario = parseFloat(totalInventario) + parseFloat(producto.montoTotal);
         });
-        document.getElementById('totalMontoInventario').textContent = totalInventario.toFixed(2);
+        document.getElementById('totalMontoInventario').value = totalInventario.toFixed(2);
     }
 
     function editarProducto(index, campo, valor) {
@@ -1153,7 +1153,7 @@
             `;
             totalInventario1 = parseFloat(totalInventario1) + parseFloat(producto.montoTotal);
         });
-        document.getElementById('totalMontoInventario1').textContent = totalInventario1.toFixed(2);
+        document.getElementById('totalgastosfamiliares').value = totalInventario1.toFixed(2);
     }
 
     function editarProducto1(index, campo, valor) {
@@ -1270,7 +1270,7 @@
 
     function actualizarTotalGastosOperativos() {
         const total = gastosOperativosArray.reduce((sum, gasto) => sum + gasto.total, 0);
-        document.getElementById('totalGatosOperativos').textContent = total.toFixed(2);
+        document.getElementById('totalGatosOperativos').value = total.toFixed(2);
     }
 
     let boletasArray = [];
@@ -1398,6 +1398,7 @@
             formData.append('boletasArray', JSON.stringify(boletasArray));
             formData.append('gastosProducirArray', JSON.stringify(gastosProducirArray));
             formData.append('inventarioArray1', JSON.stringify(inventarioArray1));
+            formData.append('ventasdiarias', JSON.stringify(ventasDiarias));
             $.ajax({
                 url: '{{url('/admin/creditos/store')}}',
                 type: 'POST',

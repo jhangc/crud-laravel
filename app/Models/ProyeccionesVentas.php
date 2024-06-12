@@ -12,10 +12,6 @@ class ProyeccionesVentas extends Model
     protected $fillable = [
         'descripcion_producto',
         'unidad_medida',
-        'frecuencia_compra',
-        'unidades_compradas',
-        'unidades_vendidas',
-        'stock_verificado',
         'precio_compra',
         'precio_venta',
         'id_prestamo',
