@@ -369,8 +369,8 @@
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <label for="frecuencia_compra">Proporción de la venta (%)</label>
-                                        <input type="number" id="frecuencia_compra" name="frecuencia_compra" class="form-control">
+                                        <label for="propocion_venta">Proporción de la venta (%)</label>
+                                        <input type="number" id="propocion_venta" name="propocion_venta" class="form-control">
                                     </div>
                                 </div>
                                                                 
@@ -594,6 +594,8 @@
 
                         </div>
                     </div>
+
+
                     <div class="card card-outline card-warning"  id="gastos_familiares">
                         <div class="card-header">
                             <h3 class="card-title">Registro De Gastos Familiares</h3>
@@ -636,13 +638,52 @@
                                 <tbody id="tablaInventario1">
                                     <!-- Las filas se agregarán aquí dinámicamente -->
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2"></td>
+                                        <td><strong>Total:</strong></td>
+                                        <td><input type="text" id="totalgastosfamiliares" class="form-control" value="0.00" readonly></td>
+                                    </tr>
+                                </tfoot>
                             </table>
-                            <div class="text" style="background-color: #f0f0f0; padding: 10px;">
-                                <strong>Total de inventario:</strong> <span id="totalMontoInventario1" style="font-size: 18px;">0.00</span>
-                            </div>
                         </div>
                     </div>
                     
+                    {{-- Se registra total de activos y pasivos ESTO FALTA AGREGAR--}}
+
+                    <div class="card card-outline card-warning" id="activos">
+                        <div class="card-header">
+                            <h3 class="card-title">Registro De Activos</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="cuentas_por_cobrar">Cuentas por cobrar</label>
+                                        <input type="number" id="cuentas_por_cobrar" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="saldo_caja_bancos">Saldo en caja/bancos</label>
+                                        <input type="number" id="saldo_caja_bancos" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="adelanto_a_proveedores">Adelanto a proveedores</label>
+                                        <input type="number" id="adelanto_a_proveedores" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="otros">Otros</label>
+                                        <input type="number" id="otros" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="card card-outline card-primary" id="registro_boletas">
                         <div class="card-header">
@@ -902,12 +943,13 @@
     function agregarProductoProyeccion() {
         const descripcion = document.getElementById('producto_descripcion').value;
         const unidadMedida = document.getElementById('unidad_medida').value;
-        const frecuenciaCompra = document.getElementById('frecuencia_compra').value;
-        const unidadesCompradas = document.getElementById('unidades_compradas').value;
-        const unidadesVendidas = document.getElementById('unidades_vendidas').value;
-        const stockVerificado = document.getElementById('stock_verificado_inspeccion').value;
         const precioCompra = document.getElementById('precio_compra').value;
         const precioVenta = document.getElementById('precio_venta').value;
+        const proporcion_ventas = document.getElementById('propocion_venta').value;
+
+        const utilidad_unidad = precioCompra - precioVenta;
+        const margen_unidad = utilidad_unidad/precioVenta;
+        const monto_venta = utilidad_unidad/precioVenta;
 
         const inventarioValorizado = stockVerificado * precioCompra;
         const unidadesVendidasMes = (30 / frecuenciaCompra) * unidadesVendidas;
