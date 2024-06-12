@@ -247,6 +247,182 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="card card-outline card-warning" id="registro_ventas_diarias">
+                        <div class="card-header">
+                            <h3 class="card-title">Registro de ventas diarias</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <div class="form-group">
+                                        <label for="dia_venta">Dia</label>
+                                        <select id="dia_venta" name="dia_venta" class="form-control">
+                                            <option value="lunes">Lunes</option>
+                                            <option value="martes">Martes</option>
+                                            <option value="miercoles">Miércoles</option>
+                                            <option value="jueves">Jueves</option>
+                                            <option value="viernes">Viernes</option>
+                                            <option value="sabado">Sábado</option>
+                                            <option value="domingo">Domingo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="venta_minima">Venta mínima (S/.)</label>
+                                        <input type="number" id="venta_minima" name="venta_minima" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="venta_maxima">Venta máxima (S/.)</label>
+                                        <input type="number" id="venta_maxima" name="venta_maxima" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" id="btn_anadir_venta" onclick="agregarVentaTabla()" class="btn btn-warning btnprestamo">Añadir Venta</button>
+                                </div>
+                            </div>
+                            <hr>
+                            <table class="table table-striped table-hover table-bordered" id="tabla_registro_ventas_diarias">
+                                <thead class="thead-blue">
+                                    <tr>
+                                        <th>Dia</th>
+                                        <th>Venta mínima</th>
+                                        <th>Venta máxima</th>
+                                        <th>Promedio</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cuerpo_tabla_registro_ventas_diarias">
+                                    <!-- Las filas se agregarán aquí dinámicamente -->
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3"></td>
+                                        <td><strong>Total de ventas semana:</strong></td>
+                                        <td><input type="text" id="total_ventas_semana" class="form-control" value="0.00" readonly></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3"></td>
+                                        <td><strong>Total de ventas quincena:</strong></td>
+                                        <td><input type="text" id="total_ventas_quincena" class="form-control" value="0.00" readonly></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3"></td>
+                                        <td><strong>Total de ventas mes:</strong></td>
+                                        <td><input type="text" id="total_ventas_mes" class="form-control" value="0.00" readonly></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3"></td>
+                                        <td><strong>% Venta al crédito:</strong></td>
+                                        <td><input type="text" id="porcentaje_venta_credito" class="form-control" value="0.00"></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3"></td>
+                                        <td><strong>Venta al crédito:</strong></td>
+                                        <td><input type="text" id="venta_credito" class="form-control" value="0.00" readonly></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+
+                    <div class="card card-outline card-primary" id="detalle_negocio">
+                        <div class="card-header">
+                            <h3 class="card-title">Proyecciones de ventas</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="producto_descripcion">Descripción del producto</label>
+                                        <input type="text" id="producto_descripcion" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="unidad_medida">Unidad de medida</label>
+                                        <select name="unidad_medida" id="unidad_medida" class="form-control">
+                                            <option value="und" selected>Unidades</option>
+                                            <option value="qq">Quintales</option>
+                                            {{-- <option value="qq">Kilos</option> --}}
+                                            <option value="kg">Kilos</option>
+                                            <option value="m">metros</option>
+                                            <option value="l">litros</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="precio_compra">Precio de Compra S/.</label>
+                                        <input type="number" id="precio_compra" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="precio_venta">Precio de Venta S/.</label>
+                                        <input type="number" id="precio_venta" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="frecuencia_compra">Proporción de la venta (%)</label>
+                                        <input type="number" id="frecuencia_compra" name="frecuencia_compra" class="form-control">
+                                    </div>
+                                </div>
+                                                                
+                                <div class="col-md-2">
+                                    <button type="button" onclick="agregarProductoProyeccion()" class="btn btn-primary btnprestamo">Añadir Producto</button>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover table-bordered" id="datosTabla">
+                                    <thead class="thead-blue">
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Precio Compra/producción</th>
+                                            <th>Precio Venta</th>
+                                            <th>Unidad</th>
+                                            {{-- precio compra - precio venta --}}
+                                            <th>Utilidad por unidad</th>
+                                            {{-- utilidad / precio venta --}}
+                                            <th>Margen por unidad</th>
+                                            {{-- registro --}}
+                                            <th>% proporción de las ventas</th>
+                                            {{-- total venta mes / proporcion de venta --}}
+                                            <th>Monto de venta</th>
+                                            {{-- precio comra / precio venta --}}
+                                            <th>Relación compra/venta</th>
+                                            {{-- monto venta * relacion copra venta --}}
+                                            <th>Costo venta</th>
+                                            {{-- monto de venta - costo veenta --}}
+                                            <th>Utilidad</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaProyecciones">
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="5"></td>
+                                            <td><strong>Total:</strong></td>
+                                            <td><input type="text" id="total_proporción_ventas" class="form-control" value="0.00" readonly></td>
+                                            <td><input type="text" id="total_monto:venta" class="form-control" value="0.00" readonly></td>
+                                            <td colspan="1"></td>
+                                            <td><input type="text" id="total_costo_venta" class="form-control" value="0.00" readonly></td>
+                                            <td><input type="text" id="total_utilidad" class="form-control" value="0.00" readonly></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <div class="card card-outline card-secondary">
                         <div class="card-header">
                             <h3 class="card-title">Datos del la Garantia</h3>
@@ -345,98 +521,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card card-outline card-primary" id="detalle_negocio">
-                        <div class="card-header">
-                            <h3 class="card-title">Proyecciones de ventas</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="producto_descripcion">Descripción del producto</label>
-                                        <input type="text" id="producto_descripcion" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="unidad_medida">Unidad de medida</label>
-                                        <select name="unidad_medida" id="unidad_medida" class="form-control">
-                                            <option value="und" selected>Und</option>
-                                            <option value="kg">Kg</option>
-                                            <option value="m">m</option>
-                                            <option value="l">l</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="frecuencia_compra">Frecuencia de compra</label>
-                                        <input type="number" id="frecuencia_compra" name="frecuencia_compra" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="unidades_compradas">Unidades compradas</label>
-                                        <input type="number" id="unidades_compradas" name="unidades_compradas" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="unidades_vendidas">Unidades Vendidas</label>
-                                        <input type="number" id="unidades_vendidas" name="unidades_vendidas" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="stock_verificado_inspeccion">Stock verificado inspección</label>
-                                        <input type="number" id="stock_verificado_inspeccion" name="stock_verificado_inspeccion" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="precio_compra">Precio de Compra S/.</label>
-                                        <input type="number" id="precio_compra" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="precio_venta">Precio de Venta S/.</label>
-                                        <input type="number" id="precio_venta" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="button" onclick="agregarProductoProyeccion()" class="btn btn-primary btnprestamo">Añadir Producto</button>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover table-bordered" id="datosTabla">
-                                    <thead class="thead-blue">
-                                        <tr>
-                                            <th>Descripción</th>
-                                            <th>Unidad de Medida</th>
-                                            <th>Frecuencia de Compra</th>
-                                            <th>Unidades Compradas</th>
-                                            <th>Unidades Vendidas</th>
-                                            <th>Stock Verificado</th>
-                                            <th>Precio de Compra</th>
-                                            <th>Precio de Venta</th>
-                                            <th>Inventario Valorizado</th>
-                                            <th>Unidades Vendidas por Mes</th>
-                                            <th>Ingresos Mensuales por Venta</th>
-                                            <th>Unidades Compradas por Mes</th>
-                                            <th>Ingresos Mensuales por Compra</th>
-                                            <th>Margen Bruto Mensual</th>
-                                            <th>Margen (%)</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tablaProyecciones">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                    
                     <div class="card card-outline card-warning"  id="inventario_producto">
                         <div class="card-header">
                             <h3 class="card-title">Registro De inventario</h3>
