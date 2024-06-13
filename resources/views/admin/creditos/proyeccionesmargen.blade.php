@@ -170,33 +170,33 @@
                                 <!-- (Ventas - costo)/ventas -->
                                 <td>Margen</td>
                                 <td>
-                                    0
+                                    {{ $margen }}
                                 </td>
                             </tr>
                             <tr>
                                 <!-- suma de todo el % participacion -->
                                 <td>Participación</td>
-                                <td></td>
+                                <td>{{ $proporcion_ventas }}%</td>
                             </tr>
                             <tr>
                                 <!-- Ventas - costo -->
                                 <td>Utilidad</td>
-                                <td>{{ $totalVentas - $totalCompras }}</td>
+                                <td>{{ $utilidadBruta }}</td>
                             </tr>
                             <tr>
                                 <!-- total gastos operativos -->
                                 <td>Gastos operativos</td>
-                                {{-- <td>{{ $totalGastosOperativos }}</td> --}}
+                                <td>{{ $totalGastosOperativos }}</td>
                             </tr>
                             <tr>
                                 <!-- Total sventa al credito -->
                                 <td>Venta al credito</td>
-                                <td></td>
+                                <td>{{ $total_venta_credito }}</td>
                             </tr>
                             <tr>
                                 <!-- Total de inventario -->
                                 <td>Productos terminados</td>
-                                <td></td>
+                                <td>{{ $total_inventario }}</td>
                             </tr>
                             {{-- estos dos ultimos colocar 0.00 por el momento --}}
                             <tr>
@@ -232,31 +232,31 @@
                             <tr>
                                 {{-- activo corriente mas fijo --}}
                                 <td><b>Activo</b></td>
-                                <td></td>
+                                <td>{{ $activo}}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 20px;">Activo corriente (circulante)</td>
-                                <td></td>
+                                <td> {{ $activo_corriente}}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Disponible (caja y bancos)</td>
-                                <td></td>
+                                <td>{{ $activos->saldo_en_caja_bancos}}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Cuentas por cobrar</td>
-                                <td></td>
+                                <td>{{ $activos->cuentas_por_cobrar}}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Adelanto a proveedores</td>
-                                <td></td>
+                                <td>{{ $activos->adelanto_a_proveedores}}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Inventario</td>
-                                <td></td>
+                                <td>{{ $total_inventario}}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 50px;">Productos terminados</td>
-                                <td></td>
+                                <td>{{ $total_inventario}}</td>
                             </tr>
                             {{-- <tr>
                             <td style="padding-left: 50px;">Productos terminados</td>
@@ -264,15 +264,15 @@
                         </tr> --}}
                             <tr>
                                 <td style="padding-left: 50px;">En proceso productivo</td>
-                                <td></td>
+                                <td>0</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 50px;">Materiales</td>
-                                <td></td>
+                                <td>0</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 20px;">Activo fijo (circulante)</td>
-                                <td></td>
+                                <td>{{ $garantias->sum('valor_mercado') }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Garantia</td>
@@ -280,7 +280,7 @@
                             </tr>
                             <tr>
                                 <td><b>Pasivo</b></td>
-                                <td></td>
+                                <td>{{ $deudas->sum('saldo_capital') }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 20px;">Deudas Financieras</td>
@@ -288,7 +288,7 @@
                             </tr>
                             <tr>
                                 <td><b>Patrimonio neto</b></td>
-                                <td></td>
+                                <td>{{ $patrimonio }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -362,11 +362,11 @@
                             </tr>
                             <tr>
                                 <td>Gastos operativos</td>
-                                {{-- <td>{{ $totalGastosOperativos }}</td> --}}
+                                <td>{{ $totalGastosOperativos }}</td>
                             </tr>
                             <tr>
                                 <td>Utilidad operativa</td>
-                                <td></td>
+                                <td>{{ $utilidadOperativa }}</td>
                             </tr>
                             <tr>
                                 <td>Gastos financieros</td>
@@ -374,15 +374,15 @@
                             </tr>
                             <tr>
                                 <td>Saldo disponible del negocio</td>
-                                <td></td>
+                                <td>{{ $saldo_disponible_negocio }}</td>
                             </tr>
                             <tr>
                                 <td>Gastos familiares</td>
-                                <td></td>
+                                <td>200</td>
                             </tr>
                             <tr>
                                 <td>Saldo final dsiponible</td>
-                                <td></td>
+                                <td>{{ $saldo_final }}</td>
                             </tr>
 
                         </tbody>
@@ -410,47 +410,47 @@
                             <tr>
                                 {{-- colocar dle cuadro del excel --}}
                                 <td>Rentabilidad del negocio (%)</td>
-                                <td></td>
+                                <td>12</td>
                             </tr>
                             <tr>
                                 {{-- division entre saldo total disponible y ventas total --}}
                                 <td>Rentabilidad de las ventas</td>
-                                <td></td>
+                                <td>{{ $rentabilidad_ventas }}</td>
                             </tr>
                             <tr>
                                 {{-- total costo / total inventario --}}
                                 <td>Rotación de inventario (en días)</td>
-                                <td></td>
+                                <td>{{ $rotacion_inventario}}</td>
                             </tr>
                             <tr>
                                 {{-- activo corriente / pasivo corriente --}}
                                 <td>Liquidez</td>
-                                <td></td>
+                                <td>{{ $liquidez}}</td>
                             </tr>
                             <tr>
                                 {{-- UTILIDAD NETA / ACTIVOS TOTALES --}}
                                 <td>ROA (%)</td>
-                                <td></td>
+                                <td>{{ $roa}}</td>
                             </tr>
                             <tr>
                                 {{-- ACTIVO CORRIENTE - PASIVO CORRIENTE --}}
                                 <td>Capital de trabajo (S/.)</td>
-                                <td></td>
+                                <td>{{ $capital_trabajo}}</td>
                             </tr>
                             <tr>
                                 {{-- UTILIDAD NETA / PATRIMONIO NETO --}}
                                 <td>ROE (%)</td>
-                                <td></td>
+                                <td>{{ $roe}}</td>
                             </tr>
                             <tr>
                                 {{-- PASIVO TOTAL / PATRIMONIO NETO --}}
                                 <td>Solvencia</td>
-                                <td></td>
+                                <td>{{ $solvencia}}</td>
                             </tr>
                             <tr>
                                 {{-- PASIVO TOTAL / ACTIVO TOTAL --}}
                                 <td>Indice de endeudamiento</td>
-                                <td></td>
+                                <td>{{ $indice_endeudamiento}}</td>
                             </tr>
 
                         </tbody>
