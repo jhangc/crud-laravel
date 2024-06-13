@@ -142,7 +142,6 @@
 </div> --}}
 
     <div class="row">
-
         <div class="col-md-6">
             <div class="card card-outline card-warning">
                 <div class="card-header">
@@ -171,11 +170,7 @@
                                 <!-- (Ventas - costo)/ventas -->
                                 <td>Margen</td>
                                 <td>
-                                    @if ($totalCompras != 0)
-                                        {{ 1 - $totalCompras / $totalVentas }}%
-                                    @else
-                                        0%
-                                    @endif
+                                    0
                                 </td>
                             </tr>
                             <tr>
@@ -191,7 +186,7 @@
                             <tr>
                                 <!-- total gastos operativos -->
                                 <td>Gastos operativos</td>
-                                <td>{{ $totalGastosOperativos }}</td>
+                                {{-- <td>{{ $totalGastosOperativos }}</td> --}}
                             </tr>
                             <tr>
                                 <!-- Total sventa al credito -->
@@ -367,7 +362,7 @@
                             </tr>
                             <tr>
                                 <td>Gastos operativos</td>
-                                <td>{{ $totalGastosOperativos }}</td>
+                                {{-- <td>{{ $totalGastosOperativos }}</td> --}}
                             </tr>
                             <tr>
                                 <td>Utilidad operativa</td>

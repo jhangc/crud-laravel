@@ -44,8 +44,7 @@ class creditoController extends Controller
             ->where('activo', 1)
             ->where('estado', "aprobado")
             ->get();
-        return view('admin.creditos.aprobar',['creditos' => $creditos]);
-
+        return view('admin.creditos.aprobar', ['creditos' => $creditos]);
     }
     public function proyecciones($id)
     {
@@ -58,10 +57,35 @@ class creditoController extends Controller
         $boletas = \App\Models\Boleta::where('id_prestamo', $id)->get();
         $gastosProducir = \App\Models\GastosProducir::where('id_prestamo', $id)->get();
         $garantias = \App\Models\Garantia::where('id_prestamo', $id)->get();
+        $gastosfamiliares = \App\Models\GastosFamiliares::where('id_prestamo', $id)->get();
+        $activos = \App\Models\Activos::where('prestamo_id', $id)->get();
+        $ventasdiarias = \App\Models\VentasDiarias::where('prestamo_id', $id)->get();
 
         // Calcular Totales
-        $totalVentas = $proyecciones->sum(fn ($proyeccion) => $proyeccion->precio_venta * $proyeccion->unidades_compradas);
-        $totalCompras = $proyecciones->sum(fn ($proyeccion) => $proyeccion->precio_compra * $proyeccion->unidades_compradas);
+        $totalVentas = $ventasdiarias->sum('promedio');
+                
+        // Inicializar variables
+        $pesoTotal = 0;
+        $sumaPonderadaRelacion = 0;
+
+
+        // Recorrer las proyecciones para calcular el monto total de ventas y la relación de compra-venta promedio ponderada
+        foreach ($proyecciones as $proyeccion) {
+            $montoVenta = $proyeccion->$totalVentas * ($proyeccion->proporcion_ventas / 100);
+             // Calcular la relación de compra-venta
+            $relacionCompraVenta = $proyeccion->precioVenta > 0 ? $proyeccion->precioCompra / $proyeccion->precioVenta : 0;
+            // $relacionCompraVenta = $proyeccion->precioCompra / $proyeccion->precioVenta;
+            // Sumar la relación ponderada
+            $sumaPonderadaRelacion += $relacionCompraVenta * $montoVenta;
+            $pesoTotal += $montoVenta;
+        }
+
+        // Calcular la relación de compra-venta promedio ponderada
+        $relacionCompraVentaPromedio = $pesoTotal > 0 ? $sumaPonderadaRelacion / $pesoTotal : 0;
+        // Calcular el costo total de ventas
+        // $totalVentas * $relacionCompraVentaPromedio;
+        
+        $totalCompras = $totalVentas * $relacionCompraVentaPromedio;
         $totalCuotasCreditos = $deudas->sum('cuota');
         $totalGastosOperativos = $gastosOperativos->sum(fn ($gasto) => $gasto->precio_unitario * $gasto->cantidad);
         $totalGastosFamiliares = 0; // Asumiendo otro campo si existe
@@ -104,7 +128,6 @@ class creditoController extends Controller
             'gastosProducir',
             'totalVentas',
             'totalCompras',
-            'totalGastosOperativos',
             'garantias'
         ));
     }
@@ -191,8 +214,10 @@ class creditoController extends Controller
     public function store(Request $request)
     {
         $decodedData = $request->all();
-        foreach (['clientesArray', 'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'boletasArray', 'gastosProducirArray',
-       'inventarioArray1','ventasdiarias' ] as $key) {
+        foreach ([
+            'clientesArray', 'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'boletasArray', 'gastosProducirArray',
+            'inventarioArray1', 'ventasdiarias'
+        ] as $key) {
             if ($request->filled($key)) {
                 $decodedData[$key] = json_decode($request->input($key), true);
             }
@@ -222,13 +247,13 @@ class creditoController extends Controller
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
             $prestamo->destino = $request->destino_credito;
-            $prestamo->recurrencia = $request->tipo_producto== 'grupal'? $request->recurrencia1 : $request->recurrencia;
+            $prestamo->recurrencia = $request->tipo_producto == 'grupal' ? $request->recurrencia1 : $request->recurrencia;
             $prestamo->tasa = $request->tasa_interes;
             $prestamo->tiempo = $request->tiempo_credito;
             $prestamo->monto_total = $request->monto;
             $prestamo->fecha_desembolso = $request->fecha_desembolso;
             $prestamo->periodo_gracia_dias = $request->periodo_gracia_dias;
-            $prestamo->porcentaje_credito=$request->porcentaje_venta_credito;
+            $prestamo->porcentaje_credito = $request->porcentaje_venta_credito;
             $prestamo->estado = "pendiente";
 
             if ($request->tipo_producto !== 'grupal') {
@@ -254,7 +279,7 @@ class creditoController extends Controller
                 'estado' => 'activo'
             ]);
             //ACTIVOS
-            $activos= \App\Models\Activos::create([
+            $activos = \App\Models\Activos::create([
                 'cuentas_por_cobrar' => $request->cuentas_por_cobrar,
                 'saldo_en_caja_bancos' => $request->saldo_caja_bancos,
                 'adelanto_a_proveedores' => $request->adelanto_a_proveedores,
@@ -361,7 +386,7 @@ class creditoController extends Controller
                     'unidad_medida' => $proyeccionData['unidadMedida'],
                     'precio_compra' => $proyeccionData['precioCompra'],
                     'precio_venta' => $proyeccionData['precioVenta'],
-                    'proporcion_ventas'=> $proyeccionData['proporcion_ventas'],
+                    'proporcion_ventas' => $proyeccionData['proporcion_ventas'],
                     'id_prestamo' => $prestamoId,
 
                     'estado' => 'activo'
