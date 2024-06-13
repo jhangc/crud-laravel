@@ -447,7 +447,8 @@ class creditoController extends Controller
                     'descripcion' => $inventarioData['descripcion'],
                     'precio_unitario' => $inventarioData['precioUnitario'],
                     'cantidad' => $inventarioData['cantidad'],
-                    'id_prestamo' => $prestamoId
+                    'id_prestamo' => $prestamoId,
+                    'unidad'=> $inventarioData['unidad'],
                 ]);
             }
         }
