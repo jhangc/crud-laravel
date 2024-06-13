@@ -8,6 +8,12 @@ class CreditoCliente extends Model
 {
     protected $table = 'credito_cliente';
 
+    protected $fillable = [
+        'prestamo_id',
+        'cliente_id',
+        'monto_indivual',
+    ];
+    
     public $timestamps = false;
 
     public function prestamos()
@@ -17,7 +23,7 @@ class CreditoCliente extends Model
 
     public function clientes()
     {
-        return $this->belongsToMany(cliente::class, 'cliente_id', 'prestamo_id');
+        return $this->belongsTo(cliente::class, 'cliente_id','id');
     }
 }
 

@@ -48,7 +48,7 @@ Route::delete('/admin/creditos/{id}', [App\Http\Controllers\creditoController::c
 //traer descricpones
 Route::get('/admin/credito/descripcion', [App\Http\Controllers\creditoController::class, 'getdescripciones'])->name('creditos.getdescripciones')->middleware('auth');
 Route::get('/admin/cronograma/{id}/cuotas', [App\Http\Controllers\CronogramaController::class, 'vercuota'])->name('credito.cuotas')->middleware('auth');
-
+Route::get('/admin/creditoinfo/{id}/', [App\Http\Controllers\creditoController::class, 'show'])->name('credito.info')->middleware('auth');
 
 Route::get('/admin/creditos/buscardni', [App\Http\Controllers\clienteController::class, 'buscarPorDocumento'])->name('creditos.buscardni')->middleware('auth');
 Route::get('/admin/creditos/agregardni', [App\Http\Controllers\clienteController::class, 'agregarpordni'])->name('creditos.agregardni')->middleware('auth');

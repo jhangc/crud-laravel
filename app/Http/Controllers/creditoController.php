@@ -181,7 +181,8 @@ class creditoController extends Controller
             'roe',
             'solvencia',
             'indice_endeudamiento',
-            'activos'
+            'activos',
+            'gastosfamiliares'
         ));
     }
 
@@ -548,18 +549,44 @@ class creditoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $credito =  \App\Models\Credito::find($id);
+
+        $clientes =  \App\Models\CreditoCliente::with('clientes')
+                    ->where('prestamo_id', $id)->get();
+        $activos =  \App\Models\Activos::where('prestamo_id', $id)->first();
+        $proyeccionesVentas =  \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
+        $ventasDiarias = \App\Models\VentasDiarias::where('prestamo_id', $id)->get();
+        $deudasFinancieras =  \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
+        $gastosOperativos =  \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
+        $gastosFamiliares =  \App\Models\GastosFamiliares::where('id_prestamo', $id)->get();
+        $inventario =  \App\Models\Inventario::where('id_prestamo', $id)->get();
+        $boletas =  \App\Models\Boleta::where('id_prestamo', $id)->get();
+        $gastosProducir =  \App\Models\GastoProducir::where('id_prestamo', $id)->with('gastos')->get();
+    
+        return response()->json([
+            'credito' => $credito,
+            'clientes' => $clientes,
+            'activos' => $activos,
+            'proyeccionesVentas' => $proyeccionesVentas,
+            'ventasDiarias' => $ventasDiarias,
+            'deudasFinancieras' => $deudasFinancieras,
+            'gastosOperativos' => $gastosOperativos,
+            'gastosFamiliares' => $gastosFamiliares,
+            'inventario' => $inventario,
+            'boletas' => $boletas,
+            'gastosProducir' => $gastosProducir
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
         // $cliente = cliente::findOrFail($id);
-        return view('admin.creditos.edit');
+        return view('admin.creditos.edit',compact('id'));
     }
 
     /**

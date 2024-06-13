@@ -310,25 +310,27 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $totalGastosFamiliares = 0;
+                            @endphp
+                            @foreach ($gastosfamiliares as $gasto)
+                            @php
+                                $subtotal = $gasto->precio_unitario * $gasto->cantidad;
+                                $totalGastosFamiliares += $subtotal;
+                            @endphp
                             <tr>
-                                <td>Vestimenta</td>
-                                <td></td>
+                                <td>{{ $gasto->descripcion }}</td>
+                                <td>{{ number_format($subtotal, 2) }}</td>
                             </tr>
-                            <tr>
-                                <td>Alimentación</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>Otros</td>
-                                <td></td>
-                            </tr>
+                            @endforeach
                         </tbody>
                         <tfoot>
                             <tr>
                                 <td><b><i>Total</i></b></td>
-                                <td></td>
+                                <td>{{ number_format($totalGastosFamiliares, 2) }}</td>
                             </tr>
                         </tfoot>
+
                     </table>
                 </div>
             </div>
