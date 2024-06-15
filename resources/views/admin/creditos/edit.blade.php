@@ -873,31 +873,61 @@
 
 <script>
 
-    document.addEventListener('DOMContentLoaded', cargardata);
-    let idc=document.getElementById('credito-id').value;
+document.addEventListener('DOMContentLoaded', function() {
+    const idc = document.getElementById('credito-id').value;
     let clientesArray = [];
     let totalMonto = 0;
-    function cargardata(){
-    //lenar  todos alos datos al script
-    $.ajax({
-            url: '{{url('/admin/creditoinfo/')}}/'+idc,
+
+    function cargardata() {
+        // Hacer la solicitud AJAX para obtener los datos del crédito
+        $.ajax({
+            url: `/admin/creditoinfo/${idc}`,
             type: 'GET',
             success: function(response) {
-               console.log(response);
-               let credito=response.credito;
-                
+                console.log(response);
+                let credito = response.credito;
+
+                // Llenar los campos del formulario con los datos del crédito
+                $('#tipo_credito').val(credito.tipo);
+                $('#tipo_producto').val(credito.producto);
+                $('#subproducto').val(credito.subproducto);
+                $('#destino_credito').val(credito.destino);
+                $('#recurrencia').val(credito.recurrencia);
+                $('#tasa_interes').val(credito.tasa);
+                $('#tiempo_credito').val(credito.tiempo);
+                $('#monto').val(credito.monto_total);
+                $('#fecha_desembolso').val(credito.fecha_desembolso);
+                $('#descripcion_negocio').val(credito.descripcion_negocio);
+                $('#periodo_gracia_dias').val(credito.periodo_gracia_dias);
+                $('#nombre_prestamo').val(credito.nombre_prestamo);
+                $('#cantidad_grupo').val(credito.cantidad_integrantes);
+                $('#porcentaje_venta_credito').val(credito.porcentaje_credito);
+
+                // Llenar las tablas con los datos obtenidos
+                llenarClientes(response.clientes);
             },
             error: function(xhr) {
-                console.error("Error al recuperar información: " + xhr.statusText);
-                // Limpiar campo si hay error
-                document.getElementById('dnic').value = '';
+                console.error("Error al recuperar la información: " + xhr.statusText);
             }
         });
-
-
     }
-    function actualizarTabla() {
-        const tablaCuerpo = document.getElementById('tablaCuerpo');
+
+    function llenarClientes(clientes) {
+        const tablaCuerpo = document.getElementById('tablaClientes').getElementsByTagName('tbody')[0];
+        tablaCuerpo.innerHTML = '';
+        clientesArray = clientes.map(cliente => ({
+            nombre: cliente.clientes.nombre,
+            documento: cliente.clientes.documento_identidad,
+            profesion: cliente.clientes.profesion,
+            telefono: cliente.clientes.telefono,
+            direccion: cliente.clientes.direccion,
+            monto: cliente.monto_indivual
+        }));
+        actualizarTablaClientes();
+    }
+
+    function actualizarTablaClientes() {
+        const tablaCuerpo = document.getElementById('tablaClientes').getElementsByTagName('tbody')[0];
         tablaCuerpo.innerHTML = '';
         totalMonto = 0;
         clientesArray.forEach((cliente, index) => {
@@ -928,8 +958,42 @@
 
     function eliminarCliente(index) {
         clientesArray.splice(index, 1);
-        actualizarTabla();
+        actualizarTablaClientes();
     }
+
+    document.getElementById('buscarClientec').addEventListener('click', function() {
+        const documentoIdentidad = document.getElementById('dnic').value;
+        $.ajax({
+            url: '{{route('creditos.buscardni')}}',
+            type: 'GET',
+            data: {
+                documento_identidad: documentoIdentidad
+            },
+            success: function(response) {
+                const cliente = {
+                    nombre: response.nombre || '',
+                    profesion: response.profesion || '',
+                    telefono: response.telefono || '',
+                    direccion: response.direccion || '',
+                    monto: 0,
+                    documento: documentoIdentidad,
+                };
+                clientesArray.push(cliente);
+                actualizarTablaClientes();
+                document.getElementById('dnic').value = ''; // Limpiar campo
+            },
+            error: function(xhr) {
+                console.error("Error al recuperar información: " + xhr.statusText);
+                // Limpiar campo si hay error
+                document.getElementById('dnic').value = '';
+            }
+        });
+    });
+     cargardata();
+    });
+
+
+    
     let proyeccionesArray = [];
     function agregarProductoProyeccion() {
         const descripcion = document.getElementById('producto_descripcion').value;
