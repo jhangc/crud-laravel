@@ -26,6 +26,25 @@ class creditoController extends Controller
         // Pasar los clientes activos a la vista
         return view('admin.creditos.index', ['creditos' => $creditos]);
     }
+    public function comercio()
+    {
+        return view('admin.creditos.comercio');
+    }
+
+    public function produccion()
+    {
+        return view('admin.creditos.produccion');
+    }
+
+    public function servicio()
+    {
+        return view('admin.creditos.servicio');
+    }
+
+    public function grupal()
+    {
+        return view('admin.creditos.grupal');
+    }
 
     public function getdescripciones(Request $request)
     {

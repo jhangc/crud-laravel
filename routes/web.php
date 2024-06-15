@@ -45,6 +45,13 @@ Route::get('/admin/creditos/supervisar', [App\Http\Controllers\creditoController
 Route::get('/admin/creditos/{id}/edit', [App\Http\Controllers\creditoController::class, 'edit'])->name('creditos.edit')->middleware('auth');
 Route::put('/admin/creditos/{id}', [App\Http\Controllers\creditoController::class, 'update'])->name('creditos.update')->middleware('auth');
 Route::delete('/admin/creditos/{id}', [App\Http\Controllers\creditoController::class, 'destroy'])->name('creditos.destroy')->middleware('auth');
+
+Route::get('/admin/creditos/comercio', [App\Http\Controllers\creditoController::class, 'comercio'])->name('creditos.comercio')->middleware('auth');;
+Route::get('/admin/creditos/produccion', [App\Http\Controllers\creditoController::class, 'produccion'])->name('creditos.produccion')->middleware('auth');;
+Route::get('/admin/creditos/servicio', [App\Http\Controllers\creditoController::class, 'servicio'])->name('creditos.servicio')->middleware('auth');;
+Route::get('/admin/creditos/grupal', [App\Http\Controllers\creditoController::class, 'grupal'])->name('creditos.grupal')->middleware('auth');;
+
+
 //traer descricpones
 Route::get('/admin/credito/descripcion', [App\Http\Controllers\creditoController::class, 'getdescripciones'])->name('creditos.getdescripciones')->middleware('auth');
 Route::get('/admin/cronograma/{id}/cuotas', [App\Http\Controllers\CronogramaController::class, 'vercuota'])->name('credito.cuotas')->middleware('auth');

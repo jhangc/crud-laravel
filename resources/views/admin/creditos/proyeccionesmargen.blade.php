@@ -380,7 +380,7 @@
                             </tr>
                             <tr>
                                 <td>Gastos familiares</td>
-                                <td>200</td>
+                                <td>{{ number_format($totalGastosFamiliares, 2) }}</td>
                             </tr>
                             <tr>
                                 <td>Saldo final dsiponible</td>
