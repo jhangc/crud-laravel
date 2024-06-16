@@ -198,253 +198,333 @@
                         </div>
                     </div>
 
-                    <div class="card card-outline card-warning" id="registro_ventas_diarias">
+
+                    <div class="card card-outline card-info" id="gastos_produccion_agricola">
                         <div class="card-header">
-                            <h3 class="card-title">Registro de ventas diarias</h3>
+                            <h3 class="card-title">Registro de Ventas por Producto</h3>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-5">
+                                <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="dia_venta">Dia</label>
-                                        <select id="dia_venta" name="dia_venta" class="form-control">
-                                            <option value="lunes">Lunes</option>
-                                            <option value="martes">Martes</option>
-                                            <option value="miercoles">Miércoles</option>
-                                            <option value="jueves">Jueves</option>
-                                            <option value="viernes">Viernes</option>
-                                            <option value="sabado">Sábado</option>
-                                            <option value="domingo">Domingo</option>
-                                        </select>
+                                        <label for="nombre_actividad">Nombre de actividad</label>
+                                        <input type="text" id="nombre_actividad" name="nombre_actividad"
+                                            class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="venta_minima">Venta mínima (S/.)</label>
-                                        <input type="number" id="venta_minima" name="venta_minima"
-                                            class="form-control">
+                                        <label for="cantidad_terreno">Unidad medida de la siembra</label>
+                                        <select name="cantidad_terreno" id="cantidad_terreno" class="form-control">
+                                            <option value="hectarea" selected>Héctareas</option>
+                                            <option value="metros">Metros</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="venta_maxima">Venta máxima (S/.)</label>
-                                        <input type="number" id="venta_maxima" name="venta_maxima"
-                                            class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="button" id="btn_anadir_venta" onclick="agregarVentaTabla()"
-                                        class="btn btn-warning btnprestamo">Añadir Venta</button>
-                                </div>
-                            </div>
-                            <hr>
-                            <table class="table table-striped table-hover table-bordered"
-                                id="tabla_registro_ventas_diarias">
-                                <thead class="thead-blue">
-                                    <tr>
-                                        <th>Dia</th>
-                                        <th>Venta mínima</th>
-                                        <th>Venta máxima</th>
-                                        <th>Promedio</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="ventas_diarias">
-                                    <!-- Las filas se agregarán aquí dinámicamente -->
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="3"></td>
-                                        <td><strong>Total de ventas semana:</strong></td>
-                                        <td><input type="text" id="total_ventas_semana" class="form-control"
-                                                value="0.00" readonly></td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3"></td>
-                                        <td><strong>Total de ventas quincena:</strong></td>
-                                        <td><input type="text" id="total_ventas_quincena" class="form-control"
-                                                value="0.00" readonly></td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3"></td>
-                                        <td><strong>Total de ventas mes:</strong></td>
-                                        <td><input type="text" id="total_ventas_mes" class="form-control"
-                                                value="0.00" readonly></td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3"></td>
-                                        <td><strong>% Venta al crédito:</strong></td>
-                                        <td><input type="text" id="porcentaje_venta_credito"
-                                                name="porcentaje_venta_credito" class="form-control" value="0.00">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="3"></td>
-                                        <td><strong>Venta al crédito:</strong></td>
-                                        <td><input type="text" id="venta_credito" class="form-control"
-                                                value="0.00" readonly></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
 
-                    <div class="card card-outline card-primary" id="detalle_negocio">
-                        <div class="card-header">
-                            <h3 class="card-title">Proyecciones de ventas</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="producto_descripcion">Descripción del producto</label>
-                                        <input type="text" id="producto_descripcion" class="form-control">
+                                        <label for="cantidad_cultivar">Cantidad a cultivar</label>
+                                        <input type="number" id="cantidad_cultivar" name="cantidad_cultivar" class="form-control">
                                     </div>
                                 </div>
-                                <div class="col-md-2">
+
+                                <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="unidad_medida">Unidad de medida</label>
-                                        <select name="unidad_medida" id="unidad_medida" class="form-control">
-                                            <option value="und" selected>Unidades</option>
+                                        <label for="unidad_medida_venta">Unidad medida de venta</label>
+                                        <select name="unidad_medida_venta" id="unidad_medida_venta" class="form-control">
+                                            <option value="kilos" selected>Kg</option>
                                             <option value="qq">Quintales</option>
-                                            {{-- <option value="qq">Kilos</option> --}}
-                                            <option value="kg">Kilos</option>
-                                            <option value="m">metros</option>
-                                            <option value="l">litros</option>
+                                            <option value="unidades">unidades</option>
                                         </select>
                                     </div>
                                 </div>
+
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="precio_compra">Precio de Compra S/.</label>
-                                        <input type="number" id="precio_compra" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="precio_venta">Precio de Venta S/.</label>
-                                        <input type="number" id="precio_venta" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="propocion_venta">Proporción de la venta (%)</label>
-                                        <input type="number" id="propocion_venta" name="propocion_venta"
-                                            class="form-control">
+                                        <label for="rendimiento_unidad_siembra">Rendimiento por unidad de siembra</label>
+                                        <input type="number" id="rendimiento_unidad_siembra" name="rendimiento_unidad_siembra" class="form-control">
                                     </div>
                                 </div>
 
-                                <div class="col-md-2">
-                                    <button type="button" onclick="agregarProductoProyeccion()"
-                                        class="btn btn-primary btnprestamo">Añadir Producto</button>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="ciclo_productivo">Ciclo productivo (meses)</label>
+                                        <input type="number" id="ciclo_productivo" name="ciclo_productivo" class="form-control">
+                                    </div>
                                 </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="mes_inicio">Mes de inicio</label>
+                                        <input type="date" id="mes_inicio" name="mes_inicio" class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <button type="button" onclick="agregarGastoProducir()"
+                                        class="btn btn-info btnprestamo">Añadir Venta</button>
+                                </div>
+
+                                
+                                
                             </div>
                             <hr>
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover table-bordered" id="datosTabla">
-                                    <thead class="thead-blue">
-                                        <tr>
-                                            <th>Producto</th>
-                                            <th>Precio Compra/producción</th>
-                                            <th>Precio Venta</th>
-                                            <th>Unidad</th>
-                                            {{-- precio compra - precio venta --}}
-                                            <th>Utilidad por unidad</th>
-                                            {{-- utilidad / precio venta --}}
-                                            <th>Margen por unidad</th>
-                                            {{-- registro --}}
-                                            <th>% proporción de las ventas</th>
-                                            {{-- total venta mes / proporcion de venta --}}
-                                            <th>Monto de venta</th>
-                                            {{-- precio comra / precio venta --}}
-                                            <th>Relación compra/venta</th>
-                                            {{-- monto venta * relacion copra venta --}}
-                                            <th>Costo venta</th>
-                                            {{-- monto de venta - costo veenta --}}
-                                            <th>Utilidad</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tablaProyecciones">
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="5"></td>
-                                            <td><strong>Total:</strong></td>
-                                            <td><input type="text" id="total_proporción_ventas"
-                                                    class="form-control" value="0.00" readonly></td>
-                                            <td><input type="text" id="total_monto:venta" class="form-control"
-                                                    value="0.00" readonly></td>
-                                            <td colspan="1"></td>
-                                            <td><input type="text" id="total_costo_venta" class="form-control"
-                                                    value="0.00" readonly></td>
-                                            <td><input type="text" id="total_utilidad" class="form-control"
-                                                    value="0.00" readonly></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                            <div class="row">
+                                <!-- Tabla de 12 filas -->
+                                <div class="col-md-6">
+                                    <h5>% de ventas mensual</h5>
+                                    <table class="table table-striped table-hover table-bordered">
+                                        <thead class="thead-blue">
+                                            <tr>
+                                                <th>Mes</th>
+                                                <th>% Ventas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Enero</td>
+                                                <td><input type="text" class="form-control" name="venta_enero"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Febrero</td>
+                                                <td><input type="text" class="form-control" name="venta_febrero"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Marzo</td>
+                                                <td><input type="text" class="form-control" name="venta_marzo"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Abril</td>
+                                                <td><input type="text" class="form-control" name="venta_abril"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Mayo</td>
+                                                <td><input type="text" class="form-control" name="venta_mayo"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Junio</td>
+                                                <td><input type="text" class="form-control" name="venta_junio"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Julio</td>
+                                                <td><input type="text" class="form-control" name="venta_julio"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Agosto</td>
+                                                <td><input type="text" class="form-control" name="venta_agosto"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Septiembre</td>
+                                                <td><input type="text" class="form-control" name="venta_septiembre"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Octubre</td>
+                                                <td><input type="text" class="form-control" name="venta_octubre"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Noviembre</td>
+                                                <td><input type="text" class="form-control" name="venta_noviembre"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Diciembre</td>
+                                                <td><input type="text" class="form-control" name="venta_diciembre"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Tabla de 4 filas -->
+                                <div class="col-md-6">
+                                    <h5>Tipo de producto</h5>
+                                    <table class="table table-striped table-hover table-bordered">
+                                        <thead class="thead-blue">
+                                            <tr>
+                                                <th>Calidad</th>
+                                                <th>Precio unitario (S/.)</th>
+                                                <th>Porcentaje (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>PRODUCTO A</td>
+                                                <td><input type="text" class="form-control" name="precio_1"></td>
+                                                <td><input type="text" class="form-control" name="porcentaje_1"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>PRODUCTO B</td>
+                                                <td><input type="text" class="form-control" name="precio_2"></td>
+                                                <td><input type="text" class="form-control" name="porcentaje_2"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>PRODUCTO C</td>
+                                                <td><input type="text" class="form-control" name="precio_3"></td>
+                                                <td><input type="text" class="form-control" name="porcentaje_3"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>PRODUCTO D</td>
+                                                <td><input type="text" class="form-control" name="precio_4"></td>
+                                                <td><input type="text" class="form-control" name="porcentaje_4"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+
 
                     <div class="card card-outline card-info" id="gastos_ope">
                         <div class="card-header">
                             <h3 class="card-title">Registro de Gastos Operativos</h3>
                         </div>
                         <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-5">
-                                    <div class="form-group">
-                                        <label for="descripcion_gasto">Descripción</label>
-                                        <input type="text" id="descripcion_gasto" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="precio_unitario_gasto">Precio unitario</label>
-                                        <input type="number" id="precio_unitario_gasto" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="cantidad_gasto">Cantidad</label>
-                                        <input type="number" id="cantidad_gasto" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="button" onclick="agregarGastoOperativoc()"
-                                        class="btn btn-info btnprestamo">Añadir Gasto</button>
-                                </div>
-                            </div>
-                            <hr>
-                            <table class="table table-striped table-hover table-bordered">
-                                <thead class="thead-blue">
-                                    <tr>
-                                        <th>Descripción</th>
-                                        <th>Precio unitario</th>
-                                        <th>Cantidad</th>
-                                        <th>Total</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="datos_tabla_gastos_operativos">
-                                    <!-- Las filas se agregarán aquí dinámicamente -->
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="2"></td>
-                                        <td><strong>Total:</strong></td>
-                                        <td><input type="text" id="totalGatosOperativos" class="form-control"
-                                                value="0.00" readonly></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                            
+                            
+                        <table class="table table-striped table-hover table-bordered">
+                            <thead class="thead-blue">
+                                <tr>
+                                    <th>Etapa</th>
+                                    <th  style="width: 120px;">Unidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>mes 1</th>
+                                    <th>mes 2</th>
+                                    <th>mes 3</th>
+                                    <th>mes 4</th>
+                                    <th>mes 5</th>
+                                    <th>mes 6</th>
+                                    <th>mes 7</th>
+                                    <th>mes 8</th>
+                                    <th>mes 9</th>
+                                    <th>mes 10</th>
+                                    <th>mes 11</th>
+                                    <th>mes 12</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>DESHIERBO.</td>
+                                    <td>
+                                        <select class="form-control" name="unidad_1">
+                                            <option value="jor">Jor.</option>
+                                            <option value="uni">Uni.</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" class="form-control" name="precio_unitario_deshierbo"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo1"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo2"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo3"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo4"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo5"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo6"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo7"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo8"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo9"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo10"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo11"></td>
+                                    <td><input type="text" class="form-control" name="mes-deshierbo12"></td>
+                                </tr>
+                                <tr>
+                                    <td>PODA</td>
+                                    <td>
+                                        <select class="form-control" name="unidad_1">
+                                            <option value="jor">Jor.</option>
+                                            <option value="uni">Uni.</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" class="form-control" name="precio_unitario_poda"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda1"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda2"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda3"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda4"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda5"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda6"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda7"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda8"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda9"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda10"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda11"></td>
+                                    <td><input type="text" class="form-control" name="mes-poda12"></td>
+                                </tr>
+                                <tr>
+                                    <td>COSECHA.</td>
+                                    <td>
+                                        <select class="form-control" name="unidad_1">
+                                            <option value="jor">Jor.</option>
+                                            <option value="uni">Uni.</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" class="form-control" name="precio_unitario_cosecha"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha1"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha2"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha3"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha4"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha5"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha6"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha7"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha8"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha9"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha10"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha11"></td>
+                                    <td><input type="text" class="form-control" name="mes-cosecha12"></td>
+                                </tr>
+                                <tr>
+                                    <td>TRANSPORTE</td>
+                                    <td>
+                                        <select class="form-control" name="unidad_1">
+                                            <option value="jor">Jor.</option>
+                                            <option value="uni">Uni.</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" class="form-control" name="precio_unitario_transporte"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte1"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte2"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte3"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte4"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte5"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte6"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte7"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte8"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte9"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte10"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte11"></td>
+                                    <td><input type="text" class="form-control" name="mes-transporte12"></td>
+                                </tr>
+                                <tr>
+                                    <td>OTROS</td>
+                                    <td>
+                                        <select class="form-control" name="unidad_1">
+                                            <option value="jor">Jor.</option>
+                                            <option value="uni">Uni.</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="text" class="form-control" name="precio_unitario_otros"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros1"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros2"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros3"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros4"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros5"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros6"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros7"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros8"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros9"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros10"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros11"></td>
+                                    <td><input type="text" class="form-control" name="mes-otros12"></td>
+                                </tr>
+                            </tbody>
+                            
+                        </table>
+
+
+
                         </div>
                     </div>
 
                     <div class="card card-outline card-warning" id="inventario_producto">
                         <div class="card-header">
-                            <h3 class="card-title">Registro De inventario</h3>
+                            <h3 class="card-title">Inventario Cosecha Terminada</h3>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -513,6 +593,73 @@
 
                         </div>
                     </div>
+
+                    <div class="card card-outline card-warning" id="inventario_materiales">
+                        <div class="card-header">
+                            <h3 class="card-title">Inventario de materiales</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="descripcion_material_inventario_materiales">Descripción del Material</label>
+                                        <input type="text" id="descripcion_material_inventario_materiales" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="unidad_medida_inventario_materiales">Unidad de medida</label>
+                                        <select name="unidad_medida_inventario_materiales" id="unidad_medida_inventario_materiales" class="form-control">
+                                            <option value="und" selected>Unidades</option>
+                                            <option value="qq">Quintales</option>
+                                            <option value="kg">Kilos</option>
+                                            <option value="m">metros</option>
+                                            <option value="l">litros</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="precio_unitario_inventario_materiales">Precio unitario</label>
+                                        <input type="number" id="precio_unitario_inventario_materiales" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="cantidad_material_inventario_materiales">Cantidad</label>
+                                        <input type="number" id="cantidad_material_inventario_materiales" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" onclick="agregarInventarioMaterialTabla()" class="btn btn-warning btnprestamo">Añadir Material</button>
+                                </div>
+                            </div>
+                            <hr>
+                            <table class="table table-striped table-hover table-bordered" id="datosTablaInventario_materiales">
+                                <thead class="thead-blue">
+                                <tr>
+                                    <th >Descripción</th>
+                                    <th>Unidad</th>
+                                    <th>Precio unitario</th>
+                                    <th>Cantidad</th>
+                                    <th>Monto</th>
+                                    <th>Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody id="tablaInventario_materiales">
+                                    <!-- Las filas se agregarán aquí dinámicamente -->
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3"></td>
+                                        <td><strong>Total:</strong></td>
+                                        <td><input type="text" id="totalMontoInventario_materiales" class="form-control" value="0.00" readonly></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
 
 
                     <div class="card card-outline card-secondary">
@@ -626,45 +773,6 @@
                                     </tr>
                                 </tfoot>
                             </table>
-                        </div>
-                    </div>
-
-                    {{-- Se registra total de activos y pasivos ESTO FALTA AGREGAR --}}
-
-                    <div class="card card-outline card-warning" id="activos">
-                        <div class="card-header">
-                            <h3 class="card-title">Registro De Activos</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="cuentas_por_cobrar">Cuentas por cobrar</label>
-                                        <input type="number" id="cuentas_por_cobrar" name="cuentas_por_cobrar"
-                                            class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="saldo_caja_bancos">Saldo en caja/bancos</label>
-                                        <input type="number" id="saldo_caja_bancos" name="saldo_caja_bancos"
-                                            class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="adelanto_a_proveedores">Adelanto a proveedores</label>
-                                        <input type="number" id="adelanto_a_proveedores"
-                                            name="adelanto_a_proveedores" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="otros">Otros</label>
-                                        <input type="number" id="otros" name="otros" class="form-control">
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
