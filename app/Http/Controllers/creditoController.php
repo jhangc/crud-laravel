@@ -46,6 +46,11 @@ class creditoController extends Controller
         return view('admin.creditos.grupal');
     }
 
+    public function agricola()
+    {
+        return view('admin.creditos.agricola');
+    }
+
     public function getdescripciones(Request $request)
     {
         $descripciones = \App\Models\MargenVenta::where('actividad_economica', $request->opcion)->get();
