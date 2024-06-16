@@ -8,21 +8,7 @@
                 <form enctype="multipart/form-data" id="prestamoForm" name="prestamoForm">
                     @csrf
                     <div class="row">
-                        {{-- <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="tipo_credito">Tipos de créditos</label>
-                                <select name="tipo_credito" id="tipo_credito" class="form-control" required
-                                    onchange="toggleFields()">
-                                    <option value="">Seleccione una opción...</option>
-                                    <option value="comercio" {{ old('tipo_credito') == 'comercio' ? 'selected' : '' }}>
-                                        Comercio</option>
-                                    <option value="servicio" {{ old('tipo_credito') == 'servicio' ? 'selected' : '' }}>
-                                        Servicio</option>
-                                    <option value="produccion"
-                                        {{ old('tipo_credito') == 'produccion' ? 'selected' : '' }}>Producción</option>
-                                </select>
-                            </div>
-                        </div> --}}
+                        
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="tipo_producto">Productos</label>
@@ -309,61 +295,6 @@
                         </div>
                     </div>
 
-                    <div class="card card-outline card-info" id="gastos_produccion_empresarial">
-                        <div class="card-header">
-                            <h3 class="card-title">Registro de Gastos de produccion</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-5">
-                                    <div class="form-group">
-                                        <label for="descripcion_gasto">Descripción</label>
-                                        <input type="text" id="descripcion_gasto" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="precio_unitario_gasto">Precio unitario</label>
-                                        <input type="number" id="precio_unitario_gasto" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="cantidad_gasto">Cantidad</label>
-                                        <input type="number" id="cantidad_gasto" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <button type="button" onclick="agregarGastoOperativoc()"
-                                        class="btn btn-info btnprestamo">Añadir Gasto</button>
-                                </div>
-                            </div>
-                            <hr>
-                            <table class="table table-striped table-hover table-bordered">
-                                <thead class="thead-blue">
-                                    <tr>
-                                        <th>Descripción</th>
-                                        <th>Precio unitario</th>
-                                        <th>Cantidad</th>
-                                        <th>Total</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="datos_tabla_gastos_operativos">
-                                    <!-- Las filas se agregarán aquí dinámicamente -->
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="2"></td>
-                                        <td><strong>Total:</strong></td>
-                                        <td><input type="text" id="totalGatosOperativos" class="form-control"
-                                                value="0.00" readonly></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
-
                     <div class="card card-outline card-info" id="gastos_produccion_agricola">
                         <div class="card-header">
                             <h3 class="card-title">Registro de Gastos a Producir</h3>
@@ -460,43 +391,36 @@
                                         <input type="text" id="producto_descripcion" class="form-control">
                                     </div>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="unidad_medida">Unidad de medida</label>
                                         <select name="unidad_medida" id="unidad_medida" class="form-control">
                                             <option value="und" selected>Unidades</option>
                                             <option value="qq">Quintales</option>
-                                            {{-- <option value="qq">Kilos</option> --}}
                                             <option value="kg">Kilos</option>
                                             <option value="m">metros</option>
                                             <option value="l">litros</option>
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="precio_compra">Precio de Compra S/.</label>
-                                        <input type="number" id="precio_compra" class="form-control">
-                                    </div>
-                                </div>
+                               
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="precio_venta">Precio de Venta S/.</label>
                                         <input type="number" id="precio_venta" class="form-control">
                                     </div>
                                 </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="propocion_venta">Proporción de la venta (%)</label>
-                                        <input type="number" id="propocion_venta" name="propocion_venta"
-                                            class="form-control">
-                                    </div>
-                                </div>
 
-                                <div class="col-md-2">
+                                <!-- <div class="col-md-2">
                                     <button type="button" onclick="agregarProductoProyeccion()"
                                         class="btn btn-primary btnprestamo">Añadir Producto</button>
+                                </div> -->
+
+                                <div class="col-md-2">
+                                    <button type="button" data-toggle="modal" data-target="#myModal"
+                                        class="btn btn-primary btnprestamo">Añadir Producto</button>
                                 </div>
+
                             </div>
                             <hr>
                             <div class="table-responsive">
@@ -507,42 +431,177 @@
                                             <th>Precio Compra/producción</th>
                                             <th>Precio Venta</th>
                                             <th>Unidad</th>
-                                            {{-- precio compra - precio venta --}}
                                             <th>Utilidad por unidad</th>
-                                            {{-- utilidad / precio venta --}}
                                             <th>Margen por unidad</th>
-                                            {{-- registro --}}
                                             <th>% proporción de las ventas</th>
-                                            {{-- total venta mes / proporcion de venta --}}
                                             <th>Monto de venta</th>
-                                            {{-- precio comra / precio venta --}}
                                             <th>Relación compra/venta</th>
-                                            {{-- monto venta * relacion copra venta --}}
                                             <th>Costo venta</th>
-                                            {{-- monto de venta - costo veenta --}}
                                             <th>Utilidad</th>
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tablaProyecciones">
+                                        <!-- Aquí van las filas de la tabla -->
                                     </tbody>
                                     <tfoot>
                                         <tr>
                                             <td colspan="5"></td>
                                             <td><strong>Total:</strong></td>
-                                            <td><input type="text" id="total_proporción_ventas"
-                                                    class="form-control" value="0.00" readonly></td>
-                                            <td><input type="text" id="total_monto:venta" class="form-control"
-                                                    value="0.00" readonly></td>
+                                            <td><input type="text" id="total_proporción_ventas" class="form-control" value="0.00" readonly></td>
+                                            <td><input type="text" id="total_monto:venta" class="form-control" value="0.00" readonly></td>
                                             <td colspan="1"></td>
-                                            <td><input type="text" id="total_costo_venta" class="form-control"
-                                                    value="0.00" readonly></td>
-                                            <td><input type="text" id="total_utilidad" class="form-control"
-                                                    value="0.00" readonly></td>
+                                            <td><input type="text" id="total_costo_venta" class="form-control" value="0.00" readonly></td>
+                                            <td><input type="text" id="total_utilidad" class="form-control" value="0.00" readonly></td>
                                         </tr>
                                     </tfoot>
                                 </table>
                             </div>
+                        </div>
+                    </div>
+
+
+                    <!-- The Modal -->
+                    <div class="modal fade" id="myModal">
+                        <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <!-- Modal Header -->
+                            <div class="modal-header">
+                                <h4 class="modal-title">
+                                    <label for="producto">Producto:</label>
+                                    <input type="text" id="producto" class="form-control d-inline-block w-25 mx-2">
+                                    <label for="cantidad">Cantidad:</label>
+                                    <input type="number" id="cantidad" class="form-control d-inline-block w-25 mx-2">
+                                </h4>
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+
+                            <!-- Modal Body -->
+                            <div class="modal-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Unidad</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio Unitario</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Example Row 1 -->
+                                    <tr>
+                                        <td><input type="text" class="form-control" name="descripcion[]" placeholder="Descripción"></td>
+                                        <td>
+                                            <select class="form-control" name="unidad[]">
+                                                <option value="und" selected>Unidades</option>
+                                                <option value="qq">Quintales</option>
+                                                <option value="kg">Kilos</option>
+                                                <option value="m">metros</option>
+                                                <option value="l">litros</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="cantidad[]" placeholder="Cantidad" step="1"></td>
+                                        <td><input type="number" class="form-control" name="precio_unitario[]" placeholder="Precio Unitario" step="0.01"></td>
+                                        <td><input type="number" class="form-control" name="subtotal[]" placeholder="Subtotal" step="0.01" readonly></td>
+                                    </tr>
+                                    <!-- Example Row 2 -->
+                                    <tr>
+                                        <td><input type="text" class="form-control" name="descripcion[]" placeholder="Descripción"></td>
+                                        <td>
+                                            <select class="form-control" name="unidad[]">
+                                                <option value="und" selected>Unidades</option>
+                                                <option value="qq">Quintales</option>
+                                                <option value="kg">Kilos</option>
+                                                <option value="m">metros</option>
+                                                <option value="l">litros</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="cantidad[]" placeholder="Cantidad" step="1"></td>
+                                        <td><input type="number" class="form-control" name="precio_unitario[]" placeholder="Precio Unitario" step="0.01"></td>
+                                        <td><input type="number" class="form-control" name="subtotal[]" placeholder="Subtotal" step="0.01" readonly></td>
+                                    </tr>
+                                    <!-- Example Row 3 -->
+                                    <tr>
+                                        <td><input type="text" class="form-control" name="descripcion[]" placeholder="Descripción"></td>
+                                        <td>
+                                            <select class="form-control" name="unidad[]">
+                                                <option value="und" selected>Unidades</option>
+                                                <option value="qq">Quintales</option>
+                                                <option value="kg">Kilos</option>
+                                                <option value="m">metros</option>
+                                                <option value="l">litros</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="cantidad[]" placeholder="Cantidad" step="1"></td>
+                                        <td><input type="number" class="form-control" name="precio_unitario[]" placeholder="Precio Unitario" step="0.01"></td>
+                                        <td><input type="number" class="form-control" name="subtotal[]" placeholder="Subtotal" step="0.01" readonly></td>
+                                    </tr>
+                                    <!-- Example Row 4 -->
+                                    <tr>
+                                        <td><input type="text" class="form-control" name="descripcion[]" placeholder="Descripción"></td>
+                                        <td>
+                                            <select class="form-control" name="unidad[]">
+                                                <option value="und" selected>Unidades</option>
+                                                <option value="qq">Quintales</option>
+                                                <option value="kg">Kilos</option>
+                                                <option value="m">metros</option>
+                                                <option value="l">litros</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="cantidad[]" placeholder="Cantidad" step="1"></td>
+                                        <td><input type="number" class="form-control" name="precio_unitario[]" placeholder="Precio Unitario" step="0.01"></td>
+                                        <td><input type="number" class="form-control" name="subtotal[]" placeholder="Subtotal" step="0.01" readonly></td>
+                                    </tr>
+                                    <!-- Example Row 5 -->
+                                    <tr>
+                                        <td><input type="text" class="form-control" name="descripcion[]" placeholder="Descripción"></td>
+                                        <td>
+                                            <select class="form-control" name="unidad[]">
+                                                <option value="und" selected>Unidades</option>
+                                                <option value="qq">Quintales</option>
+                                                <option value="kg">Kilos</option>
+                                                <option value="m">metros</option>
+                                                <option value="l">litros</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="cantidad[]" placeholder="Cantidad" step="1"></td>
+                                        <td><input type="number" class="form-control" name="precio_unitario[]" placeholder="Precio Unitario" step="0.01"></td>
+                                        <td><input type="number" class="form-control" name="subtotal[]" placeholder="Subtotal" step="0.01" readonly></td>
+                                    </tr>
+                                    <!-- Example Row 6 -->
+                                    <tr>
+                                        <td><input type="text" class="form-control" name="descripcion[]" placeholder="Descripción"></td>
+                                        <td>
+                                            <select class="form-control" name="unidad[]">
+                                                <option value="und" selected>Unidades</option>
+                                                <option value="qq">Quintales</option>
+                                                <option value="kg">Kilos</option>
+                                                <option value="m">metros</option>
+                                                <option value="l">litros</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" class="form-control" name="cantidad[]" placeholder="Cantidad" step="1"></td>
+                                        <td><input type="number" class="form-control" name="precio_unitario[]" placeholder="Precio Unitario" step="0.01"></td>
+                                        <td><input type="number" class="form-control" name="subtotal[]" placeholder="Subtotal" step="0.01" readonly></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="4" class="text-right">Total:</th>
+                                        <th><input type="number" class="form-control" id="total" value="0.00" readonly></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-primary">Guardar</button>
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+                            </div>
+
+                        </div>
                         </div>
                     </div>
 
@@ -603,7 +662,7 @@
 
                     <div class="card card-outline card-warning" id="inventario_producto">
                         <div class="card-header">
-                            <h3 class="card-title">Registro De inventario</h3>
+                            <h3 class="card-title">Registro De inventario terminado</h3>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -672,6 +731,73 @@
 
                         </div>
                     </div>
+
+                    <div class="card card-outline card-warning" id="inventario_producto_proceso">
+                        <div class="card-header">
+                            <h3 class="card-title">Registro De inventario en proceso</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="descripcion_producto_inventario_proceso">Descripción del Producto</label>
+                                        <input type="text" id="descripcion_producto_inventario_proceso" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="unidad_medida_inventario_proceso">Unidad de medida</label>
+                                        <select name="unidad_medida_inventario_proceso" id="unidad_medida_inventario_proceso" class="form-control">
+                                            <option value="und" selected>Unidades</option>
+                                            <option value="qq">Quintales</option>
+                                            <option value="kg">Kilos</option>
+                                            <option value="m">metros</option>
+                                            <option value="l">litros</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="precio_unitario_inventario_proceso">Precio unitario</label>
+                                        <input type="number" id="precio_unitario_inventario_proceso" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="cantidad_producto_inventario_proceso">Cantidad</label>
+                                        <input type="number" id="cantidad_producto_inventario_proceso" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" onclick="agregarInventarioprocesotabla()" class="btn btn-warning btnprestamo">Añadir Producto</button>
+                                </div>
+                            </div>
+                            <hr>
+                            <table class="table table-striped table-hover table-bordered" id="datosTablaInventario_proceso">
+                                <thead class="thead-blue">
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Unidad</th>
+                                        <th>Precio unitario</th>
+                                        <th>Cantidad</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaInventario_proceso">
+                                    <!-- Las filas se agregarán aquí dinámicamente -->
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3"></td>
+                                        <td><strong>Total:</strong></td>
+                                        <td><input type="text" id="totalMontoInventario_proceso" class="form-control" value="0.00" readonly></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
 
 
                     <div class="card card-outline card-secondary">
@@ -788,7 +914,7 @@
                         </div>
                     </div>
 
-                    {{-- Se registra total de activos y pasivos ESTO FALTA AGREGAR --}}
+ 
 
                     <div class="card card-outline card-warning" id="activos">
                         <div class="card-header">
@@ -826,9 +952,6 @@
                             </div>
                         </div>
                     </div>
-
-
-
 
                     <div class="card card-outline card-warning" id="deudas_finan">
                         <div class="card-header" style="display:flex;">
@@ -1422,12 +1545,13 @@
             descripcionSelect.innerHTML = '<option value="">Seleccione una descripción...</option>';
         }
 
+
         if (selection === 'agricola') {
                 gastos_produccion_agricola.style.display = 'block';
-                gastos_produccion_empresarial.style.display = 'none';
+                detalle_negocio.style.display = 'none';
         } else {
             gastos_produccion_agricola.style.display = 'none';
-            gastos_produccion_empresarial.style.display = 'block';
+            detalle_negocio.style.display = 'block';
             }
         }
 
