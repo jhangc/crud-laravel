@@ -11,6 +11,7 @@
 
                         <div class="col-md-4">
                             <div class="form-group">
+                            <input  type="hidden" value="servicio" name="tipo_credito" id="tipo_credito">
                                 <label for="tipo_producto">Productos</label>
                                 <select name="tipo_producto" id="tipo_producto" class="form-control" required
                                     onchange="toggleFields()">
@@ -574,69 +575,28 @@
     let clientesArray = [];
     let totalMonto = 0;
 
-    document.getElementById('buscarClientec').addEventListener('click', function() {
-        const documentoIdentidad = document.getElementById('dnic').value;
-        $.ajax({
-            url: '{{ route('creditos.buscardni') }}',
-            type: 'GET',
-            data: {
-                documento_identidad: documentoIdentidad
-            },
-            success: function(response) {
-                const cliente = {
-                    nombre: response.nombre || '',
-                    profesion: response.profesion || '',
-                    telefono: response.telefono || '',
-                    direccion: response.direccion || '',
-                    monto: 0,
-                    documento: documentoIdentidad,
-                };
-                clientesArray.push(cliente);
-                actualizarTabla();
-                document.getElementById('dnic').value = ''; // Limpiar campo
-            },
-            error: function(xhr) {
-                console.error("Error al recuperar información: " + xhr.statusText);
-                // Limpiar campo si hay error
-                document.getElementById('dnic').value = '';
-            }
-        });
-    });
-
-    function actualizarTabla() {
-        const tablaCuerpo = document.getElementById('tablaCuerpo');
-        tablaCuerpo.innerHTML = '';
-        totalMonto = 0;
-        clientesArray.forEach((cliente, index) => {
-            const row = tablaCuerpo.insertRow();
-            row.innerHTML = `
-            <td><input type="text" class="form-control" value="${cliente.nombre}" onchange="editarCliente(${index}, 'nombre', this.value)"></td>
-            <td><input type="text" class="form-control" value="${cliente.documento}" onchange="editarCliente(${index}, 'documento', this.value)"></td>
-            <td><input type="text" class="form-control" value="${cliente.profesion}" onchange="editarCliente(${index}, 'profesion', this.value)"></td>
-            <td><input type="text" class="form-control" value="${cliente.telefono}" onchange="editarCliente(${index}, 'telefono', this.value)"></td>
-            <td><input type="text" class="form-control" value="${cliente.direccion}" onchange="editarCliente(${index}, 'direccion', this.value)"></td>
-            <td><input type="number" class="form-control" value="${cliente.monto}" onchange="editarCliente(${index}, 'monto', this.value)"></td>
-            <td><button class="btn btn-danger btn-sm" onclick="eliminarCliente(${index})"><i class="fa fa-trash"></i></button></td>
-        `;
-            totalMonto += parseFloat(cliente.monto) || 0;
-        });
-        document.getElementById('totalMonto').textContent = totalMonto.toFixed(2);
-        document.getElementById('monto').value = totalMonto.toFixed(2);
-    }
-
-    function editarCliente(index, campo, valor) {
-        clientesArray[index][campo] = valor;
-        if (campo === 'monto') {
-            totalMonto = clientesArray.reduce((total, cliente) => total + (parseFloat(cliente.monto) || 0), 0);
-            document.getElementById('totalMonto').textContent = totalMonto.toFixed(2);
-            document.getElementById('monto').value = totalMonto.toFixed(2);
-        }
-    }
-
-    function eliminarCliente(index) {
-        clientesArray.splice(index, 1);
-        actualizarTabla();
-    }
+    $('#buscarCliente').click(function() {
+            var documentoIdentidad = $('#documento_identidad').val();
+            $.ajax({
+                url: '{{route('creditos.buscardni')}}',
+                type: 'GET',
+                data: {
+                    documento_identidad: documentoIdentidad
+                },
+                success: function(response) {
+                    $('#nombre').val(response.nombre || '');
+                    $('#telefono').val(response.telefono || '');
+                    $('#email').val(response.email || '');
+                    $('#direccion').val(response.direccion || '');
+                    $('#direccion_laboral').val(response.direccion_laboral || '');
+                    $('#profesion').val(response.profesion || '');
+                },
+                error: function(xhr) {
+                    console.error("Error al recuperar información: " + xhr.statusText);
+                    $('#nombre, #telefono, #email, #direccion, #direccion_laboral, #profesion').val('');
+                }
+            });
+            });
     let proyeccionesArray = [];
 
     function agregarProductoProyeccion() {
@@ -1331,5 +1291,5 @@
     document.getElementById('porcentaje_venta_credito').addEventListener('input', actualizarVentaCredito);
 
 
-    document.addEventListener('DOMContentLoaded', toggleFields);
+    // document.addEventListener('DOMContentLoaded', toggleFields);
 </script>

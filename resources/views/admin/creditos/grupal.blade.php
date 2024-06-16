@@ -8,9 +8,10 @@
                 <form enctype="multipart/form-data" id="prestamoForm" name="prestamoForm">
                     @csrf
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="tipo_credito">Tipos de créditos</label>
+                                <input type="hidden" name="tipo_producto" id="tipo_producto" value="grupal">
                                 <select name="tipo_credito" id="tipo_credito" class="form-control" required
                                     onchange="toggleFields()">
                                     <option value="">Seleccione una opción...</option>
@@ -23,7 +24,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <!-- <div class="col-md-3">
                             <div class="form-group">
                                 <label for="tipo_producto">Productos</label>
                                 <select name="tipo_producto" id="tipo_producto" class="form-control" required
@@ -36,12 +37,11 @@
                                         Agrícola</option>
                                     <option value="consumo" {{ old('tipo_producto') == 'consumo' ? 'selected' : '' }}>
                                         Consumo</option>
-                                    <option value="grupal" {{ old('tipo_producto') == 'grupal' ? 'selected' : '' }}>
-                                        Grupal</option>
+                                   
                                 </select>
                             </div>
-                        </div>
-                        <div class="col-md-3">
+                        </div> -->
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="subproducto">SubProductos</label>
                                 <select name="subproducto" id="subproducto" class="form-control" required
@@ -54,7 +54,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="destino_credito">Destino de crédito</label>
                                 <select name="destino_credito" id="destino_credito" class="form-control" required
@@ -411,6 +411,14 @@
             e.preventDefault();
             var formData = new FormData(this);
             formData.append('clientesArray', JSON.stringify(clientesArray));
+            formData.append('proyeccionesArray', JSON.stringify([]));
+            formData.append('inventarioArray', JSON.stringify([]));
+            formData.append('deudasFinancierasArray', JSON.stringify([]));
+            formData.append('gastosOperativosArray', JSON.stringify([]));
+            formData.append('boletasArray', JSON.stringify([]));
+            formData.append('gastosProducirArray', JSON.stringify([]));
+            formData.append('inventarioArray1', JSON.stringify([]));
+            formData.append('ventasdiarias', JSON.stringify([]));
             $.ajax({
                 url: '{{ url('/admin/creditos/store') }}',
                 type: 'POST',
