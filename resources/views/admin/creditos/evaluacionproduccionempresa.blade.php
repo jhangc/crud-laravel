@@ -86,7 +86,7 @@
                             <tr>
                                 <!-- Total de materiales -->
                                 <td>Materiales</td>
-                                <td>0.00</td>
+                                <td>{{ $totalinventariomateriales }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -94,7 +94,7 @@
             </div>
         </div>
 
-        {{-- <div class="col-md-6">
+        <div class="col-md-6">
             <div class="card card-outline card-warning">
                 <div class="card-header">
                     <h3 class="card-title">Resumen de cuentas</h3>
@@ -109,7 +109,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                {{-- activo corriente mas fijo 
+                                {{-- activo corriente mas fijo  --}}
                                 <td><b>Activo</b></td>
                                 <td>{{ $activo}}</td>
                             </tr>
@@ -119,31 +119,32 @@
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Disponible (caja y bancos)</td>
-                                <td>{{ $activos->saldo_en_caja_bancos}}</td>
+                                <td>{{ $saldo_en_caja_bancos}}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Cuentas por cobrar</td>
-                                <td>{{ $activos->cuentas_por_cobrar}}</td>
+                                <td>{{ $cuenta_cobrar}}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Adelanto a proveedores</td>
-                                <td>{{ $activos->adelanto_a_proveedores}}</td>
+                                <td>{{ $adelanto_proveedores}}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Inventario</td>
                                 <td>{{ $total_inventario}}</td>
                             </tr>
+
                             <tr>
                                 <td style="padding-left: 50px;">Productos terminados</td>
-                                <td>{{ $total_inventario}}</td>
+                                <td>{{ $totalinventarioterminado }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 50px;">En proceso productivo</td>
-                                <td>0</td>
+                                <td>{{ $totalinventarioproceso }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 50px;">Materiales</td>
-                                <td>0</td>
+                                <td>{{ $totalinventariomateriales }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 20px;">Activo fijo</td>

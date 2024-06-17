@@ -459,7 +459,7 @@ class creditoController extends Controller
                     $totalinventarioterminado = $inventarioterminado->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
                     $totalinventarioproceso = $inventarioproceso->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
 
-                    if ($inventariomateriales != 0) {
+                    if ($inventariomateriales !== null ) {
                         $totalinventariomateriales = $inventariomateriales->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
                     } else {
                         $totalinventariomateriales = 0;
@@ -467,8 +467,14 @@ class creditoController extends Controller
                    
                     $total_inventario = $totalinventarioterminado + $totalinventarioproceso+ $totalinventariomateriales;
 
+                    $saldo_en_caja_bancos = $activos->saldo_en_caja_bancos;
+                    $cuenta_cobrar= $activos->cuentas_por_cobrar;
+                    $adelanto_proveedores = $activos->adelanto_a_proveedores;
 
-                    $activo_corriente = $activos->saldo_en_caja_bancos+$activos->cuentas_por_cobrar+$activos->adelanto_a_proveedores+$total_inventario;
+
+
+                    $activo_corriente = $saldo_en_caja_bancos+$cuenta_cobrar+$adelanto_proveedores+$total_inventario;
+                    
                     $activofijo=$garantias->sum('valor_mercado');
                     $activo=$activo_corriente+$activofijo;
                     $pasivo=$deudas->sum('saldo_capital');
@@ -536,6 +542,12 @@ class creditoController extends Controller
                         'totalGastosOperativos',
                         'total_venta_credito',
                         'total_inventario',
+                        'totalinventarioterminado',
+                        'totalinventarioproceso',
+                        'totalinventariomateriales',
+                        'saldo_en_caja_bancos',
+                        'cuenta_cobrar',
+                        'adelanto_proveedores',
                         // 'activo_corriente',
                         // 'garantias',
                         // 'patrimonio',
