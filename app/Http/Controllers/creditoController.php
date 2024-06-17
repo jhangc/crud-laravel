@@ -605,7 +605,7 @@ class creditoController extends Controller
         $decodedData = $request->all();
         foreach ([
             'clientesArray', 'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'boletasArray', 'gastosProducirArray',
-            'inventarioArray1', 'ventasdiarias'
+            'inventarioArray1', 'ventasdiarias','inventarioprocesoArray'
         ] as $key) {
             if ($request->filled($key)) {
                 $decodedData[$key] = json_decode($request->input($key), true);
@@ -768,7 +768,7 @@ class creditoController extends Controller
     }
     protected function saveArrayData(array $data, $prestamoId, $request)
     {
-        if (is_array($data['proyeccionesArray'])) {
+        if (isset($data['proyeccionesArray']) && is_array($data['proyeccionesArray'])) {
             foreach ($data['proyeccionesArray'] as $proyeccionData) {
                 \App\Models\ProyeccionesVentas::create([
                     'descripcion_producto' => $proyeccionData['descripcion'],
@@ -777,12 +777,13 @@ class creditoController extends Controller
                     'precio_venta' => $proyeccionData['precioVenta'],
                     'proporcion_ventas' => $proyeccionData['proporcion_ventas'],
                     'id_prestamo' => $prestamoId,
-
-                    'estado' => 'activo'
+                    'estado' => 'activo',
+                    'ingredientes'=>isset($proyeccionData['proporcion_ventas'])?$proyeccionData['proporcion_ventas']:null,
                 ]);
             }
         }
-        if (is_array($data['ventasdiarias'])) {
+    
+        if (isset($data['ventasdiarias']) && is_array($data['ventasdiarias'])) {
             foreach ($data['ventasdiarias'] as $venta) {
                 \App\Models\VentasDiarias::create([
                     'dia' => $venta['dia'],
@@ -793,9 +794,8 @@ class creditoController extends Controller
                 ]);
             }
         }
-
-
-        if (is_array($data['deudasFinancierasArray'])) {
+    
+        if (isset($data['deudasFinancierasArray']) && is_array($data['deudasFinancierasArray'])) {
             foreach ($data['deudasFinancierasArray'] as $deudaData) {
                 \App\Models\DeudasFinancieras::create([
                     'nombre_entidad' => $deudaData['entidad'],
@@ -807,8 +807,8 @@ class creditoController extends Controller
                 ]);
             }
         }
-
-        if (is_array($data['gastosOperativosArray'])) {
+    
+        if (isset($data['gastosOperativosArray']) && is_array($data['gastosOperativosArray'])) {
             foreach ($data['gastosOperativosArray'] as $gastoData) {
                 \App\Models\GastosOperativos::create([
                     'descripcion' => $gastoData['descripcion'],
@@ -819,8 +819,9 @@ class creditoController extends Controller
                 ]);
             }
         }
-        //paso a ser  gastos familiar  para avanzar
-        if (is_array($data['inventarioArray1'])) {
+    
+        // Pasó a ser gastos familiar para avanzar
+        if (isset($data['inventarioArray1']) && is_array($data['inventarioArray1'])) {
             foreach ($data['inventarioArray1'] as $inventarioData) {
                 \App\Models\GastosFamiliares::create([
                     'descripcion' => $inventarioData['descripcion'],
@@ -830,19 +831,33 @@ class creditoController extends Controller
                 ]);
             }
         }
-        if (is_array($data['inventarioArray'])) {
+    
+        if (isset($data['inventarioprocesoArray']) && is_array($data['inventarioprocesoArray'])) {
+            foreach ($data['inventarioprocesoArray'] as $inventarioData) {
+                \App\Models\Inventario::create([
+                    'descripcion' => $inventarioData['descripcion'],
+                    'precio_unitario' => $inventarioData['precioUnitario'],
+                    'cantidad' => $inventarioData['cantidad'],
+                    'id_prestamo' => $prestamoId,
+                    'unidad' => $inventarioData['unidad'],
+                    'tipo_inventario'=>2,
+                ]);
+            }
+        }
+        if (isset($data['inventarioArray']) && is_array($data['inventarioArray'])) {
             foreach ($data['inventarioArray'] as $inventarioData) {
                 \App\Models\Inventario::create([
                     'descripcion' => $inventarioData['descripcion'],
                     'precio_unitario' => $inventarioData['precioUnitario'],
                     'cantidad' => $inventarioData['cantidad'],
                     'id_prestamo' => $prestamoId,
-                    'unidad'=> $inventarioData['unidad'],
+                    'unidad' => $inventarioData['unidad'],
+                    'tipo_inventario'=>1,
                 ]);
             }
         }
-
-        if (is_array($data['boletasArray'])) {
+    
+        if (isset($data['boletasArray']) && is_array($data['boletasArray'])) {
             foreach ($data['boletasArray'] as $boletaData) {
                 \App\Models\Boleta::create([
                     'numero_boleta' => $boletaData['numeroBoleta'],
@@ -853,8 +868,8 @@ class creditoController extends Controller
                 ]);
             }
         }
-
-        if (is_array($data['gastosProducirArray']) && count($data['gastosProducirArray']) > 0) {
+    
+        if (isset($data['gastosProducirArray']) && is_array($data['gastosProducirArray']) && count($data['gastosProducirArray']) > 0) {
             $gasto = \App\Models\GastoProducir::create([
                 'nombre_actividad' => $request->nombre_actividad,
                 'cantidad_terreno' => $request->cantidad_terreno,
