@@ -16,8 +16,8 @@
                                 <select name="tipo_producto" id="tipo_producto" class="form-control" required
                                     onchange="toggleFields()">
                                     <option value="">Seleccione una opción...</option>
-                                    <option value="comercio" {{ old('tipo_credito') == 'comercio' ? 'selected' : '' }}>
-                                        Comercio</option>
+                                    <option value="microempresa" {{ old('tipo_producto') == 'microempresa' ? 'selected' : '' }}>
+                                        Microempresa </option>
                                     <option value="consumo" {{ old('tipo_producto') == 'consumo' ? 'selected' : '' }}>
                                         Consumo</option>
 
