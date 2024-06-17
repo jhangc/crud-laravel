@@ -778,7 +778,7 @@ class creditoController extends Controller
                     'proporcion_ventas' => $proyeccionData['proporcion_ventas'],
                     'id_prestamo' => $prestamoId,
                     'estado' => 'activo',
-                    'ingredientes'=>isset($proyeccionData['proporcion_ventas'])?json_encode($proyeccionData['proporcion_ventas']):null,
+                    'ingredientes'=>isset($proyeccionData['ingredientes'])?json_encode($proyeccionData['ingredientes']):null,
                 ]);
             }
         }
