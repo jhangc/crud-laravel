@@ -32,7 +32,9 @@ class Credito extends Model
         'categoria',
         'foto_grupal',
         'activo',
-        'porcentaje_credito', 
+        'porcentaje_credito',
+        'comentario_asesor',
+        'comentario_administrador',
     ];
 
     protected $dates = [
