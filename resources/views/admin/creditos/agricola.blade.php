@@ -273,7 +273,7 @@
                                         <tbody>
                                             <tr>
                                                 <td>Enero</td>
-                                                <td><input type="text" class="form-control" name="venta_enero"></td>
+                                                <td><input type="text" class="form-control" name="venta_enero" ></td>
                                             </tr>
                                             <tr>
                                                 <td>Febrero</td>
@@ -364,7 +364,7 @@
 
 
 
-                    <div class="card card-outline card-info" id="gastos_ope">
+                    <div class="card card-outline card-info" >
                         <div class="card-header">
                             <h3 class="card-title">Registro de Gastos Operativos</h3>
                         </div>
@@ -1267,7 +1267,7 @@
         var credito_individual = document.getElementById('credito_individual');
         var grupal1Fields = document.getElementById('grupal1Fields');
         var individual1Fields = document.getElementById('individual1Fields');
-        var selectionTipoCredito = "comercio";
+        var selectionTipoCredito = "produccion";
         console.log(selectionTipoCredito);
         if (selectionTipoCredito != '') {
             $.ajax({
@@ -1406,7 +1406,7 @@
         document.getElementById('venta_credito').value = ventaCredito;
     }
 
-    document.getElementById('porcentaje_venta_credito').addEventListener('input', actualizarVentaCredito);
+  
 
 
     document.addEventListener('DOMContentLoaded', toggleFields);
