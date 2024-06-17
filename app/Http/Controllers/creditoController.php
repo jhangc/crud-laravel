@@ -750,7 +750,7 @@ class creditoController extends Controller
         $decodedData = $request->all();
         foreach ([
             'clientesArray', 'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'boletasArray', 'gastosProducirArray',
-            'inventarioArray1', 'ventasdiarias','inventarioprocesoArray'
+            'inventarioArray1', 'ventasdiarias','inventarioprocesoArray','ventasMensualesArray','tipoProductoArray','gastosAgricolaArray','inventarioMaterialArray'
         ] as $key) {
             if ($request->filled($key)) {
                 $decodedData[$key] = json_decode($request->input($key), true);
@@ -882,7 +882,7 @@ class creditoController extends Controller
             DB::rollback();
             return response()->json([
                 'state' => '1',
-                'mensaje' => 'Error al crear el prestamo: ' . $e->getMessage()
+                'mensaje' => 'Error al crear el prestamo: ' . $e
             ])->setStatusCode(500);
         }
     }
@@ -1013,6 +1013,7 @@ class creditoController extends Controller
                 ]);
             }
         }
+        
     
         if (isset($data['gastosProducirArray']) && is_array($data['gastosProducirArray']) && count($data['gastosProducirArray']) > 0) {
             $gasto = \App\Models\GastoProducir::create([
@@ -1033,12 +1034,86 @@ class creditoController extends Controller
                 ]);
             }
         }
-    }
+       
+        if (isset($data['ventasMensualesArray']) && is_array($data['ventasMensualesArray'])) {
+            foreach ($data['ventasMensualesArray'] as $boletaData) {
+                \App\Models\VentasMensuales::create([
+                    'mes'=> $boletaData['mes'],
+                    'porcentaje'=> $boletaData['porcentaje'],
+                    'id_prestamo' => $prestamoId
+                   
+                ]);
+            }
+        }
+        if (isset($data['gastosAgricolaArray']) && is_array($data['gastosAgricolaArray'])) {
+            $total=0;
+            foreach ($data['gastosAgricolaArray'] as $gastoData) {
+                $suma=0;
+                $row=\App\Models\GastosOperativos::create([
+                    'descripcion' => $gastoData['gasto'],
+                    'precio_unitario' => !empty($gastoData['precioUnitario']) ? $gastoData['precioUnitario']: 0,
+                    'cantidad' => 0,
+                    'id_prestamo' => $prestamoId,
+                    'acciones' => 'activo',
+                    'unidad' => $gastoData['unidad'],
+                    'mes1' => $gastoData['mes1'],
+                    'mes2' => $gastoData['mes2'],
+                    'mes3' => $gastoData['mes3'],
+                    'mes4' => $gastoData['mes4'],
+                    'mes5' => $gastoData['mes5'],
+                    'mes6' => $gastoData['mes6'],
+                    'mes7' => $gastoData['mes7'],
+                    'mes8' => $gastoData['mes8'],
+                    'mes9' => $gastoData['mes9'],
+                    'mes10' => $gastoData['mes10'],
+                    'mes11' => $gastoData['mes11'],
+                    'mes12' => $gastoData['mes12']
+                ]);
+                $mes1 = !empty($gastoData['mes1']) ? $gastoData['mes1'] : 0;
+                $mes2 = !empty($gastoData['mes2']) ? $gastoData['mes2'] : 0;
+                $mes3 = !empty($gastoData['mes3']) ? $gastoData['mes3'] : 0;
+                $mes4 = !empty($gastoData['mes4']) ? $gastoData['mes4'] : 0;
+                $mes5 = !empty($gastoData['mes5']) ? $gastoData['mes5'] : 0;
+                $mes6 = !empty($gastoData['mes6']) ? $gastoData['mes6'] : 0;
+                $mes7 = !empty($gastoData['mes7']) ? $gastoData['mes7'] : 0;
+                $mes8 = !empty($gastoData['mes8']) ? $gastoData['mes8'] : 0;
+                $mes9 = !empty($gastoData['mes9']) ? $gastoData['mes9'] : 0;
+                $mes10 = !empty($gastoData['mes10']) ? $gastoData['mes10'] : 0;
+                $mes11 = !empty($gastoData['mes11']) ? $gastoData['mes11'] : 0;
+                $mes12 = !empty($gastoData['mes12']) ? $gastoData['mes12'] : 0;
+                
+                $suma = $mes1 + $mes2 + $mes3 + $mes4 + $mes5 + $mes6 + $mes7 + $mes8 + $mes9 + $mes10 + $mes11 + $mes12;
+                
+                $row->cantidad = $suma;
+                $row->save();
+                $total=$total+$suma;
+            }
 
-    public function calcularCuota($monto, $tea, $periodos)
-    {
-        $tasaMensual = pow(1 + ($tea / 100), 1 / 12) - 1;
-        return ($monto * $tasaMensual * pow((1 + $tasaMensual), $periodos)) / (pow((1 + $tasaMensual), $periodos) - 1);
+        }
+        if (isset($data['inventarioMaterialArray']) && is_array($data['inventarioMaterialArray'])) {
+            foreach ($data['inventarioMaterialArray'] as $inventarioData) {
+                \App\Models\Inventario::create([
+                    'descripcion' => $inventarioData['descripcion'],
+                    'precio_unitario' => $inventarioData['precioUnitario'],
+                    'cantidad' => $inventarioData['cantidad'],
+                    'id_prestamo' => $prestamoId,
+                    'unidad' => $inventarioData['unidad'],
+                    'tipo_inventario'=>3,
+                ]);
+            }
+        }
+        if (isset($data['tipoProductoArray']) && is_array($data['tipoProductoArray'])) {
+            foreach ($data['tipoProductoArray'] as $inventarioData) {
+                \App\Models\TipoProducto::create([
+                    'producto'=> $inventarioData['PRODUCTO'],
+                    'precio'=> $inventarioData['precio_unitario'],
+                    'porcentaje'=> $inventarioData['procentaje_producto'],
+                    'id_prestamo' => $prestamoId,
+                 
+                ]);
+            }
+        }
+        
     }
 
     /**

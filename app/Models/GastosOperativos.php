@@ -15,6 +15,19 @@ class GastosOperativos extends Model
         'cantidad',
         'id_prestamo',
         'acciones',
+        'unidad',
+        'mes1',
+        'mes2',
+        'mes3',
+        'mes4',
+        'mes5',
+        'mes6',
+        'mes7',
+        'mes8',
+        'mes9',
+        'mes10',
+        'mes11',
+        'mes12'
     ];
 }
 
