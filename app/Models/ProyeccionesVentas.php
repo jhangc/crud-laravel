@@ -17,5 +17,6 @@ class ProyeccionesVentas extends Model
         'id_prestamo',
         'estado',
         'proporcion_ventas', // Añadir este campo
+        'ingredientes',
     ];
 }

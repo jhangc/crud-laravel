@@ -8,21 +8,10 @@
                 <form enctype="multipart/form-data" id="prestamoForm" name="prestamoForm">
                     @csrf
                     <div class="row">
-                        
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="tipo_producto">Productos</label>
-                                <select name="tipo_producto" id="tipo_producto" class="form-control" required
-                                    onchange="toggleFields()">
-                                    <option value="">Seleccione una opción...</option>
-                                    <option value="agricola" {{ old('tipo_producto') == 'agricola' ? 'selected' : '' }}>
-                                        Agrícola</option>
-                                    
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
+                            <input type="hidden" value="produccion" name="tipo_credito" id="tipo_credito">
+                            <input type="hidden" value="agricola" name="tipo_producto" id="tipo_producto">
                                 <label for="subproducto">SubProductos</label>
                                 <select name="subproducto" id="subproducto" class="form-control" required
                                     onchange="toggleFields()">
@@ -199,7 +188,7 @@
                     </div>
 
 
-                    <div class="card card-outline card-info" id="gastos_produccion_agricola">
+                    <div class="card card-outline card-info">
                         <div class="card-header">
                             <h3 class="card-title">Registro de Ventas por Producto</h3>
                         </div>

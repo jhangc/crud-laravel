@@ -15,6 +15,8 @@ class Inventario extends Model
         'id_prestamo',
         'cantidad',
         'unidad',
+        'tipo_inventario',
     ];
+
 }
 
