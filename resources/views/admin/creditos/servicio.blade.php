@@ -507,11 +507,6 @@
                         </div>
                     </div>
 
-                 
-
-
-
-
                     <div class="card card-outline card-warning" id="deudas_finan">
                         <div class="card-header" style="display:flex;">
                             <h3 class="card-title">Deudas Financieras</h3>
@@ -1139,48 +1134,14 @@
             descripcionSelect.innerHTML = '<option value="">Seleccione una descripción...</option>';
         }
         var inventario_producto = document.getElementById('inventario_producto');
-        if (selection === 'grupal') {
-            grupal1Fields.style.display = 'block';
-            // credito_individual.style.display = 'none';
-            individual1Fields.style.display = 'none';
-            detalle_negocio.style.display = 'none';
-            registro_boletas.style.display = 'none';
-            registro_gastos_producir.style.display = 'none';
-            inventario_producto.style.display = 'none';
+        if (selection === 'consumo') {
             gastos_ope.style.display = 'none';
-            deudas_finan.style.display = 'none';
-            gastos_familiares.style.display = 'none';
-            recurencia_grupal.style.display = 'block';
-            recurencia_individual.style.display = 'none';
-
+            registro_ventas_diarias.style.display = 'none';
+            registro_boletas.style.display = 'block';
         } else {
-            grupal1Fields.style.display = 'none';
-            recurencia_individual.style.display = 'block';
-            recurencia_grupal.style.display = 'none';
-            // credito_individual.style.display = 'block';
-            gastos_familiares.style.display = 'block'
-            individual1Fields.style.display = 'block';
-            if (selectionTipoCredito === 'servicio') {
-                inventario_producto.style.display = 'none';
-                inventario_producto.style.display = 'block';
-            } else {
-                inventario_producto.style.display = 'block';
-            }
-
-            if (selectionTipoCredito === 'servicio' && selection === 'consumo') {
-                detalle_negocio.style.display = 'none';
-                registro_boletas.style.display = 'block';
-            } else {
-                detalle_negocio.style.display = 'block';
-                registro_boletas.style.display = 'none';
-            }
-
-            if (selection === 'agricola') {
-                registro_gastos_producir.style.display = 'block';
-                detalle_negocio.style.display = 'none';
-            } else {
-                registro_gastos_producir.style.display = 'none';
-            }
+            registro_boletas.style.display = 'none';
+            gastos_ope.style.display = 'block';
+            registro_ventas_diarias.style.display = 'block';
         }
 
     }
