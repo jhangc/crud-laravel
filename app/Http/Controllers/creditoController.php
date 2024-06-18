@@ -1081,6 +1081,18 @@ class creditoController extends Controller
         }
         if (isset($data['gastosAgricolaArray']) && is_array($data['gastosAgricolaArray'])) {
             $total=0;
+            
+            \App\Models\ProductoAgricola::create([
+                'id_prestamo' => $prestamoId,
+                'nombre_actividad' => $request->nombre_actividad,
+                'unidad_medida_siembra'=> $request->cantidad_terreno,
+                'hectareas'=> $request->cantidad_cultivar??0,
+                'cantidad_cultivar'=> $request->cantidad_cultivar,
+                'unidad_medida_venta'=> $request->unidad_medida_venta,
+                'rendimiento_unidad_siembra'=> $request->rendimiento_unidad_siembra,
+                'ciclo_productivo_meses'=> $request->ciclo_productivo,
+                'mes_inicio'=> $request->mes_inicio,
+            ]);
             foreach ($data['gastosAgricolaArray'] as $gastoData) {
                 $suma=0;
                 $row=\App\Models\GastosOperativos::create([
