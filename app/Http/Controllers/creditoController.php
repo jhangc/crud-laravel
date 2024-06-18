@@ -426,8 +426,6 @@ class creditoController extends Controller
                         $montoVenta = $totalVentas * ($proyeccion->proporcion_ventas / 100);
                         // Calcular la relación de compra-venta
                         $relacionCompraVenta = $proyeccion->precio_venta > 0 ? $proyeccion->precio_compra / $proyeccion->precio_venta : 0;
-                        // $relacionCompraVenta = $proyeccion->precioCompra / $proyeccion->precioVenta;
-                        // Sumar la relación ponderada
                         $sumaPonderadaRelacion += $relacionCompraVenta * $montoVenta;
                         $pesoTotal += $montoVenta;
                     }
@@ -436,10 +434,6 @@ class creditoController extends Controller
                     // Calcular el costo total de ventas
                     $totalCompras = round($totalVentas * $relacionCompraVentaPromedio,2);
 
-                    // $totalVentas=10;
-
-  
-                    // $margenporcentaje = round(((1- ($totalCompras/$totalVentas)))*100,2);
 
                     if ($totalVentas != 0) {
                         $margenporcentaje = round(((1- ($totalCompras/$totalVentas)))*100,2);
@@ -471,22 +465,24 @@ class creditoController extends Controller
                     $cuenta_cobrar= $activos->cuentas_por_cobrar;
                     $adelanto_proveedores = $activos->adelanto_a_proveedores;
 
-
-
                     $activo_corriente = $saldo_en_caja_bancos+$cuenta_cobrar+$adelanto_proveedores+$total_inventario;
-                    
+
                     $activofijo=$garantias->sum('valor_mercado');
                     $activo=$activo_corriente+$activofijo;
                     $pasivo=$deudas->sum('saldo_capital');
+                    $patrimonio = $activo-$pasivo; // Asumiendo un valor para patrimonio
+
                     $totalcuotadeuda=$deudas->sum('cuota');
 
                     $utilidadOperativa=$utilidadBruta -$totalGastosOperativos;
                     $saldo_disponible_negocio=$utilidadOperativa-$totalcuotadeuda;
                     $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)),2);
                     $saldo_final=$saldo_disponible_negocio-$totalgastosfamiliares;
-                    $rentabilidad_ventas=round(($saldo_disponible_negocio/$totalVentas),2);
+
+                    $rentabilidad_ventas=round(((($saldo_disponible_negocio/$totalVentas))*100),2);
+
                     $rotacion_inventario=round(($totalCompras/$total_inventario),2);
-                    // $liquidez =round(($activo_corriente/$deudas->sum('saldo_capital')),2);
+                    $liquidez =round(($activo_corriente/$pasivo),2);
                     $roa=round(($saldo_disponible_negocio/$activo),2);
                     $capital_trabajo=$activo_corriente-$deudas->sum('saldo_capital');
                     
@@ -495,13 +491,12 @@ class creditoController extends Controller
                     
                     // $totalGastosFamiliares = 0; // Asumiendo otro campo si existe
                     $totalPrestamos = $prestamo->monto_total;
-                    $patrimonio = $activo-$pasivo; // Asumiendo un valor para patrimonio
+
+                    $margenventas=($margenmanual->margen_utilidad)*100;
+                    
 
                     $roe=round(($saldo_disponible_negocio/$patrimonio),2);
 
-                    // Cálculos
-                    // $utilidadBruta = $totalVentas - $totalCompras;
-                    // $utilidadOperativa = $utilidadBruta - $totalGastosOperativos;
                     $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
                     $cuotaEndeudamiento = $utilidadNeta - $totalgastosfamiliares;
                     $solvencia = round(($pasivo/$patrimonio),2);
@@ -523,20 +518,6 @@ class creditoController extends Controller
                         'utilidadOperativa',
                         'totalVentas',
                         'totalCompras',
-                        // 'utilidadNeta',
-                        // 'cuotaEndeudamiento',
-                        // 'solvencia',
-                        // 'rentabilidad',
-                        // 'indicadorInventario',
-                        // 'indicadorCapitalTrabajo',
-                        // 'proyecciones',
-                        // 'deudas',
-                        // 'gastosOperativos',
-                        // 'inventario',
-                        // 'boletas',
-                        // 'gastosProducir',
-                        // 'totalVentas',
-                        // 'totalCompras',
                         'margenporcentaje',
                         'proporcion_ventas',
                         'totalGastosOperativos',
@@ -548,26 +529,27 @@ class creditoController extends Controller
                         'saldo_en_caja_bancos',
                         'cuenta_cobrar',
                         'adelanto_proveedores',
-                        // 'activo_corriente',
-                        // 'garantias',
-                        // 'patrimonio',
-                        // 'pasivo',
-                        // 'activo',
-                        // 'saldo_disponible_negocio',
-                        // 'saldo_final',
-                        // 'rentabilidad_ventas',
-                        // 'rotacion_inventario',
-                        // 'liquidez',
-                        // 'roa',
-                        // 'capital_trabajo',
-                        // 'roe',
-                        // 'solvencia',
-                        // 'indice_endeudamiento',
-                        // 'activos',
-                        // 'gastosfamiliares',
+                        'activo_corriente',
+                        'activofijo',
+                        'patrimonio',
+                        'pasivo',
+                        'activo',
+                        'saldo_disponible_negocio',
+                        'saldo_final',
+                        'rentabilidad_ventas',
+                        'rotacion_inventario',
+                        'liquidez',
+                        'roa',
+                        'capital_trabajo',
+                        'roe',
+                        'solvencia',
+                        'indice_endeudamiento',
+                        'activos',
+                        'totalgastosfamiliares',
                         'totalcuotadeuda',
                         'totalprestamo',
-                        'cuotaprestamo'
+                        'cuotaprestamo',
+                        'margenventas'
                     ));  
                    
                 } else {

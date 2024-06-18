@@ -15,8 +15,7 @@
                                 <label for="subproducto">SubProductos</label>
                                 <select name="subproducto" id="subproducto" class="form-control" required onchange="toggleFields()">
                                     <option value="">Seleccione una opción...</option>
-                                    <option value="creditoempresarial" {{ old('subproducto') == 'creditoempresarial' ? 'selected' : '' }}>Crédito empresarial</option>
-                                    <option value="creditoempresarialhipotecario" {{ old('subproducto') == 'creditoempresarialhipotecario' ? 'selected' : '' }}>Crédito empresarial con garantía hipotecaria empresarial</option>
+                                    <option value="palmoagro" {{ old('subproducto') == 'palmoagro' ? 'selected' : '' }}>Palmo agro</option>
                                 </select>
                             </div>
                         </div>
