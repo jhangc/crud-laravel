@@ -170,7 +170,7 @@ class creditoController extends Controller
                 $rentabilidad_ventas=round((($saldo_disponible_negocio/$totalVentas)*100),2);
                 $rotacion_inventario=round(($totalCompras/$total_inventario),2);
                 $liquidez =round(($activo_corriente/$deudas->sum('saldo_capital')),2);
-                $roa=round(($saldo_disponible_negocio/$activo),2);
+                $roa=round((($saldo_disponible_negocio/$activo)*100),2);
                 $capital_trabajo=$activo_corriente-$deudas->sum('saldo_capital');
                 
                 // $totalCompras = $montoVenta;
@@ -180,7 +180,7 @@ class creditoController extends Controller
                 $totalPrestamos = $prestamo->monto_total;
                 $patrimonio = $activo-$pasivo; // Asumiendo un valor para patrimonio
 
-                $roe=round(($saldo_disponible_negocio/$patrimonio),2);
+                $roe=round(($saldo_disponible_negocio/$patrimonio)*100,2);
 
                 // Cálculos
                 // $utilidadBruta = $totalVentas - $totalCompras;
