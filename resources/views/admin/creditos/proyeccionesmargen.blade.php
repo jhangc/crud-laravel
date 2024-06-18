@@ -312,32 +312,37 @@
                                 {{-- activo corriente / pasivo corriente --}}
                                 <td>Liquidez</td>
                                 <td>{{ $liquidez}}</td>
-                                <td>cada que tiempo se compra producto en días</td>
+                                <td>tiene que ser (>1)</td>
                             </tr>
                             <tr>
                                 {{-- UTILIDAD NETA / ACTIVOS TOTALES --}}
                                 <td>ROA (%)</td>
                                 <td>{{ $roa}}</td>
+                                <td>tiene que ser (>5%)</td>
                             </tr>
                             <tr>
                                 {{-- ACTIVO CORRIENTE - PASIVO CORRIENTE --}}
                                 <td>Capital de trabajo (S/.)</td>
                                 <td>{{ $capital_trabajo}}</td>
+                                <td>tiene que ser mayor al prestamo</td>
                             </tr>
                             <tr>
                                 {{-- UTILIDAD NETA / PATRIMONIO NETO --}}
                                 <td>ROE (%)</td>
                                 <td>{{ $roe}}</td>
+                                <td>tiene que ser (>10%)</td>
                             </tr>
                             <tr>
                                 {{-- PASIVO TOTAL / PATRIMONIO NETO --}}
                                 <td>Solvencia</td>
                                 <td>{{ $solvencia}}</td>
+                                <td>tiene que ser (<=1)</td>
                             </tr>
                             <tr>
                                 {{-- PASIVO TOTAL / ACTIVO TOTAL --}}
                                 <td>Indice de endeudamiento</td>
                                 <td>{{ $indice_endeudamiento}}</td>
+                                <td>tiene que ser (<=40%)</td>
                             </tr>
 
                         </tbody>
