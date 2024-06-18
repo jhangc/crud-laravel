@@ -176,7 +176,7 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        {{-- <div class="col-md-6">
             <div class="card card-outline card-warning">
                 <div class="card-header">
                     <h3 class="card-title">Gastos familiares</h3>
@@ -214,7 +214,7 @@
                     </table>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <div class="col-md-6">
             <div class="card card-outline card-warning">
@@ -260,7 +260,7 @@
                             </tr>
                             <tr>
                                 <td>Gastos familiares</td>
-                                <td>{{ number_format($totalGastosFamiliares, 2) }}</td>
+                                <td>{{ number_format($totalgastosfamiliares, 2) }}</td>
                             </tr>
                             <tr>
                                 <td>Saldo final dsiponible</td>
@@ -286,28 +286,33 @@
                             <tr>
                                 <th>Descripción</th>
                                 <th>Valor</th>
+                                <th>resultado esperado</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 {{-- colocar dle cuadro del excel --}}
                                 <td>Rentabilidad del negocio (%)</td>
-                                <td>12</td>
+                                <td>{{$margenventas}}%</td>
+                                <td>Es el margen generico segun actividad</td>
                             </tr>
                             <tr>
                                 {{-- division entre saldo total disponible y ventas total --}}
                                 <td>Rentabilidad de las ventas</td>
-                                <td>{{ $rentabilidad_ventas }}</td>
+                                <td>{{ $rentabilidad_ventas }}%</td>
+                                <td>tiene que ser +- 5 de la rentabilidad</td>
                             </tr>
                             <tr>
                                 {{-- total costo / total inventario --}}
                                 <td>Rotación de inventario (en días)</td>
                                 <td>{{ $rotacion_inventario}}</td>
+                                <td>cada que tiempo se compra producto en días</td>
                             </tr>
                             <tr>
                                 {{-- activo corriente / pasivo corriente --}}
                                 <td>Liquidez</td>
                                 <td>{{ $liquidez}}</td>
+                                <td>cada que tiempo se compra producto en días</td>
                             </tr>
                             <tr>
                                 {{-- UTILIDAD NETA / ACTIVOS TOTALES --}}

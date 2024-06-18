@@ -121,6 +121,7 @@ class creditoController extends Controller
                 // Inicializar variables
                 $pesoTotal = 0;
                 $sumaPonderadaRelacion = 0;
+                $margenventas=($margenmanual->margen_utilidad)*100;
 
                 // Recorrer las proyecciones para calcular el monto total de ventas y la relación de compra-venta promedio ponderada
                 foreach ($proyecciones as $proyeccion) {
@@ -165,7 +166,8 @@ class creditoController extends Controller
                 $saldo_disponible_negocio=$utilidadOperativa-$totalcuotadeuda;
                 $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)),2);
                 $saldo_final=$saldo_disponible_negocio-$totalgastosfamiliares;
-                $rentabilidad_ventas=round(($saldo_disponible_negocio/$totalVentas),2);
+
+                $rentabilidad_ventas=round((($saldo_disponible_negocio/$totalVentas)*100),2);
                 $rotacion_inventario=round(($totalCompras/$total_inventario),2);
                 $liquidez =round(($activo_corriente/$deudas->sum('saldo_capital')),2);
                 $roa=round(($saldo_disponible_negocio/$activo),2);
@@ -237,10 +239,11 @@ class creditoController extends Controller
                     'solvencia',
                     'indice_endeudamiento',
                     'activos',
-                    'gastosfamiliares',
+                    'totalgastosfamiliares',
                     'totalcuotadeuda',
                     'totalprestamo',
-                    'cuotaprestamo'
+                    'cuotaprestamo',
+                    'margenventas'
                 ));          
 
 
