@@ -1088,8 +1088,8 @@ class creditoController extends Controller
             foreach ($data['tipoProductoArray'] as $inventarioData) {
                 \App\Models\TipoProducto::create([
                     'producto'=> $inventarioData['PRODUCTO'],
-                    'precio'=> $inventarioData['precio_unitario'],
-                    'porcentaje'=> $inventarioData['procentaje_producto'],
+                    'precio'=>  !empty($inventarioData['precio_unitario'])??0,
+                    'porcentaje'=> !empty( $inventarioData['procentaje_producto'])??0,
                     'id_prestamo' => $prestamoId,
                  
                 ]);
