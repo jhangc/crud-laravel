@@ -1097,7 +1097,11 @@ class creditoController extends Controller
         }
         
     }
-
+    public function calcularCuota($monto, $tea, $periodos)
+    {
+        $tasaMensual = pow(1 + ($tea / 100), 1 / 12) - 1;
+        return ($monto * $tasaMensual * pow((1 + $tasaMensual), $periodos)) / (pow((1 + $tasaMensual), $periodos) - 1);
+    }
     /**
      * Display the specified resource.
      */
