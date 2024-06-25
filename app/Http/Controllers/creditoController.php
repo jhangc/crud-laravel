@@ -65,7 +65,7 @@ class creditoController extends Controller
     public function viewaprobar()
     {
         // Obtener solo los clientes activos (activo = 1)
-        $creditos = Credito::with('clientes')
+        $creditos = credito::with('clientes')
             ->where('activo', 1)
             ->where('estado', "aprobado")
             ->get();
@@ -73,7 +73,7 @@ class creditoController extends Controller
     }
     public function proyecciones($id) {
 
-        $prestamo = \App\Models\Credito::find($id);
+        $prestamo = \App\Models\credito::find($id);
         $proyecciones = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
         $deudas = \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
         $gastosOperativos = \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
@@ -1106,7 +1106,7 @@ class creditoController extends Controller
      */
     public function show($id)
     {
-        $credito =  \App\Models\Credito::find($id);
+        $credito =  \App\Models\credito::find($id);
 
         $clientes =  \App\Models\CreditoCliente::with('clientes')
                     ->where('prestamo_id', $id)->get();
@@ -1179,7 +1179,7 @@ class creditoController extends Controller
 
     public function vercuotas(string $id)
     {
-        $credito = Credito::findOrFail($id); // Buscar el crédito por ID
+        $credito = credito::findOrFail($id); // Buscar el crédito por ID
         $fechaDesembolso = $credito->fecha_desembolso; // Obtener la fecha de desembolso del crédito
         $tiempoMeses = $credito->tiempo; // Obtener el tiempo en meses del crédito
 
