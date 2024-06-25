@@ -158,15 +158,52 @@
                 </div>
             </div>
         </div>
-    </div> 
-
-
-
-
+    </div>
     <div class="row" style="text-align:center;">
         <div class="col-md-12 mb-5">
-            <button type="button" class="btn btn-primary btnprestamo">Aprobar</button>
-            <button type="button" class="btn btn-warning btnprestamo">Rechazar</button>
+            <div class="form-group">
+            <input type="hidden" value="<?=$prestamo->id?>" id="credito_id">
+                <label for="comentario">Comentario:</label>
+                <textarea name="comentario" id="comentario" class="form-control" rows="3" required></textarea>
+            </div>
+            <button type="button" onclick="confirmarAccion('aprobar')" class="btn btn-primary btnprestamo">Aprobar</button>
+            <button type="button" onclick="confirmarAccion('rechazar')" class="btn btn-warning btnprestamo">Rechazar</button>
         </div>
     </div>
+
+    
+    <script>
+        function confirmarAccion(accion) {
+            var comentario = document.getElementById('comentario').value;
+            if (!comentario) {
+                alert('El comentario es obligatorio.');
+                return;
+            }
+            var confirmacion = confirm('¿Está seguro que desea ' + (accion === 'aprobar' ? 'aprobar' : 'rechazar') + ' este crédito?');
+            if (confirmacion) {
+                enviarSolicitud(accion, comentario);
+            }
+        }
+
+        function enviarSolicitud(accion, comentario) {
+            var creditoid = document.getElementById('credito_id').value;
+            $.ajax({
+                url: '{{ url("/admin/credito") }}/' + accion,
+                type: 'GET',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    id: creditoid,
+                    comentario: comentario
+                },
+                success: function(response) {
+                    alert(response.mensaje);
+                    window.location.href = response.redirect;
+                },
+                error: function(xhr) {
+                    console.error(xhr);
+                    alert('Ocurrió un error al realizar la acción.');
+                }
+            });
+        }
+    </script>
 @endsection
