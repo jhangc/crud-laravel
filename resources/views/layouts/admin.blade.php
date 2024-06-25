@@ -32,7 +32,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css" rel="stylesheet">
 
 
-
+    <link rel="icon" href="{{ asset('dist/img/fdfds.ico') }}" type="image/x-icon">
 
 
 </head>
