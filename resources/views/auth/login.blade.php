@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="{{asset('plugins/icheck-bootstrap/icheck-bootstrap.min.css')}}">
   <!-- Theme style -->
   <link rel="stylesheet" href="{{asset('dist/css/adminlte.min.css')}}">
+  <link rel="icon" href="{{ asset('dist/img/fdfds.ico') }}" type="image/x-icon">
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
