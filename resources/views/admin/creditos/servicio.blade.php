@@ -30,6 +30,9 @@
                                 <select name="subproducto" id="subproducto" class="form-control" required
                                     onchange="toggleFields()">
                                     <option value="">Seleccione una opción...</option>
+                                    <option value="creditoempresarial"
+                                        {{ old('subproducto') == 'creditoempresarial' ? 'selected' : '' }}>Crédito
+                                        empresarial</option>
                                     <option value="superconsumo"
                                         {{ old('subproducto') == 'superconsumo' ? 'selected' : '' }}>Superconsumo
                                     </option>
