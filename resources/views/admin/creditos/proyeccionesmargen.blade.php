@@ -18,6 +18,10 @@
         <h6><b>TOTAL PRESTAMO:</b> S/.{{ $totalprestamo }}</h6>
         <h6><b>CUOTA A EVALUAR:</b> S/.{{ $cuotaprestamo }}</h6>
 
+        @if ($modulo === 'aprobar')
+            <h6><b>Comentario del analista:</b>{{ $comentarioasesor }}</h6>
+        @endif
+
     </div>
 
 
@@ -324,22 +328,102 @@
             </div>
         </div>
     </div>
-    <div class="row" style="text-align:center;">
-        <div class="col-md-12 mb-5">
-            <div class="form-group">
-                <input type="hidden" value="<?= $prestamo->id ?>" id="credito_id">
-                <label for="comentario">Comentario:</label>
-                <textarea name="comentario" id="comentario" class="form-control" rows="3" style="color: black;" required><?php if (isset($comentarioasesor) && !empty($comentarioasesor)) {
-                    echo htmlspecialchars($comentarioasesor, ENT_QUOTES, 'UTF-8');
-                } ?></textarea>
+
+
+    @if ($modulo === 'aprobar')
+        <div class="row" style="text-align:center;">
+            <div class="col-md-12 mb-5">
+
+                <div class="form-group">
+                    <input type="hidden" value="<?= $prestamo->id ?>" id="credito_id">
+                    <label for="comentarioadministrador">Comentario:</label>
+                    <textarea name="comentarioadministrador" id="comentarioadministrador" class="form-control" rows="3"
+                        style="color: black;" required><?php if (isset($comentarioadministrador) && !empty($comentarioadministrador)) {echo htmlspecialchars($comentarioadministrador, ENT_QUOTES, 'UTF-8');} ?></textarea>
+                </div>
+                <button type="button" onclick="confirmarAccion('aprobar')"
+                    class="btn btn-primary btnprestamo">Aprobar</button>
+                <button type="button" onclick="confirmarAccion('rechazar')"
+                    class="btn btn-warning btnprestamo">Rechazar</button>
+                <a href="{{ url('admin/creditos') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
             </div>
-            <button type="button" onclick="confirmarAccion('guardar')" class="btn btn-primary btnprestamo">Guardar</button>
-            <a href="{{ url('admin/creditos') }}" class="btn btn-warning btnprestamo">Cancelar</a>
         </div>
-    </div>
+    @else
+        <div class="row" style="text-align:center;">
+            <div class="col-md-12 mb-5">
+                <div class="form-group">
+                    <input type="hidden" value="<?= $prestamo->id ?>" id="credito_id">
+                    <label for="comentario">Comentario:</label>
+                    <textarea name="comentario" id="comentario" class="form-control" rows="3" style="color: black;" required><?php if (isset($comentarioasesor) && !empty($comentarioasesor)) {
+                        echo htmlspecialchars($comentarioasesor, ENT_QUOTES, 'UTF-8');
+                    } ?></textarea>
+                </div>
+                <button type="button" onclick="confirmarAccion('guardar')"
+                    class="btn btn-primary btnprestamo">Guardar</button>
+                <a href="{{ url('admin/creditos') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
+            </div>
+        </div>
+    @endif
+
 
 
     <script>
+        function confirmarAccion(accion) {
+            var comentarioElement = document.getElementById('comentario');
+            var comentarioadministradorElement = document.getElementById('comentarioadministrador');
+
+            var comentario = comentarioElement ? comentarioElement.value : null;
+            var comentarioadministrador = comentarioadministradorElement ? comentarioadministradorElement.value : null;
+
+
+            var accionTexto;
+            if (accion === 'aprobar') {
+                accionTexto = 'aprobar';
+            } else if (accion === 'rechazar') {
+                accionTexto = 'rechazar';
+            } else if (accion === 'guardar') {
+                accionTexto = 'guardar';
+            } else {
+                return;
+            }
+
+            var confirmacion = confirm('¿Está seguro que desea ' + accionTexto + ' este crédito?');
+            if (confirmacion) {
+                enviarSolicitud(accion, comentario, comentarioadministrador);
+            }
+        }
+
+        function enviarSolicitud(accion, comentario, comentarioadministrador) {
+            var creditoid = document.getElementById('credito_id').value;
+            var data = {
+                _token: '{{ csrf_token() }}',
+                id: creditoid,
+                comentario: comentario,
+                comentarioadministrador: comentarioadministrador,
+                accion: accion
+            };
+
+            $.ajax({
+                url: '{{ url('/admin/credito') }}/' + accion,
+                type: 'GET',
+                data: data,
+                success: function(response) {
+                    alert(response.mensaje);
+                    window.location.href = response.redirect;
+                },
+                error: function(xhr) {
+                    console.error(xhr);
+                    alert('Ocurrió un error al realizar la acción.');
+                }
+            });
+        }
+    </script>
+
+
+
+
+
+
+    {{-- <script>
         function confirmarAccion(accion) {
             const comentario = document.getElementById('comentario').value;
             const creditoid = document.getElementById('credito_id').value;
@@ -362,5 +446,5 @@
                 }
             });
         }
-    </script>
+    </script> --}}
 @endsection

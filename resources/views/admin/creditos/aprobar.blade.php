@@ -2,13 +2,11 @@
 
 @section('content')
     <div class="row">
-        <h1>Listado de Creditos Aprobados </h1>
+        <h1>Listado de Creditos Pendientes de Aprobar </h1>
     </div> 
     <hr>
     <div class="row">
         <div class="col-md-12">
-
-
             <div class="card-body">
                 <div class="table-responsive">
                     <table id="creditosTable" class="table table-bordered table-sm table-striped table-hover">
@@ -57,6 +55,8 @@
                                     <td>
                                         @if ($credito->estado == 'pendiente')
                                             <span style="background-color: yellow; padding: 3px 10px; border-radius: 5px;">Pendiente</span>
+                                        @elseif($credito->estado == 'revisado')
+                                            <span style="background-color: orange; padding: 3px 10px; border-radius: 5px;">Revisado</span>
                                         @elseif($credito->estado == 'rechazado')
                                             <span style="background-color: red; padding: 3px 10px; border-radius: 5px;">Rechazado</span>
                                         @elseif($credito->estado == 'aprobado')
@@ -65,7 +65,9 @@
                                     </td>
                                     <td style="display: flex; align-items: center; justify-content:center;">
                                         <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#cuotasModal" onclick="loadCuotas('{{ route('credito.cuotas', $credito->id) }}')">Cuotas</a>
-                                        <a href="{{  route('creditos.proyecciones', ['id' => $credito->id]) }}" class="btn btn-secondary">Resultado</a>
+                                        {{-- <a href="{{  route('creditos.proyecciones', ['id' => $credito->id]) }}" class="btn btn-secondary">Resultado</a> --}}
+                                        <a href="{{ route('creditos.proyecciones', ['id' => $credito->id, 'modulo' => 'aprobar']) }}" class="btn btn-secondary">Resultado</a>
+
                                         <a href="{{ route('creditos.edit', $credito->id) }}" type="button" class="btn btn-success"><i class="bi bi-pencil"></i></a>
                                         <form action="{{ route('creditos.destroy', $credito->id) }}" onclick="preguntar(event, '{{ $id }}')" method="post" id="miFormulario{{ $id }}">
                                             @csrf

@@ -65,13 +65,17 @@ class creditoController extends Controller
     public function viewaprobar()
     {
         // Obtener solo los clientes activos (activo = 1)
-        $creditos = credito::with('clientes')
+        $creditos = Credito::with('clientes')
             ->where('activo', 1)
-            ->where('estado', "aprobado")
+            ->where('estado', '!=', 'pendiente')
             ->get();
         return view('admin.creditos.aprobar', ['creditos' => $creditos]);
     }
-    public function proyecciones($id) {
+
+    public function proyecciones(Request $request, $id)
+    {
+
+        $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
 
         $prestamo = \App\Models\credito::find($id);
         $proyecciones = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
@@ -87,8 +91,8 @@ class creditoController extends Controller
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->first();
 
         $inventarioterminado = \App\Models\Inventario::where('id_prestamo', $id)
-                                            ->where('tipo_inventario', 1)
-                                            ->get();
+            ->where('tipo_inventario', 1)
+            ->get();
 
         $inventarioproceso = \App\Models\Inventario::where('id_prestamo', $id)
             ->where('tipo_inventario', 2)
@@ -107,6 +111,7 @@ class creditoController extends Controller
         $tipo = $prestamo->tipo;
 
         $comentarioasesor = $prestamo->comentario_asesor;
+        $comentarioadministrador = $prestamo->comentario_administrador;
 
         // Calcular Totales
         $factorsemana = 15 / 7;
@@ -145,10 +150,10 @@ class creditoController extends Controller
                 $proporcion_ventas = $proyecciones->sum('proporcion_ventas');
                 // Cálculos
                 $utilidadBruta = $totalVentas - $totalCompras;
-                $totalGastosOperativos = $gastosOperativos->sum(fn($gasto) => $gasto->precio_unitario * $gasto->cantidad);
+                $totalGastosOperativos = $gastosOperativos->sum(fn ($gasto) => $gasto->precio_unitario * $gasto->cantidad);
                 $total_venta_credito = (($prestamo->porcentaje_credito) * $totalVentas) / 100;
 
-                $total_inventario = $inventario->sum(fn($item) => $item->precio_unitario * $item->cantidad);
+                $total_inventario = $inventario->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
 
                 $activo_corriente = $activos->saldo_en_caja_bancos + $activos->cuentas_por_cobrar + $activos->adelanto_a_proveedores + $total_inventario;
                 $activofijo = $garantias->sum('valor_mercado');
@@ -158,33 +163,33 @@ class creditoController extends Controller
 
                 $utilidadOperativa = $utilidadBruta - $totalGastosOperativos;
                 $saldo_disponible_negocio = $utilidadOperativa - $totalcuotadeuda;
-                $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
+                $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                 $saldo_final = $saldo_disponible_negocio - $totalgastosfamiliares;
 
                 $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
                 $rotacion_inventario = $total_inventario != 0 ? round(($totalCompras / $total_inventario), 2) : 0;
                 $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
-                $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo)*100, 2) : 0;
+                $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo) * 100, 2) : 0;
                 $capital_trabajo = $activo_corriente - $deudas->sum('saldo_capital');
 
                 $totalCuotasCreditos = $deudas->sum('cuota');
                 $totalPrestamos = $prestamo->monto_total;
                 $patrimonio = $activo - $pasivo;
 
-                $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio)*100, 2) : 0;
+                $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio) * 100, 2) : 0;
 
                 $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
                 $cuotaEndeudamiento = $utilidadNeta - $totalgastosfamiliares;
                 $solvencia = $patrimonio != 0 ? round(($pasivo / $patrimonio), 2) : 0;
-                $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo)*100, 2) : 0;
+                $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo) * 100, 2) : 0;
 
                 $rentabilidad = $totalVentas != 0 ? $utilidadNeta / $totalVentas : 0;
                 $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
                 $capitalTrabajo = 20000; // Asumiendo un valor para capital de trabajo
                 $indicadorCapitalTrabajo = $capitalTrabajo != 0 ? $totalPrestamos / $capitalTrabajo : 0;
 
-                $Endeudamientopatrimonial = $patrimonio != 0 ? round((($pasivo + $totalPrestamos)/$patrimonio),2):0;
-                $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo/$saldo_final),2) :0;
+                $Endeudamientopatrimonial = $patrimonio != 0 ? round((($pasivo + $totalPrestamos) / $patrimonio), 2) : 0;
+                $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo / $saldo_final), 2) : 0;
 
                 return view('admin.creditos.proyeccionesmargen', compact(
                     'prestamo',
@@ -234,14 +239,16 @@ class creditoController extends Controller
                     'margenventas',
                     'Endeudamientopatrimonial',
                     'cuotaexcedente',
-                    'comentarioasesor'
+                    'comentarioasesor',
+                    'comentarioadministrador',
+                    'modulo'
 
-                ));          
+                ));
             case 'servicio':
                 if ($prestamo->producto == "microempresa") {
                     $totalVentas = round((($ventasdiarias->sum('promedio')) * $factormes), 2);
 
-                    $totalGastosOperativos = round(($gastosOperativos->sum(fn($gasto) => $gasto->precio_unitario * $gasto->cantidad)), 2);
+                    $totalGastosOperativos = round(($gastosOperativos->sum(fn ($gasto) => $gasto->precio_unitario * $gasto->cantidad)), 2);
                     $totalCompras = $totalGastosOperativos;
 
                     $margensoles = $totalVentas - $totalCompras;
@@ -256,7 +263,7 @@ class creditoController extends Controller
                     if ($inventario->isEmpty()) {
                         $totalinventario = 0;
                     } else {
-                        $totalinventario = round(($inventario->sum(fn($inven) => $inven->precio_unitario * $inven->cantidad)), 2);
+                        $totalinventario = round(($inventario->sum(fn ($inven) => $inven->precio_unitario * $inven->cantidad)), 2);
                     }
 
                     $activo_corriente = $saldo_en_caja_bancos + $cuenta_cobrar + $adelanto_proveedores + $totalinventario;
@@ -269,22 +276,22 @@ class creditoController extends Controller
                     $pasivo = $totaldeudas;
                     $patrimonioneto = $totalactivo - $pasivo;
 
-                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
+                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                     $totalgastosfinancieros = round(($deudas->sum('saldo_capital')), 2);
 
                     $saldo_disponible_negocio = $margensoles - $totalcuotadeuda;
                     $saldo_final = $saldo_disponible_negocio - $totalgastosfamiliares;
 
-                    $margenventas = ($margenmanual->margen_utilidad)*100;
+                    $margenventas = ($margenmanual->margen_utilidad) * 100;
 
-                    $rentabilidad_ventas = $totalVentas != 0 ? round(($saldo_disponible_negocio / $totalVentas)*100, 2) : 0;
+                    $rentabilidad_ventas = $totalVentas != 0 ? round(($saldo_disponible_negocio / $totalVentas) * 100, 2) : 0;
                     $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
-                    $roe = $patrimonioneto != 0 ? round(($saldo_disponible_negocio / $patrimonioneto)*100, 2) : 0;
+                    $roe = $patrimonioneto != 0 ? round(($saldo_disponible_negocio / $patrimonioneto) * 100, 2) : 0;
                     $solvencia = $patrimonioneto != 0 ? round(($pasivo / $patrimonioneto), 2) : 0;
-                    $roa = $totalactivo != 0 ? round(($saldo_disponible_negocio / $totalactivo)*100, 2) : 0;
+                    $roa = $totalactivo != 0 ? round(($saldo_disponible_negocio / $totalactivo) * 100, 2) : 0;
                     $capital_trabajo = $activo_corriente - $pasivo;
-                    $indice_endeudamiento = $totalactivo != 0 ? round(($pasivo / $totalactivo)*100, 2) : 0;
-                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo/$saldo_final),2) :0;
+                    $indice_endeudamiento = $totalactivo != 0 ? round(($pasivo / $totalactivo) * 100, 2) : 0;
+                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo / $saldo_final), 2) : 0;
 
                     return view('admin.creditos.evaluacionserviciomicroempresa', compact(
                         'prestamo',
@@ -324,12 +331,14 @@ class creditoController extends Controller
                         'indice_endeudamiento',
                         'totalcuotadeuda',
                         'cuotaexcedente',
-                        'comentarioasesor'
+                        'comentarioasesor',
+                        'comentarioadministrador',
+                        'modulo'
                     ));
                 } else {
                     $totalVentas = round(($boletas->sum('total_boleta')));
 
-                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
+                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                     $totalCompras = $totalgastosfamiliares;
                     //utilidad bruta
                     $margensoles = $totalVentas - $totalCompras;
@@ -359,9 +368,9 @@ class creditoController extends Controller
                     $indice_endeudamiento = $totalactivo != 0 ? round(($pasivo / $totalactivo), 2) : 0;
 
                     $cuotaendeudamiento = $saldo_final - $totalcuotadeuda;
-                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo/$saldo_final),2) :0;
-   
-                        return view('admin.creditos.evaluacionservicioconsumo', compact(
+                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo / $saldo_final), 2) : 0;
+
+                    return view('admin.creditos.evaluacionservicioconsumo', compact(
                         'prestamo',
                         'cliente',
                         'totalprestamo',
@@ -391,7 +400,9 @@ class creditoController extends Controller
                         'cuotaendeudamiento',
                         'totalcuotadeuda',
                         'cuotaexcedente',
-                        'comentarioasesor'
+                        'comentarioasesor',
+                        'comentarioadministrador',
+                        'modulo'
                     ));
                 }
             case 'produccion':
@@ -423,13 +434,13 @@ class creditoController extends Controller
                     $proporcion_ventas = $proyecciones->sum('proporcion_ventas');
                     // Cálculos
                     $utilidadBruta = $totalVentas - $totalCompras;
-                    $totalGastosOperativos = $gastosOperativos->sum(fn($gasto) => $gasto->precio_unitario * $gasto->cantidad);
+                    $totalGastosOperativos = $gastosOperativos->sum(fn ($gasto) => $gasto->precio_unitario * $gasto->cantidad);
                     $total_venta_credito = (($prestamo->porcentaje_credito) * $totalVentas) / 100;
 
-                    $totalinventarioterminado = $inventarioterminado->sum(fn($item) => $item->precio_unitario * $item->cantidad);
-                    $totalinventarioproceso = $inventarioproceso->sum(fn($item) => $item->precio_unitario * $item->cantidad);
+                    $totalinventarioterminado = $inventarioterminado->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
+                    $totalinventarioproceso = $inventarioproceso->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
 
-                    $totalinventariomateriales = $inventariomateriales !== null ? $inventariomateriales->sum(fn($item) => $item->precio_unitario * $item->cantidad) : 0;
+                    $totalinventariomateriales = $inventariomateriales !== null ? $inventariomateriales->sum(fn ($item) => $item->precio_unitario * $item->cantidad) : 0;
 
                     $total_inventario = $totalinventarioterminado + $totalinventarioproceso + $totalinventariomateriales;
 
@@ -448,13 +459,13 @@ class creditoController extends Controller
 
                     $utilidadOperativa = $utilidadBruta - $totalGastosOperativos;
                     $saldo_disponible_negocio = $utilidadOperativa - $totalcuotadeuda;
-                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
+                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                     $saldo_final = $saldo_disponible_negocio - $totalgastosfamiliares;
 
                     $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
                     $rotacion_inventario = $total_inventario != 0 ? round(($totalCompras / $total_inventario), 2) : 0;
                     $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
-                    $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo)*100, 2) : 0;
+                    $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo) * 100, 2) : 0;
                     $capital_trabajo = $activo_corriente - $deudas->sum('saldo_capital');
 
                     $totalCuotasCreditos = $deudas->sum('cuota');
@@ -462,20 +473,20 @@ class creditoController extends Controller
 
                     $margenventas = ($margenmanual->margen_utilidad) * 100;
 
-                    $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio)*100, 2) : 0;
+                    $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio) * 100, 2) : 0;
 
                     $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
                     $cuotaEndeudamiento = $utilidadNeta - $totalgastosfamiliares;
                     $solvencia = $patrimonio != 0 ? round(($pasivo / $patrimonio), 2) : 0;
-                    $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo)*100, 2) : 0;
+                    $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo) * 100, 2) : 0;
 
                     $rentabilidad = $totalVentas != 0 ? $utilidadNeta / $totalVentas : 0;
                     $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
                     $capitalTrabajo = 20000; // Asumiendo un valor para capital de trabajo
                     $indicadorCapitalTrabajo = $capitalTrabajo != 0 ? $totalPrestamos / $capitalTrabajo : 0;
 
-                    $Endeudamientopatrimonial = $patrimonio != 0 ? round((($pasivo + $totalPrestamos)/$patrimonio),2):0;
-                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo/$saldo_final),2) :0;
+                    $Endeudamientopatrimonial = $patrimonio != 0 ? round((($pasivo + $totalPrestamos) / $patrimonio), 2) : 0;
+                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo / $saldo_final), 2) : 0;
 
                     return view('admin.creditos.evaluacionproduccionempresa', compact(
                         'prestamo',
@@ -519,9 +530,10 @@ class creditoController extends Controller
                         'margenventas',
                         'Endeudamientopatrimonial',
                         'cuotaexcedente',
-                        'comentarioasesor'
-                    ));  
-                   
+                        'comentarioasesor',
+                        'comentarioadministrador',
+                        'modulo'
+                    ));
                 } else {
                     $totalVentas = round((($ventasdiarias->sum('promedio')) * $factormes), 2);
 
@@ -550,13 +562,13 @@ class creditoController extends Controller
                     $proporcion_ventas = $proyecciones->sum('proporcion_ventas');
                     // Cálculos
                     $utilidadBruta = $totalVentas - $totalCompras;
-                    $totalGastosOperativos = $gastosOperativos->sum(fn($gasto) => $gasto->precio_unitario * $gasto->cantidad);
+                    $totalGastosOperativos = $gastosOperativos->sum(fn ($gasto) => $gasto->precio_unitario * $gasto->cantidad);
                     $total_venta_credito = (($prestamo->porcentaje_credito) * $totalVentas) / 100;
 
-                    $totalinventarioterminado = $inventarioterminado->sum(fn($item) => $item->precio_unitario * $item->cantidad);
-                    $totalinventarioproceso = $inventarioproceso->sum(fn($item) => $item->precio_unitario * $item->cantidad);
+                    $totalinventarioterminado = $inventarioterminado->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
+                    $totalinventarioproceso = $inventarioproceso->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
 
-                    $totalinventariomateriales = $inventariomateriales !== null ? $inventariomateriales->sum(fn($item) => $item->precio_unitario * $item->cantidad) : 0;
+                    $totalinventariomateriales = $inventariomateriales !== null ? $inventariomateriales->sum(fn ($item) => $item->precio_unitario * $item->cantidad) : 0;
 
                     $total_inventario = $totalinventarioterminado + $totalinventarioproceso + $totalinventariomateriales;
 
@@ -575,13 +587,13 @@ class creditoController extends Controller
 
                     $utilidadOperativa = $utilidadBruta - $totalGastosOperativos;
                     $saldo_disponible_negocio = $utilidadOperativa - $totalcuotadeuda;
-                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
+                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                     $saldo_final = $saldo_disponible_negocio - $totalgastosfamiliares;
 
                     $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
                     $rotacion_inventario = $total_inventario != 0 ? round(($totalCompras / $total_inventario), 2) : 0;
                     $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
-                    $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo)*100, 2) : 0;
+                    $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo) * 100, 2) : 0;
                     $capital_trabajo = $activo_corriente - $deudas->sum('saldo_capital');
 
                     $totalCuotasCreditos = $deudas->sum('cuota');
@@ -589,20 +601,20 @@ class creditoController extends Controller
 
                     $margenventas = ($margenmanual->margen_utilidad) * 100;
 
-                    $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio)*100, 2) : 0;
+                    $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio) * 100, 2) : 0;
 
                     $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
                     $cuotaEndeudamiento = $utilidadNeta - $totalgastosfamiliares;
                     $solvencia = $patrimonio != 0 ? round(($pasivo / $patrimonio), 2) : 0;
-                    $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo)*100, 2) : 0;
+                    $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo) * 100, 2) : 0;
 
                     $rentabilidad = $totalVentas != 0 ? $utilidadNeta / $totalVentas : 0;
                     // $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
                     // $capitalTrabajo = 20000; // Asumiendo un valor para capital de trabajo
                     // $indicadorCapitalTrabajo = $capitalTrabajo != 0 ? $totalPrestamos / $capitalTrabajo : 0;
 
-                    $Endeudamientopatrimonial = $patrimonio != 0 ? round((($pasivo + $totalPrestamos)/$patrimonio),2):0;
-                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo/$saldo_final),2) :0;
+                    $Endeudamientopatrimonial = $patrimonio != 0 ? round((($pasivo + $totalPrestamos) / $patrimonio), 2) : 0;
+                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo / $saldo_final), 2) : 0;
 
                     return view('admin.creditos.evaluacionproduccionagricola', compact(
                         'prestamo',
@@ -646,9 +658,10 @@ class creditoController extends Controller
                         'margenventas',
                         'Endeudamientopatrimonial',
                         'cuotaexcedente',
-                        'comentarioasesor'
-                    ));  
-
+                        'comentarioasesor',
+                        'comentarioadministrador',
+                        'modulo'
+                    ));
                 }
         }
     }
@@ -738,7 +751,7 @@ class creditoController extends Controller
         $decodedData = $request->all();
         foreach ([
             'clientesArray', 'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'boletasArray', 'gastosProducirArray',
-            'inventarioArray1', 'ventasdiarias','inventarioprocesoArray','ventasMensualesArray','tipoProductoArray','gastosAgricolaArray','inventarioMaterialArray'
+            'inventarioArray1', 'ventasdiarias', 'inventarioprocesoArray', 'ventasMensualesArray', 'tipoProductoArray', 'gastosAgricolaArray', 'inventarioMaterialArray'
         ] as $key) {
             if ($request->filled($key)) {
                 $decodedData[$key] = json_decode($request->input($key), true);
@@ -911,11 +924,11 @@ class creditoController extends Controller
                     'proporcion_ventas' => $proyeccionData['proporcion_ventas'],
                     'id_prestamo' => $prestamoId,
                     'estado' => 'activo',
-                    'ingredientes'=>isset($proyeccionData['ingredientes'])?json_encode($proyeccionData['ingredientes']):null,
+                    'ingredientes' => isset($proyeccionData['ingredientes']) ? json_encode($proyeccionData['ingredientes']) : null,
                 ]);
             }
         }
-    
+
         if (isset($data['ventasdiarias']) && is_array($data['ventasdiarias'])) {
             foreach ($data['ventasdiarias'] as $venta) {
                 \App\Models\VentasDiarias::create([
@@ -927,7 +940,7 @@ class creditoController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['deudasFinancierasArray']) && is_array($data['deudasFinancierasArray'])) {
             foreach ($data['deudasFinancierasArray'] as $deudaData) {
                 \App\Models\DeudasFinancieras::create([
@@ -940,7 +953,7 @@ class creditoController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['gastosOperativosArray']) && is_array($data['gastosOperativosArray'])) {
             foreach ($data['gastosOperativosArray'] as $gastoData) {
                 \App\Models\GastosOperativos::create([
@@ -952,7 +965,7 @@ class creditoController extends Controller
                 ]);
             }
         }
-    
+
         // Pasó a ser gastos familiar para avanzar
         if (isset($data['inventarioArray1']) && is_array($data['inventarioArray1'])) {
             foreach ($data['inventarioArray1'] as $inventarioData) {
@@ -964,7 +977,7 @@ class creditoController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['inventarioprocesoArray']) && is_array($data['inventarioprocesoArray'])) {
             foreach ($data['inventarioprocesoArray'] as $inventarioData) {
                 \App\Models\Inventario::create([
@@ -973,7 +986,7 @@ class creditoController extends Controller
                     'cantidad' => $inventarioData['cantidad'],
                     'id_prestamo' => $prestamoId,
                     'unidad' => $inventarioData['unidad'],
-                    'tipo_inventario'=>2,
+                    'tipo_inventario' => 2,
                 ]);
             }
         }
@@ -985,11 +998,11 @@ class creditoController extends Controller
                     'cantidad' => $inventarioData['cantidad'],
                     'id_prestamo' => $prestamoId,
                     'unidad' => $inventarioData['unidad'],
-                    'tipo_inventario'=>1,
+                    'tipo_inventario' => 1,
                 ]);
             }
         }
-    
+
         if (isset($data['boletasArray']) && is_array($data['boletasArray'])) {
             foreach ($data['boletasArray'] as $boletaData) {
                 \App\Models\Boleta::create([
@@ -1001,8 +1014,8 @@ class creditoController extends Controller
                 ]);
             }
         }
-        
-    
+
+
         if (isset($data['gastosProducirArray']) && is_array($data['gastosProducirArray']) && count($data['gastosProducirArray']) > 0) {
             $gasto = \App\Models\GastoProducir::create([
                 'nombre_actividad' => $request->nombre_actividad,
@@ -1022,36 +1035,36 @@ class creditoController extends Controller
                 ]);
             }
         }
-       
+
         if (isset($data['ventasMensualesArray']) && is_array($data['ventasMensualesArray'])) {
             foreach ($data['ventasMensualesArray'] as $boletaData) {
                 \App\Models\VentasMensuales::create([
-                    'mes'=> $boletaData['mes'],
-                    'porcentaje'=> $boletaData['porcentaje'],
+                    'mes' => $boletaData['mes'],
+                    'porcentaje' => $boletaData['porcentaje'],
                     'id_prestamo' => $prestamoId
-                   
+
                 ]);
             }
         }
         if (isset($data['gastosAgricolaArray']) && is_array($data['gastosAgricolaArray'])) {
-            $total=0;
-            
+            $total = 0;
+
             \App\Models\ProductoAgricola::create([
                 'id_prestamo' => $prestamoId,
                 'nombre_actividad' => $request->nombre_actividad,
-                'unidad_medida_siembra'=> $request->cantidad_terreno,
-                'hectareas'=> $request->cantidad_cultivar??0,
-                'cantidad_cultivar'=> $request->cantidad_cultivar,
-                'unidad_medida_venta'=> $request->unidad_medida_venta,
-                'rendimiento_unidad_siembra'=> $request->rendimiento_unidad_siembra,
-                'ciclo_productivo_meses'=> $request->ciclo_productivo,
-                'mes_inicio'=> $request->mes_inicio,
+                'unidad_medida_siembra' => $request->cantidad_terreno,
+                'hectareas' => $request->cantidad_cultivar ?? 0,
+                'cantidad_cultivar' => $request->cantidad_cultivar,
+                'unidad_medida_venta' => $request->unidad_medida_venta,
+                'rendimiento_unidad_siembra' => $request->rendimiento_unidad_siembra,
+                'ciclo_productivo_meses' => $request->ciclo_productivo,
+                'mes_inicio' => $request->mes_inicio,
             ]);
             foreach ($data['gastosAgricolaArray'] as $gastoData) {
-                $suma=0;
-                $row=\App\Models\GastosOperativos::create([
+                $suma = 0;
+                $row = \App\Models\GastosOperativos::create([
                     'descripcion' => $gastoData['gasto'],
-                    'precio_unitario' => !empty($gastoData['precioUnitario']) ? $gastoData['precioUnitario']: 0,
+                    'precio_unitario' => !empty($gastoData['precioUnitario']) ? $gastoData['precioUnitario'] : 0,
                     'cantidad' => 0,
                     'id_prestamo' => $prestamoId,
                     'acciones' => 'activo',
@@ -1081,14 +1094,13 @@ class creditoController extends Controller
                 $mes10 = !empty($gastoData['mes10']) ? $gastoData['mes10'] : 0;
                 $mes11 = !empty($gastoData['mes11']) ? $gastoData['mes11'] : 0;
                 $mes12 = !empty($gastoData['mes12']) ? $gastoData['mes12'] : 0;
-                
+
                 $suma = $mes1 + $mes2 + $mes3 + $mes4 + $mes5 + $mes6 + $mes7 + $mes8 + $mes9 + $mes10 + $mes11 + $mes12;
-                
+
                 $row->cantidad = $suma;
                 $row->save();
-                $total=$total+$suma;
+                $total = $total + $suma;
             }
-
         }
         if (isset($data['inventarioMaterialArray']) && is_array($data['inventarioMaterialArray'])) {
             foreach ($data['inventarioMaterialArray'] as $inventarioData) {
@@ -1098,22 +1110,21 @@ class creditoController extends Controller
                     'cantidad' => $inventarioData['cantidad'],
                     'id_prestamo' => $prestamoId,
                     'unidad' => $inventarioData['unidad'],
-                    'tipo_inventario'=>3,
+                    'tipo_inventario' => 3,
                 ]);
             }
         }
         if (isset($data['tipoProductoArray']) && is_array($data['tipoProductoArray'])) {
             foreach ($data['tipoProductoArray'] as $inventarioData) {
                 \App\Models\TipoProducto::create([
-                    'producto'=> $inventarioData['PRODUCTO'],
-                    'precio'=>  !empty($inventarioData['precio_unitario'])??0,
-                    'porcentaje'=> !empty( $inventarioData['procentaje_producto'])??0,
+                    'producto' => $inventarioData['PRODUCTO'],
+                    'precio' =>  !empty($inventarioData['precio_unitario']) ?? 0,
+                    'porcentaje' => !empty($inventarioData['procentaje_producto']) ?? 0,
                     'id_prestamo' => $prestamoId,
-                 
+
                 ]);
             }
         }
-        
     }
     public function calcularCuota($monto, $tea, $periodos)
     {
@@ -1128,7 +1139,7 @@ class creditoController extends Controller
         $credito =  \App\Models\credito::find($id);
 
         $clientes =  \App\Models\CreditoCliente::with('clientes')
-                    ->where('prestamo_id', $id)->get();
+            ->where('prestamo_id', $id)->get();
         $activos =  \App\Models\Activos::where('prestamo_id', $id)->first();
         $proyeccionesVentas =  \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
         $ventasDiarias = \App\Models\VentasDiarias::where('prestamo_id', $id)->get();
@@ -1138,7 +1149,7 @@ class creditoController extends Controller
         $inventario =  \App\Models\Inventario::where('id_prestamo', $id)->get();
         $boletas =  \App\Models\Boleta::where('id_prestamo', $id)->get();
         $gastosProducir =  \App\Models\GastoProducir::where('id_prestamo', $id)->with('gastos')->get();
-    
+
         return response()->json([
             'credito' => $credito,
             'clientes' => $clientes,
@@ -1160,7 +1171,7 @@ class creditoController extends Controller
     public function edit($id)
     {
         // $cliente = cliente::findOrFail($id);
-        return view('admin.creditos.edit',compact('id'));
+        return view('admin.creditos.edit', compact('id'));
     }
 
     /**

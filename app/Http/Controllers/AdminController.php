@@ -15,12 +15,12 @@ class AdminController extends Controller
 
     public function aprobar(Request $request){
         $credito = Credito::find($request->id);
-        $credito->estado = 'Revisado';
-        $credito->comentario_asesor = $request->comentario;
+        $credito->estado = 'aprobado';
+        $credito->comentario_administrador = $request->comentarioadministrador;
         $credito->save();
 
         return response()->json([
-            'redirect' => route('creditos.index'),
+            'redirect' => route('creditos.aprobar'),
             'mensaje' => 'El crédito ha sido aprobado correctamente',
             'icono' => 'success'
         ]);
@@ -28,12 +28,12 @@ class AdminController extends Controller
 
     public function rechazar(Request $request){
         $credito = Credito::find($request->id);
-        $credito->estado = 'Pendiente';
-        $credito->comentario_asesor = $request->comentario;
+        $credito->estado = 'rechazado';
+        $credito->comentario_administrador = $request->comentarioadministrador;
         $credito->save();
 
         return response()->json([
-            'redirect' => route('creditos.index'),
+            'redirect' => route('creditos.aprobar'),
             'mensaje' => 'El crédito ha sido rechazado correctamente',
             'icono' => 'success'
         ]);
