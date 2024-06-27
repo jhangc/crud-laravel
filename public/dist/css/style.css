@@ -40,10 +40,12 @@
 }
 
 .evaluacion h6{
-    color: red;
+    color: #000 !important;
     width: 100%;
     margin-left: 10px;
 }
+
+
 .evaluacion h3{
     width: 100%;
     font-weight: 600;

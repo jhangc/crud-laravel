@@ -111,27 +111,27 @@
                             <tr>
                                 {{-- activo corriente mas fijo  --}}
                                 <td><b>Activo</b></td>
-                                <td>{{ $activo}}</td>
+                                <td>{{ $activo }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 20px;">Activo corriente (circulante)</td>
-                                <td> {{ $activo_corriente}}</td>
+                                <td> {{ $activo_corriente }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Disponible (caja y bancos)</td>
-                                <td>{{ $saldo_en_caja_bancos}}</td>
+                                <td>{{ $saldo_en_caja_bancos }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Cuentas por cobrar</td>
-                                <td>{{ $cuenta_cobrar}}</td>
+                                <td>{{ $cuenta_cobrar }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Adelanto a proveedores</td>
-                                <td>{{ $adelanto_proveedores}}</td>
+                                <td>{{ $adelanto_proveedores }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 40px;">Inventario</td>
-                                <td>{{ $total_inventario}}</td>
+                                <td>{{ $total_inventario }}</td>
                             </tr>
 
                             <tr>
@@ -172,7 +172,7 @@
             </div>
         </div>
 
-        
+
 
         <div class="col-md-6">
             <div class="card card-outline card-warning">
@@ -221,7 +221,7 @@
                                 <td>{{ number_format($totalgastosfamiliares, 2) }}</td>
                             </tr>
                             <tr>
-                                <td>Saldo final dsiponible</td>
+                                <td>Saldo final disponible</td>
                                 <td>{{ $saldo_final }}</td>
                             </tr>
 
@@ -244,101 +244,116 @@
                             <tr>
                                 <th>Descripción</th>
                                 <th>Valor</th>
+                                <th>resultado esperado</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 {{-- colocar dle cuadro del excel  --}}
                                 <td>Rentabilidad del negocio (%)</td>
-                                <td>{{$margenventas}}%</td>
+                                <td>{{ $margenventas }}%</td>
+                                <td>Es el margen generico segun actividad</td>
                             </tr>
-                            {{-- <tr>
-                                {{-- division entre saldo total disponible y ventas total
-                                <td>Rentabilidad de las ventas (compra venta)</td>
-                                <td>{{ $margenporcentaje }}%</td>
-                            </tr> --}}
                             <tr>
                                 {{-- division entre saldo total disponible y ventas total  --}}
                                 <td>Rentabilidad de las ventas</td>
                                 <td>{{ $rentabilidad_ventas }}%</td>
+                                <td>tiene que ser +- 5 de la rentabilidad</td>
                             </tr>
                             <tr>
                                 {{-- total costo / total inventario --}}
                                 <td>Rotación de inventario (en días)</td>
-                                <td>{{ $rotacion_inventario}}</td>
+                                <td>{{ $rotacion_inventario }}</td>
+                                <td>cada que tiempo se compra producto en días</td>
                             </tr>
                             <tr>
                                 {{-- activo corriente / pasivo corriente --}}
                                 <td>Liquidez</td>
-                                <td>{{ $liquidez}}</td>
+                                <td>{{ $liquidez }}</td>
+                                <td>tiene que ser (>1)</td>
                             </tr>
                             <tr>
                                 {{-- UTILIDAD NETA / ACTIVOS TOTALES --}}
                                 <td>ROA (%)</td>
-                                <td>{{ $roa}}</td>
+                                <td>{{ $roa }}%</td>
+                                <td>tiene que ser (>5%)</td>
                             </tr>
                             <tr>
                                 {{-- ACTIVO CORRIENTE - PASIVO CORRIENTE --}}
                                 <td>Capital de trabajo (S/.)</td>
-                                <td>{{ $capital_trabajo}}</td>
+                                <td>{{ $capital_trabajo }}</td>
+                                <td>tiene que ser mayor al prestamo</td>
                             </tr>
                             <tr>
                                 {{-- UTILIDAD NETA / PATRIMONIO NETO --}}
                                 <td>ROE (%)</td>
-                                <td>{{ $roe}}</td>
+                                <td>{{ $roe }}%</td>
+                                <td>tiene que ser (>10%)</td>
                             </tr>
                             <tr>
                                 {{-- PASIVO TOTAL / PATRIMONIO NETO --}}
                                 <td>Solvencia</td>
-                                <td>{{ $solvencia}}</td>
+                                <td>{{ $solvencia }}</td>
+                                <td>tiene que ser (<=1)< /td>
                             </tr>
                             <tr>
                                 {{-- PASIVO TOTAL / ACTIVO TOTAL  --}}
                                 <td>Indice de endeudamiento</td>
-                                <td>{{ $indice_endeudamiento}}</td>
+                                <td>{{ $indice_endeudamiento }}%</td>
+                                <td>tiene que ser (<=40%)< /td>
                             </tr>
 
                             <tr>
                                 {{-- PASIVO TOTAL / ACTIVO TOTAL  --}}
                                 <td>Cuota de endeudamiento</td>
-                                <td>{{ $saldo_final}}</td>
+                                <td>{{ $saldo_final }}</td>
+                                <td>tiene que ser mayor a la cuota propuesta</td>
+                            </tr>
+
+                            <tr>
+                                {{-- PASIVO TOTAL + prestamos / patrimonio --}}
+                                <td>Endeudamiento patrimonial</td>
+                                <td>{{ $Endeudamientopatrimonial }}</td>
+                                <td>tiene que ser (<=1)< /td>
+
+                            </tr>
+                            <tr>
+                                {{-- cuota de prestamo / saldo final --}}
+                                <td>cuotaexcedente</td>
+                                <td>{{ $cuotaexcedente }}</td>
+                                <td>tiene que ser (<1)< /td>
                             </tr>
 
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div> 
-    </div><div class="row" style="text-align:center;">
-        <div class="col-md-12 mb-5">
-            <div class="form-group">
-            <input type="hidden" value="<?=$prestamo->id?>" id="credito_id">
-                <label for="comentario">Comentario:</label>
-                <textarea name="comentario" id="comentario" class="form-control" rows="3" required></textarea>
-            </div>
-            <button type="button" onclick="confirmarAccion('aprobar')" class="btn btn-primary btnprestamo">Aprobar</button>
-            <button type="button" onclick="confirmarAccion('rechazar')" class="btn btn-warning btnprestamo">Rechazar</button>
         </div>
     </div>
 
-    
+
+    <div class="row" style="text-align:center;">
+        <div class="col-md-12 mb-5">
+            <div class="form-group">
+                <input type="hidden" value="<?= $prestamo->id ?>" id="credito_id">
+                <label for="comentario">Comentario:</label>
+                <textarea name="comentario" id="comentario" class="form-control" rows="3" style="color: black;" required><?php if (isset($comentarioasesor) && !empty($comentarioasesor)) {
+                    echo htmlspecialchars($comentarioasesor, ENT_QUOTES, 'UTF-8');
+                } ?></textarea>
+            </div>
+            <button type="button" onclick="confirmarAccion('guardar')" class="btn btn-primary btnprestamo">Guardar</button>
+            <a href="{{ url('admin/creditos') }}" class="btn btn-warning btnprestamo">Cancelar</a>
+        </div>
+    </div>
+
+
     <script>
         function confirmarAccion(accion) {
-            var comentario = document.getElementById('comentario').value;
-            if (!comentario) {
-                alert('El comentario es obligatorio.');
-                return;
-            }
-            var confirmacion = confirm('¿Está seguro que desea ' + (accion === 'aprobar' ? 'aprobar' : 'rechazar') + ' este crédito?');
-            if (confirmacion) {
-                enviarSolicitud(accion, comentario);
-            }
-        }
+            const comentario = document.getElementById('comentario').value;
+            const creditoid = document.getElementById('credito_id').value;
 
-        function enviarSolicitud(accion, comentario) {
-            var creditoid = document.getElementById('credito_id').value;
             $.ajax({
-                url: '{{ url("/admin/credito") }}/' + accion,
+                url: '{{ url('/admin/credito') }}/' + accion,
                 type: 'GET',
                 data: {
                     _token: '{{ csrf_token() }}',

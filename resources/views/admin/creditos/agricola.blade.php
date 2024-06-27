@@ -184,6 +184,8 @@
                                             <option value="kilos" selected>Kg</option>
                                             <option value="qq">Quintales</option>
                                             <option value="unidades">unidades</option>
+                                            <option value="sacos">sacos</option>
+                                            <option value="toneladas">toneladas</option>
                                         </select>
                                     </div>
                                 </div>
@@ -291,6 +293,8 @@
                                             <option value="kg">Kilos</option>
                                             <option value="m">metros</option>
                                             <option value="l">litros</option>
+                                            <option value="sacos">sacos</option>
+                                            <option value="toneladas">toneladas</option>
                                         </select>
                                     </div>
                                 </div>
@@ -335,7 +339,7 @@
                             </table>
                         </div>
                     </div>
-                    <div class="card card-outline card-warning" id="inventario_materiales">
+                    {{-- <div class="card card-outline card-warning" id="inventario_materiales">
                         <div class="card-header">
                             <h3 class="card-title">Inventario de materiales</h3>
                         </div>
@@ -356,6 +360,8 @@
                                             <option value="kg">Kilos</option>
                                             <option value="m">metros</option>
                                             <option value="l">litros</option>
+                                            <option value="sacos">sacos</option>
+                                            <option value="toneladas">toneladas</option>
                                         </select>
                                     </div>
                                 </div>
@@ -399,7 +405,7 @@
                                 </tfoot>
                             </table>
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="card card-outline card-secondary">
                         <div class="card-header">
                             <h3 class="card-title">Datos del la Garantia</h3>

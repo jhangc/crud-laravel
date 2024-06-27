@@ -15,7 +15,7 @@ class AdminController extends Controller
 
     public function aprobar(Request $request){
         $credito = Credito::find($request->id);
-        $credito->estado = 'aprobado';
+        $credito->estado = 'Revisado';
         $credito->comentario_asesor = $request->comentario;
         $credito->save();
 
@@ -28,7 +28,7 @@ class AdminController extends Controller
 
     public function rechazar(Request $request){
         $credito = Credito::find($request->id);
-        $credito->estado = 'rechazado';
+        $credito->estado = 'Pendiente';
         $credito->comentario_asesor = $request->comentario;
         $credito->save();
 
@@ -38,4 +38,18 @@ class AdminController extends Controller
             'icono' => 'success'
         ]);
     }
+
+    public function guardar(Request $request){
+        $credito = Credito::find($request->id);
+        $credito->estado = 'revisado';
+        $credito->comentario_asesor = $request->comentario;
+        $credito->save();
+
+        return response()->json([
+            'redirect' => route('creditos.index'),
+            'mensaje' => 'El crédito ha sido revisado correctamente',
+            'icono' => 'success'
+        ]);
+    }
+
 }

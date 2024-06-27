@@ -79,6 +79,8 @@
                                     <td>
                                         @if ($credito->estado == 'pendiente')
                                             <span style="background-color: yellow; padding: 3px 10px; border-radius: 5px;">Pendiente</span>
+                                        @elseif($credito->estado == 'revisado')
+                                            <span style="background-color: orange; padding: 3px 10px; border-radius: 5px;">Revisado</span>
                                         @elseif($credito->estado == 'rechazado')
                                             <span style="background-color: red; padding: 3px 10px; border-radius: 5px;">Rechazado</span>
                                         @elseif($credito->estado == 'aprobado')

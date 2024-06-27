@@ -106,6 +106,8 @@ class creditoController extends Controller
 
         $tipo = $prestamo->tipo;
 
+        $comentarioasesor = $prestamo->comentario_asesor;
+
         // Calcular Totales
         $factorsemana = 15 / 7;
         $factormes = $factorsemana * 2;
@@ -162,24 +164,27 @@ class creditoController extends Controller
                 $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
                 $rotacion_inventario = $total_inventario != 0 ? round(($totalCompras / $total_inventario), 2) : 0;
                 $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
-                $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo), 2) : 0;
+                $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo)*100, 2) : 0;
                 $capital_trabajo = $activo_corriente - $deudas->sum('saldo_capital');
 
                 $totalCuotasCreditos = $deudas->sum('cuota');
                 $totalPrestamos = $prestamo->monto_total;
                 $patrimonio = $activo - $pasivo;
 
-                $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio), 2) : 0;
+                $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio)*100, 2) : 0;
 
                 $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
                 $cuotaEndeudamiento = $utilidadNeta - $totalgastosfamiliares;
                 $solvencia = $patrimonio != 0 ? round(($pasivo / $patrimonio), 2) : 0;
-                $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo), 2) : 0;
+                $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo)*100, 2) : 0;
 
                 $rentabilidad = $totalVentas != 0 ? $utilidadNeta / $totalVentas : 0;
                 $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
                 $capitalTrabajo = 20000; // Asumiendo un valor para capital de trabajo
                 $indicadorCapitalTrabajo = $capitalTrabajo != 0 ? $totalPrestamos / $capitalTrabajo : 0;
+
+                $Endeudamientopatrimonial = $patrimonio != 0 ? round((($pasivo + $totalPrestamos)/$patrimonio),2):0;
+                $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo/$saldo_final),2) :0;
 
                 return view('admin.creditos.proyeccionesmargen', compact(
                     'prestamo',
@@ -226,7 +231,11 @@ class creditoController extends Controller
                     'totalcuotadeuda',
                     'totalprestamo',
                     'cuotaprestamo',
-                    'margenventas'
+                    'margenventas',
+                    'Endeudamientopatrimonial',
+                    'cuotaexcedente',
+                    'comentarioasesor'
+
                 ));          
             case 'servicio':
                 if ($prestamo->producto == "microempresa") {
@@ -266,15 +275,16 @@ class creditoController extends Controller
                     $saldo_disponible_negocio = $margensoles - $totalcuotadeuda;
                     $saldo_final = $saldo_disponible_negocio - $totalgastosfamiliares;
 
-                    $margenventas = $margenmanual->margen_utilidad;
+                    $margenventas = ($margenmanual->margen_utilidad)*100;
 
-                    $rentabilidad_ventas = $totalVentas != 0 ? round(($saldo_disponible_negocio / $totalVentas), 2) : 0;
+                    $rentabilidad_ventas = $totalVentas != 0 ? round(($saldo_disponible_negocio / $totalVentas)*100, 2) : 0;
                     $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
-                    $roe = $patrimonioneto != 0 ? round(($saldo_disponible_negocio / $patrimonioneto), 2) : 0;
+                    $roe = $patrimonioneto != 0 ? round(($saldo_disponible_negocio / $patrimonioneto)*100, 2) : 0;
                     $solvencia = $patrimonioneto != 0 ? round(($pasivo / $patrimonioneto), 2) : 0;
-                    $roa = $totalactivo != 0 ? round(($saldo_disponible_negocio / $totalactivo), 2) : 0;
+                    $roa = $totalactivo != 0 ? round(($saldo_disponible_negocio / $totalactivo)*100, 2) : 0;
                     $capital_trabajo = $activo_corriente - $pasivo;
-                    $indice_endeudamiento = $totalactivo != 0 ? round(($pasivo / $totalactivo), 2) : 0;
+                    $indice_endeudamiento = $totalactivo != 0 ? round(($pasivo / $totalactivo)*100, 2) : 0;
+                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo/$saldo_final),2) :0;
 
                     return view('admin.creditos.evaluacionserviciomicroempresa', compact(
                         'prestamo',
@@ -312,17 +322,15 @@ class creditoController extends Controller
                         'roe',
                         'solvencia',
                         'indice_endeudamiento',
-                        'totalcuotadeuda'
+                        'totalcuotadeuda',
+                        'cuotaexcedente',
+                        'comentarioasesor'
                     ));
                 } else {
                     $totalVentas = round(($boletas->sum('total_boleta')));
 
                     $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                     $totalCompras = $totalgastosfamiliares;
-    
-    
-                    //utilidad bruta
-
                     //utilidad bruta
                     $margensoles = $totalVentas - $totalCompras;
                     $margenporcentaje = $totalVentas != 0 ? round(((1 - ($totalCompras / $totalVentas)) * 100), 2) : 0;
@@ -351,12 +359,9 @@ class creditoController extends Controller
                     $indice_endeudamiento = $totalactivo != 0 ? round(($pasivo / $totalactivo), 2) : 0;
 
                     $cuotaendeudamiento = $saldo_final - $totalcuotadeuda;
+                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo/$saldo_final),2) :0;
    
-   
-    
-
-    
-                    return view('admin.creditos.evaluacionservicioconsumo', compact(
+                        return view('admin.creditos.evaluacionservicioconsumo', compact(
                         'prestamo',
                         'cliente',
                         'totalprestamo',
@@ -384,7 +389,9 @@ class creditoController extends Controller
                         'solvencia',
                         'indice_endeudamiento',
                         'cuotaendeudamiento',
-                        'totalcuotadeuda'
+                        'totalcuotadeuda',
+                        'cuotaexcedente',
+                        'comentarioasesor'
                     ));
                 }
             case 'produccion':
@@ -447,7 +454,7 @@ class creditoController extends Controller
                     $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
                     $rotacion_inventario = $total_inventario != 0 ? round(($totalCompras / $total_inventario), 2) : 0;
                     $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
-                    $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo), 2) : 0;
+                    $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo)*100, 2) : 0;
                     $capital_trabajo = $activo_corriente - $deudas->sum('saldo_capital');
 
                     $totalCuotasCreditos = $deudas->sum('cuota');
@@ -455,17 +462,20 @@ class creditoController extends Controller
 
                     $margenventas = ($margenmanual->margen_utilidad) * 100;
 
-                    $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio), 2) : 0;
+                    $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio)*100, 2) : 0;
 
                     $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
                     $cuotaEndeudamiento = $utilidadNeta - $totalgastosfamiliares;
                     $solvencia = $patrimonio != 0 ? round(($pasivo / $patrimonio), 2) : 0;
-                    $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo), 2) : 0;
+                    $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo)*100, 2) : 0;
 
                     $rentabilidad = $totalVentas != 0 ? $utilidadNeta / $totalVentas : 0;
                     $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
                     $capitalTrabajo = 20000; // Asumiendo un valor para capital de trabajo
                     $indicadorCapitalTrabajo = $capitalTrabajo != 0 ? $totalPrestamos / $capitalTrabajo : 0;
+
+                    $Endeudamientopatrimonial = $patrimonio != 0 ? round((($pasivo + $totalPrestamos)/$patrimonio),2):0;
+                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo/$saldo_final),2) :0;
 
                     return view('admin.creditos.evaluacionproduccionempresa', compact(
                         'prestamo',
@@ -506,7 +516,10 @@ class creditoController extends Controller
                         'totalcuotadeuda',
                         'totalprestamo',
                         'cuotaprestamo',
-                        'margenventas'
+                        'margenventas',
+                        'Endeudamientopatrimonial',
+                        'cuotaexcedente',
+                        'comentarioasesor'
                     ));  
                    
                 } else {
@@ -568,7 +581,7 @@ class creditoController extends Controller
                     $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
                     $rotacion_inventario = $total_inventario != 0 ? round(($totalCompras / $total_inventario), 2) : 0;
                     $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
-                    $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo), 2) : 0;
+                    $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo)*100, 2) : 0;
                     $capital_trabajo = $activo_corriente - $deudas->sum('saldo_capital');
 
                     $totalCuotasCreditos = $deudas->sum('cuota');
@@ -576,17 +589,20 @@ class creditoController extends Controller
 
                     $margenventas = ($margenmanual->margen_utilidad) * 100;
 
-                    $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio), 2) : 0;
+                    $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio)*100, 2) : 0;
 
                     $utilidadNeta = $utilidadBruta - $totalCuotasCreditos;
                     $cuotaEndeudamiento = $utilidadNeta - $totalgastosfamiliares;
                     $solvencia = $patrimonio != 0 ? round(($pasivo / $patrimonio), 2) : 0;
-                    $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo), 2) : 0;
+                    $indice_endeudamiento = $activo != 0 ? round(($pasivo / $activo)*100, 2) : 0;
 
                     $rentabilidad = $totalVentas != 0 ? $utilidadNeta / $totalVentas : 0;
-                    $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
-                    $capitalTrabajo = 20000; // Asumiendo un valor para capital de trabajo
-                    $indicadorCapitalTrabajo = $capitalTrabajo != 0 ? $totalPrestamos / $capitalTrabajo : 0;
+                    // $indicadorInventario = $inventario->sum('precio_unitario') != 0 ? $totalPrestamos / $inventario->sum('precio_unitario') : 0;
+                    // $capitalTrabajo = 20000; // Asumiendo un valor para capital de trabajo
+                    // $indicadorCapitalTrabajo = $capitalTrabajo != 0 ? $totalPrestamos / $capitalTrabajo : 0;
+
+                    $Endeudamientopatrimonial = $patrimonio != 0 ? round((($pasivo + $totalPrestamos)/$patrimonio),2):0;
+                    $cuotaexcedente = $saldo_final != 0 ? round(($cuotaprestamo/$saldo_final),2) :0;
 
                     return view('admin.creditos.evaluacionproduccionagricola', compact(
                         'prestamo',
@@ -627,7 +643,10 @@ class creditoController extends Controller
                         'totalcuotadeuda',
                         'totalprestamo',
                         'cuotaprestamo',
-                        'margenventas'
+                        'margenventas',
+                        'Endeudamientopatrimonial',
+                        'cuotaexcedente',
+                        'comentarioasesor'
                     ));  
 
                 }

@@ -21,45 +21,7 @@
 
      <div class="row">
 
-        <div class="col-md-6">
-            <div class="card card-outline card-warning">
-                <div class="card-header">
-                    <h3 class="card-title">Gastos familiares</h3>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Descripción</th>
-                                <th>Monto en S/.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $totalGastosFamiliares = 0;
-                            @endphp
-                            @foreach ($gastosfamiliares as $gasto)
-                            @php
-                                $subtotal = $gasto->precio_unitario * $gasto->cantidad;
-                                $totalGastosFamiliares += $subtotal;
-                            @endphp
-                            <tr>
-                                <td>{{ $gasto->descripcion }}</td>
-                                <td>{{ number_format($subtotal, 2) }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td><b><i>Total</i></b></td>
-                                <td>{{ number_format($totalgastosfamiliares, 2) }}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-
+        
         <div class="col-md-6">
             <div class="card card-outline card-warning">
                 <div class="card-header">
@@ -127,21 +89,24 @@
                             <tr>
                                 <th>Descripción</th>
                                 <th>Valor</th>
+                                <th>resultado esperado</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Total Garantia</td>
+                                <td>Total Garantia (S/.)</td>
                                 <td>{{ number_format($totalgarantia,2) }}</td>
+                                <td>tiene que ser mayor o igual al total de crédito</td>
                             </tr>
                             <tr>
-                                <td>Total Saldo de prestamos</td>
+                                <td>Total Saldo de prestamos (S/.)</td>
                                 <td>{{ number_format($totalgastosfinancieros,2) }}</td>
                             </tr>
                             <tr>
                                 {{-- PASIVO TOTAL / PATRIMONIO NETO  --}}
                                 <td>Solvencia</td>
                                 <td>{{ $solvencia}}</td>
+                                <td>tiene que ser (<=1)</td>
                             </tr>
                             {{-- <tr>
                                 {{-- PASIVO TOTAL / ACTIVO TOTAL 
@@ -151,6 +116,13 @@
                             <tr>
                                 <td>Cuota de endeudamiento</td>
                                 <td>{{  number_format($saldo_final,2)}}</td>
+                                <td>tiene que ser mayor a la cuota del credito</td>
+                            </tr>
+                            <tr>
+                                {{-- cuota de prestamo / saldo final --}}
+                                <td>cuotaexcedente</td>
+                                <td>{{ $cuotaexcedente}}</td>
+                                <td>tiene que ser (<1)</td>
                             </tr>
 
                         </tbody>
@@ -162,33 +134,25 @@
     <div class="row" style="text-align:center;">
         <div class="col-md-12 mb-5">
             <div class="form-group">
-            <input type="hidden" value="<?=$prestamo->id?>" id="credito_id">
+                <input type="hidden" value="<?= $prestamo->id ?>" id="credito_id">
                 <label for="comentario">Comentario:</label>
-                <textarea name="comentario" id="comentario" class="form-control" rows="3" required></textarea>
+                <textarea name="comentario" id="comentario" class="form-control" rows="3" style="color: black;" required><?php if (isset($comentarioasesor) && !empty($comentarioasesor)) {
+                    echo htmlspecialchars($comentarioasesor, ENT_QUOTES, 'UTF-8');
+                } ?></textarea>
             </div>
-            <button type="button" onclick="confirmarAccion('aprobar')" class="btn btn-primary btnprestamo">Aprobar</button>
-            <button type="button" onclick="confirmarAccion('rechazar')" class="btn btn-warning btnprestamo">Rechazar</button>
+            <button type="button" onclick="confirmarAccion('guardar')" class="btn btn-primary btnprestamo">Guardar</button>
+            <a href="{{ url('admin/creditos') }}" class="btn btn-warning btnprestamo">Cancelar</a>
         </div>
     </div>
 
-    
+
     <script>
         function confirmarAccion(accion) {
-            var comentario = document.getElementById('comentario').value;
-            if (!comentario) {
-                alert('El comentario es obligatorio.');
-                return;
-            }
-            var confirmacion = confirm('¿Está seguro que desea ' + (accion === 'aprobar' ? 'aprobar' : 'rechazar') + ' este crédito?');
-            if (confirmacion) {
-                enviarSolicitud(accion, comentario);
-            }
-        }
+            const comentario = document.getElementById('comentario').value;
+            const creditoid = document.getElementById('credito_id').value;
 
-        function enviarSolicitud(accion, comentario) {
-            var creditoid = document.getElementById('credito_id').value;
             $.ajax({
-                url: '{{ url("/admin/credito") }}/' + accion,
+                url: '{{ url('/admin/credito') }}/' + accion,
                 type: 'GET',
                 data: {
                     _token: '{{ csrf_token() }}',

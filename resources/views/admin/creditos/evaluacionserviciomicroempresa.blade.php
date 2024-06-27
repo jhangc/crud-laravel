@@ -21,7 +21,7 @@
     </div>
 
      <div class="row">
-        <div class="col-md-6">
+        {{-- <div class="col-md-6">
             <div class="card card-outline card-warning">
                 <div class="card-header">
                     <h3 class="card-title">Resumen del negocio</h3>
@@ -76,7 +76,7 @@
                     </table>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <div class="col-md-6">
             <div class="card card-outline card-warning">
@@ -147,45 +147,6 @@
         <div class="col-md-6">
             <div class="card card-outline card-warning">
                 <div class="card-header">
-                    <h3 class="card-title">Gastos familiares</h3>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Descripción</th>
-                                <th>Monto en S/.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $totalGastosFamiliares = 0;
-                            @endphp
-                            @foreach ($gastosfamiliares as $gasto)
-                            @php
-                                $subtotal = $gasto->precio_unitario * $gasto->cantidad;
-                                $totalGastosFamiliares += $subtotal;
-                            @endphp
-                            <tr>
-                                <td>{{ $gasto->descripcion }}</td>
-                                <td>{{ number_format($subtotal, 2) }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td><b><i>Total</i></b></td>
-                                <td>{{ number_format($totalgastosfamiliares, 2) }}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card card-outline card-warning">
-                <div class="card-header">
                     <h3 class="card-title">Saldo Total negocio</h3>
                 </div>
                 <div class="card-body">
@@ -245,48 +206,63 @@
                             <tr>
                                 <th>Descripción</th>
                                 <th>Valor</th>
+                                <th>resultado esperado</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 {{-- colocar dle cuadro del excel  --}}
                                 <td>Rentabilidad del negocio (%)</td>
-                                <td>{{$margenventas}}</td>
+                                <td>{{$margenventas}}%</td>
+                                <td>Es el margen generico segun actividad</td>
                             </tr>
                             <tr>
                                 {{-- division entre saldo total disponible y ventas total  --}}
                                 <td>Rentabilidad de las ventas (%)</td>
-                                <td>{{ $rentabilidad_ventas }}</td>
+                                <td>{{ $rentabilidad_ventas }}%</td>
+                                <td>tiene que ser +- 5 de la rentabilidad</td>
                             </tr>
                             <tr>
                                 {{-- activo corriente / pasivo corriente - --}}
                                 <td>Liquidez</td>
                                 <td>{{ $liquidez}}</td>
+                                <td>tiene que ser (>1)</td>
                             </tr>
                             <tr>
                                 {{-- UTILIDAD NETA / ACTIVOS TOTALES  --}}
                                 <td>ROA (%)</td>
-                                <td>{{ $roa}}</td>
+                                <td>{{ $roa}}%</td>
+                                <td>tiene que ser (>5%)</td>
                             </tr>
                             <tr>
                                 {{-- ACTIVO CORRIENTE - PASIVO CORRIENTE  --}}
                                 <td>Capital de trabajo (S/.)</td>
                                 <td>{{ $capital_trabajo}}</td>
+                                <td>tiene que ser mayor al prestamo</td>
                             </tr>
                             <tr>
                                 {{-- UTILIDAD NETA / PATRIMONIO NETO  --}}
                                 <td>ROE (%)</td>
-                                <td>{{ $roe}}</td>
+                                <td>{{ $roe}}%</td>
+                                <td>tiene que ser (>10%)</td>
                             </tr>
                             <tr>
                                 {{-- PASIVO TOTAL / PATRIMONIO NETO  --}}
                                 <td>Solvencia</td>
                                 <td>{{ $solvencia}}</td>
+                                <td>tiene que ser (<=1)</td>
                             </tr>
                             <tr>
                                 {{-- PASIVO TOTAL / ACTIVO TOTAL  --}}
                                 <td>Indice de endeudamiento</td>
-                                <td>{{ $indice_endeudamiento}}</td>
+                                <td>{{ $indice_endeudamiento}}%</td>
+                                <td>tiene que ser (<=40%)</td>
+                            </tr>
+                            <tr>
+                                {{-- cuota de prestamo / saldo final --}}
+                                <td>cuotaexcedente</td>
+                                <td>{{ $cuotaexcedente}}</td>
+                                <td>tiene que ser (<1)</td>
                             </tr>
 
                         </tbody>
@@ -298,33 +274,25 @@
     <div class="row" style="text-align:center;">
         <div class="col-md-12 mb-5">
             <div class="form-group">
-            <input type="hidden" value="<?=$prestamo->id?>" id="credito_id">
+                <input type="hidden" value="<?= $prestamo->id ?>" id="credito_id">
                 <label for="comentario">Comentario:</label>
-                <textarea name="comentario" id="comentario" class="form-control" rows="3" required></textarea>
+                <textarea name="comentario" id="comentario" class="form-control" rows="3" style="color: black;" required><?php if (isset($comentarioasesor) && !empty($comentarioasesor)) {
+                    echo htmlspecialchars($comentarioasesor, ENT_QUOTES, 'UTF-8');
+                } ?></textarea>
             </div>
-            <button type="button" onclick="confirmarAccion('aprobar')" class="btn btn-primary btnprestamo">Aprobar</button>
-            <button type="button" onclick="confirmarAccion('rechazar')" class="btn btn-warning btnprestamo">Rechazar</button>
+            <button type="button" onclick="confirmarAccion('guardar')" class="btn btn-primary btnprestamo">Guardar</button>
+            <a href="{{ url('admin/creditos') }}" class="btn btn-warning btnprestamo">Cancelar</a>
         </div>
     </div>
 
-    
+
     <script>
         function confirmarAccion(accion) {
-            var comentario = document.getElementById('comentario').value;
-            if (!comentario) {
-                alert('El comentario es obligatorio.');
-                return;
-            }
-            var confirmacion = confirm('¿Está seguro que desea ' + (accion === 'aprobar' ? 'aprobar' : 'rechazar') + ' este crédito?');
-            if (confirmacion) {
-                enviarSolicitud(accion, comentario);
-            }
-        }
+            const comentario = document.getElementById('comentario').value;
+            const creditoid = document.getElementById('credito_id').value;
 
-        function enviarSolicitud(accion, comentario) {
-            var creditoid = document.getElementById('credito_id').value;
             $.ajax({
-                url: '{{ url("/admin/credito") }}/' + accion,
+                url: '{{ url('/admin/credito') }}/' + accion,
                 type: 'GET',
                 data: {
                     _token: '{{ csrf_token() }}',

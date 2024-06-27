@@ -342,7 +342,8 @@
 
                     <div class="card card-outline card-info" id="gastos_ope">
                         <div class="card-header">
-                            <h3 class="card-title">Registro de Gastos Operativos</h3>
+                            {{-- <h3 class="card-title">Registro de Gastos Operativos</h3> --}}
+                            <h3 class="card-title">Registro de Costo de Ventas</h3>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -392,6 +393,43 @@
                                     </tr>
                                 </tfoot>
                             </table>
+                        </div>
+                    </div>
+
+                    <div class="card card-outline card-warning" id="activos">
+                        <div class="card-header">
+                            <h3 class="card-title">Registro De Activos</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="cuentas_por_cobrar">Cuentas por cobrar</label>
+                                        <input type="number" id="cuentas_por_cobrar" name="cuentas_por_cobrar"
+                                            class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="saldo_caja_bancos">Saldo en caja/bancos</label>
+                                        <input type="number" id="saldo_caja_bancos" name="saldo_caja_bancos"
+                                            class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="adelanto_a_proveedores">Adelanto a proveedores</label>
+                                        <input type="number" id="adelanto_a_proveedores"
+                                            name="adelanto_a_proveedores" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="otros">Otros</label>
+                                        <input type="number" id="otros" name="otros" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1140,11 +1178,13 @@
         if (selection === 'consumo') {
             gastos_ope.style.display = 'none';
             registro_ventas_diarias.style.display = 'none';
+            activos.style.display = 'none';
             registro_boletas.style.display = 'block';
         } else {
             registro_boletas.style.display = 'none';
             gastos_ope.style.display = 'block';
             registro_ventas_diarias.style.display = 'block';
+            activos.style.display = 'block';
         }
 
     }
