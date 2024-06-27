@@ -14,7 +14,7 @@ class AdminController extends Controller
     }
 
     public function aprobar(Request $request){
-        $credito = Credito::find($request->id);
+        $credito = credito::find($request->id);
         $credito->estado = 'aprobado';
         $credito->comentario_administrador = $request->comentarioadministrador;
         $credito->save();
@@ -27,7 +27,7 @@ class AdminController extends Controller
     }
 
     public function rechazar(Request $request){
-        $credito = Credito::find($request->id);
+        $credito = credito::find($request->id);
         $credito->estado = 'rechazado';
         $credito->comentario_administrador = $request->comentarioadministrador;
         $credito->save();
@@ -40,7 +40,7 @@ class AdminController extends Controller
     }
 
     public function guardar(Request $request){
-        $credito = Credito::find($request->id);
+        $credito = credito::find($request->id);
         $credito->estado = 'revisado';
         $credito->comentario_asesor = $request->comentario;
         $credito->save();
