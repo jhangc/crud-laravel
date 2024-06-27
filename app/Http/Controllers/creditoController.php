@@ -65,7 +65,7 @@ class creditoController extends Controller
     public function viewaprobar()
     {
         // Obtener solo los clientes activos (activo = 1)
-        $creditos = Credito::with('clientes')
+        $creditos = credito::with('clientes')
             ->where('activo', 1)
             ->where('estado', '!=', 'pendiente')
             ->get();
@@ -1136,7 +1136,7 @@ class creditoController extends Controller
      */
     public function show($id)
     {
-        $credito = \App\Models\Credito::find($id);
+        $credito = \App\Models\credito::find($id);
         $garantia=\App\Models\Garantia::where('id_prestamo', $id)->first();
         $clientes = \App\Models\CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
         $activos = \App\Models\Activos::where('prestamo_id', $id)->first();
@@ -1182,7 +1182,7 @@ class creditoController extends Controller
 public function edit($id)
 {
 
-    $credito = Credito::find($id);
+    $credito = credito::find($id);
     $tipo = $credito->tipo;
     switch ($tipo) {
         case 'comercio':
