@@ -1136,19 +1136,23 @@ class creditoController extends Controller
      */
     public function show($id)
     {
-        $credito =  \App\Models\credito::find($id);
-
-        $clientes =  \App\Models\CreditoCliente::with('clientes')
-            ->where('prestamo_id', $id)->get();
-        $activos =  \App\Models\Activos::where('prestamo_id', $id)->first();
-        $proyeccionesVentas =  \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
+        $credito = \App\Models\Credito::find($id);
+        $garantia=\App\Models\Garantia::where('id_prestamo', $id)->first();
+        $clientes = \App\Models\CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
+        $activos = \App\Models\Activos::where('prestamo_id', $id)->first();
+        $proyeccionesVentas = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
         $ventasDiarias = \App\Models\VentasDiarias::where('prestamo_id', $id)->get();
-        $deudasFinancieras =  \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
-        $gastosOperativos =  \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
-        $gastosFamiliares =  \App\Models\GastosFamiliares::where('id_prestamo', $id)->get();
-        $inventario =  \App\Models\Inventario::where('id_prestamo', $id)->get();
-        $boletas =  \App\Models\Boleta::where('id_prestamo', $id)->get();
-        $gastosProducir =  \App\Models\GastoProducir::where('id_prestamo', $id)->with('gastos')->get();
+        $deudasFinancieras = \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
+        $gastosOperativos = \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
+        $gastosFamiliares = \App\Models\GastosFamiliares::where('id_prestamo', $id)->get();
+        $inventario = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario',1)->get();
+        $inventarioProceso = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario',2)->get();
+        $boletas = \App\Models\Boleta::where('id_prestamo', $id)->get();
+        $gastosProducir = \App\Models\GastoProducir::where('id_prestamo', $id)->with('gastos')->get();
+        $ventasMensuales = \App\Models\VentasMensuales::where('id_prestamo', $id)->get();
+        $gastosAgricolas =   \App\Models\ProductoAgricola::where('id_prestamo', $id)->get();
+        $inventarioMaterial = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario',3)->get();
+        $tipoProducto = \App\Models\TipoProducto::where('id_prestamo', $id)->get();
 
         return response()->json([
             'credito' => $credito,
@@ -1161,18 +1165,35 @@ class creditoController extends Controller
             'gastosFamiliares' => $gastosFamiliares,
             'inventario' => $inventario,
             'boletas' => $boletas,
-            'gastosProducir' => $gastosProducir
+            'gastosProducir' => $gastosProducir,
+            'ventasMensuales' => $ventasMensuales,
+            'gastosAgricolas' => $gastosAgricolas,
+            'inventarioMaterial' => $inventarioMaterial,
+            'tipoProducto' => $tipoProducto,
+            'inventarioProceso'=>$inventarioProceso,
+            'garantia'=>$garantia
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        // $cliente = cliente::findOrFail($id);
-        return view('admin.creditos.edit', compact('id'));
+
+/**
+ * Show the form for editing the specified resource.
+ */
+public function edit($id)
+{
+
+    $credito = Credito::find($id);
+    $tipo = $credito->tipo;
+    switch ($tipo) {
+        case 'comercio':
+            return view('admin.creditos.editcomercio', compact('id'));
+        case 'servicio':
+        case 'produccion':
+        case 'agricola':
+            break;
     }
+}
+
 
     /**
      * Update the specified resource in storage.
