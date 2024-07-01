@@ -2,7 +2,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Credito;
+use App\Models\credito;
 use App\Models\Cliente;
 use App\Models\CreditoCliente;
 use Carbon\Carbon;
