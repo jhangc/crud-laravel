@@ -1,6 +1,42 @@
-@extends('layouts.admin')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVALUACION MICROEMPRESA</title>
 
-@section('content')
+    <style>
+        /* Ajusta el tamaño de la fuente para todo el documento */
+        body {
+            font-size: 10px; /* Puedes ajustar este tamaño según lo necesites */
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-size: 12px; /* Ajusta el tamaño de los encabezados */
+            margin: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: left;
+        }
+        .titulo {
+            font-size: 14px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .contenido{
+            page-break-inside: avoid; /* Evita que la tabla se divida entre dos páginas */
+        }
+
+    </style>
+</head>
+<body>
 <div class="row evaluacion">
     <h3 class="titulo">EVALUACION FINANCIERA</h3>
     <h6><b><span>TIPO DE CREDITO:</span></b> {{ $prestamo->tipo }}</h6>
@@ -18,21 +54,12 @@
     <h6><b>TOTAL PRESTAMO:</b> S/.{{ $totalprestamo }}</h6>
     <h6><b>CUOTA A EVALUAR:</b> S/.{{ $cuotaprestamo }}</h6>
 
-    @if ($modulo === 'aprobar')
-    <h6><b>Comentario del analista:</b>{{ $comentarioasesor }}</h6>
-    @endif
-
-    @if ($estado === 'rechazado')
-    <h6><b>Motivo de rechazo:</b>{{ $comentarioadministrador }}</h6>
-    @endif
-
-
 
 </div>
 
 
-<div class="row">
-    <div class="col-md-6">
+<div class="row ">
+    <div class="col-md-6 contenido">
         <div class="card card-outline card-warning">
             <div class="card-header">
                 <h3 class="card-title">Resumen del negocio</h3>
@@ -106,7 +133,7 @@
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-6 contenido">
         <div class="card card-outline card-warning">
             <div class="card-header">
                 <h3 class="card-title">Resumen de cuentas</h3>
@@ -187,7 +214,7 @@
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-6 contenido">
         <div class="card card-outline card-warning">
             <div class="card-header">
                 <h3 class="card-title">Saldo Total negocio</h3>
@@ -246,7 +273,7 @@
 
 
 
-    <div class="col-md-6">
+    <div class="col-md-6 contenido">
         <div class="card card-outline card-warning">
             <div class="card-header">
                 <h3 class="card-title">Ratios Financieros</h3>
@@ -338,164 +365,5 @@
 </div>
 
 
-@if ($modulo === 'aprobar')
-<div class="row" style="text-align:center;">
-    <div class="col-md-12 mb-5">
-
-        <div class="form-group">
-            <input type="hidden" value="<?= $prestamo->id ?>" id="credito_id">
-            <label for="comentarioadministrador">Comentario:</label>
-            <textarea name="comentarioadministrador" id="comentarioadministrador" class="form-control" rows="3" style="color: black;" required><?php if (isset($comentarioadministrador) && !empty($comentarioadministrador)) {
-                                                                                                                                                    echo htmlspecialchars($comentarioadministrador, ENT_QUOTES, 'UTF-8');
-                                                                                                                                                } ?></textarea>
-        </div>
-        <button type="button" onclick="confirmarAccion('aprobar')" class="btn btn-primary btnprestamo">Aprobar</button>
-        <button type="button" onclick="confirmarAccion('rechazar')" class="btn btn-warning btnprestamo">Rechazar</button>
-        <a href="{{ url('admin/creditos') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
-    </div>
-</div>
-@else
-<div class="row" style="text-align:center;">
-    <div class="col-md-12 mb-5">
-        <div class="form-group">
-            <input type="hidden" value="<?= $prestamo->id ?>" id="credito_id">
-            <label for="comentario">Comentario:</label>
-            <textarea name="comentario" id="comentario" class="form-control" rows="3" style="color: black;" required><?php if (isset($comentarioasesor) && !empty($comentarioasesor)) {
-                                                                                                                            echo htmlspecialchars($comentarioasesor, ENT_QUOTES, 'UTF-8');
-                                                                                                                        } ?></textarea>
-        </div>
-        <button type="button" onclick="confirmarAccion('guardar')" class="btn btn-primary btnprestamo" {{ in_array($prestamo->estado, ['revisado', 'rechazado por sistema']) ? 'disabled' : '' }}>Guardar</button>
-        <button type="button" class="btn btn-secondary btnprestamo" onclick="imprimirPDF()">Imprimir</button>
-
-
-        <a href="{{ url('admin/creditos') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
-    </div>
-</div>
-@endif
-
-
-
-<script>
-
-    function imprimirPDF() {
-        var prestamoId = '{{$prestamo->id}}';
-        var url = '{{ url('/generar-pdf')}}' + '/' + prestamoId;
-
-        // Abre la URL en una nueva pestaña
-        window.open(url, '_blank');
-    }
-
-
-    function verificarCondiciones() {
-        var rentabilidadVentas = parseFloat('{{ $rentabilidad_ventas }}');
-        var margenVentas = parseFloat('{{ $margenventas }}');
-        var liquidez = parseFloat('{{ $liquidez }}');
-        var roa = parseFloat('{{ $roa }}');
-        var capitalTrabajo = parseFloat('{{ $capital_trabajo }}');
-        var totalPrestamo = parseFloat('{{ $totalprestamo }}');
-        var roe = parseFloat('{{ $roe }}');
-        var solvencia = parseFloat('{{ $solvencia }}');
-        var indiceEndeudamiento = parseFloat('{{ $indice_endeudamiento }}');
-        var cuotaExcedente = parseFloat('{{ $cuotaexcedente }}');
-        var saldoFinal = parseFloat('{{ $saldo_final }}');
-        var cuotaprestamo = parseFloat('{{ $cuotaprestamo }}');
-
-        if (Math.abs(rentabilidadVentas - margenVentas) > 5 ||
-            liquidez <= 1 ||
-            roa <= 5 ||
-            capitalTrabajo <= totalPrestamo ||
-            roe <= 10 ||
-            solvencia > 1 ||
-            indiceEndeudamiento > 40 ||
-            cuotaExcedente >= 1 ||
-            saldoFinal <= cuotaprestamo) {
-            return 'rechazado por sistema';
-        }
-
-        return 'revisado';
-    }
-
-    function confirmarAccion(accion) {
-        var comentarioElement = document.getElementById('comentario');
-        var comentarioadministradorElement = document.getElementById('comentarioadministrador');
-
-        var comentario = comentarioElement ? comentarioElement.value : null;
-        var comentarioadministrador = comentarioadministradorElement ? comentarioadministradorElement.value : null;
-
-
-        var accionTexto;
-        if (accion === 'aprobar') {
-            accionTexto = 'aprobar';
-        } else if (accion === 'rechazar') {
-            accionTexto = 'rechazar';
-        } else if (accion === 'guardar') {
-            accionTexto = 'guardar';
-        } else {
-            return;
-        }
-
-        var confirmacion = confirm('¿Está seguro que desea ' + accionTexto + ' este crédito?');
-        if (confirmacion) {
-            var estado = verificarCondiciones();
-            enviarSolicitud(accion, comentario, comentarioadministrador, estado);
-        }
-    }
-
-    function enviarSolicitud(accion, comentario, comentarioadministrador, estado) {
-        var creditoid = document.getElementById('credito_id').value;
-        var data = {
-            _token: '{{ csrf_token() }}',
-            id: creditoid,
-            comentario: comentario,
-            comentarioadministrador: comentarioadministrador,
-            accion: accion,
-            estado: estado
-        };
-
-        $.ajax({
-            url: '{{ url('/admin/credito')}}/' + accion,
-            type: 'GET',
-            data: data,
-            success: function(response) {
-                alert(response.mensaje);
-                window.location.href = response.redirect;
-            },
-            error: function(xhr) {
-                console.error(xhr);
-                alert('Ocurrió un error al realizar la acción.');
-            }
-        });
-
-    }
-</script>
-
-
-
-
-
-
-{{-- <script>
-        function confirmarAccion(accion) {
-            const comentario = document.getElementById('comentario').value;
-            const creditoid = document.getElementById('credito_id').value;
-
-            $.ajax({
-                url: '{{ url('/admin/credito') }}/' + accion,
-type: 'GET',
-data: {
-_token: '{{ csrf_token() }}',
-id: creditoid,
-comentario: comentario
-},
-success: function(response) {
-alert(response.mensaje);
-window.location.href = response.redirect;
-},
-error: function(xhr) {
-console.error(xhr);
-alert('Ocurrió un error al realizar la acción.');
-}
-});
-}
-</script> --}}
-@endsection
+</body>
+</html>

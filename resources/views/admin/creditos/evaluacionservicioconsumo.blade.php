@@ -163,6 +163,8 @@
                     } ?></textarea>
                 </div>
                 <button type="button" onclick="confirmarAccion('guardar')" class="btn btn-primary btnprestamo" {{ in_array($prestamo->estado, ['revisado', 'rechazado por sistema']) ? 'disabled' : '' }}>Guardar</button>
+                <button type="button" class="btn btn-secondary btnprestamo" onclick="imprimirPDF()">Imprimir</button>
+
                 <a href="{{ url('admin/creditos') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
             </div>
         </div>
@@ -171,6 +173,14 @@
 
 
     <script>
+        function imprimirPDF() {
+        var prestamoId = '{{$prestamo->id}}';
+        var url = '{{ url('/generar-pdf')}}' + '/' + prestamoId;
+
+        // Abre la URL en una nueva pestaña
+        window.open(url, '_blank');
+    }
+
         function verificarCondiciones() {
             var totalgarantia = parseFloat('{{ $totalgarantia }}'); 
     var solvencia = parseFloat('{{ $solvencia }}');

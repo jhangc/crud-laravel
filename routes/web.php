@@ -100,4 +100,4 @@ Route::get('/admin/transacciones/ingresos', [App\Http\Controllers\creditoControl
 //rutas de  update
 Route::post('/admin/creditos/updatecomercio/{id}', [App\Http\Controllers\UpdateController::class, 'updatecomercio'])->name('creditos.updatecomercio')->middleware('auth');
 
-Route::get('/generar-pdf', [PDFController::class, 'generatePDF'])->name('generar-pdf');
+Route::get('/generar-pdf/{id}', [PDFController::class, 'generatePDF'])->name('generar-pdf');
