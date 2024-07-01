@@ -855,7 +855,7 @@
                 descripcion,
                 precioUnitario,
                 cantidad,
-                total: parseFloat(total)
+                montoTotal: parseFloat(total)
             };
 
             inventarioArray1.push(gastoData);
@@ -1294,6 +1294,7 @@
             });
         });
         $('#prestamoForm').on('submit', function(e) {
+            const idc = document.getElementById('credito-id').value;
             e.preventDefault();
             var formData = new FormData(this);
             formData.append('boletasArray', JSON.stringify([]))
@@ -1306,7 +1307,7 @@
             formData.append('gastosProducirArray', JSON.stringify([]));
 
             $.ajax({
-                url:'{{url('/admin/creditos/store')}}',
+                url:`/admin/creditos/updatecomercio/${idc}`,
                 type: 'POST',
                 data: formData,
                 contentType: false,

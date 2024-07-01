@@ -1217,19 +1217,24 @@ class creditoController extends Controller
      * Show the form for editing the specified resource.
      */
     public function edit($id)
-    {
+{
 
-        $credito = credito::find($id);
-        $tipo = $credito->tipo;
-        switch ($tipo) {
-            case 'comercio':
-                return view('admin.creditos.editcomercio', compact('id'));
-            case 'servicio':
-            case 'produccion':
-            case 'agricola':
-                break;
-        }
+    $credito = credito::find($id);
+    $tipo = $credito->tipo;
+    switch ($tipo) {
+        case 'comercio':
+            return view('admin.creditos.editcomercio', compact('id'));
+        case 'servicio':
+            return view('admin.creditos.editservico', compact('id'));
+        case 'produccion':
+            return view('admin.creditos.editproduccion', compact('id'));
+        case 'agricola':
+            return view('admin.creditos.editagricola', compact('id'));
+        case 'grupal':
+            return view('admin.creditos.editgrupal', compact('id'));
     }
+}
+
 
 
     /**

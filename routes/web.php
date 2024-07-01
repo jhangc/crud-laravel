@@ -97,6 +97,7 @@ Route::get('/admin/reportes/prestamosvencidos', [App\Http\Controllers\creditoCon
 
 Route::get('/admin/transacciones/egresos', [App\Http\Controllers\creditoController::class, 'viewegresos'])->name('transacciones.egresos')->middleware('auth');
 Route::get('/admin/transacciones/ingresos', [App\Http\Controllers\creditoController::class, 'viewingresos'])->name('transacciones.ingresos')->middleware('auth');
-
+//rutas de  update
+Route::post('/admin/creditos/updatecomercio/{id}', [App\Http\Controllers\UpdateController::class, 'updatecomercio'])->name('creditos.updatecomercio')->middleware('auth');
 
 Route::get('/generar-pdf/{view}', [PDFController::class, 'generatePDF'])->name('generar-pdf');

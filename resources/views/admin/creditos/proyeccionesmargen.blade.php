@@ -376,6 +376,13 @@
 
 
 <script>
+      function imprimirPDF() {
+        prestamoId='{{$prestamo->id}}';
+        
+        var url = '{{ url('/generar-pdf') }}' + '?id=' + prestamoId;
+    // Abre la URL en una nueva pestaña
+    window.open(url, '_blank');
+    }
     function verificarCondiciones() {
     var rentabilidadVentas = parseFloat('{{ $rentabilidad_ventas }}');
     var margenVentas = parseFloat('{{ $margenventas }}');
@@ -456,14 +463,6 @@
         }
     });
 
-
-
-    function imprimirPDF() {
-    var url = '{{ url('/generar-pdf') }}' + window.location.search;
-
-    // Abre la URL en una nueva pestaña
-    window.open(url, '_blank');
-}
 }
 </script>
 
