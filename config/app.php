@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
 
+
 return [
 
     /*
@@ -17,6 +18,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+
 
     /*
     |--------------------------------------------------------------------------
@@ -170,6 +172,7 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         Spatie\Permission\PermissionServiceProvider::class,
+        Barryvdh\DomPDF\ServiceProvider::class,
     ])->toArray(),
 
     /*
@@ -184,7 +187,8 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        // 'Example' => App\Facades\Example::class,
+
     ])->toArray(),
+
 
 ];
