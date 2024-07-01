@@ -144,10 +144,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Aprobación</p>
                                     </a>
-                                    <a href="{{ url('/admin/creditos/supervisar') }}" class="nav-link active">
+                                    <!-- <a href="{{ url('/admin/creditos/supervisar') }}" class="nav-link active">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Supervisar</p>
-                                    </a>
+                                    </a> -->
                                 </li>
                             </ul>
                         </li>
@@ -167,7 +167,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Lista de clientes</p>
                                     </a>
-                                    <a href="{{ url('/admin/clientes/evaluar') }}" class="nav-link active">
+                                    <!-- <a href="{{ url('/admin/clientes/evaluar') }}" class="nav-link active">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Evaluar al cliente</p>
                                     </a>
@@ -175,7 +175,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                     <a href="{{ url('/admin/clientes/ratios') }}" class="nav-link active">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Ratios FInancieros</p>
-                                    </a>
+                                    </a> -->
                                 </li>
                             </ul>
                         </li>

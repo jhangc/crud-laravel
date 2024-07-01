@@ -66,9 +66,9 @@ class creditoController extends Controller
     {
         // Obtener solo los clientes activos (activo = 1)
         $creditos = credito::with('clientes')
-    ->where('activo', 1)
-    ->whereNotIn('estado', ['pendiente', 'rechazado por sistema'])
-    ->get();
+            ->where('activo', 1)
+            ->whereNotIn('estado', ['pendiente', 'rechazado por sistema'])
+            ->get();
         return view('admin.creditos.aprobar', ['creditos' => $creditos]);
     }
 
@@ -120,7 +120,7 @@ class creditoController extends Controller
         $totalprestamo = $prestamo->monto_total;
         $cuotaprestamo = $cuotas->monto;
 
-        $estado =$prestamo->estado;
+        $estado = $prestamo->estado;
 
         switch ($tipo) {
             case 'comercio':
@@ -692,8 +692,38 @@ class creditoController extends Controller
 
     public function viewpagarcredito()
     {
-        return view('admin.caja.pagarcredito');
+        // Obtener solo los clientes activos (activo = 1)
+        $creditos = Credito::with('clientes')
+            ->where('activo', 1)
+            ->where('estado', 'aprobado')
+            ->get();
+
+        return view('admin.caja.pagarcredito', ['creditos' => $creditos]);
     }
+
+    public function pagar(Request $request, $id)
+    {
+        $prestamo = credito::find($id);
+        $cuotas = Cronograma::where('id_prestamo', $id)->first();
+        $cliente = $prestamo->clientes->first();
+        $responsable = auth()->user();
+        $tipo = $prestamo->tipo;
+        $totalprestamo = $prestamo->monto_total;
+        $cuotaprestamo = $cuotas->monto;
+        $descripcion = $prestamo->descripcion_negocio;
+
+        $estado = $prestamo->estado;
+        return view('admin.caja.desembolso', compact(
+            'prestamo',
+            'cliente',
+            'responsable',            
+            'estado',
+            'cuotas'
+        ));
+    }
+
+
+
 
     public function viewpagares()
     {
@@ -1144,7 +1174,7 @@ class creditoController extends Controller
     public function show($id)
     {
         $credito = \App\Models\credito::find($id);
-        $garantia=\App\Models\Garantia::where('id_prestamo', $id)->first();
+        $garantia = \App\Models\Garantia::where('id_prestamo', $id)->first();
         $clientes = \App\Models\CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
         $activos = \App\Models\Activos::where('prestamo_id', $id)->first();
         $proyeccionesVentas = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
@@ -1152,13 +1182,13 @@ class creditoController extends Controller
         $deudasFinancieras = \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
         $gastosOperativos = \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
         $gastosFamiliares = \App\Models\GastosFamiliares::where('id_prestamo', $id)->get();
-        $inventario = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario',1)->get();
-        $inventarioProceso = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario',2)->get();
+        $inventario = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario', 1)->get();
+        $inventarioProceso = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario', 2)->get();
         $boletas = \App\Models\Boleta::where('id_prestamo', $id)->get();
         $gastosProducir = \App\Models\GastoProducir::where('id_prestamo', $id)->with('gastos')->get();
         $ventasMensuales = \App\Models\VentasMensuales::where('id_prestamo', $id)->get();
         $gastosAgricolas =   \App\Models\ProductoAgricola::where('id_prestamo', $id)->get();
-        $inventarioMaterial = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario',3)->get();
+        $inventarioMaterial = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario', 3)->get();
         $tipoProducto = \App\Models\TipoProducto::where('id_prestamo', $id)->get();
 
         return response()->json([
@@ -1177,29 +1207,29 @@ class creditoController extends Controller
             'gastosAgricolas' => $gastosAgricolas,
             'inventarioMaterial' => $inventarioMaterial,
             'tipoProducto' => $tipoProducto,
-            'inventarioProceso'=>$inventarioProceso,
-            'garantia'=>$garantia
+            'inventarioProceso' => $inventarioProceso,
+            'garantia' => $garantia
         ]);
     }
 
 
-/**
- * Show the form for editing the specified resource.
- */
-public function edit($id)
-{
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
 
-    $credito = credito::find($id);
-    $tipo = $credito->tipo;
-    switch ($tipo) {
-        case 'comercio':
-            return view('admin.creditos.editcomercio', compact('id'));
-        case 'servicio':
-        case 'produccion':
-        case 'agricola':
-            break;
+        $credito = credito::find($id);
+        $tipo = $credito->tipo;
+        switch ($tipo) {
+            case 'comercio':
+                return view('admin.creditos.editcomercio', compact('id'));
+            case 'servicio':
+            case 'produccion':
+            case 'agricola':
+                break;
+        }
     }
-}
 
 
     /**

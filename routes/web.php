@@ -82,6 +82,9 @@ Route::get('/admin/caja/arqueo', [App\Http\Controllers\creditoController::class,
 Route::get('/admin/caja/habilitar', [App\Http\Controllers\creditoController::class, 'viewhabilitarcaja'])->name('caja.habilitar')->middleware('auth');
 Route::get('/admin/caja/pagarcredito', [App\Http\Controllers\creditoController::class, 'viewpagarcredito'])->name('caja.pagarcredito')->middleware('auth');
 Route::get('/admin/caja/pagares', [App\Http\Controllers\creditoController::class, 'viewpagares'])->name('caja.pagares')->middleware('auth');
+Route::get('/admin/caja/pagar/{id}', [App\Http\Controllers\creditoController::class, 'pagar'])->name('caja.pagar')->middleware('auth');
+
+
 
 Route::get('/admin/cobranza/cargarcompromiso', [App\Http\Controllers\creditoController::class, 'viewcargarcompromiso'])->name('cobranza.cargarcompromiso')->middleware('auth');
 Route::get('/admin/cobranza/carta', [App\Http\Controllers\creditoController::class, 'viewcarta'])->name('caja.habilitar')->middleware('auth');
