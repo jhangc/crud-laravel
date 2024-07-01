@@ -1,8 +1,9 @@
-.plantilla{
+.plantilla {
     padding-left: 20px;
     max-width: 100% !important;
 }
-.row{
+
+.row {
     margin: 0 !important;
     padding: 0 !important;
 }
@@ -11,7 +12,8 @@
     margin: 20px 0;
 }
 
-#creditosTable th, #creditosTable td {
+#creditosTable th,
+#creditosTable td {
     white-space: nowrap;
     text-align: center;
     vertical-align: middle;
@@ -32,42 +34,49 @@
     align-items: center;
 }
 
-.acciones > * {
+.acciones>* {
     margin: 0 5px;
 }
-.evaluacion{
+
+.evaluacion {
     margin-bottom: 20px !important;
 }
 
-.evaluacion h6{
+.evaluacion h6 {
     color: #000 !important;
     width: 100%;
     margin-left: 10px;
 }
 
 
-.evaluacion h3{
+.evaluacion h3 {
     width: 100%;
     font-weight: 600;
     text-align: center;
 }
 
-.btnprestamo{
+.btnprestamo {
     margin-top: 32px;
 }
 
 .finaltotal {
-    background-color: #f2f2f2; /* Cambia este valor por el color de fondo deseado */
+    background-color: #f2f2f2;
+    /* Cambia este valor por el color de fondo deseado */
+}
+
+
+.text-danger {
+    color: red;
 }
 
 
 
 @media (max-width: 576px) {
-    .plantilla{
+    .plantilla {
         padding: 0px 10px;
     }
 
-    .btnprestamo{
+    .btnprestamo {
         margin-top: 0px;
     }
 }

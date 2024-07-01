@@ -66,9 +66,9 @@ class creditoController extends Controller
     {
         // Obtener solo los clientes activos (activo = 1)
         $creditos = credito::with('clientes')
-            ->where('activo', 1)
-            ->where('estado', '!=', 'pendiente')
-            ->get();
+    ->where('activo', 1)
+    ->whereNotIn('estado', ['pendiente', 'rechazado por sistema'])
+    ->get();
         return view('admin.creditos.aprobar', ['creditos' => $creditos]);
     }
 
@@ -119,6 +119,8 @@ class creditoController extends Controller
 
         $totalprestamo = $prestamo->monto_total;
         $cuotaprestamo = $cuotas->monto;
+
+        $estado =$prestamo->estado;
 
         switch ($tipo) {
             case 'comercio':
@@ -241,7 +243,8 @@ class creditoController extends Controller
                     'cuotaexcedente',
                     'comentarioasesor',
                     'comentarioadministrador',
-                    'modulo'
+                    'modulo',
+                    'estado'
 
                 ));
             case 'servicio':
@@ -333,7 +336,8 @@ class creditoController extends Controller
                         'cuotaexcedente',
                         'comentarioasesor',
                         'comentarioadministrador',
-                        'modulo'
+                        'modulo',
+                        'estado'
                     ));
                 } else {
                     $totalVentas = round(($boletas->sum('total_boleta')));
@@ -402,7 +406,8 @@ class creditoController extends Controller
                         'cuotaexcedente',
                         'comentarioasesor',
                         'comentarioadministrador',
-                        'modulo'
+                        'modulo',
+                        'estado'
                     ));
                 }
             case 'produccion':
@@ -532,7 +537,8 @@ class creditoController extends Controller
                         'cuotaexcedente',
                         'comentarioasesor',
                         'comentarioadministrador',
-                        'modulo'
+                        'modulo',
+                        'estado'
                     ));
                 } else {
                     $totalVentas = round((($ventasdiarias->sum('promedio')) * $factormes), 2);
@@ -660,7 +666,8 @@ class creditoController extends Controller
                         'cuotaexcedente',
                         'comentarioasesor',
                         'comentarioadministrador',
-                        'modulo'
+                        'modulo',
+                        'estado'
                     ));
                 }
         }

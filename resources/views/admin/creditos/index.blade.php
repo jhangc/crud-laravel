@@ -85,6 +85,8 @@
                                             <span style="background-color: red; padding: 3px 10px; border-radius: 5px;">Rechazado</span>
                                         @elseif($credito->estado == 'aprobado')
                                             <span style="background-color: green; padding: 3px 10px; border-radius: 5px;">Aprobado</span>
+                                        @elseif($credito->estado == 'rechazado por sistema')
+                                            <span style="background-color:SkyBlue; padding: 3px 10px; border-radius: 5px;">Rechazado por sistema</span>
                                         @endif
                                     </td>
                                     <td style="display: flex; align-items: center; justify-content:center;">

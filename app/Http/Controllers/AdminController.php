@@ -41,13 +41,17 @@ class AdminController extends Controller
 
     public function guardar(Request $request){
         $credito = credito::find($request->id);
-        $credito->estado = 'revisado';
+        if ($request->estado == 'rechazado por sistema') {
+            $credito->estado = 'rechazado por sistema';
+        } else {
+            $credito->estado = 'revisado';
+        }
         $credito->comentario_asesor = $request->comentario;
         $credito->save();
-
+    
         return response()->json([
             'redirect' => route('creditos.index'),
-            'mensaje' => 'El crédito ha sido revisado correctamente',
+            'mensaje' => 'El crédito ha sido ' . ($request->estado == 'rechazado por sistema' ? 'rechazado por el sistema' : 'revisado') . ' correctamente',
             'icono' => 'success'
         ]);
     }

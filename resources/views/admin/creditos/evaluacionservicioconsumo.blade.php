@@ -17,6 +17,14 @@
         <h6><b>RESPONSABLE:</b> {{ $responsable->name }}</h6>
         <h6><b>TOTAL PRESTAMO:</b> {{ $totalprestamo }}</h6>
         <h6><b>CUOTA PRESTAMO:</b> {{ $cuotaprestamo }}</h6>
+
+        @if ($modulo === 'aprobar')
+    <h6><b>Comentario del analista:</b>{{ $comentarioasesor }}</h6>
+    @endif
+
+    @if ($estado === 'rechazado')
+    <h6><b>Motivo de rechazo:</b>{{ $comentarioadministrador }}</h6>
+    @endif
     </div>
 
      <div class="row">
@@ -65,9 +73,10 @@
                                 <td>{{ number_format($totalgastosfamiliares, 2) }}</td>
                             </tr> --}}
                             <tr>
-                                <td>Saldo final disponible</td>
-                                <td>{{ number_format($saldo_final,2) }}</td>
-                            </tr>
+    <td>Saldo final disponible</td>
+    <td class="{{ $saldo_final <= $cuotaprestamo ? 'text-danger' : '' }}">{{ number_format($saldo_final, 2) }}</td>
+    
+</tr>
 
 
                         </tbody>
@@ -93,37 +102,32 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Total Garantia (S/.)</td>
-                                <td>{{ number_format($totalgarantia,2) }}</td>
-                                <td>tiene que ser mayor o igual al total de crédito</td>
-                            </tr>
-                            <tr>
-                                <td>Total Saldo de prestamos (S/.)</td>
-                                <td>{{ number_format($totalgastosfinancieros,2) }}</td>
-                            </tr>
-                            <tr>
-                                {{-- PASIVO TOTAL / PATRIMONIO NETO  --}}
-                                <td>Solvencia</td>
-                                <td>{{ $solvencia}}</td>
-                                <td>tiene que ser (<=1)</td>
-                            </tr>
-                            {{-- <tr>
-                                {{-- PASIVO TOTAL / ACTIVO TOTAL 
-                                <td>Indice de endeudamiento</td>
-                                <td>{{ $indice_endeudamiento}}</td>
-                            </tr> --}}
-                            <tr>
-                                <td>Cuota de endeudamiento</td>
-                                <td>{{  number_format($saldo_final,2)}}</td>
-                                <td>tiene que ser mayor a la cuota del credito</td>
-                            </tr>
-                            <tr>
-                                {{-- cuota de prestamo / saldo final --}}
-                                <td>cuotaexcedente</td>
-                                <td>{{ $cuotaexcedente}}</td>
-                                <td>tiene que ser (<1)</td>
-                            </tr>
+                        <tr>
+    <td>Total Garantia (S/.)</td>
+    <td class="{{ $totalgarantia < $totalprestamo ? 'text-danger' : '' }}">{{ number_format($totalgarantia, 2) }}</td>
+    <td>tiene que ser mayor o igual al total de crédito</td>
+</tr>
+<tr>
+    <td>Total Saldo de prestamos (S/.)</td>
+    <td>{{ number_format($totalgastosfinancieros, 2) }}</td>
+</tr>
+<tr>
+    {{-- PASIVO TOTAL / PATRIMONIO NETO --}}
+    <td>Solvencia</td>
+    <td class="{{ $solvencia > 1 ? 'text-danger' : '' }}">{{ $solvencia }}</td>
+    <td>tiene que ser (<=1)</td>
+</tr>
+<tr>
+    <td>Cuota de endeudamiento</td>
+    <td class="{{ $saldo_final <= $cuotaprestamo ? 'text-danger' : '' }}">{{ number_format($saldo_final, 2) }}</td>
+    <td>tiene que ser mayor a la cuota del crédito</td>
+</tr>
+<tr>
+    {{-- Cuota de préstamo / saldo final --}}
+    <td>cuotaexcedente</td>
+    <td class="{{ $cuotaexcedente >= 1 ? 'text-danger' : '' }}">{{ $cuotaexcedente }}</td>
+    <td>tiene que ser <1 </td>
+</tr>
 
                         </tbody>
                     </table>
@@ -158,8 +162,7 @@
                         echo htmlspecialchars($comentarioasesor, ENT_QUOTES, 'UTF-8');
                     } ?></textarea>
                 </div>
-                <button type="button" onclick="confirmarAccion('guardar')"
-                    class="btn btn-primary btnprestamo">Guardar</button>
+                <button type="button" onclick="confirmarAccion('guardar')" class="btn btn-primary btnprestamo" {{ in_array($prestamo->estado, ['revisado', 'rechazado por sistema']) ? 'disabled' : '' }}>Guardar</button>
                 <a href="{{ url('admin/creditos') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
             </div>
         </div>
@@ -168,54 +171,74 @@
 
 
     <script>
-        function confirmarAccion(accion) {
-            var comentarioElement = document.getElementById('comentario');
-            var comentarioadministradorElement = document.getElementById('comentarioadministrador');
+        function verificarCondiciones() {
+            var totalgarantia = parseFloat('{{ $totalgarantia }}'); 
+    var solvencia = parseFloat('{{ $solvencia }}');
+    var indiceEndeudamiento = parseFloat('{{ $saldo_final }}');
+    var cuotaExcedente = parseFloat('{{ $cuotaexcedente }}');
+    var saldoFinal = parseFloat('{{ $saldo_final }}');
+    var cuotaprestamo = parseFloat('{{ $cuotaprestamo }}');
 
-            var comentario = comentarioElement ? comentarioElement.value : null;
-            var comentarioadministrador = comentarioadministradorElement ? comentarioadministradorElement.value : null;
+    if (solvencia > 1 ||
+        indiceEndeudamiento <= cuotaprestamo ||
+        totalgarantia <= saldoFinal ||
+        cuotaExcedente >= 1) {
+        return 'rechazado por sistema';
+    }
+
+    return 'revisado';
+}
+
+function confirmarAccion(accion) {
+        var comentarioElement = document.getElementById('comentario');
+        var comentarioadministradorElement = document.getElementById('comentarioadministrador');
+
+        var comentario = comentarioElement ? comentarioElement.value : null;
+        var comentarioadministrador = comentarioadministradorElement ? comentarioadministradorElement.value : null;
 
 
-            var accionTexto;
-            if (accion === 'aprobar') {
-                accionTexto = 'aprobar';
-            } else if (accion === 'rechazar') {
-                accionTexto = 'rechazar';
-            } else if (accion === 'guardar') {
-                accionTexto = 'guardar';
-            } else {
-                return;
-            }
-
-            var confirmacion = confirm('¿Está seguro que desea ' + accionTexto + ' este crédito?');
-            if (confirmacion) {
-                enviarSolicitud(accion, comentario, comentarioadministrador);
-            }
+        var accionTexto;
+        if (accion === 'aprobar') {
+            accionTexto = 'aprobar';
+        } else if (accion === 'rechazar') {
+            accionTexto = 'rechazar';
+        } else if (accion === 'guardar') {
+            accionTexto = 'guardar';
+        } else {
+            return;
         }
 
-        function enviarSolicitud(accion, comentario, comentarioadministrador) {
-            var creditoid = document.getElementById('credito_id').value;
-            var data = {
-                _token: '{{ csrf_token() }}',
-                id: creditoid,
-                comentario: comentario,
-                comentarioadministrador: comentarioadministrador,
-                accion: accion
-            };
+        var confirmacion = confirm('¿Está seguro que desea ' + accionTexto + ' este crédito?');
+        if (confirmacion) {
+        var estado = verificarCondiciones();
+        enviarSolicitud(accion, comentario, comentarioadministrador, estado);
+    }
+    }
 
-            $.ajax({
-                url: '{{ url('/admin/credito') }}/' + accion,
-                type: 'GET',
-                data: data,
-                success: function(response) {
-                    alert(response.mensaje);
-                    window.location.href = response.redirect;
-                },
-                error: function(xhr) {
-                    console.error(xhr);
-                    alert('Ocurrió un error al realizar la acción.');
-                }
-            });
+    function enviarSolicitud(accion, comentario, comentarioadministrador, estado) {
+    var creditoid = document.getElementById('credito_id').value;
+    var data = {
+        _token: '{{ csrf_token() }}',
+        id: creditoid,
+        comentario: comentario,
+        comentarioadministrador: comentarioadministrador,
+        accion: accion,
+        estado: estado
+    };
+
+    $.ajax({
+        url: '{{ url('/admin/credito')}}/'+accion,
+        type: 'GET',
+        data: data,
+        success: function(response) {
+            alert(response.mensaje);
+            window.location.href = response.redirect;
+        },
+        error: function(xhr) {
+            console.error(xhr);
+            alert('Ocurrió un error al realizar la acción.');
         }
+    });
+}
     </script>
 @endsection
