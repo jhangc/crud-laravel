@@ -15,7 +15,7 @@
                             <div class="form-group">
                                 <label for="tipo_credito">Tipos de créditos</label>
                                 <input id="credito-id" name="credito-id" value="{{$id}}" type="hidden">
-                                <input  type="hidden" value="comercio" name="tipo_credito" id="tipo_credito">
+                                
                                 <input type="hidden" name="tipo_producto" id="tipo_producto" value="grupal">
                                 <select name="tipo_credito" id="tipo_credito" class="form-control" required
                                     onchange="toggleFields()">
@@ -278,21 +278,21 @@
 </div>
 
 <script>
-        document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('DOMContentLoaded', function() {
     const idc = document.getElementById('credito-id').value;
-   function cargardata() {
+
+    function cargarData() {
         $.ajax({
             url: `/admin/creditoinfo/${idc}`,
             type: 'GET',
             success: function(response) {
-                console.log(response);
                 let credito = response.credito;
-
+                // Llenar datos del crédito
                 $('#tipo_credito').val(credito.tipo);
                 $('#tipo_producto').val(credito.producto);
                 $('#subproducto').val(credito.subproducto);
                 $('#destino_credito').val(credito.destino);
-                $('#recurrencia').val(credito.recurrencia);
+                $('#recurrencia1').val(credito.recurrencia);
                 $('#tasa_interes').val(credito.tasa);
                 $('#tiempo_credito').val(credito.tiempo);
                 $('#monto').val(credito.monto_total);
@@ -301,9 +301,14 @@
                 $('#periodo_gracia_dias').val(credito.periodo_gracia_dias);
                 $('#nombre_prestamo').val(credito.nombre_prestamo);
                 $('#cantidad_grupo').val(credito.cantidad_integrantes);
-                $('#porcentaje_venta_credito').val(credito.porcentaje_credito);
+
+                // Llenar datos de los clientes
                 llenarClientes(response.clientes);
-               
+
+                // Llenar datos de la garantía
+                let garantia = response.garantia;
+                $('#descripcion_garantia').val(garantia.descripcion);
+                $('#valor_mercado').val(garantia.valor_mercado);
             },
             error: function(xhr) {
                 console.error("Error al recuperar la información: " + xhr.statusText);
@@ -312,18 +317,21 @@
     }
 
     function llenarClientes(clientes) {
-        // Llenar datos del cliente individual
-        $('#nombre').val(clientes[0].clientes.nombre || '');
-        $('#telefono').val(clientes[0].clientes.telefono || '');
-        $('#direccion').val(clientes[0].clientes.direccion || '');
-        $('#profesion').val(clientes[0].clientes.profesion || '');
-        $('#email').val(clientes[0].clientes.email || '');
-        $('#direccion_laboral').val(clientes[0].clientes.direccion_laboral || '');
-        $('#documento_identidad').val(clientes[0].clientes.documento_identidad || '');
+        clientesArray = clientes.map(clienteData => {
+            return {
+                nombre: clienteData.clientes.nombre,
+                profesion: clienteData.clientes.profesion,
+                telefono: clienteData.clientes.telefono,
+                direccion: clienteData.clientes.direccion,
+                monto: clienteData.monto_indivual,
+                documento: clienteData.clientes.documento_identidad
+            };
+        });
+        actualizarTabla();
     }
 
-    cargardata();
-    });
+    cargarData();
+});
     let clientesArray = [];
     let totalMonto = 0;
 
@@ -460,6 +468,7 @@
 
         $('#prestamoForm').on('submit', function(e) {
             e.preventDefault();
+            const idc = document.getElementById('credito-id').value;
             var formData = new FormData(this);
             formData.append('clientesArray', JSON.stringify(clientesArray));
             formData.append('proyeccionesArray', JSON.stringify([]));
@@ -471,7 +480,7 @@
             formData.append('inventarioArray1', JSON.stringify([]));
             formData.append('ventasdiarias', JSON.stringify([]));
             $.ajax({
-                url: '{{ url('/admin/creditos/store') }}',
+                url:`/admin/creditos/updatecomercio/${idc}`,
                 type: 'POST',
                 data: formData,
                 contentType: false,

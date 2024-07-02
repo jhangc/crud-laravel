@@ -1245,16 +1245,16 @@ class creditoController extends Controller
         if ($tipo == 'comercio' && $producto != 'grupal') {
             return view('admin.creditos.editcomercio', compact('id'));
         }
-        if ($tipo == 'servicio') {
+        if ($tipo == 'servicio' && $producto != 'grupal') {
             return view('admin.creditos.editservico', compact('id'));
         }
-        if ($tipo == 'produccion' && $producto != 'agricola') {
+        if ($tipo == 'produccion' && $producto != 'agricola' && $producto != 'grupal') {
             return view('admin.creditos.editproduccion', compact('id'));
         }
-        if ($tipo == 'produccion' && $producto == 'agricola') {
+        if ($tipo == 'produccion' && $producto == 'agricola' && $producto != 'grupal') {
             return view('admin.creditos.editagricola', compact('id'));
         }
-        if ($tipo == 'comercio'&& $producto == 'grupal') {
+        if ($producto == 'grupal') {
             return view('admin.creditos.editgrupal', compact('id'));
         }
     }
