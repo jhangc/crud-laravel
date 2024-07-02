@@ -99,6 +99,7 @@ Route::get('/admin/transacciones/egresos', [App\Http\Controllers\creditoControll
 Route::get('/admin/transacciones/ingresos', [App\Http\Controllers\creditoController::class, 'viewingresos'])->name('transacciones.ingresos')->middleware('auth');
 //rutas de  update
 Route::post('/admin/creditos/updatecomercio/{id}', [App\Http\Controllers\UpdateController::class, 'updatecomercio'])->name('creditos.updatecomercio')->middleware('auth');
+Route::post('/admin/creditos/updategrupal/{id}', [App\Http\Controllers\UpdateController::class, 'updateCreditoGrupal'])->name('creditos.updatecreditogrupal')->middleware('auth');
 
 Route::get('/generar-pdf/{id}', [PDFController::class, 'generatePDF'])->name('generar-pdf');
 Route::get('/generar-cronograma/{id}', [PDFController::class, 'generatecronogramaPDF'])->name('generar-cronograma');
