@@ -91,7 +91,9 @@
                                     </td>
                                     <td style="display: flex; align-items: center; justify-content:center;">
                                         <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#cuotasModal" onclick="loadCuotas('{{ route('credito.cuotas', $credito->id) }}')">Cuotas</a>
+                                        
                                         <a href="{{  route('creditos.proyecciones', ['id' => $credito->id]) }}" class="btn btn-secondary">Resultado</a>
+                                        
                                         <a href="{{ route('creditos.edit', $credito->id) }}" type="button" class="btn btn-success"><i class="bi bi-pencil"></i></a>
                                         <form action="{{ route('creditos.destroy', $credito->id) }}" onclick="preguntar(event, '{{ $id }}')" method="post" id="miFormulario{{ $id }}">
                                             @csrf

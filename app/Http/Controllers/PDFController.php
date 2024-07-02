@@ -65,7 +65,7 @@ class PdfController extends Controller
         // return $pdf->stream('ticket.pdf');
 
         $pdf = Pdf::loadView('pdf.cronogramaindividual', $data)->setPaper('a4', 'landscape');
-return $pdf->stream('ticket.pdf');
+    return $pdf->stream('ticket.pdf');
     }
 
 
