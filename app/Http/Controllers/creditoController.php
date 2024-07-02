@@ -960,32 +960,73 @@ class creditoController extends Controller
         switch ($frecuencia) {
             case 'catorcenal':
                 $fechaCuota = $fechaconperiodogracia->copy()->addDays(14);
+                for ($i = 1; $i <= $tiempo; $i++) {
+                    $cronograma = new Cronograma();
+                    $cronograma->fecha = $fechaCuota;
+                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
+                    $cronograma->numero = $i;
+                    $cronograma->id_prestamo = $prestamo->id;
+                    $cronograma->cliente_id = $cliente->id; // Asignar cliente
+                    $cronograma->save();
+                    $fechaCuota = $fechaCuota->addDays(14);
+                }
                 break;
             case 'quincenal':
                 $fechaCuota = $fechaconperiodogracia->copy()->addDays(15);
+                for ($i = 1; $i <= $tiempo; $i++) {
+                    $cronograma = new Cronograma();
+                    $cronograma->fecha = $fechaCuota;
+                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
+                    $cronograma->numero = $i;
+                    $cronograma->id_prestamo = $prestamo->id;
+                    $cronograma->cliente_id = $cliente->id; // Asignar cliente
+                    $cronograma->save();
+                    $fechaCuota = $fechaCuota->addDays(14);
+                }
                 break;
             case 'veinteochenal':
                 $fechaCuota = $fechaconperiodogracia->copy()->addDays(28);
+                for ($i = 1; $i <= $tiempo; $i++) {
+                    $cronograma = new Cronograma();
+                    $cronograma->fecha = $fechaCuota;
+                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
+                    $cronograma->numero = $i;
+                    $cronograma->id_prestamo = $prestamo->id;
+                    $cronograma->cliente_id = $cliente->id; // Asignar cliente
+                    $cronograma->save();
+                    $fechaCuota = $fechaCuota->addDays(28);
+                }
                 break;
             case 'semestral':
                 $fechaCuota = $fechaconperiodogracia->copy()->addMonths(6);
+                for ($i = 1; $i <= $tiempo; $i++) {
+                    $cronograma = new Cronograma();
+                    $cronograma->fecha = $fechaCuota;
+                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
+                    $cronograma->numero = $i;
+                    $cronograma->id_prestamo = $prestamo->id;
+                    $cronograma->cliente_id = $cliente->id; // Asignar cliente
+                    $cronograma->save();
+                    $fechaCuota = $fechaCuota->addMonths(6);
+                }
                 break;
             case 'mensual':
             default:
                 $fechaCuota = $fechaconperiodogracia->copy()->addMonth();
+                for ($i = 1; $i <= $tiempo; $i++) {
+                    $cronograma = new Cronograma();
+                    $cronograma->fecha = $fechaCuota;
+                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
+                    $cronograma->numero = $i;
+                    $cronograma->id_prestamo = $prestamo->id;
+                    $cronograma->cliente_id = $cliente->id; // Asignar cliente
+                    $cronograma->save();
+                    $fechaCuota = $fechaCuota->addMonth();;
+                }
                 break;
         }
 
-        for ($i = 1; $i <= $tiempo; $i++) {
-            $cronograma = new Cronograma();
-            $cronograma->fecha = $fechaCuota;
-            $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
-            $cronograma->numero = $i;
-            $cronograma->id_prestamo = $prestamo->id;
-            $cronograma->cliente_id = $cliente->id; // Asignar cliente
-            $cronograma->save();
-            $fechaCuota = $fechaCuota->addMonth();
-        }
+        
     }
     protected function saveArrayData(array $data, $prestamoId, $request)
     {
