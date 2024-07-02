@@ -28,7 +28,7 @@
 </div>
 <div class="row justify-content-center">
     <div class="col-md-4 text-center mb-3">
-        <button type="button" class="btn btn-danger btn-block" onclick="generarDocumento('cronograma')">Generar Cronograma</button>
+        <button type="button" class="btn btn-danger btn-block" onclick="imprimirPDF()">Generar Cronograma</button>
     </div>
     <div class="col-md-4 text-center mb-3">
         <button type="button" class="btn btn-primary btn-block" onclick="generarDocumento('documento')">Generar Documento</button>
@@ -69,6 +69,19 @@
         <a href="{{ url('admin/caja/pagarcredito') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
     </div>
 </div>
+
+
+<script>
+function imprimirPDF() {
+    var prestamoId = '{{$prestamo->id}}';
+    var url = '{{ url('/generar-cronograma')}}' + '/' + prestamoId;
+
+    // Abre la URL en una nueva pestaña
+    window.open(url, '_blank');
+}
+
+</script>
+
 
 
 @endsection

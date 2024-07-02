@@ -101,3 +101,4 @@ Route::get('/admin/transacciones/ingresos', [App\Http\Controllers\creditoControl
 Route::post('/admin/creditos/updatecomercio/{id}', [App\Http\Controllers\UpdateController::class, 'updatecomercio'])->name('creditos.updatecomercio')->middleware('auth');
 
 Route::get('/generar-pdf/{id}', [PDFController::class, 'generatePDF'])->name('generar-pdf');
+Route::get('/generar-cronograma/{id}', [PDFController::class, 'generatecronogramaPDF'])->name('generar-cronograma');

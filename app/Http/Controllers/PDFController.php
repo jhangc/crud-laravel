@@ -14,6 +14,61 @@ class PdfController extends Controller
     //     ->stream('ticket.pdf');
     // }
 
+    public function generatecronogramaPDF(Request $request, $id)
+    {
+        $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
+        $prestamo = \App\Models\credito::find($id);
+        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->first();
+
+        $inventarioterminado = \App\Models\Inventario::where('id_prestamo', $id)
+            ->where('tipo_inventario', 1)
+            ->get();
+
+        $inventarioproceso = \App\Models\Inventario::where('id_prestamo', $id)
+            ->where('tipo_inventario', 2)
+            ->get();
+
+        $inventariomateriales = \App\Models\Inventario::where('id_prestamo', $id)
+            ->where('tipo_inventario', 3)
+            ->get();
+
+        $descripcion = $prestamo->descripcion_negocio;
+        $margenmanual = \App\Models\MargenVenta::where('giro_economico', $descripcion)->first();
+
+        $cliente = $prestamo->clientes->first();
+        $responsable = auth()->user();
+
+        $tipo = $prestamo->tipo;
+
+        $comentarioasesor = $prestamo->comentario_asesor;
+        $comentarioadministrador = $prestamo->comentario_administrador;
+
+        // Calcular Totales
+        $factorsemana = 15 / 7;
+        $factormes = $factorsemana * 2;
+
+        $totalprestamo = $prestamo->monto_total;
+        $cuotaprestamo = $cuotas->monto;
+
+        $estado = $prestamo->estado;
+
+        $data = compact(
+            'prestamo',
+            'cliente',
+            'responsable',
+        );
+
+        // return view('pdf.cronogramaindividual');
+
+        // Generar y retornar el PDF
+        // $pdf = Pdf::loadView('pdf.cronogramaindividual', $data);
+        // return $pdf->stream('ticket.pdf');
+
+        $pdf = Pdf::loadView('pdf.cronogramaindividual', $data)->setPaper('a4', 'landscape');
+return $pdf->stream('ticket.pdf');
+    }
+
+
     public function generatePDF(Request $request, $id)
     {
         $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
