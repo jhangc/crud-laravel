@@ -331,6 +331,7 @@
     }
 
     cargarData();
+    toggleFields();
 });
     let clientesArray = [];
     let totalMonto = 0;
