@@ -1187,7 +1187,7 @@ class creditoController extends Controller
         $boletas = \App\Models\Boleta::where('id_prestamo', $id)->get();
         $gastosProducir = \App\Models\GastoProducir::where('id_prestamo', $id)->with('gastos')->get();
         $ventasMensuales = \App\Models\VentasMensuales::where('id_prestamo', $id)->get();
-        $gastosAgricolas =   \App\Models\ProductoAgricola::where('id_prestamo', $id)->get();
+        $gastosAgricolas =   \App\Models\ProductoAgricola::where('id_prestamo', $id)->first();
         $inventarioMaterial = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario', 3)->get();
         $tipoProducto = \App\Models\TipoProducto::where('id_prestamo', $id)->get();
 
