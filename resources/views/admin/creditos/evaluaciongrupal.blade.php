@@ -32,34 +32,37 @@
 <div class="row">
 
 
-
+@foreach ($prestamo->clientes as $cliente)
     <div class="col-md-6">
         <div class="card card-outline card-warning">
             <div class="card-header">
-                <h3 class="card-title">Montos individuales</h3>
+                <h4 class="card-title">Montos individuales de: {{ $cliente->nombre }} </h4>
             </div>
             <div class="card-body">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Cliente</th>
-                            <th>Total</th>
-                            <th>Cuota</th>
+                            <th>Numero</th>
+                            <th>Fecha</th>
+                            <th>Monto</th>
                         </tr>
                     </thead>
                     <tbody>
-
-                        <tr>
-                            <td>Garantia</td>
-                            <td></td>
-                            <td>Es el margen generico segun actividad</td>
-                        </tr>
-
+                          @foreach($cuotastodas as $cuota)
+                          @if($cuota->cliente_id == $cliente->id)
+                            <tr>
+                                <td>{{ $cuota->numero }}</td>
+                                <td>{{ $cuota->fecha }}</td>
+                                <td>{{ $cuota->monto }}</td>
+                            </tr>
+                          @endif
+                        @endforeach
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+@endforeach
 </div>
 
 

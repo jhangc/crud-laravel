@@ -89,7 +89,7 @@ class creditoController extends Controller
         $activos = \App\Models\Activos::where('prestamo_id', $id)->first();
         $ventasdiarias = \App\Models\VentasDiarias::where('prestamo_id', $id)->get();
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->first();
-
+        $cuotastodas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
         $inventarioterminado = \App\Models\Inventario::where('id_prestamo', $id)
             ->where('tipo_inventario', 1)
             ->get();
@@ -675,7 +675,6 @@ class creditoController extends Controller
                     }
             }
         } else {
-
             $totalgarantia = $garantias->sum('valor_mercado');
 
             return view('admin.creditos.evaluaciongrupal', compact(
@@ -687,7 +686,8 @@ class creditoController extends Controller
                 'modulo',
                 'comentarioasesor',
                 'comentarioadministrador',
-                'estado'
+                'estado',
+                'cuotastodas'
             ));
         }
     }
@@ -1238,21 +1238,26 @@ class creditoController extends Controller
     public function edit($id)
     {
 
-    $credito = credito::find($id);
-    $tipo = $credito->tipo;
-    switch ($tipo) {
-        case 'comercio':
+        $credito = credito::find($id);
+        $tipo = $credito->tipo;
+        $producto = $credito->producto;
+        $subproducto = $credito->subproducto;
+        if ($tipo == 'comercio' && $producto != 'grupal') {
             return view('admin.creditos.editcomercio', compact('id'));
-        case 'servicio':
+        }
+        if ($tipo == 'servicio') {
             return view('admin.creditos.editservico', compact('id'));
-        case 'produccion':
+        }
+        if ($tipo == 'produccion' && $producto != 'agricola') {
             return view('admin.creditos.editproduccion', compact('id'));
-        case 'agricola':
+        }
+        if ($tipo == 'produccion' && $producto == 'agricola') {
             return view('admin.creditos.editagricola', compact('id'));
-        case 'grupal':
+        }
+        if ($tipo == 'comercio'&& $producto == 'grupal') {
             return view('admin.creditos.editgrupal', compact('id'));
+        }
     }
-}
 
 
 
