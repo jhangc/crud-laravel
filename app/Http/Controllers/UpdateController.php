@@ -225,7 +225,7 @@ class UpdateController extends Controller
         $fechaconperiodogracia->modify("+$request->periodo_gracia_dias days");
         $tiempo = $request->tiempo_credito;
         $montoTotal = $montoIndividual;
-        $frecuencia =  $request->recurrencia;
+        $frecuencia =  $request->tipo_producto == 'grupal' ? $request->recurrencia1 : $request->recurrencia;
         $tasaInteres = $request->tasa_interes;
         $tasaDiaria = pow(1 + ($tasaInteres / 100), 1 / 360) - 1;
         $interesesPeriodoGracia = $montoTotal * $tasaDiaria * $request->periodo_gracia_dias;
@@ -345,7 +345,7 @@ class UpdateController extends Controller
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
             $prestamo->destino = $request->destino_credito;
-            $prestamo->recurrencia = $request->recurrencia;
+            $prestamo->recurrencia = $request->recurrencia1;
             $prestamo->tasa = $request->tasa_interes;
             $prestamo->tiempo = $request->tiempo_credito;
             $prestamo->monto_total = $request->monto;

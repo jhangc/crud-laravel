@@ -480,7 +480,7 @@
             formData.append('inventarioArray1', JSON.stringify([]));
             formData.append('ventasdiarias', JSON.stringify([]));
             $.ajax({
-                url:`/admin/creditos/updatecomercio/${idc}`,
+                url:`/admin/creditos/updategrupal/${idc}`,
                 type: 'POST',
                 data: formData,
                 contentType: false,
