@@ -949,13 +949,32 @@ class creditoController extends Controller
         $fechaconperiodogracia = clone $fecha_desembolso;
         $fechaconperiodogracia->modify("+$request->periodo_gracia_dias days");
         $tiempo = $request->tiempo_credito;
+        $frecuencia = $request->tipo_producto == 'grupal' ? $request->recurrencia1 : $request->recurrencia;
         $montoTotal = $monto;
         $tasaInteres = $request->tasa_interes;
         $tasaDiaria = pow(1 + ($tasaInteres / 100), 1 / 360) - 1;
         $interesesPeriodoGracia = $montoTotal * $tasaDiaria * $request->periodo_gracia_dias;
-        $cuotaSinGracia = $this->calcularCuota($montoTotal, $tasaInteres, $tiempo);
+        $cuotaSinGracia = $this->calcularCuota($montoTotal, $tasaInteres, $tiempo, $frecuencia);
         $interesesMensualesPorGracia = $interesesPeriodoGracia / $tiempo;
-        $fechaCuota = $fechaconperiodogracia->copy()->addMonth();
+
+        switch ($frecuencia) {
+            case 'catorcenal':
+                $fechaCuota = $fechaconperiodogracia->copy()->addDays(14);
+                break;
+            case 'quincenal':
+                $fechaCuota = $fechaconperiodogracia->copy()->addDays(15);
+                break;
+            case 'veinteochenal':
+                $fechaCuota = $fechaconperiodogracia->copy()->addDays(28);
+                break;
+            case 'semestral':
+                $fechaCuota = $fechaconperiodogracia->copy()->addMonths(6);
+                break;
+            case 'mensual':
+            default:
+                $fechaCuota = $fechaconperiodogracia->copy()->addMonth();
+                break;
+        }
 
         for ($i = 1; $i <= $tiempo; $i++) {
             $cronograma = new Cronograma();
@@ -1182,10 +1201,37 @@ class creditoController extends Controller
             }
         }
     }
-    public function calcularCuota($monto, $tea, $periodos)
+    // public function calcularCuota($monto, $tea, $periodos)
+    // {
+    //     $tasaMensual = pow(1 + ($tea / 100), 1 / 12) - 1;
+    //     return ($monto * $tasaMensual * pow((1 + $tasaMensual), $periodos)) / (pow((1 + $tasaMensual), $periodos) - 1);
+    // }
+
+
+    public function calcularCuota($monto, $tea, $periodos, $frecuencia)
     {
-        $tasaMensual = pow(1 + ($tea / 100), 1 / 12) - 1;
-        return ($monto * $tasaMensual * pow((1 + $tasaMensual), $periodos)) / (pow((1 + $tasaMensual), $periodos) - 1);
+    // Determinar el número de periodos por año según la frecuencia de pago
+        switch ($frecuencia) {
+            case 'catorcenal':
+            $n = 365 / 14;
+            break;
+            case 'quincenal':
+                $n = 365 / 15;
+                break;
+            case 'semestral':
+                $n = 2;
+                break;
+            case 'mensual':
+            default:
+                $n = 12;
+                break;
+        }
+    
+        // Calcular la tasa efectiva del periodo
+        $tasaPeriodo = pow(1 + ($tea / 100), 1 / $n) - 1;
+    
+        // Calcular la cuota usando la fórmula de amortización francesa
+        return ($monto * $tasaPeriodo * pow(1 + $tasaPeriodo, $periodos)) / (pow(1 + $tasaPeriodo, $periodos) - 1);
     }
     /**
      * Display the specified resource.
