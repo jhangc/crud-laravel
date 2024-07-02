@@ -26,6 +26,7 @@
 <div class="row evaluacion">
     <h3 class="titulo">GENERAR DOCUMENTOS</h3>
 </div>
+@if($prestamo->producto !="grupal")
 <div class="row justify-content-center">
     <div class="col-md-4 text-center mb-3">
         <button type="button" class="btn btn-danger btn-block" onclick="imprimirPDF()">Generar Cronograma</button>
@@ -37,28 +38,22 @@
         <button type="button" class="btn btn-primary btn-block" onclick="generarDocumento('ejemplo')">Ejemplo</button>
     </div> -->
 </div>
-
-<div class="row evaluacion">
-    <h3 class="titulo">SUBIR DOCUMENTOS</h3>
-
-</div>
-
-<div class="row justify-content-center">
-    <div class="col-md-6">
-    <form action="" method="POST" enctype="multipart/form-data">
-            @csrf
-            <div class="form-group">
-                <label for="documento">Selecciona un documento (PDF, Word, Imagen):</label>
-                <div class="input-group">
-                    <input type="file" class="form-control" id="documento" name="documento" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" required>
-                    <div class="input-group-append">
-                        <button type="submit" class="btn btn-primary">Subir Documento</button>
-                    </div>
-                </div>
-            </div>
-        </form>
+@else
+    <div class="row justify-content-center">
+        <div class="col-md-4 text-center mb-3">
+            <button type="button" class="btn btn-danger btn-block" onclick="cronogramagrupalPDF()">Generar Cronograma</button>
+        </div>
+        <div class="col-md-4 text-center mb-3">
+            <button type="button" class="btn btn-primary btn-block" onclick="generarcontratogrupal()">Generar Contrato Grupal</button>
+        </div>
+        <div class="col-md-4 text-center mb-3">
+            <button type="button" class="btn btn-primary btn-block" onclick="generarcartilla()">Generar Cartilla</button>
+        </div>
     </div>
-</div>
+
+@endif
+
+
 
 
 
@@ -74,12 +69,39 @@
 <script>
 function imprimirPDF() {
     var prestamoId = '{{$prestamo->id}}';
-    var url = '{{ url('/generar-cronograma')}}' + '/' + prestamoId;
+    var url = "{{ url('/generar-cronograma') }}" + '/' + prestamoId;
 
     // Abre la URL en una nueva pestaña
     window.open(url, '_blank');
 }
 
+
+function cronogramagrupalPDF() {
+    var prestamoId = '{{$prestamo->id}}';
+    var url = "{{ url('/generar-cronogramagrupal') }}" + '/' + prestamoId;
+
+
+    // Abre la URL en una nueva pestaña
+    window.open(url, '_blank');
+}
+
+function generarcontratogrupal() {
+    var prestamoId = '{{$prestamo->id}}';
+    var url = "{{ url('/generar-contratogrupal') }}" + '/' + prestamoId;
+
+
+    // Abre la URL en una nueva pestaña
+    window.open(url, '_blank');
+}
+
+function generarcartilla() {
+    var prestamoId = '{{$prestamo->id}}';
+    var url = "{{ url('/generar-cartilla') }}" + '/' + prestamoId;
+
+
+    // Abre la URL en una nueva pestaña
+    window.open(url, '_blank');
+}
 </script>
 
 

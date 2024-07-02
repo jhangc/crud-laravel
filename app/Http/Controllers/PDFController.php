@@ -65,7 +65,84 @@ class PdfController extends Controller
         // return $pdf->stream('ticket.pdf');
 
         $pdf = Pdf::loadView('pdf.cronogramaindividual', $data)->setPaper('a4', 'landscape');
-    return $pdf->stream('ticket.pdf');
+        return $pdf->stream('ticket.pdf');
+    }
+
+    public function generatecronogramagrupalPDF(Request $request, $id)
+    {
+        $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
+        $prestamo = \App\Models\credito::find($id);
+        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
+
+        $responsable = auth()->user();
+
+
+
+        $data = compact(
+            'prestamo',
+            'responsable',
+            'cuotas',
+            'credito_cliente'
+        );
+
+        // return view('pdf.cronogramaindividual');
+
+        // Generar y retornar el PDF
+        $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
+        return $pdf->stream('ticket.pdf');
+
+        // $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
+        // return $pdf->stream('ticket.pdf');
+    }
+
+    public function generatecrontratogrupalPDF(Request $request, $id)
+    {
+        $prestamo = \App\Models\credito::find($id);
+        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
+        $responsable = auth()->user();
+
+        $data = compact(
+            'prestamo',
+            'responsable',
+            'cuotas',
+            'credito_cliente'
+        );
+
+        // Generar y retornar el PDF
+        $pdf = Pdf::loadView('pdf.contratogrupal', $data);
+        return $pdf->stream('ticket.pdf');
+
+        // $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
+        // return $pdf->stream('ticket.pdf');
+    }
+
+    public function generatecartillaPDF(Request $request, $id)
+    {
+        $prestamo = \App\Models\credito::find($id);
+        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
+        $responsable = auth()->user();
+
+        $date = \Carbon\Carbon::now();
+
+        $formattedDate = $date->formatLocalized('%d DE %B DEL %Y');
+
+        $data = compact(
+            'prestamo',
+            'responsable',
+            'cuotas',
+            'credito_cliente',
+            'formattedDate'
+        );
+
+        // Generar y retornar el PDF
+        $pdf = Pdf::loadView('pdf.cartilla', $data);
+        return $pdf->stream('ticket.pdf');
+
+        // $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
+        // return $pdf->stream('ticket.pdf');
     }
 
 
