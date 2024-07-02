@@ -21,6 +21,6 @@ class Activos extends Model
 
     public function prestamo()
     {
-        return $this->belongsTo(Credito::class, 'prestamo_id');
+        return $this->belongsTo(credito::class, 'prestamo_id');
     }
 }

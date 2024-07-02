@@ -693,7 +693,7 @@ class creditoController extends Controller
     public function viewpagarcredito()
     {
         // Obtener solo los clientes activos (activo = 1)
-        $creditos = Credito::with('clientes')
+        $creditos = credito::with('clientes')
             ->where('activo', 1)
             ->where('estado', 'aprobado')
             ->get();
