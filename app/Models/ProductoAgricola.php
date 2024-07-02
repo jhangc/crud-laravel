@@ -25,6 +25,6 @@ class ProductoAgricola extends Model
 
     public function prestamo()
     {
-        return $this->belongsTo(Credito::class, 'id_prestamo');
+        return $this->belongsTo(credito::class, 'id_prestamo');
     }
 }
