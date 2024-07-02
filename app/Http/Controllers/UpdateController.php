@@ -197,7 +197,7 @@ class UpdateController extends Controller
 
     protected function updateClienteYcronograma($prestamo, $request)
     {
-        $cliente = Cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
+        $cliente = cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
         if ($cliente) {
             CreditoCliente::where('prestamo_id', $prestamo->id)->delete();
             $credito_cliente = CreditoCliente::where('prestamo_id', $prestamo->id)->where('cliente_id', $cliente->id)->first();
@@ -407,7 +407,7 @@ class UpdateController extends Controller
     {
         if (is_array($clientesArray)) {
             foreach ($clientesArray as $clienteData) {
-                $cliente = Cliente::where('documento_identidad', $clienteData['documento'])->where('activo', 1)->first();
+                $cliente = cliente::where('documento_identidad', $clienteData['documento'])->where('activo', 1)->first();
                 if ($cliente) {
                     $credito_cliente = new CreditoCliente();
                     $credito_cliente->prestamo_id = $prestamo->id;
