@@ -89,8 +89,7 @@ function generarcontratogrupal() {
     var prestamoId = '{{$prestamo->id}}';
     var url = "{{ url('/generar-contratogrupal') }}" + '/' + prestamoId;
 
-
-    // Abre la URL en una nueva pestaña
+   // Abre la URL en una nueva pestaña
     window.open(url, '_blank');
 }
 

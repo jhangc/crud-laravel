@@ -138,7 +138,7 @@ class PdfController extends Controller
         );
 
         // Generar y retornar el PDF
-        $pdf = Pdf::loadView('pdf.cartilla', $data);
+        $pdf = Pdf::loadView('pdf.cartilla', $data)->setPaper('a4');
         return $pdf->stream('ticket.pdf');
 
         // $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
