@@ -716,7 +716,7 @@ class creditoController extends Controller
         return view('admin.caja.desembolso', compact(
             'prestamo',
             'cliente',
-            'responsable',            
+            'responsable',
             'estado',
             'cuotas'
         ));
@@ -1217,23 +1217,28 @@ class creditoController extends Controller
      * Show the form for editing the specified resource.
      */
     public function edit($id)
-{
+    {
 
-    $credito = credito::find($id);
-    $tipo = $credito->tipo;
-    switch ($tipo) {
-        case 'comercio':
+        $credito = credito::find($id);
+        $tipo = $credito->tipo;
+        $producto = $credito->producto;
+        $subproducto = $credito->subproducto;
+        if ($tipo == 'comercio') {
             return view('admin.creditos.editcomercio', compact('id'));
-        case 'servicio':
+        }
+        if ($tipo == 'servicio') {
             return view('admin.creditos.editservico', compact('id'));
-        case 'produccion':
+        }
+        if ($tipo == 'produccion' && $producto != 'agricola') {
             return view('admin.creditos.editproduccion', compact('id'));
-        case 'agricola':
+        }
+        if ($tipo == 'produccion' && $producto == 'agricola') {
             return view('admin.creditos.editagricola', compact('id'));
-        case 'grupal':
+        }
+        if ($tipo == 'grupal') {
             return view('admin.creditos.editgrupal', compact('id'));
+        }
     }
-}
 
 
 

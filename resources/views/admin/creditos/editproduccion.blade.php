@@ -5,7 +5,7 @@
     <div class="col-md-12">
         <div class="card card-outline card-primary">
             <div class="card-header">
-                <h3 class="card-title">Editar Credito Producción</h3>
+                <h3 class="card-title"> Credito Producción</h3>
             </div>
             <div class="card-body">
                 <form enctype="multipart/form-data" id="prestamoForm" name="prestamoForm">
