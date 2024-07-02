@@ -712,7 +712,7 @@ class creditoController extends Controller
     public function viewpagarcredito()
     {
         // Obtener solo los clientes activos (activo = 1)
-        $creditos = Credito::with('clientes')
+        $creditos = credito::with('clientes')
             ->where('activo', 1)
             ->where('estado', 'aprobado')
             ->get();
@@ -1206,7 +1206,7 @@ class creditoController extends Controller
         $boletas = \App\Models\Boleta::where('id_prestamo', $id)->get();
         $gastosProducir = \App\Models\GastoProducir::where('id_prestamo', $id)->with('gastos')->get();
         $ventasMensuales = \App\Models\VentasMensuales::where('id_prestamo', $id)->get();
-        $gastosAgricolas =   \App\Models\ProductoAgricola::where('id_prestamo', $id)->get();
+        $gastosAgricolas =   \App\Models\ProductoAgricola::where('id_prestamo', $id)->first();
         $inventarioMaterial = \App\Models\Inventario::where('id_prestamo', $id)->where('tipo_inventario', 3)->get();
         $tipoProducto = \App\Models\TipoProducto::where('id_prestamo', $id)->get();
 
@@ -1238,21 +1238,21 @@ class creditoController extends Controller
     public function edit($id)
     {
 
-        $credito = credito::find($id);
-        $tipo = $credito->tipo;
-        switch ($tipo) {
-            case 'comercio':
-                return view('admin.creditos.editcomercio', compact('id'));
-            case 'servicio':
-                return view('admin.creditos.editservico', compact('id'));
-            case 'produccion':
-                return view('admin.creditos.editproduccion', compact('id'));
-            case 'agricola':
-                return view('admin.creditos.editagricola', compact('id'));
-            case 'grupal':
-                return view('admin.creditos.editgrupal', compact('id'));
-        }
+    $credito = credito::find($id);
+    $tipo = $credito->tipo;
+    switch ($tipo) {
+        case 'comercio':
+            return view('admin.creditos.editcomercio', compact('id'));
+        case 'servicio':
+            return view('admin.creditos.editservico', compact('id'));
+        case 'produccion':
+            return view('admin.creditos.editproduccion', compact('id'));
+        case 'agricola':
+            return view('admin.creditos.editagricola', compact('id'));
+        case 'grupal':
+            return view('admin.creditos.editgrupal', compact('id'));
     }
+}
 
 
 
