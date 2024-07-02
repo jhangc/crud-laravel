@@ -60,13 +60,29 @@
 <div class="row" style="text-align:center;">
     <div class="col-md-12 mb-5">
 
-        <button type="button" class="btn btn-primary btnprestamo">Realizar desembolso</button>
+    <button  onclick="depositar()" type="button" class="btn btn-primary btnprestamo">Realizar desembolso</button>
         <a href="{{ url('admin/caja/pagarcredito') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
     </div>
 </div>
 
 
 <script>
+function depositar() {
+    
+    var prestamoId = '{{$prestamo->id}}';
+    var url = "{{ url('/generar-ticket-desembolso') }}" + '/' + prestamoId;
+    window.open(url, '_blank');
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: 'Prestamo Pagado'
+                     }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{{url('admin/caja/pagarcredito')}}';
+                }
+    });
+}
+
 function imprimirPDF() {
     var prestamoId = '{{$prestamo->id}}';
     var url = "{{ url('/generar-cronograma') }}" + '/' + prestamoId;

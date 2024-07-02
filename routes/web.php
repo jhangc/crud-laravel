@@ -106,3 +106,5 @@ Route::get('/generar-cronograma/{id}', [PDFController::class, 'generatecronogram
 Route::get('/generar-cronogramagrupal/{id}', [PDFController::class, 'generatecronogramagrupalPDF'])->name('generar-cronograma-grupal');
 Route::get('/generar-contratogrupal/{id}', [PDFController::class, 'generatecrontratogrupalPDF'])->name('generar-contrato-grupal');
 Route::get('/generar-cartilla/{id}', [PDFController::class, 'generatecartillaPDF'])->name('generar-cartilla');
+Route::get('/generar-ticket-desembolso/{id}', [PDFController::class, 'generateticket'])->name('generar-ticket');
+
