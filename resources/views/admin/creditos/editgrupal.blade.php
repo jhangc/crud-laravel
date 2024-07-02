@@ -313,8 +313,33 @@
             error: function(xhr) {
                 console.error("Error al recuperar la información: " + xhr.statusText);
             }
-        });
-    }
+         });
+            var selectionTipoCredito = document.getElementById('tipo_credito').value;
+       
+            $.ajax({
+                url: '{{ url('/admin/credito/descripcion') }}',
+                type: 'GET',
+                data: {
+                    opcion: selectionTipoCredito
+                },
+                success: function(response) {
+                    var descripciones = response.data;
+                    console.log(descripciones);
+                    var descripcionSelect = document.getElementById('descripcion_negocio');
+                    descripcionSelect.innerHTML =
+                        '<option value="" selected >Seleccione una descripción...</option>';
+                    descripciones.forEach(function(descripcion) {
+                        var option = document.createElement('option');
+                        option.value = descripcion.giro_economico;
+                        option.text = descripcion.giro_economico;
+                        descripcionSelect.appendChild(option);
+                    });
+                },
+                error: function(xhr) {
+                    console.error(xhr);
+                }
+            });
+        }
 
     function llenarClientes(clientes) {
         clientesArray = clientes.map(clienteData => {
@@ -331,8 +356,8 @@
     }
 
     cargarData();
-    toggleFields();
-});
+    
+ });
     let clientesArray = [];
     let totalMonto = 0;
 
