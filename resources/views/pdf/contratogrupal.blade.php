@@ -384,39 +384,87 @@
     <p>Por su parte, en los casos que Grupo CrediPalmo solicite la utilización de la vía arbitral, no será
     obligatorio para EL GRUPO someterse a dicha vía. Grupo CrediPalmo pone a disposición de EL GRUPO la atención de
     reclamos mediante los siguientes canales:</p>
-    <br>De manera presencial a través de cualquiera de nuestras agencias a
-    nivel nacional <br>A través de nuestra página web <br>Llamando a la central telefónica <br>Cualquiera de los
+    <ol style="list-style-type: lower-alpha; font-size:14px">
+        <li>De manera presencial a través de cualquiera de nuestras agencias a
+            nivel nacional. </li>
+        <li>A través de nuestra página web. </li>
+        <li>Llamando a la central telefónica. </li>
+    </ol>
+
+    <p>Cualquiera de los
     integrantes de EL GRUPO podrá presentar el reclamo, para lo cual deberán presentar la información indicada en la
     página web o cualquiera de los canales antes indicados. Grupo CrediPalmo brindará la respuesta al cliente y/o
-    usuario, de acuerdo a lo dispuesto en la normativa vigente en materia de atención de reclamos.<br>DÉCIMO SEPTIMO,
-    DERECHO DE COMPENSACIÓN: De conformidad con lo establecido en el numeral 11 del artículo 132º de la Ley Nº 26702 –
+    usuario, de acuerdo a lo dispuesto en la normativa vigente en materia de atención de reclamos.</p>
+    
+    <p><b>DÉCIMO SEPTIMO, DERECHO DE COMPENSACIÓN: </b>De conformidad con lo establecido en el numeral 11 del artículo 132º de la Ley Nº 26702 –
     Ley General del Sistema Financiero y del Sistema de Seguros y Orgánica de la Superintendencia de Banca, Seguros y
     AFP, Grupo CrediPalmo podrá cobrar (compensar) en forma parcial o total el monto adeudado (obligaciones vencidas y
     exigibles) por EL GRUPO, quedando autorizado a debitar de cualquier cuenta de los miembros de este último o a
     liquidar cualquier bien que se encuentre en custodia de Grupo CrediPalmo. Con la finalidad de cancelar la deuda en
     la moneda en que ha sido contraída, Grupo CrediPalmo podrá proceder a la conversión de moneda de acuerdo al tipo de
     cambio vigente para Grupo CrediPalmo a la fecha en que se realice la operación. Asimismo, Grupo CrediPlamo podrá
-    tomar las siguientes acciones: <br>Terminar de manera anticipada el Contrato, en cuyo caso, la consecuencia
-    inmediata será que EL GRUPO se encuentre obligado a pagar el total del Saldo Deudor que tenga con Grupo CrediPalmo.
-    <br>Bloquear temporal o definitivamente la cuenta. <br>Abrir una cuenta corriente (sin chequera) a nombre de EL
-    GRUPO bajo los términos y condiciones generales que para la apertura de dicha clase de cuentas tenga aprobados en
-    esa ocasión Grupo CrediPalmo, cargando en esa cuenta los saldos deudores o requerir el pago de su acreencia, según
-    las liquidaciones que practique, de conformidad con la ley aplicable. <br><br>En cualquiera de los casos antes
+    tomar las siguientes acciones: </p>
+
+    <ol style="list-style-type: lower-alpha; font-size:14px">
+        <li>Terminar de manera anticipada el Contrato, en cuyo caso, la consecuencia
+            inmediata será que EL GRUPO se encuentre obligado a pagar el total del Saldo Deudor que tenga con Grupo CrediPalmo.</li>
+        <li>Bloquear temporal o definitivamente la cuenta. </li>
+        <li>Abrir una cuenta corriente (sin chequera) a nombre de EL
+            GRUPO bajo los términos y condiciones generales que para la apertura de dicha clase de cuentas tenga aprobados en
+            esa ocasión Grupo CrediPalmo, cargando en esa cuenta los saldos deudores o requerir el pago de su acreencia, según
+            las liquidaciones que practique, de conformidad con la ley aplicable.  </li>
+    </ol>
+     
+    <p>En cualquiera de los casos antes
     señalados, Grupo CrediPalmo comunicará en un plazo posterior no mayor a quince (15) días la aplicación del supuesto
     correspondiente mediante los mecanismos de comunicación directos establecidos en la cláusula Décimo Quinta. En el
     supuesto que, se hubiesen procesado Transacciones (abonos y/o cargos, aperturas, duplicidad de códigos, entre otros)
     con error operativo, EL GRUPO autoriza a Grupo CrediPalmo, sin previo aviso, a realizar cargos y/o extornos o
     regularizaciones que se hubiesen podido realizar en la cuenta o crédito, los mismos que, de ser el caso, serán
     informados con posterioridad a EL GRUPO, de conformidad con los mecanismos de información directos en la cláusula
-    Décimo Quinta.<br><br>DÉCIMO OCTAVO: GESTIÓN DE COBRANZA Y GRABACIÓN DE LLAMADAS: EL GRUPO declara haber prestado su
+    Décimo Quinta.</p>
+    <p><b>DÉCIMO OCTAVO: GESTIÓN DE COBRANZA Y GRABACIÓN DE LLAMADAS:</b> EL GRUPO declara haber prestado su
     consentimiento sobre la posible gestión de cobranza que deba ser realizada por Grupo CrediPalmo o por terceros, en
-    caso de incumplimiento de EL GRUPO, Asimismo, EL GRUPO: CHICAS ……………………………., autoriza en forma expresa a Grupo
+    caso de incumplimiento de EL GRUPO, Asimismo, EL GRUPO:{{ $prestamo->nombre_prestamo }} , autoriza en forma expresa a Grupo
     CrediPalmo a realizar, de considerarlo necesario, las gestiones de cobranza por vía telefónica, escrita u otro
-    medio, de conformidad con la Ley Aplicable.<br>EL GRUPO autoriza a Grupo CrediPalmo a grabar cualquier tipo de
+    medio, de conformidad con la Ley Aplicable.</p>
+    <p>EL GRUPO autoriza a Grupo CrediPalmo a grabar cualquier tipo de
     conversación, solicitud, autorización, instrucción, adquisición y en general cualquier otro tipo de orden o
     manifestación de voluntad, relacionado con EL CRÉDITO, comprometiéndose a mantener absoluta reserva de las
     mismas.</p>
-    <br><br>Firmado en ………………… el …… del mes de ……. de 202…<br><br><br><br><br><br><br><br><br><br>
+    <style>
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+
+    <div class="page-break"></div>
+    @foreach ($prestamo->clientes as $cliente)
+    <table style="border-collapse: collapse; width: 100%;" border="1" >
+        <tr>
+            <td colspan="2" style="text-align: center;"><b>Datos</b></td>
+            <td  style="text-align: center; width:30%;"><b>Firma</b></td>
+        </tr>
+        <tr>
+            <td style="width:20%;"><b>Nombre:</b></td>
+            <td style="width:50%;">{{ $cliente->nombre }}</td>
+            <td rowspan="4"></td>
+        </tr>
+        <tr>
+            <td><b>DNI:</b></td>
+            <td>{{ $cliente->documento_identidad }}</td>
+        </tr>
+        <tr>
+            <td><b>Dirección:</b></td>
+            <td>{{ $cliente->direccion }}</td>
+        </tr>
+        <tr>
+            <td><b>Celular:</b></td>
+            <td>{{ $cliente->telefono }}</td>
+        </tr>
+    </table>
+    <br><br>
+    @endforeach
 </body>
 
 </html>
