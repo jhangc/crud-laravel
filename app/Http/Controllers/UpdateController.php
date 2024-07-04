@@ -237,7 +237,7 @@ class UpdateController extends Controller
                 for ($i = 1; $i <= $tiempo; $i++) {
                     $cronograma = new Cronograma();
                     $cronograma->fecha = $fechaCuota;
-                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia+0.03*$cuotaSinGracia; // Cuota fija más intereses distribuidos
+                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia+0.02*$cuotaSinGracia; // Cuota fija más intereses distribuidos
                     $cronograma->numero = $i;
                     $cronograma->id_prestamo = $prestamo->id;
                     $cronograma->cliente_id = $cliente->id; // Asignar cliente
@@ -263,7 +263,7 @@ class UpdateController extends Controller
                 for ($i = 1; $i <= $tiempo; $i++) {
                     $cronograma = new Cronograma();
                     $cronograma->fecha = $fechaCuota;
-                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia+0.030*$cuotaSinGracia; // Cuota fija más intereses distribuidos
+                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia+0.02*$cuotaSinGracia; // Cuota fija más intereses distribuidos
                     $cronograma->numero = $i;
                     $cronograma->id_prestamo = $prestamo->id;
                     $cronograma->cliente_id = $cliente->id; // Asignar cliente
