@@ -1254,10 +1254,13 @@ class creditoController extends Controller
     // Determinar el número de periodos por año según la frecuencia de pago
         switch ($frecuencia) {
             case 'catorcenal':
-            $n = 360 / 14;
+            $n = 24;
             break;
+            case 'veinteochenal':
+                $n = 12;
+                break;
             case 'quincenal':
-                $n = 360 / 15;
+                $n = 24;
                 break;
             case 'semestral':
                 $n = 2;
@@ -1270,6 +1273,8 @@ class creditoController extends Controller
     
         // Calcular la tasa efectiva del periodo
         $tasaPeriodo = pow(1 + ($tea / 100), 1 / $n) - 1;
+
+
     
         // Calcular la cuota usando la fórmula de amortización francesa
         return ($monto * $tasaPeriodo * pow(1 + $tasaPeriodo, $periodos)) / (pow(1 + $tasaPeriodo, $periodos) - 1);
