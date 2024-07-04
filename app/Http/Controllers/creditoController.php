@@ -1254,10 +1254,10 @@ class creditoController extends Controller
     // Determinar el número de periodos por año según la frecuencia de pago
         switch ($frecuencia) {
             case 'catorcenal':
-            $n = 365 / 14;
+            $n = 360 / 14;
             break;
             case 'quincenal':
-                $n = 365 / 15;
+                $n = 360 / 15;
                 break;
             case 'semestral':
                 $n = 2;

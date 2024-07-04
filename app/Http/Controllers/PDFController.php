@@ -88,12 +88,18 @@ class PdfController extends Controller
 
         // return view('pdf.cronogramaindividual');
 
-        // Generar y retornar el PDF
-        $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
-        return $pdf->stream('ticket.pdf');
+         // Cargar el contenido del cuerpo del PDF
+    $htmlContent = view('pdf.contratogrupal', $data)->render();
 
-        // $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
-        // return $pdf->stream('ticket.pdf');
+    // Crear una instancia de DomPDF
+    $pdf = PDF::loadHTML($htmlContent)
+        ->setPaper('A4', 'portrait')
+        ->setOption('margin-top', '50mm')
+        ->setOption('margin-bottom', '30mm')
+        ->setOption('header-html', view('pdf.partials.header')->render())
+        ->setOption('footer-html', view('pdf.partials.footer')->render());
+
+    return $pdf->stream('contrato.pdf');
     }
 
     public function generatecrontratogrupalPDF(Request $request, $id)
@@ -111,8 +117,16 @@ class PdfController extends Controller
         );
 
         // Generar y retornar el PDF
-        $pdf = Pdf::loadView('pdf.contratogrupal', $data);
-        return $pdf->stream('ticket.pdf');
+
+         // Cargar la vista para generar el contenido del PDF
+    $pdf = PDF::loadView('pdf.contratogrupal', $data)
+    ->setPaper('A4', 'portrait');
+
+// Agregar encabezado y pie de página
+$pdf->setOption('header-html', view('pdf.partial.header')->render());
+$pdf->setOption('footer-html', view('pdf.partial.footer')->render());
+
+        return $pdf->stream('contratogrupal.pdf');
 
         // $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
         // return $pdf->stream('ticket.pdf');
