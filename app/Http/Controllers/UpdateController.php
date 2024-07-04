@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\credito;
-use App\Models\Cliente;
+use App\Models\cliente;
 use App\Models\CreditoCliente;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -306,13 +306,16 @@ class UpdateController extends Controller
     // Determinar el número de periodos por año según la frecuencia de pago
         switch ($frecuencia) {
             case 'catorcenal':
-            $n = 365 / 14;
+            $n = 24;
             break;
             case 'quincenal':
-                $n = 365 / 15;
+                $n = 12;
                 break;
             case 'semestral':
                 $n = 2;
+                break;
+            case 'veinteochenal':
+                $n = 12;
                 break;
             case 'mensual':
             default:
