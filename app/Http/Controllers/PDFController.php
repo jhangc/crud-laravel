@@ -86,20 +86,8 @@ class PdfController extends Controller
             'credito_cliente'
         );
 
-        // return view('pdf.cronogramaindividual');
-
-         // Cargar el contenido del cuerpo del PDF
-    $htmlContent = view('pdf.contratogrupal', $data)->render();
-
-    // Crear una instancia de DomPDF
-    $pdf = PDF::loadHTML($htmlContent)
-        ->setPaper('A4', 'portrait')
-        ->setOption('margin-top', '50mm')
-        ->setOption('margin-bottom', '30mm')
-        ->setOption('header-html', view('pdf.partials.header')->render())
-        ->setOption('footer-html', view('pdf.partials.footer')->render());
-
-    return $pdf->stream('contrato.pdf');
+        $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
+        return $pdf->stream('ticket.pdf');
     }
 
     public function generatecrontratogrupalPDF(Request $request, $id)
@@ -116,20 +104,9 @@ class PdfController extends Controller
             'credito_cliente'
         );
 
-        // Generar y retornar el PDF
 
-         // Cargar la vista para generar el contenido del PDF
-    $pdf = PDF::loadView('pdf.contratogrupal', $data)
-    ->setPaper('A4', 'portrait');
-
-// Agregar encabezado y pie de página
-$pdf->setOption('header-html', view('pdf.partial.header')->render());
-$pdf->setOption('footer-html', view('pdf.partial.footer')->render());
-
-        return $pdf->stream('contratogrupal.pdf');
-
-        // $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
-        // return $pdf->stream('ticket.pdf');
+        $pdf = Pdf::loadView('pdf.contratogrupal', $data)->setPaper('a4');
+        return $pdf->stream('ticket.pdf');
     }
 
     public function generatecartillaPDF(Request $request, $id)
@@ -776,14 +753,15 @@ $pdf->setOption('footer-html', view('pdf.partial.footer')->render());
                 }
         }
     }
-    public function generateticket($id) {
+    public function generateticket($id)
+    {
         $prestamo = \App\Models\credito::find($id);
         $creditos = \App\Models\CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
-        $prestamo->estado='pagado';
+        $prestamo->estado = 'pagado';
         $prestamo->save();
         $pdf = Pdf::loadView('pdf.ticket', compact('prestamo', 'creditos'))
             ->setPaper([0, 0, 205, 800]);
-    
+
         return $pdf->stream('ticket.pdf');
     }
 }

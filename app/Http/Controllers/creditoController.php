@@ -911,8 +911,12 @@ class creditoController extends Controller
                             $this->guardarCronograma($prestamo, $cliente, $request, $clienteData['monto']);
                         }
                     }
+                    //guardar cronograma del  credito en general
+                    $this->guardarCronograma($prestamo, null, $request, $request->monto);
                 }
             }
+
+
             $this->saveArrayData($decodedData, $prestamo->id, $request);
             $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
             $tiempo_credito = $request->tiempo_credito;
@@ -966,7 +970,7 @@ class creditoController extends Controller
                     $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia+0.02*$cuotaSinGracia; // Cuota fija más intereses distribuidos
                     $cronograma->numero = $i;
                     $cronograma->id_prestamo = $prestamo->id;
-                    $cronograma->cliente_id = $cliente->id; // Asignar cliente
+                    $cronograma->cliente_id = $cliente->id??null; // Asignar cliente
                     $cronograma->save();
                     $fechaCuota = $fechaCuota->addDays(14);
                 }

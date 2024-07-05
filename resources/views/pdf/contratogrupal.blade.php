@@ -35,7 +35,7 @@
         }
 
         .content {
-            margin: 120px 30px 50px 30px; /* Ajusta según sea necesario */
+            margin: 30px;
         }
 
         .page-break {
