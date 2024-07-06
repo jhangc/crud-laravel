@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class PdfController extends Controller
 {
@@ -121,9 +122,15 @@ class PdfController extends Controller
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
         $responsable = auth()->user();
 
-        $date = \Carbon\Carbon::now();
+        // Establece la configuración regional a español
+        setlocale(LC_TIME, 'es_ES.UTF-8');
 
-        $formattedDate = $date->formatLocalized('%d DE %B DEL %Y');
+        // Usa Carbon para obtener la fecha actual
+        $date = Carbon::now();
+
+        // Formatea la fecha con la configuración regional establecida
+        $formattedDate = $date->translatedFormat(' d \d\e F \d\e\l Y');
+
 
         $data = compact(
             'prestamo',

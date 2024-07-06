@@ -39,6 +39,8 @@
     <h1>CARTILLA DE IDENTIFICACIÓN</h1>
     <p><b>Denominación de EL GRUPO:</b> {{ $prestamo->nombre_prestamo }}<br>
         <b>FECHA:</b>{{ $formattedDate }}
+
+        
         <br><br>
         <b>PRIMERO:</b> EL GRUPO enterado del contenido y alcance jurídico de las obligaciones que contraen con la
         celebración de este Contrato, suscriben manifestando que tienen conocimiento y comprende plenamente los términos
