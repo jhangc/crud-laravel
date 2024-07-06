@@ -12,6 +12,19 @@
             line-height: 1.6;
         }
 
+        .header{
+            position: fixed;
+            top: -70px;
+            left: -45px;
+        }
+
+        .header h3{
+            padding: 5px;
+            background-color: #044B6B;
+            color: white;
+            font-style: italic
+        }
+
         h1 {
             text-align: center;
             color:black;
@@ -35,7 +48,7 @@
         }
 
         .content {
-            margin: 20px;
+            margin: 0px 20px;
         }
 
         .page-break {
@@ -45,6 +58,10 @@
 </head>
 
 <body>
+    <header class="header">
+        <h3>Grupo Credipalmo</h3>
+        
+    </header>
 
     <div class="content">
         <h1>CONTRATO CRÉDITO GRUPAL</h1>
