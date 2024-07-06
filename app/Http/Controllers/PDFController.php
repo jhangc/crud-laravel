@@ -70,14 +70,18 @@ class PdfController extends Controller
 
     public function generatecronogramagrupalPDF(Request $request, $id)
     {
-        $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
         $prestamo = \App\Models\credito::find($id);
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
-
         $responsable = auth()->user();
 
-
+        // Formatear los datos adicionales necesarios
+        foreach ($cuotas as $cuota) {
+            $cuota->dias = (new \DateTime($cuota->fecha))->diff(new \DateTime($prestamo->fecha_desembolso))->days;
+            $cuota->detalle = $cuota->numero == 0 ? 'Credito' : 'Saldo del Capital';
+            $cuota->deuda = $prestamo->monto_total;
+            $cuota->total = $cuota->monto + 0.02 * $cuota->monto; // Incluyendo cualquier otro componente necesario
+        }
 
         $data = compact(
             'prestamo',
@@ -89,6 +93,7 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
         return $pdf->stream('ticket.pdf');
     }
+
 
     public function generatecrontratogrupalPDF(Request $request, $id)
     {

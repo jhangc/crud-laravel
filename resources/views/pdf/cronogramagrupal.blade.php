@@ -38,7 +38,7 @@
 <body>
 
     <h2>CRONOGRAMA DE CRÉDITOS</h2>
-    <table style="border: none !important; width: 100%; margin-buttom:30px">
+    <table style="border: none !important; width: 100%; margin-bottom:30px">
         <tr>
             <td><b>Agencia:</b></td>
             <td>CHICLAYO</td>
@@ -62,31 +62,63 @@
             <td>{{ $prestamo->fecha_desembolso }}</td>
             <td><b>Tasa (%):</b></td>
             <td>{{ $prestamo->tasa }}</td>
-            {{-- <td>Cuotas:</td>
-            <td>{{ $prestamo->fecha_desembolso }}</td> --}}
         </tr>
     </table>
 
     <br><br>
+
+    <!-- Cronograma Grupal -->
+    <h4 class="card-title" style="text-align: center; margin: 0;">Cronograma Grupal</h4>
+    <table class="principal contenido">
+        <thead>
+            <tr>
+                <th>N° CUOTA</th>
+                <th>Fecha de Vencimiento</th>
+                <th>N° Días</th>
+                <th>Detalle</th>
+                <th>Capital</th>
+                <th>Interes</th>
+                <th>Deuda</th>
+                <th>Amortización</th>
+                <th>Total Soles</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($cuotas as $cuota)
+                @if (is_null($cuota->cliente_id))
+                    <tr>
+                        <td>{{ $cuota->numero }}</td>
+                        <td>{{ $cuota->fecha }}</td>
+                        <td>{{ $cuota->dias }}</td>
+                        <td>{{ $cuota->detalle }}</td>
+                        <td>{{ number_format($cuota->capital, 2) }}</td>
+                        <td>{{ number_format($cuota->interes, 2) }}</td>
+                        <td>{{ number_format($cuota->deuda, 2) }}</td>
+                        <td>{{ number_format($cuota->amortizacion, 2) }}</td>
+                        <td>{{ number_format($cuota->total, 2) }}</td>
+                    </tr>
+                @endif
+            @endforeach
+        </tbody>
+    </table>
+
+    <br><br>
+
+    <!-- Cronograma Individual -->
     @foreach ($prestamo->clientes as $cliente)
+        <h4 class="card-title" style="text-align: center; margin: 0;">Cronograma individual de: {{ $cliente->nombre }}</h4>
         <table class="principal contenido">
             <thead>
                 <tr>
-                    <th colspan="8" style="text-align: center;">
-                        <h4 class="card-title" style="margin: 0;">Cronograma individual de: {{ $cliente->nombre }}</h4>
-                    </th>
-                </tr>
-                <tr>
-                    <th>N°</th>
-                    <th>Vencimiento</th>
-                    <th>Pagado</th>
-                    <th>Atraso</th>
-                    {{-- <th>Capital</th>
-                    <th>Intereses</th> --}}
-                    <th>Mora</th>
-                    <th>Mto Cuota</th>
-                    <th>Saldo Capital</th>
-                    <th>Situación</th>
+                    <th>N° CUOTA</th>
+                    <th>Fecha de Vencimiento</th>
+                    <th>N° Días</th>
+                    <th>Detalle</th>
+                    <th>Capital</th>
+                    <th>Interes</th>
+                    <th>Deuda</th>
+                    <th>Amortización</th>
+                    <th>Total Soles</th>
                 </tr>
             </thead>
             <tbody>
@@ -95,27 +127,19 @@
                         <tr>
                             <td>{{ $cuota->numero }}</td>
                             <td>{{ $cuota->fecha }}</td>
-                            <td>-</td>
-                            <td>0</td>
-                            {{-- <td></td>
-                            <td>-</td> --}}
-                            <td>0.00</td>
-                            <td>{{ $cuota->monto }}</td>
-
-                            <td>
-                                @foreach ($credito_cliente as $creditocliente)
-                                    @if ($creditocliente->cliente_id == $cliente->id)
-                                        {{ $creditocliente->monto_indivual }}
-                                    @endif
-                                @endforeach
-                                    
-                            </td>
-                            <td>pendiente</td>
+                            <td>{{ $cuota->dias }}</td>
+                            <td>{{ $cuota->detalle }}</td>
+                            <td>{{ number_format($cuota->capital, 2) }}</td>
+                            <td>{{ number_format($cuota->interes, 2) }}</td>
+                            <td>{{ number_format($cuota->deuda, 2) }}</td>
+                            <td>{{ number_format($cuota->amortizacion, 2) }}</td>
+                            <td>{{ number_format($cuota->total, 2) }}</td>
                         </tr>
                     @endif
                 @endforeach
             </tbody>
         </table>
+        <br><br>
     @endforeach
 
     <p><strong>Funcionario:</strong> {{ $responsable->name }}</p>

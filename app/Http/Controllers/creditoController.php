@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Cronograma;
 
- 
+
 class creditoController extends Controller
 {
     /**
@@ -951,87 +951,54 @@ class creditoController extends Controller
     {
         $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
         $fechaconperiodogracia = clone $fecha_desembolso;
-        $fechaconperiodogracia->modify("+$request->periodo_gracia_dias days");
+        $fechaconperiodogracia->addDays($request->periodo_gracia_dias);
         $tiempo = $request->tiempo_credito;
         $frecuencia = $request->tipo_producto == 'grupal' ? $request->recurrencia1 : $request->recurrencia;
-        $montoTotal = $monto;
         $tasaInteres = $request->tasa_interes;
+
+        // Calcular los intereses del período de gracia
         $tasaDiaria = pow(1 + ($tasaInteres / 100), 1 / 360) - 1;
-        $interesesPeriodoGracia = $montoTotal * $tasaDiaria * $request->periodo_gracia_dias;
-        $cuotaSinGracia = $this->calcularCuota($montoTotal, $tasaInteres, $tiempo, $frecuencia);
+        $interesesPeriodoGracia = $monto * $tasaDiaria * $request->periodo_gracia_dias;
         $interesesMensualesPorGracia = $interesesPeriodoGracia / $tiempo;
 
-        switch ($frecuencia) {
-            case 'catorcenal':
-                $fechaCuota = $fechaconperiodogracia->copy()->addDays(14);
-                for ($i = 1; $i <= $tiempo; $i++) {
-                    $cronograma = new Cronograma();
-                    $cronograma->fecha = $fechaCuota;
-                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia+0.02*$cuotaSinGracia; // Cuota fija más intereses distribuidos
-                    $cronograma->numero = $i;
-                    $cronograma->id_prestamo = $prestamo->id;
-                    $cronograma->cliente_id = $cliente->id??null; // Asignar cliente
-                    $cronograma->save();
-                    $fechaCuota = $fechaCuota->addDays(14);
-                }
-                break;
-            case 'quincenal':
-                $fechaCuota = $fechaconperiodogracia->copy()->addDays(15);
-                for ($i = 1; $i <= $tiempo; $i++) {
-                    $cronograma = new Cronograma();
-                    $cronograma->fecha = $fechaCuota;
-                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
-                    $cronograma->numero = $i;
-                    $cronograma->id_prestamo = $prestamo->id;
-                    $cronograma->cliente_id = $cliente->id; // Asignar cliente
-                    $cronograma->save();
-                    $fechaCuota = $fechaCuota->addDays(14);
-                }
-                break;
-            case 'veinteochenal':
-                $fechaCuota = $fechaconperiodogracia->copy()->addDays(28);
-                for ($i = 1; $i <= $tiempo; $i++) {
-                    $cronograma = new Cronograma();
-                    $cronograma->fecha = $fechaCuota;
-                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia+0.02*$cuotaSinGracia; // Cuota fija más intereses distribuidos
-                    $cronograma->numero = $i;
-                    $cronograma->id_prestamo = $prestamo->id;
-                    $cronograma->cliente_id = $cliente->id; // Asignar cliente
-                    $cronograma->save();
-                    $fechaCuota = $fechaCuota->addDays(28);
-                }
-                break;
-            case 'semestral':
-                $fechaCuota = $fechaconperiodogracia->copy()->addMonths(6);
-                for ($i = 1; $i <= $tiempo; $i++) {
-                    $cronograma = new Cronograma();
-                    $cronograma->fecha = $fechaCuota;
-                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
-                    $cronograma->numero = $i;
-                    $cronograma->id_prestamo = $prestamo->id;
-                    $cronograma->cliente_id = $cliente->id; // Asignar cliente
-                    $cronograma->save();
-                    $fechaCuota = $fechaCuota->addMonths(6);
-                }
-                break;
-            case 'mensual':
-            default:
-                $fechaCuota = $fechaconperiodogracia->copy()->addMonth();
-                for ($i = 1; $i <= $tiempo; $i++) {
-                    $cronograma = new Cronograma();
-                    $cronograma->fecha = $fechaCuota;
-                    $cronograma->monto = $cuotaSinGracia + $interesesMensualesPorGracia; // Cuota fija más intereses distribuidos
-                    $cronograma->numero = $i;
-                    $cronograma->id_prestamo = $prestamo->id;
-                    $cronograma->cliente_id = $cliente->id; // Asignar cliente
-                    $cronograma->save();
-                    $fechaCuota = $fechaCuota->addMonth();;
-                }
-                break;
-        }
+        $cuotas = $this->calcularCuota($monto, $tasaInteres, $tiempo, $frecuencia);
 
-        
+        $fechaCuota = $fechaconperiodogracia->copy();
+
+        foreach ($cuotas as $cuota) {
+            switch ($frecuencia) {
+                case 'catorcenal':
+                    $fechaCuota->addDays(14);
+                    break;
+                case 'quincenal':
+                    $fechaCuota->addDays(15);
+                    break;
+                case 'veinteochenal':
+                    $fechaCuota->addDays(28);
+                    break;
+                case 'semestral':
+                    $fechaCuota->addMonths(6);
+                    break;
+                case 'mensual':
+                default:
+                    $fechaCuota->addMonth();
+                    break;
+            }
+
+            $cronograma = new Cronograma();
+            $cronograma->fecha = $fechaCuota->copy();
+            $cronograma->monto = $cuota['cuota'] + $interesesMensualesPorGracia + 0.02 * $cuota['cuota']; // Cuota fija más intereses distribuidos y otros componentes
+            $cronograma->numero = $cuota['numero_cuota'];
+            $cronograma->capital = $cuota['capital'];
+            $cronograma->interes = $cuota['interes'];
+            $cronograma->amortizacion = $cuota['amortizacion'];
+            $cronograma->saldo_deuda = $cuota['saldo_deuda'];
+            $cronograma->id_prestamo = $prestamo->id;
+            $cronograma->cliente_id = $cliente->id ?? null; // Asignar cliente
+            $cronograma->save();
+        }
     }
+
     protected function saveArrayData(array $data, $prestamoId, $request)
     {
         if (isset($data['proyeccionesArray']) && is_array($data['proyeccionesArray'])) {
@@ -1255,11 +1222,10 @@ class creditoController extends Controller
 
     public function calcularCuota($monto, $tea, $periodos, $frecuencia)
     {
-    // Determinar el número de periodos por año según la frecuencia de pago
         switch ($frecuencia) {
             case 'catorcenal':
-            $n = 24;
-            break;
+                $n = 24;
+                break;
             case 'veinteochenal':
                 $n = 12;
                 break;
@@ -1274,17 +1240,31 @@ class creditoController extends Controller
                 $n = 12;
                 break;
         }
-    
-        // Calcular la tasa efectiva del periodo
+
         $tasaPeriodo = pow(1 + ($tea / 100), 1 / $n) - 1;
+        $cuota = ($monto * $tasaPeriodo * pow(1 + $tasaPeriodo, $periodos)) / (pow(1 + $tasaPeriodo, $periodos) - 1);
 
-        //$tasaPeriodo = 0.0145;
+        $saldo = $monto;
+        $cuotas = [];
 
+        for ($i = 0; $i < $periodos; $i++) {
+            $interesPeriodo = $saldo * $tasaPeriodo;
+            $amortizacion = $cuota - $interesPeriodo;
+            $saldo -= $amortizacion;
 
-    
-        // Calcular la cuota usando la fórmula de amortización francesa
-        return ($monto * $tasaPeriodo * pow(1 + $tasaPeriodo, $periodos)) / (pow(1 + $tasaPeriodo, $periodos) - 1);
+            $cuotas[] = [
+                'numero_cuota' => $i + 1,
+                'capital' => round($saldo, 2),
+                'interes' => round($interesPeriodo, 2),
+                'amortizacion' => round($amortizacion, 2),
+                'cuota' => round($cuota, 2),
+                'saldo_deuda' => round($saldo, 2)
+            ];
+        }
+
+        return $cuotas;
     }
+
     /**
      * Display the specified resource.
      */
