@@ -80,7 +80,7 @@ class PdfController extends Controller
             $cuota->dias = (new \DateTime($cuota->fecha))->diff(new \DateTime($prestamo->fecha_desembolso))->days;
             $cuota->detalle = $cuota->numero == 0 ? 'Credito' : 'Saldo del Capital';
             $cuota->deuda = $prestamo->monto_total;
-            $cuota->total = $cuota->monto + 0.02 * $cuota->monto; // Incluyendo cualquier otro componente necesario
+            $cuota->total = $cuota->monto; // Incluyendo cualquier otro componente necesario
         }
 
         $data = compact(
