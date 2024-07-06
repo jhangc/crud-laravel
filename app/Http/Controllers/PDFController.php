@@ -122,8 +122,6 @@ class PdfController extends Controller
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
         $responsable = auth()->user();
 
-        // Establece la configuración regional a español
-        setlocale(LC_TIME, 'es_ES.UTF-8');
 
         // Usa Carbon para obtener la fecha actual
         $date = Carbon::now();
