@@ -131,7 +131,12 @@
                 <td><b>Moneda:</b></td>
                 <td>Soles</td>
                 <td><b>Desembolso (S/.):</b></td>
-                <td>{{ number_format(round($prestamo->monto_total, 2), 2, '.', ',') }}</td>
+                @foreach ($credito_cliente as $credito )
+                    @if ($credito->cliente_id==$cliente->id)
+                    <td>{{ number_format(round($credito->monto_indivual, 2), 2, '.', ',') }}</td>
+                    @endif
+                @endforeach
+                
     
             </tr>
     

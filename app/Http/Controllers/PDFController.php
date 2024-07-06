@@ -73,7 +73,7 @@ class PdfController extends Controller
         $prestamo = \App\Models\credito::find($id);
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
-        $responsable = auth()->user();
+        $responsable = \App\Models\User::find($prestamo->user_id);
 
         // Formatear los datos adicionales necesarios
         foreach ($cuotas as $cuota) {
