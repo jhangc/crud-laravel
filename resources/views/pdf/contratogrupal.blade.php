@@ -37,6 +37,10 @@
             text-align: justify
         }
 
+        .tabla td{
+            font-size: 14px
+        }
+
         .signature {
             margin-top: 20px;
         }
@@ -54,6 +58,10 @@
         .page-break {
             page-break-before: always;
         }
+
+        .avoid-page-break {
+        page-break-inside: avoid;
+    }
     </style>
 </head>
 
@@ -486,7 +494,7 @@
     
         <div class="page-break"></div>
         @foreach ($prestamo->clientes as $cliente)
-        <table style="border-collapse: collapse; width: 100%;" border="1" >
+        <table style="border-collapse: collapse; width: 100%;" border="1" class="tabla avoid-page-break">
             <tr>
                 <td colspan="2" style="text-align: center;"><b>Datos</b></td>
                 <td  style="text-align: center; width:30%;"><b>Firma</b></td>
@@ -511,6 +519,8 @@
         </table>
         <br><br>
         @endforeach
+
+       
     </div>
 
 

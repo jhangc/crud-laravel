@@ -11,6 +11,19 @@
             line-height: 1.6;
         }
 
+        .header{
+            position: fixed;
+            top: -70px;
+            left: -45px;
+        }
+
+        .header h3{
+            padding: 5px;
+            background-color: #044B6B;
+            color: white;
+            font-style: italic
+        }
+
         h1 {
             text-align: center;
             color: #333;
@@ -21,6 +34,10 @@
             margin: 10px 0;
             font-size: 14px;
             text-align: justify
+        }
+
+        .tabla td{
+            font-size: 14px
         }
 
         .signature {
@@ -36,6 +53,12 @@
 </head>
 
 <body>
+    <header class="header">
+        <h3>Grupo Credipalmo</h3>
+        
+    </header>
+
+
     <h1>CARTILLA DE IDENTIFICACIÓN</h1>
     <p><b>Denominación de EL GRUPO:</b> {{ $prestamo->nombre_prestamo }}<br>
         <b>FECHA:</b>{{ $formattedDate }}
@@ -101,7 +124,7 @@
     </style>
     <div class="page-break"></div>
     @foreach ($prestamo->clientes as $cliente)
-    <table style="border-collapse: collapse; width: 100%;" border="1" >
+    <table style="border-collapse: collapse; width: 100%;" border="1" class="tabla avoid-page-break">
         <tr>
             <td colspan="2" style="text-align: center;"><b>Datos</b></td>
             <td  style="text-align: center; width:30%;"><b>Firma</b></td>
