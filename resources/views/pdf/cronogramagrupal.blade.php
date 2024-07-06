@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <title>Cronograma de Créditos</title>
     <style>
+        body {
+            margin: 0.2cm 0.4cm;
+            /* Ajusta los márgenes del documento a 3 cm */
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -32,6 +36,11 @@
             /* Evita que la tabla se divida entre dos páginas */
             margin-top: 20px;
         }
+
+        .individual {
+            page-break-before: always;
+            /* Fuerza un salto de página antes de cada tabla individual */
+        }
     </style>
 </head>
 
@@ -41,7 +50,7 @@
     <table style="border: none !important; width: 100%; margin-bottom:30px">
         <tr>
             <td><b>Agencia:</b></td>
-            <td>CHICLAYO</td>
+            <td>Tarapoto</td>
             <td><b>Tipo de Crédito:</b></td>
             <td>{{ $prestamo->tipo }}</td>
             <td><b>Producto:</b></td>
@@ -52,7 +61,7 @@
             <td>{{ $prestamo->nombre_prestamo }}</td>
             <td><b>Moneda:</b></td>
             <td>Soles</td>
-            <td><b>Desembolso:</b></td>
+            <td><b>Desembolso (S/.):</b></td>
             <td>{{ number_format(round($prestamo->monto_total, 2), 2, '.', ',') }}</td>
 
         </tr>
@@ -62,6 +71,8 @@
             <td>{{ $prestamo->fecha_desembolso }}</td>
             <td><b>Tasa (%):</b></td>
             <td>{{ $prestamo->tasa }}</td>
+            <td><b>Periodo:</b></td>
+            <td>{{ $prestamo->recurrencia }}</td>
         </tr>
     </table>
 
@@ -74,11 +85,9 @@
             <tr>
                 <th>N° CUOTA</th>
                 <th>Fecha de Vencimiento</th>
-                <th>N° Días</th>
                 <th>Detalle</th>
                 <th>Capital</th>
                 <th>Interes</th>
-                <th>Deuda</th>
                 <th>Amortización</th>
                 <th>Total Soles</th>
             </tr>
@@ -89,11 +98,9 @@
                     <tr>
                         <td>{{ $cuota->numero }}</td>
                         <td>{{ $cuota->fecha }}</td>
-                        <td>{{ $cuota->dias }}</td>
                         <td>{{ $cuota->detalle }}</td>
                         <td>{{ number_format($cuota->capital, 2) }}</td>
                         <td>{{ number_format($cuota->interes, 2) }}</td>
-                        <td>{{ number_format($cuota->deuda, 2) }}</td>
                         <td>{{ number_format($cuota->amortizacion, 2) }}</td>
                         <td>{{ number_format($cuota->total, 2) }}</td>
                     </tr>
@@ -102,21 +109,52 @@
         </tbody>
     </table>
 
-    <br><br>
+
+    <br>
+    <p><strong>Asesor de crédito:</strong> {{ $responsable->name }}</p><br>
 
     <!-- Cronograma Individual -->
     @foreach ($prestamo->clientes as $cliente)
-        <h4 class="card-title" style="text-align: center; margin: 0;">Cronograma individual de: {{ $cliente->nombre }}</h4>
+        <h4 class="card-title individual" style="text-align: center; margin: 20px 20px 40px 20px;">Cronograma individual de: {{ $cliente->nombre }}</h4>
+        <table style="border: none !important; width: 100%; margin-bottom:30px">
+            <tr>
+                <td><b>Agencia:</b></td>
+                <td>Tarapoto</td>
+                <td><b>Tipo de Crédito:</b></td>
+                <td>{{ $prestamo->tipo }}</td>
+                <td><b>Producto:</b></td>
+                <td>{{ $prestamo->producto }}</td>
+            </tr>
+            <tr>
+                <td><b>Nombre del grupo:</b></td>
+                <td>{{ $prestamo->nombre_prestamo }}</td>
+                <td><b>Moneda:</b></td>
+                <td>Soles</td>
+                <td><b>Desembolso (S/.):</b></td>
+                <td>{{ number_format(round($prestamo->monto_total, 2), 2, '.', ',') }}</td>
+    
+            </tr>
+    
+            <tr>
+                <td><b>Fecha de Desembolso:</b></td>
+                <td>{{ $prestamo->fecha_desembolso }}</td>
+                <td><b>Tasa (%):</b></td>
+                <td>{{ $prestamo->tasa }}</td>
+                <td><b>Periodo:</b></td>
+                <td>{{ $prestamo->recurrencia }}</td>
+            </tr>
+        </table>
+        
         <table class="principal contenido">
             <thead>
                 <tr>
                     <th>N° CUOTA</th>
                     <th>Fecha de Vencimiento</th>
-                    <th>N° Días</th>
+
                     <th>Detalle</th>
                     <th>Capital</th>
                     <th>Interes</th>
-                    <th>Deuda</th>
+
                     <th>Amortización</th>
                     <th>Total Soles</th>
                 </tr>
@@ -127,11 +165,9 @@
                         <tr>
                             <td>{{ $cuota->numero }}</td>
                             <td>{{ $cuota->fecha }}</td>
-                            <td>{{ $cuota->dias }}</td>
                             <td>{{ $cuota->detalle }}</td>
                             <td>{{ number_format($cuota->capital, 2) }}</td>
                             <td>{{ number_format($cuota->interes, 2) }}</td>
-                            <td>{{ number_format($cuota->deuda, 2) }}</td>
                             <td>{{ number_format($cuota->amortizacion, 2) }}</td>
                             <td>{{ number_format($cuota->total, 2) }}</td>
                         </tr>
@@ -139,10 +175,11 @@
                 @endforeach
             </tbody>
         </table>
-        <br><br>
+        <br>
+        <p><strong>Asesor de crédito:</strong> {{ $responsable->name }}</p>
     @endforeach
 
-    <p><strong>Funcionario:</strong> {{ $responsable->name }}</p>
+    
 </body>
 
 </html>
