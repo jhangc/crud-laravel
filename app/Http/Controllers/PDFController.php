@@ -73,14 +73,14 @@ class PdfController extends Controller
         $prestamo = \App\Models\credito::find($id);
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
-        $responsable = auth()->user();
+        $responsable = \App\Models\User::find($prestamo->user_id);
 
         // Formatear los datos adicionales necesarios
         foreach ($cuotas as $cuota) {
             $cuota->dias = (new \DateTime($cuota->fecha))->diff(new \DateTime($prestamo->fecha_desembolso))->days;
             $cuota->detalle = $cuota->numero == 0 ? 'Credito' : 'Saldo del Capital';
             $cuota->deuda = $prestamo->monto_total;
-            $cuota->total = $cuota->monto + 0.02 * $cuota->monto; // Incluyendo cualquier otro componente necesario
+            $cuota->total = $cuota->monto; // Incluyendo cualquier otro componente necesario
         }
 
         $data = compact(
