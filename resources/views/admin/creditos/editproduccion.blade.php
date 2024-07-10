@@ -1653,6 +1653,7 @@
         $('#prestamoForm').on('submit', function(e) {
             e.preventDefault();
             var formData = new FormData(this);
+            const idc = document.getElementById('credito-id').value;
             formData.append('proyeccionesArray', JSON.stringify(proyeccionesArray));
             formData.append('inventarioArray', JSON.stringify(inventarioArray));
             formData.append('deudasFinancierasArray', JSON.stringify(deudasFinancierasArray));
@@ -1661,7 +1662,7 @@
             formData.append('ventasdiarias', JSON.stringify(ventasDiarias));
             formData.append('inventarioprocesoArray', JSON.stringify(inventarioProcesoArray));
             $.ajax({
-                url: '{{ url('/admin/creditos/store') }}',
+                url:`/admin/creditos/updateprodcuccion/${idc}`,
                 type: 'POST',
                 data: formData,
                 contentType: false,

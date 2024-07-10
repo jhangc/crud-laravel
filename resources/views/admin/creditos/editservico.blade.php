@@ -658,7 +658,9 @@
 
         function llenarClientes(clientes) {
             if (clientes.length > 0) {
+              
                 let cliente = clientes[0].clientes;
+                console.log(clientes);
                 $('#nombre').val(cliente.nombre);
                 $('#documento_identidad').val(cliente.documento_identidad);
                 $('#telefono').val(cliente.telefono);
@@ -1239,6 +1241,7 @@
 
         $('#prestamoForm').on('submit', function(e) {
             e.preventDefault();
+            const idc = document.getElementById('credito-id').value;
             var formData = new FormData(this);
             formData.append('clientesArray', JSON.stringify(clientesArray));
             formData.append('proyeccionesArray', JSON.stringify(proyeccionesArray));
@@ -1250,7 +1253,7 @@
             formData.append('inventarioArray1', JSON.stringify(inventarioArray1));
             formData.append('ventasdiarias', JSON.stringify(ventasDiarias));
             $.ajax({
-                url: '{{ url('/admin/creditos/store') }}',
+                url: `/admin/creditos/updateservicio/${idc}`,
                 type: 'POST',
                 data: formData,
                 contentType: false,
