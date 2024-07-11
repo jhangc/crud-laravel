@@ -84,11 +84,22 @@ class PdfController extends Controller
             $cuota->total = $cuota->monto; // Incluyendo cualquier otro componente necesario
         }
 
+        // Calcular la suma de los intereses del cronograma grupal
+        $totalInteresGrupal = $cuotas->whereNull('cliente_id')->sum('interes');
+
+        // Calcular las sumas de los intereses para cada cliente
+        $totalInteresesIndividuales = [];
+        foreach ($prestamo->clientes as $cliente) {
+            $totalInteresesIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('interes');
+        }
+
         $data = compact(
             'prestamo',
             'responsable',
             'cuotas',
-            'credito_cliente'
+            'credito_cliente',
+            'totalInteresGrupal',
+            'totalInteresesIndividuales'
         );
 
         $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
@@ -764,14 +775,18 @@ class PdfController extends Controller
         }
     }
     public function generateticket($id)
-    {
-        $prestamo = \App\Models\credito::find($id);
-        $creditos = \App\Models\CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
-        $prestamo->estado = 'pagado';
-        $prestamo->save();
-        $pdf = Pdf::loadView('pdf.ticket', compact('prestamo', 'creditos'))
-            ->setPaper([0, 0, 205, 800]);
+{
+    $prestamo = \App\Models\credito::find($id);
+    $creditos = \App\Models\CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
+    $prestamo->estado = 'pagado';
+    $prestamo->save();
 
-        return $pdf->stream('ticket.pdf');
-    }
+    // Calcular el monto total del grupo
+    $montoTotalGrupo = $creditos->sum('monto_indivual');
+
+    $pdf = Pdf::loadView('pdf.ticket', compact('prestamo', 'creditos', 'montoTotalGrupo'))
+        ->setPaper([0, 0, 205, 800]);
+
+    return $pdf->stream('ticket.pdf');
+}
 }

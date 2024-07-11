@@ -9,6 +9,7 @@
             margin: 0.2cm 0.4cm;
             /* Ajusta los márgenes del documento a 3 cm */
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -107,15 +108,33 @@
                 @endif
             @endforeach
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3"></td>
+                <td style="text-align: right;"><b>Total</b></td>
+                <td>{{ number_format($totalInteresGrupal, 2) }}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
     </table>
 
-
+    {{-- 
     <br>
-    <p><strong>Asesor de crédito:</strong> {{ $responsable->name }}</p><br>
+    <p><strong>Asesor de crédito:</strong> {{ $responsable->name }}</p><br> --}}
+
+    <!-- Sección de firma del asesor de crédito -->
+    <div style="width: 100%; margin-top: 50px; text-align: center;">
+        <div style="display: inline-block; text-align: center;">
+            <p>__________________________</p>
+            <p>Firma del Asesor de Crédito</p>
+            <p>{{ $responsable->name }}</p>
+        </div>
+    </div>
 
     <!-- Cronograma Individual -->
     @foreach ($prestamo->clientes as $cliente)
-        <h4 class="card-title individual" style="text-align: center; margin: 20px 20px 40px 20px;">Cronograma individual de: {{ $cliente->nombre }}</h4>
+        <h4 class="card-title individual" style="text-align: center; margin: 20px 20px 40px 20px;">Cronograma individual
+            de: {{ $cliente->nombre }}</h4>
         <table style="border: none !important; width: 100%; margin-bottom:30px">
             <tr>
                 <td><b>Agencia:</b></td>
@@ -131,15 +150,15 @@
                 <td><b>Moneda:</b></td>
                 <td>Soles</td>
                 <td><b>Desembolso (S/.):</b></td>
-                @foreach ($credito_cliente as $credito )
-                    @if ($credito->cliente_id==$cliente->id)
-                    <td>{{ number_format(round($credito->monto_indivual, 2), 2, '.', ',') }}</td>
+                @foreach ($credito_cliente as $credito)
+                    @if ($credito->cliente_id == $cliente->id)
+                        <td>{{ number_format(round($credito->monto_indivual, 2), 2, '.', ',') }}</td>
                     @endif
                 @endforeach
-                
-    
+
+
             </tr>
-    
+
             <tr>
                 <td><b>Fecha de Desembolso:</b></td>
                 <td>{{ $prestamo->fecha_desembolso }}</td>
@@ -149,7 +168,7 @@
                 <td>{{ $prestamo->recurrencia }}</td>
             </tr>
         </table>
-        
+
         <table class="principal contenido">
             <thead>
                 <tr>
@@ -179,12 +198,36 @@
                     @endif
                 @endforeach
             </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"></td>
+                    <td style="text-align: right;"><b>Total</b></td>
+                    <td>{{ number_format($totalInteresesIndividuales[$cliente->id], 2) }}</td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
         </table>
-        <br>
-        <p><strong>Asesor de crédito:</strong> {{ $responsable->name }}</p>
+        {{-- <br> --}}
+        {{-- <p><strong>Asesor de crédito:</strong> {{ $responsable->name }}</p> --}}
+
+
+        <!-- Sección de firmas -->
+        <div style="width: 100%; margin-top: 50px; text-align: center;">
+            <div style="width: 45%; float: left; text-align: center;">
+                <p>__________________________</p>
+                <p>Asesor de Crédito</p>
+                <p>{{ $responsable->name }}</p>
+            </div>
+            <div style="width: 45%; float: right; text-align: center;">
+                <p>__________________________</p>
+                <p>Cliente</p>
+                <p>{{ $cliente->nombre }}</p>
+            </div>
+        </div>
+        <div style="clear: both;"></div>
     @endforeach
 
-    
+
 </body>
 
 </html>

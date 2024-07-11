@@ -11,12 +11,6 @@
             font-size: 12px;
         }
 
-        /* .ticket {
-            width: 205px;
-            padding: 10px;
-            border: 1px solid #000;
-        } */
-
         .ticket {
             page-break-after: always;
         }
@@ -57,6 +51,27 @@
 </head>
 
 <body>
+    <!-- Ticket inicial con el monto total del grupo -->
+    <div class="ticket">
+        <div class="header">
+            <img src="{{ asset('logo.png') }}" alt="Logo">
+            <br>
+            <br>
+            <h2>Grupo Credipalmo</h2>
+        </div>
+        <div class="content">
+            <p><strong>Grupo:</strong> {{ $prestamo->nombre_prestamo }}</p>
+            <p><strong>Fecha:</strong> {{ now()->format('d/m/Y H:i:s') }}</p>
+            <p><strong>Monto Total del Grupo:</strong> S/.{{ number_format($montoTotalGrupo, 2) }}</p>
+        </div>
+        <div class="signature">
+            <p><strong>Firma:</strong></p>
+            <br>
+            <br>
+            <div class="line"></div>
+        </div>
+    </div>
+
     @foreach ($creditos as $index => $credito)
         <div class="{{ $index === count($creditos) - 1 ? '' : 'ticket' }}">
             <div class="header">
@@ -70,7 +85,7 @@
                 <p><strong>Fecha:</strong> {{ now()->format('d/m/Y H:i:s') }}</p>
                 <p><strong>DNI:</strong> {{ $credito->clientes->documento_identidad }}</p>
                 <p><strong>Nombres:</strong> {{ $credito->clientes->nombre }}</p>
-                <p><strong>Monto:</strong> S/.{{ $credito->monto_indivual }}</p>
+                <p><strong>Monto:</strong> S/.{{ number_format($credito->monto_indivual, 2) }}</p>
             </div>
             <div class="signature">
                 <p><strong>Firma:</strong></p>
@@ -80,8 +95,7 @@
             </div>
         </div>
         <br>
-        <div class="line">
-        </div>
+        <div class="line"></div>
     @endforeach
 </body>
 
