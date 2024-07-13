@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Credito;
+use App\Models\credito;
 use App\Models\Cliente;
 use App\Models\CreditoCliente;
 use Carbon\Carbon;
@@ -42,7 +42,7 @@ class UpdateController extends Controller
         DB::beginTransaction();
         try {
             // Actualización del préstamo
-            $prestamo = Credito::findOrFail($id);
+            $prestamo = credito::findOrFail($id);
             $prestamo->tipo = $request->tipo_credito;
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
@@ -322,7 +322,7 @@ class UpdateController extends Controller
         }
         DB::beginTransaction();
         try {
-            $prestamo = Credito::findOrFail($id);
+            $prestamo = credito::findOrFail($id);
             $prestamo->tipo = $request->tipo_credito;
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
@@ -397,7 +397,7 @@ class UpdateController extends Controller
         }
         DB::beginTransaction();
         try {
-            $prestamo = Credito::findOrFail($id);
+            $prestamo = credito::findOrFail($id);
             $prestamo->tipo = $request->tipo_credito;
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
@@ -489,7 +489,7 @@ class UpdateController extends Controller
 
         DB::beginTransaction();
         try {
-            $prestamo = Credito::findOrFail($id);
+            $prestamo = credito::findOrFail($id);
             $prestamo->tipo = $request->tipo_credito;
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
