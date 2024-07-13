@@ -450,6 +450,7 @@ class UpdateController extends Controller
             // Actualizar créditos de clientes y cronograma
             CreditoCliente::where('prestamo_id', $prestamo->id)->delete();
             $this->updateClienteYcronograma($prestamo, $request);
+            $this->updateArrayData($decodedData, $prestamo->id, $request);
             
             DB::commit();
             return response()->json(['message' => 'Crédito actualizado con éxito', 'data' => $prestamo], 200);
@@ -543,7 +544,7 @@ class UpdateController extends Controller
             // Actualizar créditos de clientes y cronograma
             CreditoCliente::where('prestamo_id', $prestamo->id)->delete();
             $this->updateClienteYcronograma($prestamo, $request);
-
+            $this->updateArrayData($decodedData, $prestamo->id, $request);
             DB::commit();
             return response()->json(['message' => 'Crédito actualizado con éxito', 'data' => $prestamo], 200);
         } catch (\Exception $e) {
