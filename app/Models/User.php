@@ -26,7 +26,7 @@ class User extends Authenticatable
 
     public function creditos()
     {
-        return $this->hasMany(Credito::class, 'id_cliente'); // Asume que 'id_cliente' es la clave foránea en la tabla 'prestamos'
+        return $this->hasMany(credito::class, 'id_cliente'); // Asume que 'id_cliente' es la clave foránea en la tabla 'prestamos'
     }
 
     protected $casts = [
