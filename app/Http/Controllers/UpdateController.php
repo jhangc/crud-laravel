@@ -146,7 +146,7 @@ class UpdateController extends Controller
                     'nombre_entidad' => $deudaData['entidad'],
                     'saldo_capital' => $deudaData['saldoCapital'],
                     'cuota' => $deudaData['cuota'],
-                    'tiempo_restante' => $deudaData['tiempoRestante'],
+                    'tiempo_restante' => '0sa',
                     'prestamo_id' => $prestamoId,
                     'estado' => 'activo'
                 ]);
