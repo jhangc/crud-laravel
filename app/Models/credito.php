@@ -48,4 +48,9 @@ class Credito extends Model
     {
         return $this->belongsToMany(cliente::class, 'credito_cliente', 'prestamo_id', 'cliente_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id'); // Relación con el usuario que creó el préstamo
+    }
 }

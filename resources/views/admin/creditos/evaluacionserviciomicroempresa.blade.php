@@ -18,73 +18,21 @@
     <h6><b>CUOTA PRESTAMO:</b> {{ $cuotaprestamo }}</h6>
 
     @if ($modulo === 'aprobar')
-    <h6><b>Comentario del analista:</b>{{ $comentarioasesor }}</h6>
+        <h6><b>COMEMTARIO DEL ANALISTA: </b>{{ $comentarioasesor }}</h6>
     @endif
 
     @if ($estado === 'rechazado')
-    <h6><b>Motivo de rechazo:</b>{{ $comentarioadministrador }}</h6>
+        <h6><b>MOTIVO DE RECHAZO: </b>{{ $comentarioadministrador }}</h6>
+    @endif
+
+    @if ($estado === 'observado')
+        <h6><b>MOTIVO DE OBSERVACIÓN:</b>{{ $comentarioadministrador }}</h6>
     @endif
 
 </div>
 
 <div class="row">
-    {{-- <div class="col-md-6">
-            <div class="card card-outline card-warning">
-                <div class="card-header">
-                    <h3 class="card-title">Resumen del negocio</h3>
-                </div>
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Indicador</th>
-                                <th>Resultado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <!-- suma de total ventas al mes -->
-                                <td>Total de Ventas  (S/.)</td>
-                                <td>{{ $totalVentas }}</td>
-    </tr>
-    <tr>
-        <!-- suma de total compras al mes -->
-        <td>Costo de Ventas (S/.)</td>
-        <td>{{ $totalCompras }}</td>
-    </tr>
-    <tr>
-        <!-- (Ventas - costo)/ventas -->
-        <td>Utilidad (S/.)</td>
-        <td>
-            {{ $margensoles }}
-        </td>
-    </tr>
-    <tr>
-        <!-- (Ventas - costo)/ventas -->
-        <td>Margen (%)</td>
-        <td>
-            {{ $margenporcentaje }} %
-        </td>
-    </tr>
-    <tr>
-        <!-- igual a costo de venta -->
-        <td>Gastos Operativos (S/.)</td>
-        <td>
-            {{ $totalCompras }}
-        </td>
-    </tr>
-
-    <tr>
-        <!-- Total sventa al credito -->
-        <td>Venta al credito</td>
-        <td>{{ $total_venta_credito }}</td>
-    </tr>
-    </tbody>
-    </table>
-</div>
-</div>
-</div> --}}
-
+   
 <div class="col-md-6">
     <div class="card card-outline card-warning">
         <div class="card-header">
@@ -290,7 +238,8 @@
                                                                                                                                                 } ?></textarea>
         </div>
         <button type="button" onclick="confirmarAccion('aprobar')" class="btn btn-primary btnprestamo">Aprobar</button>
-        <button type="button" onclick="confirmarAccion('rechazar')" class="btn btn-warning btnprestamo">Rechazar</button>
+        <button type="button" onclick="confirmarAccion('observar')" class="btn btn-warning btnprestamo">Observar</button>
+        <button type="button" onclick="confirmarAccion('rechazar')" class="btn btn-danger btnprestamo">Rechazar</button>
         <a href="{{ url('admin/creditos') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
     </div>
 </div>
@@ -349,9 +298,9 @@
     }
 
     return 'revisado';
-}
+    }
 
-function confirmarAccion(accion) {
+    function confirmarAccion(accion) {
         var comentarioElement = document.getElementById('comentario');
         var comentarioadministradorElement = document.getElementById('comentarioadministrador');
 
@@ -364,6 +313,8 @@ function confirmarAccion(accion) {
             accionTexto = 'aprobar';
         } else if (accion === 'rechazar') {
             accionTexto = 'rechazar';
+        } else if (accion === 'observar') {
+            accionTexto = 'observar';
         } else if (accion === 'guardar') {
             accionTexto = 'guardar';
         } else {

@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use App\Models\Cronograma;
 
 
+
 class creditoController extends Controller
 {
     /**
@@ -21,12 +22,27 @@ class creditoController extends Controller
      */
     public function index()
     {
-        // Obtener solo los clientes activos (activo = 1)
-        $creditos = credito::with('clientes')->where('activo', 1)->get();
+        // Obtener el usuario autenticado
+        $user = Auth::user();
 
-        // Pasar los clientes activos a la vista
+        // Obtener todos los roles del usuario autenticado
+        $roles = $user->roles->pluck('name');
+
+        // Verificar si el usuario tiene alguno de los roles
+        if ($roles->contains('Administrador')) {
+            // Si es administrador o cajera, obtener todos los créditos activos
+            $creditos = credito::with('clientes')->where('activo', 1)->get();
+        } else {
+            // Si no es administrador, obtener solo los créditos registrados por el usuario
+            $creditos = credito::with('clientes')->where('activo', 1)->where('user_id', $user->id)->get();
+        }
+
+        // Pasar los créditos a la vista
         return view('admin.creditos.index', ['creditos' => $creditos]);
     }
+
+
+
     public function comercio()
     {
         return view('admin.creditos.comercio');
@@ -67,7 +83,7 @@ class creditoController extends Controller
         // Obtener solo los clientes activos (activo = 1)
         $creditos = credito::with('clientes')
             ->where('activo', 1)
-            ->whereNotIn('estado', ['pendiente', 'rechazado por sistema'])
+            ->where('estado', 'revisado')
             ->get();
         return view('admin.creditos.aprobar', ['creditos' => $creditos]);
     }

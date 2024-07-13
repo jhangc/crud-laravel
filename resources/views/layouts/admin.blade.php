@@ -28,7 +28,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     <!-- Añade esto en el <head> de tu HTML o justo antes del cierre de </body>, dependiendo de tus necesidades -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <!-- <link href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css" rel="stylesheet"> -->
+    <!-- <link href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css" rel="stylesheet"> -->
     <link href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css" rel="stylesheet">
 
 
@@ -119,201 +119,233 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                         data-accordion="true">
-                        
+
                         <!-- Add icons to the links using the .nav-icon class
                          with font-awesome or any other icon font library -->
 
-                        
+                        @role('Administrador')
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas"><i class="bi bi-credit-card"></i></i>
+                                    <p>
+                                        Creditos
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/creditos/') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Listado de Creditos</p>
+                                        </a>
+                                        <a href="{{ url('/admin/creditos/aprobar') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Aprobación</p>
+                                        </a>
+                                        <!-- <a href="{{ url('/admin/creditos/supervisar') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Supervisar</p>
+                                        </a> -->
+                                    </li>
+                                </ul>
+                            </li>
+                        @endrole
 
 
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active">
-                                <i class="nav-icon fas"><i class="bi bi-credit-card"></i></i>
-                                <p>
-                                    Creditos
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ url('/admin/creditos/') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Listado de Creditos</p>
-                                    </a>
-                                    <a href="{{ url('/admin/creditos/aprobar') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Aprobación</p>
-                                    </a>
-                                    <!-- <a href="{{ url('/admin/creditos/supervisar') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Supervisar</p>
-                                    </a> -->
-                                </li>
-                            </ul>
-                        </li>
+                        @role('Asesor de creditos')
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas"><i class="bi bi-credit-card"></i></i>
+                                    <p>
+                                        Creditos
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/creditos/') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Listado de Creditos</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endrole
 
+                        @role('Administrador')
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas"><i class="bi bi-person-check-fill"></i></i>
+                                    <p>
+                                        Clientes
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/clientes') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Lista de clientes</p>
+                                        </a>
+                                        <!-- <a href="{{ url('/admin/clientes/evaluar') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Evaluar al cliente</p>
+                                        </a>
 
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active">
-                                <i class="nav-icon fas"><i class="bi bi-person-check-fill"></i></i>
-                                <p>
-                                    Clientes
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ url('/admin/clientes') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Lista de clientes</p>
-                                    </a>
-                                    <!-- <a href="{{ url('/admin/clientes/evaluar') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Evaluar al cliente</p>
-                                    </a>
+                                        <a href="{{ url('/admin/clientes/ratios') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Ratios FInancieros</p>
+                                        </a> -->
+                                    </li>
+                                </ul>
+                            </li>
+                        @endrole
 
-                                    <a href="{{ url('/admin/clientes/ratios') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Ratios FInancieros</p>
-                                    </a> -->
-                                </li>
-                            </ul>
-                        </li>
+                        @role('Administrador|Cajera')
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas"><i class="bi bi-bank2"></i></i>
+                                    <p>
+                                        Caja
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/caja/pagarcredito') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Pagar Crédito</p>
+                                        </a>
+                                        <a href="{{ url('/admin/caja/habilitar') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Habilitar caja</p>
+                                        </a>
+                                        <a href="{{ url('/admin/caja/arqueo') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Arqueo de Caja</p>
+                                        </a>
 
+                                        <a href="{{ url('/admin/caja/pagares') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Pagares</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endrole
 
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active">
-                                <i class="nav-icon fas"><i class="bi bi-bank2"></i></i>
-                                <p>
-                                    Caja
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ url('/admin/caja/pagarcredito') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Pagar Crédito</p>
-                                    </a>
-                                    <a href="{{ url('/admin/caja/habilitar') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Habilitar caja</p>
-                                    </a>
-                                    <a href="{{ url('/admin/caja/arqueo') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Arqueo de Caja</p>
-                                    </a>
+                        @role('Administrador')
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas"><i class="bi bi-collection"></i></i>
+                                    <p>
+                                        Cobranza
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/cobranza/carta') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Carta de Cobranza</p>
+                                        </a>
+                                        <a href="{{ url('/admin/cobranza/generarnotificacion') }}"
+                                            class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Generar Notificación</p>
+                                        </a>
+                                        <a href="{{ url('/admin/cobranza/generarcompromiso') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Generar Compromiso</p>
+                                        </a>
 
-                                    <a href="{{ url('/admin/caja/pagares') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Pagares</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                                        <a href="{{ url('/admin/cobranza/cargarcompromiso') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Cargar Compromiso</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endrole
 
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active">
-                                <i class="nav-icon fas"><i class="bi bi-collection"></i></i>
-                                <p>
-                                    Cobranza
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ url('/admin/cobranza/carta') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Carta de Cobranza</p>
-                                    </a>
-                                    <a href="{{ url('/admin/cobranza/generarnotificacion') }}"
-                                        class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Generar Notificación</p>
-                                    </a>
-                                    <a href="{{ url('/admin/cobranza/generarcompromiso') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Generar Compromiso</p>
-                                    </a>
+                        @role('Administrador')
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas"><i class="bi bi-activity"></i></i>
+                                    <p>
+                                        Transacciones
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Ingresos</p>
+                                        </a>
+                                        <a href="{{ url('/admin/transacciones/egresos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Egresos</p>
+                                        </a>
 
-                                    <a href="{{ url('/admin/cobranza/cargarcompromiso') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Cargar Compromiso</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endrole
 
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active">
-                                <i class="nav-icon fas"><i class="bi bi-activity"></i></i>
-                                <p>
-                                    Transacciones
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Ingresos</p>
-                                    </a>
-                                    <a href="{{ url('/admin/transacciones/egresos') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Egresos</p>
-                                    </a>
+                        @role('Administrador')
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas"><i class="bi bi-buildings"></i></i>
+                                    <p>
+                                        Sucursales
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Listado de Sucursales</p>
+                                        </a>
 
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active">
-                                <i class="nav-icon fas"><i class="bi bi-buildings"></i></i>
-                                <p>
-                                    Sucursales
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Listado de Sucursales</p>
-                                    </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endrole
 
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active">
-                                <i class="nav-icon fas"><i class="bi bi-archive"></i></i>
-                                <p>
-                                    Reportes
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ url('/admin/reportes/clientes') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Clientes</p>
-                                    </a>
-                                    <a href="{{ url('/admin/reportes/prestamosactivos') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Prestamos activos</p>
-                                    </a>
-                                    {{-- <a href="{{ url('/admin/usuarios') }}" class="nav-link active">
+                        @role('Administrador')
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas"><i class="bi bi-archive"></i></i>
+                                    <p>
+                                        Reportes
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/reportes/clientes') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Clientes</p>
+                                        </a>
+                                        <a href="{{ url('/admin/reportes/prestamosactivos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Prestamos activos</p>
+                                        </a>
+                                        {{-- <a href="{{ url('/admin/usuarios') }}" class="nav-link active">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Transacciones</p>
                                     </a> --}}
 
-                                    <a href="{{ url('/admin/reportes/prestamosvencidos') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Prestamos vencidos</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                                        <a href="{{ url('/admin/reportes/prestamosvencidos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Prestamos vencidos</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        @endrole
 
                         @can('usuarios.index')
                             <li class="nav-item">
@@ -335,11 +367,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             </li>
                         @endcan
 
-
-
-
                     </ul>
                 </nav>
+
                 <!-- /.sidebar-menu -->
             </div>
             <!-- /.sidebar -->

@@ -31,6 +31,7 @@ Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('a
 Route::get('/admin/credito/aprobar', [App\Http\Controllers\AdminController::class, 'aprobar'])->name('admin.aprobar')->middleware('auth');
 Route::get('/admin/credito/rechazar', [App\Http\Controllers\AdminController::class, 'rechazar'])->name('admin.rechazar')->middleware('auth');
 Route::get('/admin/credito/guardar', [App\Http\Controllers\AdminController::class, 'guardar'])->name('admin.guardar')->middleware('auth');
+Route::get('/admin/credito/observar', [App\Http\Controllers\AdminController::class, 'observar'])->name('admin.observar')->middleware('auth');
 
 Route::get('/admin/usuarios', [App\Http\Controllers\UsuarioController::class, 'index'])->name('usuarios.index')->middleware('auth','can:usuarios.index');
 Route::get('/admin/usuarios/create', [App\Http\Controllers\UsuarioController::class, 'create'])->name('usuarios.create')->middleware('auth');

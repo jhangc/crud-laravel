@@ -19,12 +19,16 @@
         <h6><b>CUOTA PRESTAMO:</b> {{ $cuotaprestamo }}</h6>
 
         @if ($modulo === 'aprobar')
-    <h6><b>Comentario del analista:</b>{{ $comentarioasesor }}</h6>
-    @endif
+            <h6><b>COMEMTARIO DEL ANALISTA: </b>{{ $comentarioasesor }}</h6>
+        @endif
 
-    @if ($estado === 'rechazado')
-    <h6><b>Motivo de rechazo:</b>{{ $comentarioadministrador }}</h6>
-    @endif
+        @if ($estado === 'rechazado')
+            <h6><b>MOTIVO DE RECHAZO: </b>{{ $comentarioadministrador }}</h6>
+        @endif
+
+        @if ($estado === 'observado')
+            <h6><b>MOTIVO DE OBSERVACIÓN:</b>{{ $comentarioadministrador }}</h6>
+        @endif
     </div>
 
      <div class="row">
@@ -145,10 +149,9 @@
                     <textarea name="comentarioadministrador" id="comentarioadministrador" class="form-control" rows="3" 
                     style="color: black;" required><?php if (isset($comentarioadministrador) && !empty($comentarioadministrador)) {echo htmlspecialchars($comentarioadministrador, ENT_QUOTES, 'UTF-8');} ?></textarea>
                 </div>
-                <button type="button" onclick="confirmarAccion('aprobar')"
-                    class="btn btn-primary btnprestamo">Aprobar</button>
-                <button type="button" onclick="confirmarAccion('rechazar')"
-                    class="btn btn-warning btnprestamo">Rechazar</button>
+                <button type="button" onclick="confirmarAccion('aprobar')" class="btn btn-primary btnprestamo">Aprobar</button>
+                <button type="button" onclick="confirmarAccion('observar')" class="btn btn-warning btnprestamo">Observar</button>
+                <button type="button" onclick="confirmarAccion('rechazar')" class="btn btn-danger btnprestamo">Rechazar</button>
                 <a href="{{ url('admin/creditos') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
             </div>
         </div>
@@ -212,6 +215,8 @@ function confirmarAccion(accion) {
             accionTexto = 'aprobar';
         } else if (accion === 'rechazar') {
             accionTexto = 'rechazar';
+        } else if (accion === 'observar') {
+            accionTexto = 'observar';
         } else if (accion === 'guardar') {
             accionTexto = 'guardar';
         } else {

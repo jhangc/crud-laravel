@@ -3,7 +3,7 @@
 @section('content')
     <div class="row">
         <h1>Listado de Creditos </h1>
-    </div> 
+    </div>
     <hr>
     <div class="row">
         <div class="col-md-12">
@@ -12,18 +12,21 @@
                     <div class="row" style="text-align: center;">
                         <div class="col-md-4">
                             <div class="card-tools">
-                                <a href="{{ url('/admin/creditos/createnuevo') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Nuevo crédito</a>
+                                <a href="{{ url('/admin/creditos/createnuevo') }}" class="btn btn-primary"><i
+                                        class="bi bi-person-fill-add"></i> Nuevo crédito</a>
                             </div>
-                            
+
                         </div>
                         <div class="col-md-4">
                             <div class="card-tools">
-                                <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Crédito recurrente</a>
+                                <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i
+                                        class="bi bi-person-fill-add"></i> Crédito recurrente</a>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="card-tools">
-                                <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i class="bi bi-person-fill-add"></i> Crédito refinanciado</a>
+                                <a href="{{ url('/admin/creditos/create') }}" class="btn btn-primary"><i
+                                        class="bi bi-person-fill-add"></i> Crédito refinanciado</a>
                             </div>
                         </div>
                     </div>
@@ -32,21 +35,22 @@
 
 
             <div class="card-body">
+
                 <div class="table-responsive">
                     <table id="creditosTable" class="table table-bordered table-sm table-striped table-hover">
                         <thead>
                             <tr>
-                                <th >Nro</th>
+                                <th>Nro</th>
                                 <th>ID</th>
-                                <th >Nombres</th>
+                                <th>Nombres</th>
                                 <th>Negocio</th>
                                 <th>Tipo de credito</th>
                                 <th>Producto</th>
                                 <!-- <th>SubProducto</th>
-                                <th>Destino de credito</th> -->
-                                <th>Intervalo</th>
+                                    <th>Destino de credito</th> -->
+                                {{-- <th>Intervalo</th>
                                 <th>Tasa (%)</th>
-                                <th>Tiempo</th>
+                                <th>Tiempo</th> --}}
                                 <th>Monto (S/.)</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
@@ -63,18 +67,18 @@
                                     <td>{{ $contador }}</td>
                                     <td>{{ $credito->id }}</td>
                                     <td>
-                                        @foreach($credito->clientes as $cliente)
+                                        @foreach ($credito->clientes as $cliente)
                                             {{ $cliente->nombre }}<br>
                                         @endforeach
                                     </td>
-                                    <td>{{ $credito->descripcion_negocio}}</td>
+                                    <td>{{ $credito->descripcion_negocio }}</td>
                                     <td>{{ $credito->tipo }}</td>
                                     <td>{{ $credito->producto }}</td>
-                                    <!-- <td>{{ $credito->subproducto }}</td>
-                                    <td>{{ $credito->destino }}</td> -->
-                                    <td>{{ $credito->recurrencia }}</td>
+                                    {{-- <td>{{ $credito->subproducto }}</td>
+                                        <td>{{ $credito->destino }}</td> --}}
+                                    {{-- <td>{{ $credito->recurrencia }}</td>
                                     <td>{{ $credito->tasa }}</td>
-                                    <td>{{ $credito->tiempo }}</td>
+                                    <td>{{ $credito->tiempo }}</td> --}}
                                     <td>{{ $credito->monto_total }}</td>
                                     <td>
                                         @if ($credito->estado == 'pendiente')
@@ -86,19 +90,36 @@
                                         @elseif($credito->estado == 'aprobado')
                                             <span style="background-color: green; padding: 3px 10px; border-radius: 5px;">Aprobado</span>
                                         @elseif($credito->estado == 'rechazado por sistema')
-                                            <span style="background-color:SkyBlue; padding: 3px 10px; border-radius: 5px;">Rechazado por sistema</span>
+                                            <span style="background-color: SkyBlue; padding: 3px 10px; border-radius: 5px;">Rechazado por sistema</span>
+                                        @elseif($credito->estado == 'observado')
+                                            <span style="background-color: purple; padding: 3px 10px; border-radius: 5px; color: white;">Observado</span>
+                                        @elseif($credito->estado == 'pagado')
+                                            <span style="background-color: blue; padding: 3px 10px; border-radius: 5px; color: white;">Activo</span>
+                                        @elseif($credito->estado == 'terminado')
+                                            <span style="background-color: grey; padding: 3px 10px; border-radius: 5px; color: white;">Terminado</span>
+                                        @elseif($credito->estado == 'mora')
+                                            <span style="background-color: darkred; padding: 3px 10px; border-radius: 5px; color: white;">Mora</span>
                                         @endif
                                     </td>
                                     <td style="display: flex; align-items: center; justify-content:center;">
-                                        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#cuotasModal" onclick="loadCuotas('{{ route('credito.cuotas', $credito->id) }}')">Cuotas</a>
-                                        
-                                        <a href="{{  route('creditos.proyecciones', ['id' => $credito->id]) }}" class="btn btn-secondary">Resultado</a>
-                                        
-                                        <a href="{{ route('creditos.edit', $credito->id) }}" type="button" class="btn btn-success"><i class="bi bi-pencil"></i></a>
-                                        <form action="{{ route('creditos.destroy', $credito->id) }}" onclick="preguntar(event, '{{ $id }}')" method="post" id="miFormulario{{ $id }}">
+                                        @if($credito->estado != 'rechazado')
+                                        <a href="#" class="btn btn-primary mr-2" data-toggle="modal" data-target="#cuotasModal"
+                                            onclick="loadCuotas('{{ route('credito.cuotas', $credito->id) }}')">
+                                            <i class="bi bi-calendar"></i>
+                                        </a>
+                                        @endif
+                                        <a href="{{ route('creditos.proyecciones', ['id' => $credito->id]) }}"
+                                            class="btn btn-secondary mr-2"><i class="bi bi-bar-chart"></i></a>
+                                        @if($credito->estado != 'rechazado' && $credito->estado != 'revisado')
+                                            <a href="{{ route('creditos.edit', $credito->id) }}" type="button"
+                                                class="btn btn-success mr-2"><i class="bi bi-pencil"></i></a>
+                                        @endif
+                                        <form action="{{ route('creditos.destroy', $credito->id) }}"
+                                            onclick="preguntar(event, '{{ $id }}')" method="post"
+                                            id="miFormulario{{ $id }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger" style="border-radius: 0px 5px 5px 0px"><i class="bi bi-trash"></i></button>
+                                            <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i></button>
                                         </form>
                                     </td>
                                 </tr>
@@ -110,7 +131,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="cuotasModal" tabindex="-1" role="dialog" aria-labelledby="cuotasModalLabel" aria-hidden="true">
+    <div class="modal fade" id="cuotasModal" tabindex="-1" role="dialog" aria-labelledby="cuotasModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -130,6 +152,7 @@
     </div>
 
     <script>
+
         $(document).ready(function() {
             var spanish = {
                 "sProcessing": "Procesando...",
@@ -164,7 +187,7 @@
                 "info": true,
                 "language": spanish,
                 "autoWidth": true,
-                "pageLength": 10
+                "pageLength": 20
             });
         });
 

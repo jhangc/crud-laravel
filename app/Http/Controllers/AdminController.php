@@ -39,6 +39,19 @@ class AdminController extends Controller
         ]);
     }
 
+    public function observar(Request $request){
+        $credito = credito::find($request->id);
+        $credito->estado = 'observado';
+        $credito->comentario_administrador = $request->comentarioadministrador;
+        $credito->save();
+
+        return response()->json([
+            'redirect' => route('creditos.aprobar'),
+            'mensaje' => 'El crédito ha sido observado correctamente',
+            'icono' => 'success'
+        ]);
+    }
+
     public function guardar(Request $request){
         $credito = credito::find($request->id);
         if ($request->estado == 'rechazado por sistema') {
