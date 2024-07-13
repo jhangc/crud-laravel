@@ -172,7 +172,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             </li>
                         @endrole
 
-                        @role('Administrador')
+                        @role('Administrador|Asesor de creditos')
                             <li class="nav-item">
                                 <a href="#" class="nav-link active">
                                     <i class="nav-icon fas"><i class="bi bi-person-check-fill"></i></i>
