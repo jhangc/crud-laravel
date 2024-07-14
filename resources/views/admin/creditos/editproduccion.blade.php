@@ -126,7 +126,7 @@
                                     <div class="form-group">
                                         <label for="descripcion_negocio">Descripción del negocio</label>
                                         <select name="descripcion_negocio" id="descripcion_negocio"
-                                            onchange="agricola()" class="form-control">
+                                             class="form-control">
                                             <option value="" selected>Seleccione una descripción...</option>
                                         </select>
                                     </div>
@@ -1067,7 +1067,7 @@
                 actualizarTablaInventario1();
             });
         }
-
+        toggleFields();
         cargardata();
     });
 </script>
@@ -1812,6 +1812,6 @@
     document.getElementById('porcentaje_venta_credito').addEventListener('input', actualizarVentaCredito);
 
 
-    document.addEventListener('DOMContentLoaded', toggleFields);
+    // document.addEventListener('DOMContentLoaded', toggleFields);
 </script>
 @endsection
