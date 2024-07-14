@@ -48,9 +48,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i
                             class="fas fa-bars"></i></a>
                 </li>
-                {{-- <li class="nav-item d-none d-sm-inline-block">
-                    <a href="{{ url('/') }}" class="nav-link">Sistema de prestamos</a>
-                </li> --}}
             </ul>
 
             <!-- Right navbar links -->
@@ -82,11 +79,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
                 @endguest
 
-                {{-- <li class="nav-item">
-                    <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
-                        <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                    </a>
-                </li> --}}
+
 
             </ul>
         </nav>
@@ -214,7 +207,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                     <li class="nav-item">
                                         <a href="{{ url('/admin/caja/pagarcredito') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Pagar Crédito</p>
+                                            <p>Desembolsar Crédito</p>
+                                        </a>
+                                        <a href="{{ url('/admin/caja/cobrar') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Cobrar Crédito</p>
                                         </a>
                                         <a href="{{ url('/admin/caja/habilitar') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>

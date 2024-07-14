@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="row">
-        <h1>Pagar credito</h1>
+        <h1>Cobrar credito</h1>
     </div> 
     <hr>
     <div class="row">
