@@ -561,240 +561,239 @@
     </div>
 </div>
 <script>
-   function cargarData() {
-    const idc = document.getElementById('credito-id').value;
-    $.ajax({
-        url: `/admin/creditoinfo/${idc}`,
-        type: 'GET',
-        success: function(response) {
-            let credito = response.credito;
+    function cargarData() {
+        const idc = document.getElementById('credito-id').value;
+        $.ajax({
+            url: `/admin/creditoinfo/${idc}`,
+            type: 'GET',
+            success: function(response) {
+                let credito = response.credito;
 
-            // Llenar datos del crédito
-            $('#tipo_credito').val(credito.tipo);
-            $('#tipo_producto').val(credito.producto);
-            $('#subproducto').val(credito.subproducto);
-            $('#destino_credito').val(credito.destino);
-            $('#recurrencia').val(credito.recurrencia);
-            $('#tasa_interes').val(credito.tasa);
-            $('#tiempo_credito').val(credito.tiempo);
-            $('#monto').val(credito.monto_total);
-            $('#fecha_desembolso').val(credito.fecha_desembolso);
-            $('#descripcion_negocio').val(credito.descripcion_negocio);
-            $('#periodo_gracia_dias').val(credito.periodo_gracia_dias);
+                // Llenar datos del crédito
+                $('#tipo_credito').val(credito.tipo);
+                $('#tipo_producto').val(credito.producto);
+                $('#subproducto').val(credito.subproducto);
+                $('#destino_credito').val(credito.destino);
+                $('#recurrencia').val(credito.recurrencia);
+                $('#tasa_interes').val(credito.tasa);
+                $('#tiempo_credito').val(credito.tiempo);
+                $('#monto').val(credito.monto_total);
+                $('#fecha_desembolso').val(credito.fecha_desembolso);
+                $('#descripcion_negocio').val(credito.descripcion_negocio);
+                $('#periodo_gracia_dias').val(credito.periodo_gracia_dias);
+                // Llenar  registor de  producto
 
-            // Llenar datos del cliente
-            if (response.clientes.length > 0) {
-                let cliente = response.clientes[0].clientes;
-                $('#documento_identidad').val(cliente.documento_identidad);
-                $('#nombre').val(cliente.nombre);
-                $('#telefono').val(cliente.telefono);
-                $('#email').val(cliente.email);
-                $('#direccion').val(cliente.direccion);
-                $('#direccion_laboral').val(cliente.direccion_laboral);
-                $('#profesion').val(cliente.profesion);
+                // Llenar datos del cliente
+                if (response.clientes.length > 0) {
+                    let cliente = response.clientes[0].clientes;
+                    $('#documento_identidad').val(cliente.documento_identidad);
+                    $('#nombre').val(cliente.nombre);
+                    $('#telefono').val(cliente.telefono);
+                    $('#email').val(cliente.email);
+                    $('#direccion').val(cliente.direccion);
+                    $('#direccion_laboral').val(cliente.direccion_laboral);
+                    $('#profesion').val(cliente.profesion);
+                }
+
+                // Llenar ventas mensuales
+                ventasMensualesArray = response.ventasMensuales.map(venta => ({
+                    mes: venta.mes,
+                    porcentaje: parseFloat(venta.porcentaje)
+                }));
+                actualizarTablaVentasMensual();
+
+                // Llenar tipo de producto
+                tipoProductoArray = response.tipoProducto.map(producto => ({
+                    PRODUCTO: producto.producto,
+                    precio_unitario: parseFloat(producto.precio),
+                    procentaje_producto: parseFloat(producto.porcentaje)
+                }));
+                actualizarTablaTipoProducto();
+
+                // Llenar gastos operativos
+                gastosOperativosArray = response.gastosOperativos.map(gasto => ({
+                    gasto: gasto.descripcion,
+                    unidad: gasto.unidad,
+                    precioUnitario: gasto.precio_unitario,
+                    mes1: gasto.mes1,
+                    mes2: gasto.mes2,
+                    mes3: gasto.mes3,
+                    mes4: gasto.mes4,
+                    mes5: gasto.mes5,
+                    mes6: gasto.mes6,
+                    mes7: gasto.mes7,
+                    mes8: gasto.mes8,
+                    mes9: gasto.mes9,
+                    mes10: gasto.mes10,
+                    mes11: gasto.mes11,
+                    mes12: gasto.mes12
+                }));
+                actualizarTablaGastosOperativos();
+
+                // Llenar inventario
+                inventarioArray = response.inventario.map(item => ({
+                    descripcion: item.descripcion,
+                    precioUnitario: item.precio_unitario,
+                    cantidad: item.cantidad,
+                    unidad: item.unidad,
+                    montoTotal: (item.precio_unitario * item.cantidad).toFixed(2)
+                }));
+                actualizarTablaInventario();
+
+                // Llenar gastos familiares
+                inventarioArray1 = response.gastosFamiliares.map(item => ({
+                    descripcion: item.descripcion,
+                    precioUnitario: item.precio_unitario,
+                    cantidad: item.cantidad,
+                    montoTotal: (item.precio_unitario * item.cantidad).toFixed(2)
+                }));
+                actualizarTablaInventario1();
+
+                // Llenar deudas financieras
+                deudasFinancierasArray = response.deudasFinancieras.map(deuda => ({
+                    entidad: deuda.nombre_entidad,
+                    saldoCapital: parseFloat(deuda.saldo_capital),
+                    cuota: parseFloat(deuda.cuota),
+                    tiempoRestante: deuda.tiempo_restante
+                }));
+                actualizarTablaDeudasFinancieras();
+            },
+            error: function(response) {
+                console.error(response);
             }
-
-            // Llenar ventas mensuales
-            ventasMensualesArray = response.ventasMensuales.map(venta => ({
-                mes: venta.mes,
-                porcentaje: parseFloat(venta.porcentaje)
-            }));
-            actualizarTablaVentasMensual();
-
-            // Llenar tipo de producto
-            tipoProductoArray = response.tipoProducto.map(producto => ({
-                PRODUCTO: producto.producto,
-                precio_unitario: parseFloat(producto.precio),
-                procentaje_producto: parseFloat(producto.porcentaje)
-            }));
-            actualizarTablaTipoProducto();
-
-            // Llenar gastos operativos
-            gastosOperativosArray = response.gastosOperativos.map(gasto => ({
-                gasto: gasto.descripcion,
-                unidad: gasto.unidad,
-                precioUnitario: gasto.precio_unitario,
-                mes1: gasto.mes1,
-                mes2: gasto.mes2,
-                mes3: gasto.mes3,
-                mes4: gasto.mes4,
-                mes5: gasto.mes5,
-                mes6: gasto.mes6,
-                mes7: gasto.mes7,
-                mes8: gasto.mes8,
-                mes9: gasto.mes9,
-                mes10: gasto.mes10,
-                mes11: gasto.mes11,
-                mes12: gasto.mes12
-            }));
-            actualizarTablaGastosOperativos();
-
-            // Llenar inventario
-            inventarioArray = response.inventario.map(item => ({
-                descripcion: item.descripcion,
-                precioUnitario: item.precio_unitario,
-                cantidad: item.cantidad,
-                unidad: item.unidad,
-                montoTotal: (item.precio_unitario * item.cantidad).toFixed(2)
-            }));
-            actualizarTablaInventario();
-
-            // Llenar gastos familiares
-            inventarioArray1 = response.gastosFamiliares.map(item => ({
-                descripcion: item.descripcion,
-                precioUnitario: item.precio_unitario,
-                cantidad: item.cantidad,
-                montoTotal: (item.precio_unitario * item.cantidad).toFixed(2)
-            }));
-            actualizarTablaInventario1();
-
-            // Llenar deudas financieras
-            deudasFinancierasArray = response.deudasFinancieras.map(deuda => ({
-                entidad: deuda.nombre_entidad,
-                saldoCapital: parseFloat(deuda.saldo_capital),
-                cuota: parseFloat(deuda.cuota),
-                tiempoRestante: deuda.tiempo_restante
-            }));
-            actualizarTablaDeudasFinancieras();
-        },
-        error: function(response) {
-            console.error(response);
-        }
-    });
-}
-
-function actualizarTablaVentasMensual() {
-    const tablaCuerpo = document.getElementById('tabla_ventas_mensual');
-    tablaCuerpo.innerHTML = '';
-    ventasMensualesArray.forEach((venta, index) => {
-        const row = tablaCuerpo.insertRow();
-        row.innerHTML = `
-            <td>${venta.mes}</td>
-            <td><input type="number" class="form-control" value="${venta.porcentaje}" onchange="actualizarVentaMensual(${index}, this.value)"></td>
-        `;
-    });
-}
-
-function actualizarTablaTipoProducto() {
-    const tablaCuerpo = document.getElementById('tabla_tipo_producto');
-    tablaCuerpo.innerHTML = '';
-    tipoProductoArray.forEach((producto, index) => {
-        const row = tablaCuerpo.insertRow();
-        row.innerHTML = `
-            <td>${producto.PRODUCTO}</td>
-            <td><input type="number" class="form-control" value="${producto.precio_unitario}" onchange="actualizarTipoProducto(${index}, 'precio_unitario', this.value)"></td>
-            <td><input type="number" class="form-control" value="${producto.procentaje_producto}" onchange="actualizarTipoProducto(${index}, 'procentaje_producto', this.value)"></td>
-        `;
-    });
-}
-
-function actualizarTablaGastosOperativos() {
-    const tablaCuerpo = document.getElementById('tabla_gastos_operativos');
-    tablaCuerpo.innerHTML = '';
-    gastosOperativosArray.forEach((gasto, index) => {
-        const row = tablaCuerpo.insertRow();
-        row.innerHTML = `
-            <td>${gasto.gasto}</td>
-            <td>
-                <select class="form-control" onchange="actualizarGastoOperativo(${index}, 'unidad', this.value)">
-                    <option value="" ${gasto.unidad === '' ? 'selected' : ''}>seleccione...</option>
-                    <option value="jor" ${gasto.unidad === 'jor' ? 'selected' : ''}>Jor.</option>
-                    <option value="uni" ${gasto.unidad === 'uni' ? 'selected' : ''}>Uni.</option>
-                </select>
-            </td>
-            <td><input type="number" class="form-control" value="${gasto.precioUnitario}" onchange="actualizarGastoOperativo(${index}, 'precioUnitario', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes1}" onchange="actualizarGastoOperativo(${index}, 'mes1', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes2}" onchange="actualizarGastoOperativo(${index}, 'mes2', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes3}" onchange="actualizarGastoOperativo(${index}, 'mes3', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes4}" onchange="actualizarGastoOperativo(${index}, 'mes4', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes5}" onchange="actualizarGastoOperativo(${index}, 'mes5', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes6}" onchange="actualizarGastoOperativo(${index}, 'mes6', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes7}" onchange="actualizarGastoOperativo(${index}, 'mes7', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes8}" onchange="actualizarGastoOperativo(${index}, 'mes8', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes9}" onchange="actualizarGastoOperativo(${index}, 'mes9', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes10}" onchange="actualizarGastoOperativo(${index}, 'mes10', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes11}" onchange="actualizarGastoOperativo(${index}, 'mes11', this.value)"></td>
-            <td><input type="number" class="form-control" value="${gasto.mes12}" onchange="actualizarGastoOperativo(${index}, 'mes12', this.value)"></td>
-        `;
-    });
-}
-
-function actualizarTablaInventario() {
-    const tablaCuerpo = document.getElementById('tablaInventario');
-    tablaCuerpo.innerHTML = '';
-    totalInventario = 0;
-
-    inventarioArray.forEach((producto, index) => {
-        const row = tablaCuerpo.insertRow();
-        row.innerHTML = `
-            <td>${producto.descripcion}</td>
-            <td>${producto.unidad}</td>
-            <td><input type="number" class="form-control" value="${producto.precioUnitario}" onchange="editarProducto(${index}, 'precioUnitario', this.value)"></td>
-            <td><input type="number" class="form-control" value="${producto.cantidad}" onchange="editarProducto(${index}, 'cantidad', this.value)"></td>
-            <td>${producto.montoTotal}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="eliminarProducto(${index})"><i class="fa fa-trash"></i></button></td>
-        `;
-        totalInventario = parseFloat(totalInventario) + parseFloat(producto.montoTotal);
-    });
-    document.getElementById('totalMontoInventario').value = totalInventario.toFixed(2);
-}
-
-function actualizarTablaInventario1() {
-    const tablaCuerpo = document.getElementById('tablaInventario1');
-    tablaCuerpo.innerHTML = '';
-    totalInventario1 = 0;
-
-    inventarioArray1.forEach((producto, index) => {
-        const row = tablaCuerpo.insertRow();
-        row.innerHTML = `
-            <td>${producto.descripcion}</td>
-            <td><input type="number" class="form-control" value="${producto.precioUnitario}" onchange="editarProducto1(${index}, 'precioUnitario', this.value)"></td>
-            <td><input type="number" class="form-control" value="${producto.cantidad}" onchange="editarProducto1(${index}, 'cantidad', this.value)"></td>
-            <td>${producto.montoTotal}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="eliminarProducto1(${index})"><i class="fa fa-trash"></i></button></td>
-        `;
-        totalInventario1 = parseFloat(totalInventario1) + parseFloat(producto.montoTotal);
-    });
-    document.getElementById('totalgastosfamiliares').value = totalInventario1.toFixed(2);
-}
-
-function actualizarTablaDeudasFinancieras() {
-    const tablaCuerpo = document.getElementById('datos_tabla_deudas_financieras');
-    tablaCuerpo.innerHTML = '';
-
-    deudasFinancierasArray.forEach((deuda, index) => {
-        const row = tablaCuerpo.insertRow();
-        row.innerHTML = `
-            <td>${deuda.entidad}</td>
-            <td>${deuda.saldoCapital}</td>
-            <td>${deuda.cuota}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="eliminarDeudaFinanciera(${index})"><i class="fa fa-trash"></i></button></td>
-        `;
-    });
-}
-
-function actualizarTipoProducto(index, campo, valor) {
-    tipoProductoArray[index][campo] = parseFloat(valor);
-}
-
-function actualizarVentaMensual(index, valor) {
-    ventasMensualesArray[index].porcentaje = parseFloat(valor);
-}
-
-function actualizarGastoOperativo(index, campo, valor) {
-    if (campo === 'precioUnitario' || campo.startsWith('mes')) {
-        valor = parseFloat(valor);
+        });
     }
-    gastosOperativosArray[index][campo] = valor;
-}
 
-$(document).ready(function() {
-    cargarData();
-});
-</script>
+    function actualizarTablaVentasMensual() {
+        const tablaCuerpo = document.getElementById('tabla_ventas_mensual');
+        tablaCuerpo.innerHTML = '';
+        ventasMensualesArray.forEach((venta, index) => {
+            const row = tablaCuerpo.insertRow();
+            row.innerHTML = `
+                <td>${venta.mes}</td>
+                <td><input type="number" class="form-control" value="${venta.porcentaje}" onchange="actualizarVentaMensual(${index}, this.value)"></td>
+            `;
+        });
+    }
 
-<script>
+    function actualizarTablaTipoProducto() {
+        const tablaCuerpo = document.getElementById('tabla_tipo_producto');
+        tablaCuerpo.innerHTML = '';
+        tipoProductoArray.forEach((producto, index) => {
+            const row = tablaCuerpo.insertRow();
+            row.innerHTML = `
+                <td>${producto.PRODUCTO}</td>
+                <td><input type="number" class="form-control" value="${producto.precio_unitario}" onchange="actualizarTipoProducto(${index}, 'precio_unitario', this.value)"></td>
+                <td><input type="number" class="form-control" value="${producto.procentaje_producto}" onchange="actualizarTipoProducto(${index}, 'procentaje_producto', this.value)"></td>
+            `;
+        });
+    }
+
+    function actualizarTablaGastosOperativos() {
+        const tablaCuerpo = document.getElementById('tabla_gastos_operativos');
+        tablaCuerpo.innerHTML = '';
+        gastosOperativosArray.forEach((gasto, index) => {
+            const row = tablaCuerpo.insertRow();
+            row.innerHTML = `
+                <td>${gasto.gasto}</td>
+                <td>
+                    <select class="form-control" onchange="actualizarGastoOperativo(${index}, 'unidad', this.value)">
+                        <option value="" ${gasto.unidad === '' ? 'selected' : ''}>seleccione...</option>
+                        <option value="jor" ${gasto.unidad === 'jor' ? 'selected' : ''}>Jor.</option>
+                        <option value="uni" ${gasto.unidad === 'uni' ? 'selected' : ''}>Uni.</option>
+                    </select>
+                </td>
+                <td><input type="number" class="form-control" value="${gasto.precioUnitario}" onchange="actualizarGastoOperativo(${index}, 'precioUnitario', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes1}" onchange="actualizarGastoOperativo(${index}, 'mes1', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes2}" onchange="actualizarGastoOperativo(${index}, 'mes2', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes3}" onchange="actualizarGastoOperativo(${index}, 'mes3', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes4}" onchange="actualizarGastoOperativo(${index}, 'mes4', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes5}" onchange="actualizarGastoOperativo(${index}, 'mes5', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes6}" onchange="actualizarGastoOperativo(${index}, 'mes6', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes7}" onchange="actualizarGastoOperativo(${index}, 'mes7', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes8}" onchange="actualizarGastoOperativo(${index}, 'mes8', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes9}" onchange="actualizarGastoOperativo(${index}, 'mes9', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes10}" onchange="actualizarGastoOperativo(${index}, 'mes10', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes11}" onchange="actualizarGastoOperativo(${index}, 'mes11', this.value)"></td>
+                <td><input type="number" class="form-control" value="${gasto.mes12}" onchange="actualizarGastoOperativo(${index}, 'mes12', this.value)"></td>
+            `;
+        });
+    }
+
+    function actualizarTablaInventario() {
+        const tablaCuerpo = document.getElementById('tablaInventario');
+        tablaCuerpo.innerHTML = '';
+        totalInventario = 0;
+
+        inventarioArray.forEach((producto, index) => {
+            const row = tablaCuerpo.insertRow();
+            row.innerHTML = `
+                <td>${producto.descripcion}</td>
+                <td>${producto.unidad}</td>
+                <td><input type="number" class="form-control" value="${producto.precioUnitario}" onchange="editarProducto(${index}, 'precioUnitario', this.value)"></td>
+                <td><input type="number" class="form-control" value="${producto.cantidad}" onchange="editarProducto(${index}, 'cantidad', this.value)"></td>
+                <td>${producto.montoTotal}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="eliminarProducto(${index})"><i class="fa fa-trash"></i></button></td>
+            `;
+            totalInventario = parseFloat(totalInventario) + parseFloat(producto.montoTotal);
+        });
+        document.getElementById('totalMontoInventario').value = totalInventario.toFixed(2);
+    }
+
+    function actualizarTablaInventario1() {
+        const tablaCuerpo = document.getElementById('tablaInventario1');
+        tablaCuerpo.innerHTML = '';
+        totalInventario1 = 0;
+
+        inventarioArray1.forEach((producto, index) => {
+            const row = tablaCuerpo.insertRow();
+            row.innerHTML = `
+                <td>${producto.descripcion}</td>
+                <td><input type="number" class="form-control" value="${producto.precioUnitario}" onchange="editarProducto1(${index}, 'precioUnitario', this.value)"></td>
+                <td><input type="number" class="form-control" value="${producto.cantidad}" onchange="editarProducto1(${index}, 'cantidad', this.value)"></td>
+                <td>${producto.montoTotal}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="eliminarProducto1(${index})"><i class="fa fa-trash"></i></button></td>
+            `;
+            totalInventario1 = parseFloat(totalInventario1) + parseFloat(producto.montoTotal);
+        });
+        document.getElementById('totalgastosfamiliares').value = totalInventario1.toFixed(2);
+    }
+
+    function actualizarTablaDeudasFinancieras() {
+        const tablaCuerpo = document.getElementById('datos_tabla_deudas_financieras');
+        tablaCuerpo.innerHTML = '';
+
+        deudasFinancierasArray.forEach((deuda, index) => {
+            const row = tablaCuerpo.insertRow();
+            row.innerHTML = `
+                <td>${deuda.entidad}</td>
+                <td>${deuda.saldoCapital}</td>
+                <td>${deuda.cuota}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="eliminarDeudaFinanciera(${index})"><i class="fa fa-trash"></i></button></td>
+            `;
+        });
+    }
+
+    function actualizarTipoProducto(index, campo, valor) {
+        tipoProductoArray[index][campo] = parseFloat(valor);
+    }
+
+    function actualizarVentaMensual(index, valor) {
+        ventasMensualesArray[index].porcentaje = parseFloat(valor);
+    }
+
+    function actualizarGastoOperativo(index, campo, valor) {
+        if (campo === 'precioUnitario' || campo.startsWith('mes')) {
+            valor = parseFloat(valor);
+        }
+        gastosOperativosArray[index][campo] = valor;
+    }
+
+    $(document).ready(function() {
+        toggleFields();
+        cargarData();
         
+    });
 
     $('#buscarCliente').click(function() {
         var documentoIdentidad = $('#documento_identidad').val();
@@ -825,6 +824,7 @@ $(document).ready(function() {
     let deudasFinancierasArray =[];
     let gastosOperativosArray=[];
     let inventarioArray1=[];
+
     function agregarInventariotabla() {
         const descripcion = document.getElementById('descripcion_producto_inventario').value;
         const precioUnitario = document.getElementById('precio_unitario_inventario').value;
@@ -843,26 +843,6 @@ $(document).ready(function() {
         inventarioArray.push(producto);
         actualizarTablaInventario();
         limpiarCamposInventario();
-    }
-
-    function actualizarTablaInventario() {
-        const tablaCuerpo = document.getElementById('tablaInventario');
-        tablaCuerpo.innerHTML = '';
-        totalInventario = 0;
-
-        inventarioArray.forEach((producto, index) => {
-            const row = tablaCuerpo.insertRow();
-            row.innerHTML = `
-                <td>${producto.descripcion}</td>
-                <td>${producto.unidad}</td>
-                <td><input type="number" class="form-control" value="${producto.precioUnitario}" onchange="editarProducto(${index}, 'precioUnitario', this.value)"></td>
-                <td><input type="number" class="form-control" value="${producto.cantidad}" onchange="editarProducto(${index}, 'cantidad', this.value)"></td>
-                <td>${producto.montoTotal}</td>
-                <td><button class="btn btn-danger btn-sm" onclick="eliminarProducto(${index})"><i class="fa fa-trash"></i></button></td>
-            `;
-            totalInventario = parseFloat(totalInventario) + parseFloat(producto.montoTotal);
-        });
-        document.getElementById('totalMontoInventario').value = totalInventario.toFixed(2);
     }
 
     function editarProducto(index, campo, valor) {
@@ -961,25 +941,6 @@ $(document).ready(function() {
         limpiarCamposInventario1();
     }
 
-    function actualizarTablaInventario1() {
-        const tablaCuerpo = document.getElementById('tablaInventario1');
-        tablaCuerpo.innerHTML = '';
-        totalInventario1 = 0;
-
-        inventarioArray1.forEach((producto, index) => {
-            const row = tablaCuerpo.insertRow();
-            row.innerHTML = `
-                <td>${producto.descripcion}</td>
-                <td><input type="number" class="form-control" value="${producto.precioUnitario}" onchange="editarProducto1(${index}, 'precioUnitario', this.value)"></td>
-                <td><input type="number" class="form-control" value="${producto.cantidad}" onchange="editarProducto1(${index}, 'cantidad', this.value)"></td>
-                <td>${producto.montoTotal}</td>
-                <td><button class="btn btn-danger btn-sm" onclick="eliminarProducto1(${index})"><i class="fa fa-trash"></i></button></td>
-            `;
-            totalInventario1 = parseFloat(totalInventario1) + parseFloat(producto.montoTotal);
-        });
-        document.getElementById('totalgastosfamiliares').value = totalInventario1.toFixed(2);
-    }
-
     function editarProducto1(index, campo, valor) {
         inventarioArray1[index][campo] = parseFloat(valor);
         if (campo === 'precioUnitario' || campo === 'cantidad') {
@@ -1003,7 +964,7 @@ $(document).ready(function() {
         const entidad = document.getElementById('entidad_financiera').value;
         const saldoCapital = parseFloat(document.getElementById('saldo_capital').value);
         const cuota = parseFloat(document.getElementById('cuota').value);
-        const tiempoRestante="0";
+        const tiempoRestante = "0";
 
         const deuda = {
             entidad,
@@ -1020,26 +981,6 @@ $(document).ready(function() {
         document.getElementById('entidad_financiera').value = '';
         document.getElementById('saldo_capital').value = '';
         document.getElementById('cuota').value = '';
-    }
-
-    function actualizarTablaDeudasFinancieras() {
-        const tablaCuerpo = document.getElementById('datos_tabla_deudas_financieras');
-        tablaCuerpo.innerHTML = '';
-
-        deudasFinancierasArray.forEach((deuda, index) => {
-            const row = tablaCuerpo.insertRow();
-            row.innerHTML = `
-                <td>${deuda.entidad}</td>
-                <td>${deuda.saldoCapital}</td>
-                <td>${deuda.cuota}</td>
-                <td><button class="btn btn-danger btn-sm" onclick="eliminarDeudaFinanciera(${index})"><i class="fa fa-trash"></i></button></td>
-            `;
-        });
-    }
-
-    function eliminarDeudaFinanciera(index) {
-        deudasFinancierasArray.splice(index, 1);
-        actualizarTablaDeudasFinancieras();
     }
 
     $('#prestamoForm').on('submit', function(e) {
@@ -1079,34 +1020,9 @@ $(document).ready(function() {
                         console.log(response);
                     }
                 });
-        });
-
-        $('#buscarCliente').click(function() {
-            var documentoIdentidad = $('#documento_identidad').val();
-            $.ajax({
-                url: '{{ route('creditos.buscardni')}}',
-                type: 'GET',
-                data: {
-                    documento_identidad: documentoIdentidad
-                },
-                success: function(response) {
-                    $('#nombre').val(response.nombre || '');
-                    $('#telefono').val(response.telefono || '');
-                    $('#email').val(response.email || '');
-                    $('#direccion').val(response.direccion || '');
-                    $('#direccion_laboral').val(response.direccion_laboral || '');
-                    $('#profesion').val(response.profesion || '');
-                },
-                error: function(xhr) {
-                    console.error("Error al recuperar información: " + xhr.statusText);
-                    $('#nombre, #telefono, #email, #direccion, #direccion_laboral, #profesion').val('');
-                }
-            });
-        });
-  
+    });
 
     function toggleFields() {
-        var selection = document.getElementById('tipo_producto').value;
         var selectionTipoCredito = "produccion";
         if (selectionTipoCredito != '') {
             $.ajax({
@@ -1134,22 +1050,6 @@ $(document).ready(function() {
             var descripcionSelect = document.getElementById('descripcion_negocio');
             descripcionSelect.innerHTML = '<option value="">Seleccione una descripción...</option>';
         }
-    }
-    let tipoProductoArray = [];
-    function actualizarTipoProducto(index, campo, valor) {
-        tipoProductoArray[index][campo] = parseFloat(valor);
-        console.log(tipoProductoArray,'EE');
-    }
-    function actualizarVentaMensual(index, valor) {
-    ventasMensualesArray[index].porcentaje = parseFloat(valor);
-    console.log(ventasMensualesArray,'VENTAS');
-    }
-    function actualizarGastoOperativo(index, campo, valor) {
-    if (campo === 'precioUnitario' || campo.startsWith('mes')) {
-        valor = parseFloat(valor);
-    }
-    gastosOperativosArray[index][campo] = valor;
-    console.log(gastosOperativosArray,'GADTOS');
     }
 
     function proyectarMeses() {
@@ -1188,152 +1088,151 @@ $(document).ready(function() {
             for (var i = 0; i < tipoProductoArray.length; i++) {
                 var row = tablaTipoProducto.insertRow();
                 row.innerHTML = `
-                        <tr>
-                            <td>${tipoProductoArray[i].PRODUCTO}</td>
-                            <td><input type="number" class="form-control" value="${tipoProductoArray[i].precio_unitario}" onchange="actualizarTipoProducto(${i}, 'precio_unitario', this.value)"></td>
-                            <td><input type="number" class="form-control" value="${tipoProductoArray[i].procentaje_producto}" onchange="actualizarTipoProducto(${i}, 'procentaje_producto', this.value)"></td>
-                        </tr>
-                    `;
+                    <tr>
+                        <td>${tipoProductoArray[i].PRODUCTO}</td>
+                        <td><input type="number" class="form-control" value="${tipoProductoArray[i].precio_unitario}" onchange="actualizarTipoProducto(${i}, 'precio_unitario', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${tipoProductoArray[i].procentaje_producto}" onchange="actualizarTipoProducto(${i}, 'procentaje_producto', this.value)"></td>
+                    </tr>
+                `;
             }
-        }
-        gastosOperativosArray = [{
-                "gasto": "DESHIERBO",
-                "unidad": "",
-                'precioUnitario':"",
-                "mes1": "",
-                "mes2": "",
-                "mes3": "",
-                "mes4": "",
-                "mes5": "",
-                "mes6": "",
-                "mes7": "",
-                "mes8": "",
-                "mes9": "",
-                "mes10": "",
-                "mes11": "",
-                "mes12": ""
-            },
-            {
-                "gasto": "PODA",
-                "unidad": "",
-                'precioUnitario':"",
-                "mes1": "",
-                "mes2": "",
-                "mes3": "",
-                "mes4": "",
-                "mes5": "",
-                "mes6": "",
-                "mes7": "",
-                "mes8": "",
-                "mes9": "",
-                "mes10": "",
-                "mes11": "",
-                "mes12": ""
-            },
-            {
-                "gasto": "COSECHA",
-                'precioUnitario':"",
-                "unidad": "",
-                "mes1": "",
-                "mes2": "",
-                "mes3": "",
-                "mes4": "",
-                "mes5": "",
-                "mes6": "",
-                "mes7": "",
-                "mes8": "",
-                "mes9": "",
-                "mes10": "",
-                "mes11": "",
-                "mes12": ""
-            },
-            {
-                "gasto": "TRANSPORTE",
-                'precioUnitario':"",
-                "unidad": "",
-                "mes1": "",
-                "mes2": "",
-                "mes3": "",
-                "mes4": "",
-                "mes5": "",
-                "mes6": "",
-                "mes7": "",
-                "mes8": "",
-                "mes9": "",
-                "mes10": "",
-                "mes11": "",
-                "mes12": ""
-            },
-            {
-                "gasto": "OTROS",
-                'precioUnitario':"",
-                "unidad": "",
-                "mes1": "",
-                "mes2": "",
-                "mes3": "",
-                "mes4": "",
-                "mes5": "",
-                "mes6": "",
-                "mes7": "",
-                "mes8": "",
-                "mes9": "",
-                "mes10": "",
-                "mes11": "",
-                "mes12": ""
-            }
-        ];
 
-        var tablaGastosOperativos = document.getElementById('tabla_gastos_operativos');
-        tablaGastosOperativos.innerHTML = '';
-
-                for (var i = 0; i < gastosOperativosArray.length; i++) {
-                    var row = tablaGastosOperativos.insertRow();
-                    row.innerHTML = `
-                        <tr>
-                            <td>${gastosOperativosArray[i].gasto}</td>
-                            <td>
-                                <select class="form-control"  onchange="actualizarGastoOperativo(${i}, 'unidad', this.value)">
-                                    <option value="">seleccione..</option>
-                                    <option value="jor" ${gastosOperativosArray[i].unidad === 'jor' ? 'selected' : ''}>Jor.</option>
-                                    <option value="uni" ${gastosOperativosArray[i].unidad === 'uni' ? 'selected' : ''}>Uni.</option>
-                                </select>
-                            </td>
-                            <td><input type="number" class="form-control"  onchange="actualizarGastoOperativo(${i}, 'precioUnitario', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes1}" onchange="actualizarGastoOperativo(${i}, 'mes1', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes2}" onchange="actualizarGastoOperativo(${i}, 'mes2', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes3}" onchange="actualizarGastoOperativo(${i}, 'mes3', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes4}" onchange="actualizarGastoOperativo(${i}, 'mes4', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes5}" onchange="actualizarGastoOperativo(${i}, 'mes5', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes6}" onchange="actualizarGastoOperativo(${i}, 'mes6', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes7}" onchange="actualizarGastoOperativo(${i}, 'mes7', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes8}" onchange="actualizarGastoOperativo(${i}, 'mes8', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes9}" onchange="actualizarGastoOperativo(${i}, 'mes9', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes10}" onchange="actualizarGastoOperativo(${i}, 'mes10', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes11}" onchange="actualizarGastoOperativo(${i}, 'mes11', this.value)"></td>
-                            <td><input type="number" class="form-control"  value="${gastosOperativosArray[i].mes12}" onchange="actualizarGastoOperativo(${i}, 'mes12', this.value)"></td>
-                        </tr>
-                    `;
+            gastosOperativosArray = [{
+                    "gasto": "DESHIERBO",
+                    "unidad": "",
+                    'precioUnitario':"",
+                    "mes1": "",
+                    "mes2": "",
+                    "mes3": "",
+                    "mes4": "",
+                    "mes5": "",
+                    "mes6": "",
+                    "mes7": "",
+                    "mes8": "",
+                    "mes9": "",
+                    "mes10": "",
+                    "mes11": "",
+                    "mes12": ""
+                },
+                {
+                    "gasto": "PODA",
+                    "unidad": "",
+                    'precioUnitario':"",
+                    "mes1": "",
+                    "mes2": "",
+                    "mes3": "",
+                    "mes4": "",
+                    "mes5": "",
+                    "mes6": "",
+                    "mes7": "",
+                    "mes8": "",
+                    "mes9": "",
+                    "mes10": "",
+                    "mes11": "",
+                    "mes12": ""
+                },
+                {
+                    "gasto": "COSECHA",
+                    'precioUnitario':"",
+                    "unidad": "",
+                    "mes1": "",
+                    "mes2": "",
+                    "mes3": "",
+                    "mes4": "",
+                    "mes5": "",
+                    "mes6": "",
+                    "mes7": "",
+                    "mes8": "",
+                    "mes9": "",
+                    "mes10": "",
+                    "mes11": "",
+                    "mes12": ""
+                },
+                {
+                    "gasto": "TRANSPORTE",
+                    'precioUnitario':"",
+                    "unidad": "",
+                    "mes1": "",
+                    "mes2": "",
+                    "mes3": "",
+                    "mes4": "",
+                    "mes5": "",
+                    "mes6": "",
+                    "mes7": "",
+                    "mes8": "",
+                    "mes9": "",
+                    "mes10": "",
+                    "mes11": "",
+                    "mes12": ""
+                },
+                {
+                    "gasto": "OTROS",
+                    'precioUnitario':"",
+                    "unidad": "",
+                    "mes1": "",
+                    "mes2": "",
+                    "mes3": "",
+                    "mes4": "",
+                    "mes5": "",
+                    "mes6": "",
+                    "mes7": "",
+                    "mes8": "",
+                    "mes9": "",
+                    "mes10": "",
+                    "mes11": "",
+                    "mes12": ""
                 }
+            ];
 
-        // los meses si vien  y  todo onchange apra que arrqay alamcebe  por favor  y se  pueda 
-        for (var i = 0; i < 12; i++) {
-            var mesIndex = (fecha.getMonth() + i) % 12;
-            var mes = meses[mesIndex] + ' ' + (fecha.getFullYear() + Math.floor((fecha.getMonth() + i) / 12));
+            var tablaGastosOperativos = document.getElementById('tabla_gastos_operativos');
+            tablaGastosOperativos.innerHTML = '';
 
-            // Crear un objeto para el mes y agregarlo al array
-            var ventaMensual = {
-                mes: mes,
-                porcentaje: 0
-            };
-            ventasMensualesArray.push(ventaMensual);
+            for (var i = 0; i < gastosOperativosArray.length; i++) {
+                var row = tablaGastosOperativos.insertRow();
+                row.innerHTML = `
+                    <tr>
+                        <td>${gastosOperativosArray[i].gasto}</td>
+                        <td>
+                            <select class="form-control" onchange="actualizarGastoOperativo(${i}, 'unidad', this.value)">
+                                <option value="">seleccione...</option>
+                                <option value="jor" ${gastosOperativosArray[i].unidad === 'jor' ? 'selected' : ''}>Jor.</option>
+                                <option value="uni" ${gastosOperativosArray[i].unidad === 'uni' ? 'selected' : ''}>Uni.</option>
+                            </select>
+                        </td>
+                        <td><input type="number" class="form-control" onchange="actualizarGastoOperativo(${i}, 'precioUnitario', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes1}" onchange="actualizarGastoOperativo(${i}, 'mes1', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes2}" onchange="actualizarGastoOperativo(${i}, 'mes2', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes3}" onchange="actualizarGastoOperativo(${i}, 'mes3', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes4}" onchange="actualizarGastoOperativo(${i}, 'mes4', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes5}" onchange="actualizarGastoOperativo(${i}, 'mes5', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes6}" onchange="actualizarGastoOperativo(${i}, 'mes6', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes7}" onchange="actualizarGastoOperativo(${i}, 'mes7', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes8}" onchange="actualizarGastoOperativo(${i}, 'mes8', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes9}" onchange="actualizarGastoOperativo(${i}, 'mes9', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes10}" onchange="actualizarGastoOperativo(${i}, 'mes10', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes11}" onchange="actualizarGastoOperativo(${i}, 'mes11', this.value)"></td>
+                        <td><input type="number" class="form-control" value="${gastosOperativosArray[i].mes12}" onchange="actualizarGastoOperativo(${i}, 'mes12', this.value)"></td>
+                    </tr>
+                `;
+            }
 
-            var rowVenta = tablaVentasMensual.insertRow();
-            rowVenta.innerHTML = `
-                <td>${mes}</td>
-                <td><input type="number" class="form-control"  value="${ventaMensual.porcentaje}" onchange="actualizarVentaMensual(${i}, this.value)"></td>
-            `;
+            for (var i = 0; i < 12; i++) {
+                var mesIndex = (fecha.getMonth() + i) % 12;
+                var mes = meses[mesIndex] + ' ' + (fecha.getFullYear() + Math.floor((fecha.getMonth() + i) / 12));
+
+                var ventaMensual = {
+                    mes: mes,
+                    porcentaje: 0
+                };
+                ventasMensualesArray.push(ventaMensual);
+
+                var rowVenta = tablaVentasMensual.insertRow();
+                rowVenta.innerHTML = `
+                    <td>${mes}</td>
+                    <td><input type="number" class="form-control" value="${ventaMensual.porcentaje}" onchange="actualizarVentaMensual(${i}, this.value)"></td>
+                `;
+            }
         }
-        //SACAR SUAMTORIA DE  VENTA MES  POR FAVOR  Y ESO
     }
 </script>
+
 @endsection
