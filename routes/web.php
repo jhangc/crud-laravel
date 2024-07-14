@@ -103,7 +103,7 @@ Route::post('/admin/creditos/updatecomercio/{id}', [App\Http\Controllers\UpdateC
 Route::post('/admin/creditos/updategrupal/{id}', [App\Http\Controllers\UpdateController::class, 'updateCreditoGrupal'])->name('creditos.updatecreditogrupal')->middleware('auth');
 Route::post('/admin/creditos/updateservicio/{id}', [App\Http\Controllers\UpdateController::class, 'updateCreditoServicio'])->name('creditos.updateCreditoServicio')->middleware('auth');
 Route::post('/admin/creditos/updateprodcuccion/{id}', [App\Http\Controllers\UpdateController::class, 'updateCreditoProduccion'])->name('creditos.updateCreditoProduccion')->middleware('auth');
-
+Route::post('/admin/creditos/updateagricola/{id}', [App\Http\Controllers\UpdateController::class, 'updateCreditoagricola'])->name('creditos.updateCreditoAgricola')->middleware('auth');
 
 Route::get('/generar-pdf/{id}', [PDFController::class, 'generatePDF'])->name('generar-pdf');
 Route::get('/generar-cronograma/{id}', [PDFController::class, 'generatecronogramaPDF'])->name('generar-cronograma');
@@ -111,4 +111,5 @@ Route::get('/generar-cronogramagrupal/{id}', [PDFController::class, 'generatecro
 Route::get('/generar-contratogrupal/{id}', [PDFController::class, 'generatecrontratogrupalPDF'])->name('generar-contrato-grupal');
 Route::get('/generar-cartilla/{id}', [PDFController::class, 'generatecartillaPDF'])->name('generar-cartilla');
 Route::get('/generar-ticket-desembolso/{id}', [PDFController::class, 'generateticket'])->name('generar-ticket');
+
 
