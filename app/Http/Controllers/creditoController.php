@@ -736,6 +736,17 @@ class creditoController extends Controller
         return view('admin.caja.pagarcredito', ['creditos' => $creditos]);
     }
 
+    public function viewcobrar()
+    {
+        // Obtener solo los clientes activos (activo = 1)
+        $creditos = credito::with('clientes')
+            ->where('activo', 1)
+            ->where('estado', 'pagado')
+            ->get();
+
+        return view('admin.caja.cobrar', ['creditos' => $creditos]);
+    }
+
     public function pagar(Request $request, $id)
     {
         $prestamo = credito::find($id);

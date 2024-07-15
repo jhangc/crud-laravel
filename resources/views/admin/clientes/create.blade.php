@@ -278,6 +278,3 @@
         });
     </script>
 @endsection
-
-
-ejemplo mas

@@ -84,6 +84,7 @@ Route::get('/admin/caja/habilitar', [App\Http\Controllers\creditoController::cla
 Route::get('/admin/caja/pagarcredito', [App\Http\Controllers\creditoController::class, 'viewpagarcredito'])->name('caja.pagarcredito')->middleware('auth');
 Route::get('/admin/caja/pagares', [App\Http\Controllers\creditoController::class, 'viewpagares'])->name('caja.pagares')->middleware('auth');
 Route::get('/admin/caja/pagar/{id}', [App\Http\Controllers\creditoController::class, 'pagar'])->name('caja.pagar')->middleware('auth');
+Route::get('/admin/caja/cobrar', [App\Http\Controllers\creditoController::class, 'viewcobrar'])->name('caja.cobrar')->middleware('auth');
 
 
 

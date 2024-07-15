@@ -56,11 +56,19 @@
                                         @elseif($credito->estado == 'aprobado')
                                             <span style="background-color: green; padding: 3px 10px; border-radius: 5px;">Aprobado</span>
                                         @elseif($credito->estado == 'rechazado por sistema')
-                                            <span style="background-color:SkyBlue; padding: 3px 10px; border-radius: 5px;">Rechazado por sistema</span>
+                                            <span style="background-color: SkyBlue; padding: 3px 10px; border-radius: 5px;">Rechazado por sistema</span>
+                                        @elseif($credito->estado == 'observado')
+                                            <span style="background-color: purple; padding: 3px 10px; border-radius: 5px; color: white;">Observado</span>
+                                        @elseif($credito->estado == 'pagado')
+                                            <span style="background-color: blue; padding: 3px 10px; border-radius: 5px; color: white;">Activo</span>
+                                        @elseif($credito->estado == 'terminado')
+                                            <span style="background-color: grey; padding: 3px 10px; border-radius: 5px; color: white;">Terminado</span>
+                                        @elseif($credito->estado == 'mora')
+                                            <span style="background-color: darkred; padding: 3px 10px; border-radius: 5px; color: white;">Mora</span>
                                         @endif
                                     </td>
                                     <td style="display: flex; align-items: center; justify-content:center;">
-                                        <a href="{{  route('caja.pagar', ['id' => $credito->id]) }}" class="btn btn-primary" style="margin-left:10px">Pagar</a>
+                                        <a href="{{  route('caja.pagar', ['id' => $credito->id]) }}" class="btn btn-primary" style="margin-left:10px">Cobrar</a>
                                         
                                     </td>
                                 </tr>

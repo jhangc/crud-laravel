@@ -31,15 +31,16 @@
     @if ($prestamo->producto != 'grupal')
         <div class="row justify-content-center">
             <div class="col-md-4 text-center mb-3">
-                <button type="button" class="btn btn-danger btn-block" onclick="imprimirPDF()">Generar Cronograma</button>
+                <button type="button" class="btn btn-danger btn-block" onclick="cronogramaindividualPDF()">Generar Cronograma</button>
             </div>
             <div class="col-md-4 text-center mb-3">
-                <button type="button" class="btn btn-primary btn-block" onclick="generarDocumento('documento')">Generar
-                    Documento</button>
+                <button type="button" class="btn btn-primary btn-block" onclick="generarcontratoindividualPDF('documento')">Generar
+                    Contrato</button>
             </div>
-            <!-- <div class="col-md-4 text-center mb-3">
-            <button type="button" class="btn btn-primary btn-block" onclick="generarDocumento('ejemplo')">Ejemplo</button>
-        </div> -->
+            <div class="col-md-4 text-center mb-3">
+                <button type="button" class="btn btn-primary btn-block" onclick="generarpagare  PDF()">Generar
+                    Pagaré</button>
+            </div>
         </div>
     @else
         <div class="row justify-content-center">
