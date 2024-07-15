@@ -51,6 +51,9 @@
 </head>
 
 <body>
+    @if ($prestamo->producto == 'grupal')
+        
+    
     <!-- Ticket inicial con el monto total del grupo -->
     <div class="ticket">
         <div class="header">
@@ -71,6 +74,7 @@
             <div class="line"></div>
         </div>
     </div>
+    @endif
 
     @foreach ($creditos as $index => $credito)
         <div class="{{ $index === count($creditos) - 1 ? '' : 'ticket' }}">
