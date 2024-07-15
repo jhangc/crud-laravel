@@ -106,17 +106,54 @@ class PdfController extends Controller
         return $pdf->stream('ticket.pdf');
     }
 
+    public function generatecronogramaindividualPDF(Request $request, $id)
+    {
+        $prestamo = \App\Models\credito::find($id);
+        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
+        $responsable = \App\Models\User::find($prestamo->user_id);
+
+        // Formatear los datos adicionales necesarios
+        foreach ($cuotas as $cuota) {
+            $cuota->dias = (new \DateTime($cuota->fecha))->diff(new \DateTime($prestamo->fecha_desembolso))->days;
+            $cuota->detalle = $cuota->numero == 0 ? 'Credito' : 'Saldo del Capital';
+            $cuota->deuda = $prestamo->monto_total;
+            $cuota->total = $cuota->monto; // Incluyendo cualquier otro componente necesario
+        }
+
+        // // Calcular la suma de los intereses del cronograma grupal
+        // $totalInteresGrupal = $cuotas->whereNull('cliente_id')->sum('interes');
+
+        // Calcular las sumas de los intereses para cada cliente
+        $totalInteresesIndividuales = [];
+        foreach ($prestamo->clientes as $cliente) {
+            $totalInteresesIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('interes');
+        }
+
+        $data = compact(
+            'prestamo',
+            'responsable',
+            'cuotas',
+            'credito_cliente',
+            //'totalInteresGrupal',
+            'totalInteresesIndividuales'
+        );
+
+        $pdf = Pdf::loadView('pdf.cronogramaindividual', $data)->setPaper('a4', 'landscape');
+        return $pdf->stream('cronogramaindividual.pdf');
+    }
+
 
     public function generatecrontratogrupalPDF(Request $request, $id)
     {
         $prestamo = \App\Models\credito::find($id);
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
-        $responsable = auth()->user();
+        //$responsable = auth()->user();
 
         $data = compact(
             'prestamo',
-            'responsable',
+            //'responsable',
             'cuotas',
             'credito_cliente'
         );
@@ -125,6 +162,27 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.contratogrupal', $data)->setPaper('a4');
         return $pdf->stream('ticket.pdf');
     }
+
+    public function generatecontratoindividualPDF(Request $request, $id)
+    {
+        $prestamo = \App\Models\Credito::find($id);
+        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first(); // Obtener un solo cliente
+        //$responsable = auth()->user();
+
+        $data = compact(
+            'prestamo',
+            //'responsable',
+            'cuotas',
+            'credito_cliente'
+        );
+
+        $pdf = Pdf::loadView('pdf.contratoindividual', $data)->setPaper('a4');
+        return $pdf->stream('contratoindividual.pdf');
+    }
+
+
+
 
     public function generatecartillaPDF(Request $request, $id)
     {
@@ -775,18 +833,18 @@ class PdfController extends Controller
         }
     }
     public function generateticket($id)
-{
-    $prestamo = \App\Models\credito::find($id);
-    $creditos = \App\Models\CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
-    $prestamo->estado = 'pagado';
-    $prestamo->save();
+    {
+        $prestamo = \App\Models\credito::find($id);
+        $creditos = \App\Models\CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
+        $prestamo->estado = 'pagado';
+        $prestamo->save();
 
-    // Calcular el monto total del grupo
-    $montoTotalGrupo = $creditos->sum('monto_indivual');
+        // Calcular el monto total del grupo
+        $montoTotalGrupo = $creditos->sum('monto_indivual');
 
-    $pdf = Pdf::loadView('pdf.ticket', compact('prestamo', 'creditos', 'montoTotalGrupo'))
-        ->setPaper([0, 0, 205, 800]);
+        $pdf = Pdf::loadView('pdf.ticket', compact('prestamo', 'creditos', 'montoTotalGrupo'))
+            ->setPaper([0, 0, 205, 800]);
 
-    return $pdf->stream('ticket.pdf');
-}
+        return $pdf->stream('ticket.pdf');
+    }
 }

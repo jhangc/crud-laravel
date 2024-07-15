@@ -34,7 +34,7 @@
                 <button type="button" class="btn btn-danger btn-block" onclick="cronogramaindividualPDF()">Generar Cronograma</button>
             </div>
             <div class="col-md-4 text-center mb-3">
-                <button type="button" class="btn btn-primary btn-block" onclick="generarcontratoindividualPDF('documento')">Generar
+                <button type="button" class="btn btn-primary btn-block" onclick="generarcontratoindividualPDF()">Generar
                     Contrato</button>
             </div>
             <div class="col-md-4 text-center mb-3">
@@ -98,6 +98,15 @@
         }
 
 
+        function cronogramaindividualPDF() {
+            var prestamoId = '{{ $prestamo->id }}';
+            var url = "{{ url('/generar-cronogramaindividual') }}" + '/' + prestamoId;
+
+
+            // Abre la URL en una nueva pestaña
+            window.open(url, '_blank');
+        }
+
         function cronogramagrupalPDF() {
             var prestamoId = '{{ $prestamo->id }}';
             var url = "{{ url('/generar-cronogramagrupal') }}" + '/' + prestamoId;
@@ -110,6 +119,14 @@
         function generarcontratogrupal() {
             var prestamoId = '{{ $prestamo->id }}';
             var url = "{{ url('/generar-contratogrupal') }}" + '/' + prestamoId;
+
+            // Abre la URL en una nueva pestaña
+            window.open(url, '_blank');
+        }
+
+        function generarcontratoindividualPDF() {
+            var prestamoId = '{{ $prestamo->id }}';
+            var url = "{{ url('/generar-contratoindividual') }}" + '/' + prestamoId;
 
             // Abre la URL en una nueva pestaña
             window.open(url, '_blank');
