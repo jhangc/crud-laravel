@@ -73,8 +73,10 @@
     <div class="content">
         <h1>CONTRATO PRIVADO DE MUTUO DINERARIO</h1>
         <p>Conste por el presente documento el contrato de mutuo dinerario que celebran de una parte el Sr.
-            {{ $clientes->nombre }} peruano soltero identificado con DNI. N° ___________ con domicilio para efectos del
-            presente contrato en __________ distrito _________ provincia y departamento de____________ a quien en
+            {{ $credito_cliente->clientes->nombre }} peruano soltero identificado con DNI. N° {{ $credito_cliente->clientes->documento_identidad }} con domicilio para efectos del
+            presente contrato en {{ $credito_cliente->clientes->direccion }} 
+            {{-- distrito _________ provincia y departamento de____________  --}}
+            a quien en
             adelante se le denominará EL MUTUANTE y de la otra parte la empresa GRUPO CREDIPALMO S.A.C. con R.U.C. N°
             20610069542 con domicilio en Jr. Juan Vargas N° 248 distrito de Tarapoto provincia y departamento de San
             Martin y debidamente representada por su gerente general la Sra. Bethzi López Díaz identificada con DNI N°
@@ -88,18 +90,18 @@
 
         <p><b>CLÁUSULA SEGUNDA: DEL OBJETO DEL MUTUO</b></p>
         <p>En virtud del presente contrato EL MUTUANTE se compromete a dar en calidad de préstamo a favor de LA
-            MUTUATARIA hasta la suma de S/ ……………… (…………con 00/100 soles) los mismos que serán entregados luego de la
+            MUTUATARIA hasta la suma de S/ {{ $prestamo->monto_total }} (…………con 00/100 soles) los mismos que serán entregados luego de la
             suscripción del presente contrato.</p>
 
         <p><b>CLÁUSULA TERCERA: DE LAS CARACTERISTICAS DEL MUTUO</b></p>
-        <p>LA MUTUATARIA se compromete a pagar la deuda capital más los intereses y en el plazo máximo de doce (…….)
+        <p>LA MUTUATARIA se compromete a pagar la deuda capital más los intereses y en el plazo máximo de {{ $prestamo->tiempo }}
             meses.</p>
 
         <p><b>CLÁUSULA CUARTA: DE LAS OBLIGACIONES DE LAS PARTES</b></p>
         <p>EL MUTUANTE entregará por partes la suma de dinero objeto del presente Mutuo luego de la suscripción del
             presente contrato declarando que estas operaciones se realizarán a través de las entidades del Sistema
             Financiero local y en la Cta. Bancaria de LA MUTUATARIA. Por este préstamo LA MUTUATARIA reconocerá a EL
-            MUTUANTE intereses compensatorios a una tasa efectiva anual del …..%.</p>
+            MUTUANTE intereses compensatorios a una tasa efectiva anual del {{ intval($prestamo->tasa) }}%.</p>
 
         <p><b>CLÁUSULA QUINTA: DE LA FORMA Y OPORTUNIDAD DEL PAGO</b></p>
         <p>En virtud del presente contrato LA MUTUATARIA devolverá la suma de dinero objeto del mutuo tal como lo señala
@@ -109,7 +111,7 @@
             MUTUANTE.</p>
 
         <p><b>CLÁUSULA SEXTA: DEL PLAZO</b></p>
-        <p>El plazo máximo en el que se comenzará a cancelar la deuda por parte de LA MUTUATARIA es de doce meses (…….)
+        <p>El plazo máximo en el que se comenzará a cancelar la deuda por parte de LA MUTUATARIA es de {{ $prestamo->tiempo }} meses
             en la forma y lugar señalado en las cláusulas anteriores computado a partir de la suscripción de éste
             documento.</p>
 
@@ -152,8 +154,9 @@
             se constituirá la mora automática sin necesidad que se tenga que cursar carta notarial para hacer de su
             conocimiento que se están generando dichos intereses.</p>
 
-        <p>Agregue usted señor notario las Cláusulas de Ley y en señal de conformidad las partes suscriben este
-            documento en la ciudad de ………… a los .. días del mes de ……. de 202...</p>
+            <p>Agregue usted señor notario las Cláusulas de Ley y en señal de conformidad las partes suscriben este
+                documento en la ciudad de Tarapoto a los {{ $formattedDate }}.</p>
+            
 
         <br><br>
         <table style="border-collapse: collapse; width: 100%;">
@@ -163,14 +166,14 @@
                         <hr>
                     </div>
                     EL MUTUANTE<br>
-                    DNI N°
+                    DNI N°: {{ $credito_cliente->clientes->documento_identidad }}
                 </td>
                 <td style="border: none; text-align: center;">
                     <div style="width: 50%; margin: 0 auto;">
                         <hr>
                     </div>
                     LA MUTUATARIA<br>
-                    DNI N°
+                    DNI N°: 44953385
                 </td>
             </tr>
         </table>

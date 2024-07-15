@@ -163,18 +163,24 @@ class PdfController extends Controller
         return $pdf->stream('ticket.pdf');
     }
 
-    public function generatecontratoindividualPDF(Request $request, $id)
+    public function generatecrontratoindividualPDF(Request $request, $id)
     {
         $prestamo = \App\Models\Credito::find($id);
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first(); // Obtener un solo cliente
         //$responsable = auth()->user();
+        // Usa Carbon para obtener la fecha actual
+        $date = Carbon::now();
+
+        // Formatea la fecha con la configuración regional establecida
+        $formattedDate = $date->translatedFormat(' d \d\í\a\s \d\e\l \m\e\s \d\e F \d\e Y');
 
         $data = compact(
             'prestamo',
             //'responsable',
             'cuotas',
-            'credito_cliente'
+            'credito_cliente',
+            'formattedDate'
         );
 
         $pdf = Pdf::loadView('pdf.contratoindividual', $data)->setPaper('a4');

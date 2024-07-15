@@ -38,7 +38,7 @@
                     Contrato</button>
             </div>
             <div class="col-md-4 text-center mb-3">
-                <button type="button" class="btn btn-primary btn-block" onclick="generarpagare  PDF()">Generar
+                <button type="button" class="btn btn-primary btn-block" onclick="generarpagarePDF()">Generar
                     Pagaré</button>
             </div>
         </div>
@@ -140,5 +140,16 @@
             // Abre la URL en una nueva pestaña
             window.open(url, '_blank');
         }
+
+        function generarpagarePDF() {
+            var prestamoId = '{{ $prestamo->id }}';
+            var url = "{{ url('/generar-pagare') }}" + '/' + prestamoId;
+
+
+            // Abre la URL en una nueva pestaña
+            window.open(url, '_blank');
+        }
+
+        
     </script>
 @endsection
