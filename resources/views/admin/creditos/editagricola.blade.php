@@ -582,6 +582,21 @@
                 $('#descripcion_negocio').val(credito.descripcion_negocio);
                 $('#periodo_gracia_dias').val(credito.periodo_gracia_dias);
                 // Llenar  registor de  producto
+                let gastoagricola=response.gastosAgricolas;
+                $('#nombre_actividad').val(gastoagricola.nombre_actividad);
+                $('#cantidad_terreno').val(gastoagricola.unidad_medida_siembra);
+                $('#cantidad_cultivar').val(gastoagricola.cantidad_cultivar);
+                $('#unidad_medida_venta').val(gastoagricola.unidad_medida_venta);
+                $('#rendimiento_unidad_siembra').val(gastoagricola.rendimiento_unidad_siembra);
+                $('#ciclo_productivo').val(gastoagricola.ciclo_productivo_meses);
+                $('#mes_inicio').val(gastoagricola.mes_inicio);
+                //garantia
+                let garantia=response.garantia;
+                $('#descripcion_garantia').val(garantia.descripcion);
+                $('#valor_mercado').val(garantia.valor_mercado);
+                $('#valor_realizacion').val(garantia.valor_realizacion);
+                $('#valor_gravamen').val(garantia.valor_gravamen);
+
 
                 // Llenar datos del cliente
                 if (response.clientes.length > 0) {
@@ -985,6 +1000,7 @@
 
     $('#prestamoForm').on('submit', function(e) {
         e.preventDefault();
+        const idc = document.getElementById('credito-id').value;
         var formData = new FormData(this);
         formData.append('proyeccionesArray', JSON.stringify([]));
         formData.append('ventasMensualesArray', JSON.stringify(ventasMensualesArray));
@@ -995,7 +1011,7 @@
         formData.append('deudasFinancierasArray', JSON.stringify(deudasFinancierasArray));
         formData.append('inventarioArray1', JSON.stringify(inventarioArray1)); 
                 $.ajax({
-                    url: '{{ url('/admin/creditos/store')}}',
+                    url:`/admin/creditos/updateagricola/${idc}`,
                     type: 'POST',
                     data: formData,
                     contentType: false,

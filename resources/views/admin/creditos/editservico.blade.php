@@ -749,7 +749,7 @@
             }));
             actualizarTablaBoletas();
         }
-
+        toggleFields();
         cargardata();
     });
     let clientesArray = [];
@@ -1440,6 +1440,6 @@
     document.getElementById('porcentaje_venta_credito').addEventListener('input', actualizarVentaCredito);
 
 
-    document.addEventListener('DOMContentLoaded', toggleFields);
+    // document.addEventListener('DOMContentLoaded', toggleFields);
 </script>
 @endsection

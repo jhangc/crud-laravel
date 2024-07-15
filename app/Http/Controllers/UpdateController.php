@@ -19,7 +19,7 @@ use App\Models\DeudasFinancieras;
 use App\Models\GastosOperativos;
 use App\Models\GastosFamiliares;
 use App\Models\Boleta;
-use App\Models\GastoProducir;
+
 use App\Models\VentasMensuales;
 use App\Models\ProductoAgricola;
 use App\Models\Inventario;
@@ -108,8 +108,22 @@ class UpdateController extends Controller
     
     protected function updateArrayData(array $data, $prestamoId, $request)
     {
-        // Proyecciones de ventas
+        // Eliminar registros antiguos
         ProyeccionesVentas::where('id_prestamo', $prestamoId)->delete();
+        VentasDiarias::where('prestamo_id', $prestamoId)->delete();
+        DeudasFinancieras::where('prestamo_id', $prestamoId)->delete();
+        GastosOperativos::where('id_prestamo', $prestamoId)->delete();
+        GastosFamiliares::where('id_prestamo', $prestamoId)->delete();
+        Inventario::where('id_prestamo', $prestamoId)->where('tipo_inventario', 1)->delete();
+        Inventario::where('id_prestamo', $prestamoId)->where('tipo_inventario', 2)->delete();
+        Inventario::where('id_prestamo', $prestamoId)->where('tipo_inventario', 3)->delete();
+        Boleta::where('id_prestamo', $prestamoId)->delete();
+        \App\Models\GastoProducir::where('id_prestamo', $prestamoId)->delete();
+        VentasMensuales::where('id_prestamo', $prestamoId)->delete();
+        TipoProducto::where('id_prestamo', $prestamoId)->delete();
+        ProductoAgricola::where('id_prestamo', $prestamoId)->delete();
+    
+        // Guardar nuevos registros
         if (isset($data['proyeccionesArray']) && is_array($data['proyeccionesArray'])) {
             foreach ($data['proyeccionesArray'] as $proyeccionData) {
                 ProyeccionesVentas::create([
@@ -120,12 +134,11 @@ class UpdateController extends Controller
                     'proporcion_ventas' => $proyeccionData['proporcion_ventas'],
                     'id_prestamo' => $prestamoId,
                     'estado' => 'activo',
+                    'ingredientes' => isset($proyeccionData['ingredientes']) ? json_encode($proyeccionData['ingredientes']) : null,
                 ]);
             }
         }
     
-        // Ventas diarias
-        VentasDiarias::where('prestamo_id', $prestamoId)->delete();
         if (isset($data['ventasdiarias']) && is_array($data['ventasdiarias'])) {
             foreach ($data['ventasdiarias'] as $venta) {
                 VentasDiarias::create([
@@ -138,8 +151,6 @@ class UpdateController extends Controller
             }
         }
     
-        // Deudas financieras
-        DeudasFinancieras::where('prestamo_id', $prestamoId)->delete();
         if (isset($data['deudasFinancierasArray']) && is_array($data['deudasFinancierasArray'])) {
             foreach ($data['deudasFinancierasArray'] as $deudaData) {
                 DeudasFinancieras::create([
@@ -153,8 +164,6 @@ class UpdateController extends Controller
             }
         }
     
-        // Gastos operativos
-        GastosOperativos::where('id_prestamo', $prestamoId)->delete();
         if (isset($data['gastosOperativosArray']) && is_array($data['gastosOperativosArray'])) {
             foreach ($data['gastosOperativosArray'] as $gastoData) {
                 GastosOperativos::create([
@@ -167,8 +176,6 @@ class UpdateController extends Controller
             }
         }
     
-        // Gastos familiares
-        GastosFamiliares::where('id_prestamo', $prestamoId)->delete();
         if (isset($data['inventarioArray1']) && is_array($data['inventarioArray1'])) {
             foreach ($data['inventarioArray1'] as $inventarioData) {
                 GastosFamiliares::create([
@@ -180,8 +187,19 @@ class UpdateController extends Controller
             }
         }
     
-        // Inventario
-        Inventario::where('id_prestamo', $prestamoId)->where('tipo_inventario', 1)->delete();
+        if (isset($data['inventarioprocesoArray']) && is_array($data['inventarioprocesoArray'])) {
+            foreach ($data['inventarioprocesoArray'] as $inventarioData) {
+                Inventario::create([
+                    'descripcion' => $inventarioData['descripcion'],
+                    'precio_unitario' => $inventarioData['precioUnitario'],
+                    'cantidad' => $inventarioData['cantidad'],
+                    'id_prestamo' => $prestamoId,
+                    'unidad' => $inventarioData['unidad'],
+                    'tipo_inventario' => 2,
+                ]);
+            }
+        }
+    
         if (isset($data['inventarioArray']) && is_array($data['inventarioArray'])) {
             foreach ($data['inventarioArray'] as $inventarioData) {
                 Inventario::create([
@@ -191,6 +209,126 @@ class UpdateController extends Controller
                     'id_prestamo' => $prestamoId,
                     'unidad' => $inventarioData['unidad'],
                     'tipo_inventario' => 1,
+                ]);
+            }
+        }
+    
+        if (isset($data['boletasArray']) && is_array($data['boletasArray'])) {
+            foreach ($data['boletasArray'] as $boletaData) {
+                Boleta::create([
+                    'numero_boleta' => $boletaData['numeroBoleta'],
+                    'monto_boleta' => $boletaData['montoBoleta'],
+                    'descuento_boleta' => $boletaData['descuentoBoleta'],
+                    'total_boleta' => $boletaData['totalBoleta'],
+                    'id_prestamo' => $prestamoId
+                ]);
+            }
+        }
+    
+        if (isset($data['gastosProducirArray']) && is_array($data['gastosProducirArray']) && count($data['gastosProducirArray']) > 0) {
+            $gasto =\App\Models\GastoProducir::create([
+                'nombre_actividad' => $request->nombre_actividad,
+                'cantidad_terreno' => $request->cantidad_terreno,
+                'produccion_total' => $request->produccion_total,
+                'precio_kg' => $request->precio_kg,
+                'id_prestamo' => $prestamoId
+            ]);
+            foreach ($data['gastosProducirArray'] as $gastoProducirData) {
+                \App\Models\GastoProducir::create([
+                    'descripcion_gasto' => $gastoProducirData['descripcionGasto'],
+                    'precio_unitario' => $gastoProducirData['precioUnitario'],
+                    'cantidad' => $gastoProducirData['cantidad'],
+                    'total_gasto' => $gastoProducirData['totalGasto'],
+                    'id_prestamo' => $prestamoId,
+                    'id_gasto_producir' => $gasto->id,
+                ]);
+            }
+        }
+    
+        if (isset($data['ventasMensualesArray']) && is_array($data['ventasMensualesArray'])) {
+            foreach ($data['ventasMensualesArray'] as $boletaData) {
+                VentasMensuales::create([
+                    'mes' => $boletaData['mes'],
+                    'porcentaje' => $boletaData['porcentaje'],
+                    'id_prestamo' => $prestamoId
+                ]);
+            }
+        }
+    
+        if (isset($data['gastosAgricolaArray']) && is_array($data['gastosAgricolaArray'])) {
+            ProductoAgricola::create([
+                'id_prestamo' => $prestamoId,
+                'nombre_actividad' => $request->nombre_actividad,
+                'unidad_medida_siembra' => $request->cantidad_terreno,
+                'hectareas' => $request->cantidad_cultivar ?? 0,
+                'cantidad_cultivar' => $request->cantidad_cultivar,
+                'unidad_medida_venta' => $request->unidad_medida_venta,
+                'rendimiento_unidad_siembra' => $request->rendimiento_unidad_siembra,
+                'ciclo_productivo_meses' => $request->ciclo_productivo,
+                'mes_inicio' => $request->mes_inicio,
+            ]);
+            foreach ($data['gastosAgricolaArray'] as $gastoData) {
+                $suma = 0;
+                $row = GastosOperativos::create([
+                    'descripcion' => $gastoData['gasto'],
+                    'precio_unitario' => !empty($gastoData['precioUnitario']) ? $gastoData['precioUnitario'] : 0,
+                    'cantidad' => 0,
+                    'id_prestamo' => $prestamoId,
+                    'acciones' => 'activo',
+                    'unidad' => $gastoData['unidad'],
+                    'mes1' => $gastoData['mes1'],
+                    'mes2' => $gastoData['mes2'],
+                    'mes3' => $gastoData['mes3'],
+                    'mes4' => $gastoData['mes4'],
+                    'mes5' => $gastoData['mes5'],
+                    'mes6' => $gastoData['mes6'],
+                    'mes7' => $gastoData['mes7'],
+                    'mes8' => $gastoData['mes8'],
+                    'mes9' => $gastoData['mes9'],
+                    'mes10' => $gastoData['mes10'],
+                    'mes11' => $gastoData['mes11'],
+                    'mes12' => $gastoData['mes12']
+                ]);
+                $mes1 = !empty($gastoData['mes1']) ? $gastoData['mes1'] : 0;
+                $mes2 = !empty($gastoData['mes2']) ? $gastoData['mes2'] : 0;
+                $mes3 = !empty($gastoData['mes3']) ? $gastoData['mes3'] : 0;
+                $mes4 = !empty($gastoData['mes4']) ? $gastoData['mes4'] : 0;
+                $mes5 = !empty($gastoData['mes5']) ? $gastoData['mes5'] : 0;
+                $mes6 = !empty($gastoData['mes6']) ? $gastoData['mes6'] : 0;
+                $mes7 = !empty($gastoData['mes7']) ? $gastoData['mes7'] : 0;
+                $mes8 = !empty($gastoData['mes8']) ? $gastoData['mes8'] : 0;
+                $mes9 = !empty($gastoData['mes9']) ? $gastoData['mes9'] : 0;
+                $mes10 = !empty($gastoData['mes10']) ? $gastoData['mes10'] : 0;
+                $mes11 = !empty($gastoData['mes11']) ? $gastoData['mes11'] : 0;
+                $mes12 = !empty($gastoData['mes12']) ? $gastoData['mes12'] : 0;
+    
+                $suma = $mes1 + $mes2 + $mes3 + $mes4 + $mes5 + $mes6 + $mes7 + $mes8 + $mes9 + $mes10 + $mes11 + $mes12;
+    
+                $row->cantidad = $suma;
+                $row->save();
+            }
+        }
+    
+        if (isset($data['inventarioMaterialArray']) && is_array($data['inventarioMaterialArray'])) {
+            foreach ($data['inventarioMaterialArray'] as $inventarioData) {
+                Inventario::create([
+                    'descripcion' => $inventarioData['descripcion'],
+                    'precio_unitario' => $inventarioData['precioUnitario'],
+                    'cantidad' => $inventarioData['cantidad'],
+                    'id_prestamo' => $prestamoId,
+                    'unidad' => $inventarioData['unidad'],
+                    'tipo_inventario' => 3,
+                ]);
+            }
+        }
+    
+        if (isset($data['tipoProductoArray']) && is_array($data['tipoProductoArray'])) {
+            foreach ($data['tipoProductoArray'] as $inventarioData) {
+                TipoProducto::create([
+                    'producto' => $inventarioData['PRODUCTO'],
+                    'precio' =>  !empty($inventarioData['precio_unitario']) ? $inventarioData['precio_unitario'] : 0,
+                    'porcentaje' => !empty($inventarioData['procentaje_producto']) ? $inventarioData['procentaje_producto'] : 0,
+                    'id_prestamo' => $prestamoId
                 ]);
             }
         }
@@ -552,6 +690,86 @@ class UpdateController extends Controller
             return response()->json(['message' => 'Error al actualizar el crédito: ' . $e->getMessage()], 500);
         }
     }
+    public function updateCreditoagricola(Request $request, $id)
+{
+    $decodedData = $request->all();
+    foreach ([
+        'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'gastosAgricolaArray',
+        'inventarioArray1', 'ventasMensualesArray', 'tipoProductoArray'
+    ] as $key) {
+        if ($request->filled($key)) {
+            $decodedData[$key] = json_decode($request->input($key), true);
+        }
+    }
+
+    DB::beginTransaction();
+    try {
+        $prestamo = credito::findOrFail($id);
+        $prestamo->tipo = $request->tipo_credito;
+        $prestamo->producto = $request->tipo_producto;
+        $prestamo->subproducto = $request->subproducto;
+        $prestamo->destino = $request->destino_credito;
+        $prestamo->recurrencia = $request->recurrencia;
+        $prestamo->tasa = $request->tasa_interes;
+        $prestamo->tiempo = $request->tiempo_credito;
+        $prestamo->monto_total = $request->monto;
+        $prestamo->fecha_desembolso = $request->fecha_desembolso;
+        $prestamo->periodo_gracia_dias = $request->periodo_gracia_dias;
+        $prestamo->porcentaje_credito = $request->porcentaje_venta_credito;
+        $prestamo->estado = "pendiente";
+        $prestamo->categoria = 'produccion';
+        $prestamo->nombre_prestamo = $request->nombre_prestamo;
+        $prestamo->cantidad_integrantes = $request->cantidad_grupo;
+        $prestamo->descripcion_negocio = $request->descripcion_negocio;
+        $prestamo->user_id = Auth::id();
+        $prestamo->save();
+
+        // Actualizar la garantía
+        $garantia = Garantia::where('id_prestamo', $prestamo->id)->first();
+        if (!$garantia) {
+            $garantia = new Garantia();
+            $garantia->id_prestamo = $prestamo->id;
+        }
+        $garantia->descripcion = $request->descripcion_garantia;
+        $garantia->valor_mercado = $request->valor_mercado;
+        $garantia->valor_realizacion = $request->valor_realizacion;
+        $garantia->valor_gravamen = $request->valor_gravamen;
+        if ($request->hasFile('archivo_garantia') && $request->file('archivo_garantia')->isValid()) {
+            $nombreUnico = Str::uuid();
+            $extension = $request->file('archivo_garantia')->getClientOriginalExtension();
+            $nombreArchivo = $nombreUnico . '.' . $extension;
+            $ruta = $request->file('archivo_garantia')->storeAs('public/documentos_garantia', $nombreArchivo);
+            $garantia->documento_pdf = $ruta;
+        }
+        $garantia->save();
+
+        // Actualizar activos
+        $activos = Activos::where('prestamo_id', $prestamo->id)->first();
+        if (!$activos) {
+            $activos = new Activos();
+            $activos->prestamo_id = $prestamo->id;
+        }
+        $activos->cuentas_por_cobrar = $request->cuentas_por_cobrar;
+        $activos->saldo_en_caja_bancos = $request->saldo_caja_bancos;
+        $activos->adelanto_a_proveedores = $request->adelanto_a_proveedores;
+        $activos->otros = $request->otros;
+        $activos->save();
+
+        // Actualizar créditos de clientes y cronograma
+        CreditoCliente::where('prestamo_id', $prestamo->id)->delete();
+        $this->updateClienteYcronograma($prestamo, $request);
+
+        // Guardar datos del crédito agrícola
+        $this->updateArrayData($decodedData, $prestamo->id, $request);
+
+        DB::commit();
+        return response()->json(['message' => 'Crédito actualizado con éxito', 'data' => $prestamo], 200);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['message' => 'Error al actualizar el crédito: ' . $e], 500);
+    }
+}
+
 
 }
 
