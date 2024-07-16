@@ -218,6 +218,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
                                         @if($operacionesAbiertas)
+                                        @if($cajaAbierta)
                                             <a href="{{ url('/admin/caja/pagarcredito') }}" class="nav-link active">
                                                 <i class="far fa-circle nav-icon"></i>
                                                 <p>Desembolsar Crédito</p>
@@ -226,6 +227,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                 <i class="far fa-circle nav-icon"></i>
                                                 <p>Cobrar Crédito</p>
                                             </a>
+                                        @endif
                                             @if(!$cajaAbierta)
                                                 <a href="{{ url('/admin/caja/habilitar') }}" class="nav-link active">
                                                     <i class="far fa-circle nav-icon"></i>
@@ -238,10 +240,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                     <p>Arqueo de Caja</p>
                                                 </a>
                                             @endif
+                                            @if($cajaAbierta)
                                             <a href="{{ url('/admin/caja/pagares') }}" class="nav-link active">
                                                 <i class="far fa-circle nav-icon"></i>
                                                 <p>Pagares</p>
                                             </a>
+                                            @endif
                                         @else
                                             <span class="nav-link text-warning">Operaciones no iniciadas</span>
                                         @endif
