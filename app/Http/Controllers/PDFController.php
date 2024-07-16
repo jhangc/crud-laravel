@@ -166,7 +166,7 @@ class PdfController extends Controller
 
     public function generatecrontratoindividualPDF(Request $request, $id)
     {
-        $prestamo = \App\Models\Credito::find($id);
+        $prestamo = \App\Models\credito::find($id);
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first(); // Obtener un solo cliente
         //$responsable = auth()->user();
@@ -224,7 +224,7 @@ class PdfController extends Controller
 
     public function generatepagarePDF(Request $request, $id)
     {
-        $prestamo = \App\Models\Credito::find($id);
+        $prestamo = \App\Models\credito::find($id);
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
         $responsable = auth()->user();
