@@ -394,7 +394,7 @@ class UpdateController extends Controller
             if($request->tipo_producto == 'grupal'){
                 $cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuotaSinGracia[$i - 1]['cuota'];
             }else{
-                $cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia;
+                $cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia + 0.011 * $cuotaSinGracia[$i - 1]['cuota'];
             }
             //$cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuotaSinGracia[$i - 1]['cuota'];
 

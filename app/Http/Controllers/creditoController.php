@@ -1147,7 +1147,7 @@ class creditoController extends Controller
             if($request->tipo_producto == 'grupal'){
                 $cronograma->monto = $cuota['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuota['cuota'];
             }else{
-                $cronograma->monto = $cuota['cuota'] + $interesesMensualesPorGracia;
+                $cronograma->monto = $cuota['cuota'] + $interesesMensualesPorGracia+ 0.011*$cuota['cuota'];
             }
              // Cuota fija más intereses distribuidos y otros componentes
             $cronograma->numero = $cuota['numero_cuota'];
