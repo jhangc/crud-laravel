@@ -390,7 +390,14 @@ class UpdateController extends Controller
     
             $cronograma = new Cronograma();
             $cronograma->fecha = clone $fechaCuota;
-            $cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuotaSinGracia[$i - 1]['cuota'];
+
+            if($request->tipo_producto == 'grupal'){
+                $cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuotaSinGracia[$i - 1]['cuota'];
+            }else{
+                $cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia;
+            }
+            //$cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuotaSinGracia[$i - 1]['cuota'];
+
             $cronograma->numero = $i;
             $cronograma->id_prestamo = $prestamo->id;
             $cronograma->cliente_id = $cliente->id;
