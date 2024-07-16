@@ -1144,6 +1144,7 @@ class creditoController extends Controller
             }
 
             $cronograma = new Cronograma();
+            $cronograma->fecha = clone $fechaCuota;
             if($request->tipo_producto == 'grupal'){
                 $cronograma->monto = $cuota['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuota['cuota'];
             }else{
