@@ -559,7 +559,13 @@ class PdfController extends Controller
 
                     $saldo_final = $totalVentas - $totalcuotadeuda - $totalgastosfamiliares;
 
-                    $margenventas = $margenmanual->margen_utilidad;
+                    //$margenventas = $margenmanual->margen_utilidad;
+
+                    if ($margenmanual !== null) {
+                        $margenventas = $margenmanual->margen_utilidad;
+                    } else {
+                        $margenventas = 0; 
+                    }
 
                     $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
 
