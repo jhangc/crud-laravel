@@ -1,20 +1,19 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class InicioOperaciones extends Model
+class Caja extends Model
 {
     use HasFactory, SoftDeletes;
+    protected $table = 'cajas';
+    protected $fillable = ['nombre', 'sucursal_id'];
 
-    protected $fillable = ['user_id', 'sucursal_id', 'permiso_abierto'];
-
-    public function user()
+    public function transacciones()
     {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(CajaTransaccion::class);
     }
 
     public function sucursal()

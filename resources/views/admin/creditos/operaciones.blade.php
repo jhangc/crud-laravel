@@ -1,18 +1,23 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="row ">
+<div class="row">
     <div class="col-md-12">
         <div class="card card-outline card-primary">
             <div class="card-header">
                 <h3 class="card-title">Iniciar Operaciones</h3>
             </div>
             <div class="card-body">
-                @if(session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
+                @if($activado)
+                    <div class="alert">
+                        <button onclick="cerrar()" class="btn btn-danger">Cerrar Operaciones</button>
+                    </div>
+                @else
+                    <div class="alert">
+                        <button onclick="iniciar()" class="btn btn-primary">Iniciar Operaciones</button>
                     </div>
                 @endif
+
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -32,10 +37,7 @@
                                 <td>{{ $autorizacion->created_at }}</td>
                                 <td>
                                     @if($autorizacion->user_id === auth()->user()->id && !$autorizacion->permiso_abierto)
-                                        <form action="{{ route('inicio_operaciones.start', $autorizacion->id) }}" method="POST">
-                                            @csrf
-                                            <button type="submit" class="btn btn-primary">Iniciar Operaciones</button>
-                                        </form>
+                                    <span class="badge badge-danger">Operaciones Cerradas</span>
                                     @elseif($autorizacion->permiso_abierto)
                                         <span class="badge badge-success">Operaciones Iniciadas</span>
                                     @else
@@ -50,4 +52,71 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function iniciar() {
+        fetch("{{ route('inicio_operaciones.store') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                user_id: '{{ auth()->user()->id }}',
+                sucursal_id: '{{ auth()->user()->sucursal_id }}',
+                permiso_abierto: true
+            })
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: 'Éxito',
+                    text: 'Operaciones iniciadas correctamente.',
+                    icon: 'success'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error iniciando operaciones.',
+                    icon: 'error'
+                });
+            }
+        });
+    }
+
+    function cerrar() {
+        fetch("{{ route('inicio_operaciones.close') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                user_id: '{{ auth()->user()->id }}',
+                sucursal_id: '{{ auth()->user()->sucursal_id }}',
+                permiso_abierto: false
+            })
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: 'Éxito',
+                    text: 'Operaciones cerradas correctamente.',
+                    icon: 'success'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error cerrando operaciones.',
+                    icon: 'error'
+                });
+            }
+        });
+    }
+</script>
 @endsection

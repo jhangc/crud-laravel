@@ -17,6 +17,7 @@ class User extends Authenticatable
         'email',
         'password',
         'direccion',
+        'sucursal_id', 
     ];
 
     protected $hidden = [
@@ -27,6 +28,10 @@ class User extends Authenticatable
     public function creditos()
     {
         return $this->hasMany(credito::class, 'id_cliente'); // Asume que 'id_cliente' es la clave foránea en la tabla 'prestamos'
+    }
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class);
     }
 
     protected $casts = [

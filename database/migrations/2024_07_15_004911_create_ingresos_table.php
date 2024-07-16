@@ -18,12 +18,15 @@ class CreateIngresosTable extends Migration
             $table->date('fecha_pago')->nullable();
             $table->time('hora_pago')->nullable();
             $table->decimal('monto', 15, 3)->nullable();
+            $table->unsignedBigInteger('sucursal_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('transaccion_id')->references('id')->on('caja_transacciones')->onDelete('cascade');
             $table->foreign('cliente_id')->references('id')->on('clientes')->onDelete('cascade');
             $table->foreign('prestamo_id')->references('id')->on('prestamos')->onDelete('cascade');
             $table->foreign('cronograma_id')->references('id')->on('cronograma')->onDelete('cascade');
+            $table->foreign('sucursal_id')->references('id')->on('sucursales')->onDelete('cascade');
         });
     }
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PDFController;
+use App\Http\Controllers\IniciarOpeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +86,10 @@ Route::get('/admin/caja/pagarcredito', [App\Http\Controllers\creditoController::
 Route::get('/admin/caja/pagares', [App\Http\Controllers\creditoController::class, 'viewpagares'])->name('caja.pagares')->middleware('auth');
 Route::get('/admin/caja/pagar/{id}', [App\Http\Controllers\creditoController::class, 'pagar'])->name('caja.pagar')->middleware('auth');
 Route::get('/admin/caja/cobrar', [App\Http\Controllers\creditoController::class, 'viewcobrar'])->name('caja.cobrar')->middleware('auth');
+Route::get('/admin/caja/ultima-transaccion/{caja}', [App\Http\Controllers\creditoController::class, 'ultimaTransaccion'])->name('caja.ultimaTransaccion')->middleware('auth');
+Route::post('/admin/caja/abrir', [App\Http\Controllers\creditoController::class, 'abrirCaja'])->name('caja.abrir')->middleware('auth');
+Route::post('/admin/caja/guardar-arqueo', [App\Http\Controllers\creditoController::class, 'guardarArqueo'])->name('caja.guardarArqueo')->middleware('auth');
+
 
 
 
@@ -118,5 +123,11 @@ Route::get('/generar-cartilla/{id}', [PDFController::class, 'generatecartillaPDF
 Route::get('/generar-pagare/{id}', [PDFController::class, 'generatepagarePDF'])->name('generar-pagare');
 
 Route::get('/generar-ticket-desembolso/{id}', [PDFController::class, 'generateticket'])->name('generar-ticket');
+
+
+Route::get('/inicio-operaciones', [IniciarOpeController::class, 'index'])->name('inicio_operaciones.index');
+Route::post('/inicio-operaciones', [IniciarOpeController::class, 'store'])->name('inicio_operaciones.store');
+Route::post('/inicio-operaciones/start/{id}', [IniciarOpeController::class, 'start'])->name('inicio_operaciones.start');
+Route::post('/inicio-operaciones/close', [IniciarOpeController::class, 'close'])->name('inicio_operaciones.close');
 
 

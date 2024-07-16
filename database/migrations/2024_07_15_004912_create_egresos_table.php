@@ -13,11 +13,14 @@ class CreateEgresosTable extends Migration
             $table->unsignedBigInteger('prestamo_id')->nullable();
             $table->date('fecha_egreso')->nullable();
             $table->time('hora_egreso')->nullable();
-            $table->decimal('monto', 15, 3)->nullable();
+            $table->decimal('monto', 15, 2)->nullable();
+            $table->unsignedBigInteger('sucursal_id')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('transaccion_id')->references('id')->on('caja_transacciones')->onDelete('cascade');
             $table->foreign('prestamo_id')->references('id')->on('prestamos')->onDelete('cascade');
+            $table->foreign('sucursal_id')->references('id')->on('sucursales')->onDelete('cascade');
         });
     }
 

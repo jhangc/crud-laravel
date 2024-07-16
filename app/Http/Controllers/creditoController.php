@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Cronograma;
+use App\Models\Caja;
+use App\Models\CajaTransaccion;
+use App\Models\InicioOperaciones;
 
 
 
@@ -717,14 +720,136 @@ class creditoController extends Controller
 
     public function viewarqueo()
     {
-        return view('admin.caja.arqueo');
+        $usuarioId = Auth::user()->id;
+        $sucursalId = Auth::user()->sucursal_id;
+        $cajaAbierta = CajaTransaccion::where('sucursal_id', $sucursalId)
+                                    ->where('user_id', $usuarioId)
+                                    ->whereNull('hora_cierre')
+                                    ->first();
+    
+        if (!$cajaAbierta) {
+            return redirect('/admin/caja')->with('error', 'No hay una caja abierta.');
+        }
+    
+        // Obtener ingresos y egresos de la caja abierta
+        $ingresos = $cajaAbierta->cantidad_ingresos;
+        $egresos = $cajaAbierta->cantidad_egresos;
+        $montoApertura = $cajaAbierta->monto_apertura;
+    
+        return view('admin.caja.arqueo', compact('cajaAbierta', 'ingresos', 'egresos', 'montoApertura'));
     }
+    
 
-    public function viewhabilitarcaja()
+    public function viewHabilitarCaja()
     {
-        return view('admin.caja.habilitar');
+        $user = Auth::user();
+        $sucursal_id = $user->sucursal_id;
+        $cajas = Caja::where('sucursal_id', $sucursal_id)
+                     ->whereDoesntHave('transacciones', function($query) {
+                         $query->whereNull('fecha_cierre');
+                     })
+                     ->get();
+
+        return view('admin.caja.habilitar', compact('cajas'));
     }
 
+    public function ultimaTransaccion($caja_id)
+    {
+        $transaccion = CajaTransaccion::with('user')
+                                      ->where('caja_id', $caja_id)
+                                      ->orderBy('created_at', 'desc')
+                                      ->first();
+
+        if ($transaccion) {
+            return response()->json(['success' => true, 'transaccion' => $transaccion]);
+        } else {
+            return response()->json(['success' => false]);
+        }
+    }
+
+    public function abrirCaja(Request $request)
+    {
+        $request->validate([
+            'caja_id' => 'required|exists:cajas,id',
+            'monto_cierre' => 'required|numeric|min:0',
+        ]);
+
+        $user = Auth::user();
+        $sucursal_id = $user->sucursal_id;
+
+        // Crear una nueva transacción de caja
+        $transaccion = CajaTransaccion::create([
+            'caja_id' => $request->caja_id,
+            'user_id' => $user->id,
+            'sucursal_id' => $sucursal_id,
+            'monto_apertura' => $request->monto_cierre,
+            'json_apertura' => json_encode($request->all()), // Guardar todos los datos de apertura
+            'hora_apertura' => now(),
+            'fecha_apertura' => today(),
+        ]);
+
+        return response()->json(['success' => true, 'transaccion_id' => $transaccion->id]);
+    }
+    public function guardarArqueo(Request $request)
+    {
+        $request->validate([
+            'caja_id' => 'required|exists:caja_transacciones,id',
+            'monto_apertura' => 'required|numeric',
+            'billete_200' => 'required|integer|min:0',
+            'billete_100' => 'required|integer|min:0',
+            'billete_50' => 'required|integer|min:0',
+            'billete_20' => 'required|integer|min:0',
+            'billete_10' => 'required|integer|min:0',
+            'moneda_5' => 'required|integer|min:0',
+            'moneda_2' => 'required|integer|min:0',
+            'moneda_1' => 'required|integer|min:0',
+            'moneda_0_5' => 'required|integer|min:0',
+            'moneda_0_2' => 'required|integer|min:0',
+            'moneda_0_1' => 'required|integer|min:0',
+            'depositos' => 'required|numeric|min:0',
+            'saldo_final' => 'required|regex:/^S\/\. \d+(\.\d{1,2})?$/',
+        ]);
+    
+        $billetes = [
+            200 => $request->input('billete_200'),
+            100 => $request->input('billete_100'),
+            50 => $request->input('billete_50'),
+            20 => $request->input('billete_20'),
+            10 => $request->input('billete_10')
+        ];
+    
+        $monedas = [
+            5 => $request->input('moneda_5'),
+            2 => $request->input('moneda_2'),
+            1 => $request->input('moneda_1'),
+            0.5 => $request->input('moneda_0_5'),
+            0.2 => $request->input('moneda_0_2'),
+            0.1 => $request->input('moneda_0_1')
+        ];
+    
+        $totalEfectivo = array_sum(array_map(function($billete, $cantidad) {
+            return $billete * $cantidad;
+        }, array_keys($billetes), $billetes)) + array_sum(array_map(function($moneda, $cantidad) {
+            return $moneda * $cantidad;
+        }, array_keys($monedas), $monedas));
+    
+        $depositos = $request->input('depositos');
+        $saldoFinal = floatval(str_replace('S/. ', '', $request->input('saldo_final')));
+    
+        $transaccion = CajaTransaccion::find($request->input('caja_id'));
+        $transaccion->json_cierre = json_encode([
+            'billetes' => $billetes,
+            'monedas' => $monedas,
+            'depositos' => $depositos
+        ]);
+        $transaccion->monto_cierre = $totalEfectivo;
+        $transaccion->hora_cierre = now();
+        $transaccion->fecha_cierre = now();
+        $transaccion->save();
+    
+        return response()->json(['success' => true]);
+    }
+    
     public function viewpagarcredito()
     {
         // Obtener solo los clientes activos (activo = 1)
