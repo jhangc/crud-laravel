@@ -26,13 +26,16 @@ class cliente extends Model
         'estado_civil',
         'conyugue',
         'dni_conyugue',
+        'direccion_conyugue',
         'foto',
         'dni_pdf',
         'actividad_economica',
         'sexo',
         'referencia',
         'aval',
+        'numero_dni_aval',
         'dni_aval',
+        'direccion_aval',
     ];
     
 

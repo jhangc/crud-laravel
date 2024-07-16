@@ -28,7 +28,7 @@
                                 <div class="form-group">
                                     <label for="documento_identidad">Documento de identidad</label>
                                     <input type="text" value="{{ old('documento_identidad') }}"
-                                        name="documento_identidad" class="form-control" required>
+                                        name="documento_identidad" class="form-control" required maxlength="8">
                                     @error('documento_identidad')
                                         <small style="color: red">{{ $message }}</small>
                                     @enderror
@@ -192,9 +192,18 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="dni_conyugue">DNI del Cónyuge</label>
-                                        <input type="text" value="{{ old('dni_conyugue') }}" name="dni_conyugue"
-                                            id="dni_conyugue" class="form-control">
+                                        <input type="text" value="{{ old('dni_conyugue') }}" name="dni_conyugue" id="dni_conyugue" class="form-control" maxlength="8">
                                         @error('dni_conyugue')
+                                            <small style="color: red">{{ $message }}</small>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="direccion_conyugue">Dirección del Cónyuge</label>
+                                        <input type="text" value="{{ old('direccion_conyugue') }}" name="direccion_conyugue" id="direccion_conyugue" class="form-control">
+                                        @error('direccion_conyugue')
                                             <small style="color: red">{{ $message }}</small>
                                         @enderror
                                     </div>
@@ -216,6 +225,26 @@
 
                             <div class="col-md-6">
                                 <div class="form-group">
+                                    <label for="numero_dni_aval">Número de DNI del Aval</label>
+                                    <input type="text" value="{{ old('numero_dni_aval') }}" name="numero_dni_aval" id="numero_dni_aval" class="form-control" maxlength="8">
+                                    @error('numero_dni_aval')
+                                        <small style="color: red">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="direccion_aval">Dirección del Aval</label>
+                                    <input type="text" value="{{ old('direccion_aval') }}" name="direccion_aval" id="direccion_aval" class="form-control">
+                                    @error('direccion_aval')
+                                        <small style="color: red">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label for="dni_aval">DNI del Aval (PDF)</label>
                                     <input type="file" name="dni_aval" id="dni_aval" accept=".pdf" class="form-control-file">
                                     @error('dni_aval')
@@ -223,6 +252,8 @@
                                     @enderror
                                 </div>
                             </div>
+
+
                             
                         </div>
 

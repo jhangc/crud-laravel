@@ -73,6 +73,7 @@ class clienteController extends Controller
             'estado_civil' => 'nullable|max:50',
             'conyugue' => 'nullable|max:100',
             'dni_conyugue' => 'nullable|max:50',
+            'direccion_conyugue' => 'nullable|max:255',  // Nuevo campo
             'foto' => 'nullable|image',  // Asumiendo que se cargará una imagen para el campo foto
             'dni_pdf' => 'nullable|mimes:pdf',  // Asegurando que el archivo sea un PDF
             'activo' => 'boolean',
@@ -80,8 +81,10 @@ class clienteController extends Controller
             'sexo' => 'nullable|max:255',
             'referencia' => 'nullable|max:255',
             'aval' => 'nullable|max:255',
-            'dni_aval' => 'nullable|mimes:pdf',
+            'numero_dni_aval' => 'nullable|max:50',  // Nuevo campo
+            'direccion_aval' => 'nullable|max:255',  // Nuevo campo
         ]);
+
 
 
         // Crear un nuevo cliente en la base de datos
@@ -100,6 +103,12 @@ class clienteController extends Controller
         $cliente->estado_civil = $request->estado_civil;
         $cliente->conyugue = $request->conyugue;
         $cliente->dni_conyugue = $request->dni_conyugue;
+
+        $cliente->direccion_conyugue = $request->direccion_conyugue;  // Nuevo campo
+        $cliente->numero_dni_aval = $request->numero_dni_aval;  // Nuevo campo
+        $cliente->direccion_aval = $request->direccion_aval;  // Nuevo campo
+
+
 
         // $path = $request->file('foto')->store('public/fotos_clientes');
         // if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
@@ -222,7 +231,8 @@ class clienteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id){
+    public function destroy(string $id)
+    {
         // Buscar al cliente por su ID
         $cliente = cliente::find($id);
 
@@ -249,8 +259,8 @@ class clienteController extends Controller
     {
         $dni = $request->input('documento_identidad');
         $cliente = Cliente::where('documento_identidad', $dni)
-                      ->where('activo', 1) // Agregar condición para buscar solo clientes activos
-                      ->first(['nombre', 'telefono', 'email', 'direccion', 'direccion_laboral', 'profesion']);
+            ->where('activo', 1) // Agregar condición para buscar solo clientes activos
+            ->first(['nombre', 'telefono', 'email', 'direccion', 'direccion_laboral', 'profesion']);
 
         if ($cliente) {
             return response()->json($cliente);
@@ -262,7 +272,7 @@ class clienteController extends Controller
     public function agregarpordni(Request $request)
     {
         $dni = $request->input('documento_identidad');
-        $cliente = cliente::where('documento_identidad', $dni)->first(['nombre', 'documento_identidad','telefono', 'direccion', 'profesion']);
+        $cliente = cliente::where('documento_identidad', $dni)->first(['nombre', 'documento_identidad', 'telefono', 'direccion', 'profesion']);
 
         if ($cliente) {
             return response()->json($cliente);
