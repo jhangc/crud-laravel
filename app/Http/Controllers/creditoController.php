@@ -1144,8 +1144,12 @@ class creditoController extends Controller
             }
 
             $cronograma = new Cronograma();
-            $cronograma->fecha = $fechaCuota->copy();
-            $cronograma->monto = $cuota['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuota['cuota']; // Cuota fija más intereses distribuidos y otros componentes
+            if($request->tipo_producto == 'grupal'){
+                $cronograma->monto = $cuota['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuota['cuota'];
+            }else{
+                $cronograma->monto = $cuota['cuota'] + $interesesMensualesPorGracia;
+            }
+             // Cuota fija más intereses distribuidos y otros componentes
             $cronograma->numero = $cuota['numero_cuota'];
             $cronograma->capital = $cuota['capital'];
             $cronograma->interes = $cuota['interes'];
