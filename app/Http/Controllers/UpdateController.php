@@ -60,7 +60,7 @@ class UpdateController extends Controller
             $prestamo->activo = $request->activo ?? true;
             $prestamo->user_id = Auth::id();
             $prestamo->save();
-    
+
             // Actualización de la garantía
             $garantia = Garantia::updateOrCreate(
                 ['id_prestamo' => $prestamo->id],
@@ -71,7 +71,7 @@ class UpdateController extends Controller
                     'valor_gravamen' => $request->valor_gravamen
                 ]
             );
-            
+
             if ($request->hasFile('archivo_garantia') && $request->file('archivo_garantia')->isValid()) {
                 $nombreUnico = Str::uuid();
                 $extension = $request->file('archivo_garantia')->getClientOriginalExtension();
@@ -80,7 +80,7 @@ class UpdateController extends Controller
                 $garantia->documento_pdf = $ruta;
             }
             $garantia->save();
-    
+
             // Actualización de los activos
             $activos = Activos::updateOrCreate(
                 ['prestamo_id' => $prestamo->id],
@@ -91,13 +91,13 @@ class UpdateController extends Controller
                     'otros' => $request->otros
                 ]
             );
-    
+
             // Actualización de los datos relacionados
             $this->updateArrayData($decodedData, $prestamo->id, $request);
-    
+
             // Actualización de los créditos de los clientes y cronograma
             $this->updateClienteYcronograma($prestamo, $request);
-    
+
             DB::commit();
             return response()->json(['message' => 'Crédito actualizado con éxito', 'data' => $prestamo], 200);
         } catch (\Exception $e) {
@@ -105,7 +105,7 @@ class UpdateController extends Controller
             return response()->json(['message' => 'Error al actualizar el crédito: ' . $e->getMessage()], 500);
         }
     }
-    
+
     protected function updateArrayData(array $data, $prestamoId, $request)
     {
         // Eliminar registros antiguos
@@ -122,7 +122,7 @@ class UpdateController extends Controller
         VentasMensuales::where('id_prestamo', $prestamoId)->delete();
         TipoProducto::where('id_prestamo', $prestamoId)->delete();
         ProductoAgricola::where('id_prestamo', $prestamoId)->delete();
-    
+
         // Guardar nuevos registros
         if (isset($data['proyeccionesArray']) && is_array($data['proyeccionesArray'])) {
             foreach ($data['proyeccionesArray'] as $proyeccionData) {
@@ -138,7 +138,7 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['ventasdiarias']) && is_array($data['ventasdiarias'])) {
             foreach ($data['ventasdiarias'] as $venta) {
                 VentasDiarias::create([
@@ -150,7 +150,7 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['deudasFinancierasArray']) && is_array($data['deudasFinancierasArray'])) {
             foreach ($data['deudasFinancierasArray'] as $deudaData) {
                 DeudasFinancieras::create([
@@ -163,7 +163,7 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['gastosOperativosArray']) && is_array($data['gastosOperativosArray'])) {
             foreach ($data['gastosOperativosArray'] as $gastoData) {
                 GastosOperativos::create([
@@ -175,7 +175,7 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['inventarioArray1']) && is_array($data['inventarioArray1'])) {
             foreach ($data['inventarioArray1'] as $inventarioData) {
                 GastosFamiliares::create([
@@ -186,7 +186,7 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['inventarioprocesoArray']) && is_array($data['inventarioprocesoArray'])) {
             foreach ($data['inventarioprocesoArray'] as $inventarioData) {
                 Inventario::create([
@@ -199,7 +199,7 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['inventarioArray']) && is_array($data['inventarioArray'])) {
             foreach ($data['inventarioArray'] as $inventarioData) {
                 Inventario::create([
@@ -212,7 +212,7 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['boletasArray']) && is_array($data['boletasArray'])) {
             foreach ($data['boletasArray'] as $boletaData) {
                 Boleta::create([
@@ -224,9 +224,9 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['gastosProducirArray']) && is_array($data['gastosProducirArray']) && count($data['gastosProducirArray']) > 0) {
-            $gasto =\App\Models\GastoProducir::create([
+            $gasto = \App\Models\GastoProducir::create([
                 'nombre_actividad' => $request->nombre_actividad,
                 'cantidad_terreno' => $request->cantidad_terreno,
                 'produccion_total' => $request->produccion_total,
@@ -244,7 +244,7 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['ventasMensualesArray']) && is_array($data['ventasMensualesArray'])) {
             foreach ($data['ventasMensualesArray'] as $boletaData) {
                 VentasMensuales::create([
@@ -254,7 +254,7 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['gastosAgricolaArray']) && is_array($data['gastosAgricolaArray'])) {
             ProductoAgricola::create([
                 'id_prestamo' => $prestamoId,
@@ -301,14 +301,14 @@ class UpdateController extends Controller
                 $mes10 = !empty($gastoData['mes10']) ? $gastoData['mes10'] : 0;
                 $mes11 = !empty($gastoData['mes11']) ? $gastoData['mes11'] : 0;
                 $mes12 = !empty($gastoData['mes12']) ? $gastoData['mes12'] : 0;
-    
+
                 $suma = $mes1 + $mes2 + $mes3 + $mes4 + $mes5 + $mes6 + $mes7 + $mes8 + $mes9 + $mes10 + $mes11 + $mes12;
-    
+
                 $row->cantidad = $suma;
                 $row->save();
             }
         }
-    
+
         if (isset($data['inventarioMaterialArray']) && is_array($data['inventarioMaterialArray'])) {
             foreach ($data['inventarioMaterialArray'] as $inventarioData) {
                 Inventario::create([
@@ -321,7 +321,7 @@ class UpdateController extends Controller
                 ]);
             }
         }
-    
+
         if (isset($data['tipoProductoArray']) && is_array($data['tipoProductoArray'])) {
             foreach ($data['tipoProductoArray'] as $inventarioData) {
                 TipoProducto::create([
@@ -333,7 +333,7 @@ class UpdateController extends Controller
             }
         }
     }
-    
+
     protected function updateClienteYcronograma($prestamo, $request)
     {
         $cliente = cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
@@ -343,17 +343,17 @@ class UpdateController extends Controller
                 ['prestamo_id' => $prestamo->id, 'cliente_id' => $cliente->id],
                 ['monto_indivual' => $request->monto]
             );
-    
+
             // Actualizar cronograma
             $this->guardarCronograma($prestamo, $cliente, $request, $request->monto);
         }
     }
-    
+
     protected function guardarCronograma($prestamo, $cliente, $request, $montoIndividual)
     {
         // Eliminar el cronograma existente
         Cronograma::where('id_prestamo', $prestamo->id)->where('cliente_id', $cliente->id)->delete();
-    
+
         // Recalcular y guardar el nuevo cronograma
         $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
         $fechaconperiodogracia = clone $fecha_desembolso;
@@ -364,10 +364,13 @@ class UpdateController extends Controller
         $tasaInteres = $request->tasa_interes;
         $tasaDiaria = pow(1 + ($tasaInteres / 100), 1 / 360) - 1;
         $interesesPeriodoGracia = $montoTotal * $tasaDiaria * $request->periodo_gracia_dias;
-        $cuotaSinGracia = $this->calcularCuota($montoTotal, $tasaInteres, $tiempo, $frecuencia);
+        //$cuotas = $this->calcularCuota($montoTotal, $tasaInteres, $tiempo, $frecuencia, $interesesMensualesPorGracia,$tipo_producto);
+        $tipo_producto = $request->tipo_producto;
         $interesesMensualesPorGracia = $interesesPeriodoGracia / $tiempo;
         $fechaCuota = clone $fechaconperiodogracia;
-    
+
+        $cuotaSinGracia = $this->calcularCuota($montoTotal, $tasaInteres, $tiempo, $frecuencia, $interesesMensualesPorGracia, $tipo_producto);
+
         for ($i = 1; $i <= $tiempo; $i++) {
             switch ($frecuencia) {
                 case 'catorcenal':
@@ -387,15 +390,14 @@ class UpdateController extends Controller
                     $fechaCuota->addMonth();
                     break;
             }
-    
+
             $cronograma = new Cronograma();
             $cronograma->fecha = clone $fechaCuota;
 
-            if($request->tipo_producto == 'grupal'){
-                $cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuotaSinGracia[$i - 1]['cuota'];
-            }else{
-                $cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia + 0.015 * $cuotaSinGracia[$i - 1]['cuota'];
-            }
+
+            $cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'];
+
+
             //$cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuotaSinGracia[$i - 1]['cuota'];
 
             $cronograma->numero = $i;
@@ -408,8 +410,8 @@ class UpdateController extends Controller
             $cronograma->save();
         }
     }
-    
-    public function calcularCuota($monto, $tea, $periodos, $frecuencia)
+
+    public function calcularCuota($monto, $tea, $periodos, $frecuencia, $interesesMensualesPorGracia, $tipo_producto)
     {
         switch ($frecuencia) {
             case 'catorcenal':
@@ -433,11 +435,17 @@ class UpdateController extends Controller
         $tasaPeriodo = pow(1 + ($tea / 100), 1 / $n) - 1;
         $cuota = ($monto * $tasaPeriodo * pow(1 + $tasaPeriodo, $periodos)) / (pow(1 + $tasaPeriodo, $periodos) - 1);
 
+        if($tipo_producto == 'grupal'){
+            $cuota_real= $cuota + $interesesMensualesPorGracia + 0.021*$cuota;
+        }else{
+            $cuota_real= $cuota + $interesesMensualesPorGracia;
+        }
+
         $saldo = $monto;
         $cuotas = [];
 
         for ($i = 0; $i < $periodos; $i++) {
-            $interesPeriodo = $saldo * $tasaPeriodo;
+            $interesPeriodo = $saldo * $tasaPeriodo+$interesesMensualesPorGracia;
             $amortizacion = $cuota - $interesPeriodo;
             $saldo -= $amortizacion;
 
@@ -446,7 +454,7 @@ class UpdateController extends Controller
                 'capital' => round($monto - $saldo, 2), // Capital amortizado
                 'interes' => round($interesPeriodo, 2),
                 'amortizacion' => round($amortizacion, 2),
-                'cuota' => round($cuota, 2),
+                'cuota' => round($cuota_real, 2),
                 'saldo_deuda' => round($saldo, 2)
             ];
         }
@@ -596,7 +604,7 @@ class UpdateController extends Controller
             CreditoCliente::where('prestamo_id', $prestamo->id)->delete();
             $this->updateClienteYcronograma($prestamo, $request);
             $this->updateArrayData($decodedData, $prestamo->id, $request);
-            
+
             DB::commit();
             return response()->json(['message' => 'Crédito actualizado con éxito', 'data' => $prestamo], 200);
         } catch (\Exception $e) {
@@ -698,85 +706,82 @@ class UpdateController extends Controller
         }
     }
     public function updateCreditoagricola(Request $request, $id)
-{
-    $decodedData = $request->all();
-    foreach ([
-        'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'gastosAgricolaArray',
-        'inventarioArray1', 'ventasMensualesArray', 'tipoProductoArray'
-    ] as $key) {
-        if ($request->filled($key)) {
-            $decodedData[$key] = json_decode($request->input($key), true);
+    {
+        $decodedData = $request->all();
+        foreach ([
+            'proyeccionesArray', 'inventarioArray', 'deudasFinancierasArray', 'gastosOperativosArray', 'gastosAgricolaArray',
+            'inventarioArray1', 'ventasMensualesArray', 'tipoProductoArray'
+        ] as $key) {
+            if ($request->filled($key)) {
+                $decodedData[$key] = json_decode($request->input($key), true);
+            }
+        }
+
+        DB::beginTransaction();
+        try {
+            $prestamo = credito::findOrFail($id);
+            $prestamo->tipo = $request->tipo_credito;
+            $prestamo->producto = $request->tipo_producto;
+            $prestamo->subproducto = $request->subproducto;
+            $prestamo->destino = $request->destino_credito;
+            $prestamo->recurrencia = $request->recurrencia;
+            $prestamo->tasa = $request->tasa_interes;
+            $prestamo->tiempo = $request->tiempo_credito;
+            $prestamo->monto_total = $request->monto;
+            $prestamo->fecha_desembolso = $request->fecha_desembolso;
+            $prestamo->periodo_gracia_dias = $request->periodo_gracia_dias;
+            $prestamo->porcentaje_credito = $request->porcentaje_venta_credito;
+            $prestamo->estado = "pendiente";
+            $prestamo->categoria = 'produccion';
+            $prestamo->nombre_prestamo = $request->nombre_prestamo;
+            $prestamo->cantidad_integrantes = $request->cantidad_grupo;
+            $prestamo->descripcion_negocio = $request->descripcion_negocio;
+            $prestamo->user_id = Auth::id();
+            $prestamo->save();
+
+            // Actualizar la garantía
+            $garantia = Garantia::where('id_prestamo', $prestamo->id)->first();
+            if (!$garantia) {
+                $garantia = new Garantia();
+                $garantia->id_prestamo = $prestamo->id;
+            }
+            $garantia->descripcion = $request->descripcion_garantia;
+            $garantia->valor_mercado = $request->valor_mercado;
+            $garantia->valor_realizacion = $request->valor_realizacion;
+            $garantia->valor_gravamen = $request->valor_gravamen;
+            if ($request->hasFile('archivo_garantia') && $request->file('archivo_garantia')->isValid()) {
+                $nombreUnico = Str::uuid();
+                $extension = $request->file('archivo_garantia')->getClientOriginalExtension();
+                $nombreArchivo = $nombreUnico . '.' . $extension;
+                $ruta = $request->file('archivo_garantia')->storeAs('public/documentos_garantia', $nombreArchivo);
+                $garantia->documento_pdf = $ruta;
+            }
+            $garantia->save();
+
+            // Actualizar activos
+            $activos = Activos::where('prestamo_id', $prestamo->id)->first();
+            if (!$activos) {
+                $activos = new Activos();
+                $activos->prestamo_id = $prestamo->id;
+            }
+            $activos->cuentas_por_cobrar = $request->cuentas_por_cobrar;
+            $activos->saldo_en_caja_bancos = $request->saldo_caja_bancos;
+            $activos->adelanto_a_proveedores = $request->adelanto_a_proveedores;
+            $activos->otros = $request->otros;
+            $activos->save();
+
+            // Actualizar créditos de clientes y cronograma
+            CreditoCliente::where('prestamo_id', $prestamo->id)->delete();
+            $this->updateClienteYcronograma($prestamo, $request);
+
+            // Guardar datos del crédito agrícola
+            $this->updateArrayData($decodedData, $prestamo->id, $request);
+
+            DB::commit();
+            return response()->json(['message' => 'Crédito actualizado con éxito', 'data' => $prestamo], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error al actualizar el crédito: ' . $e], 500);
         }
     }
-
-    DB::beginTransaction();
-    try {
-        $prestamo = credito::findOrFail($id);
-        $prestamo->tipo = $request->tipo_credito;
-        $prestamo->producto = $request->tipo_producto;
-        $prestamo->subproducto = $request->subproducto;
-        $prestamo->destino = $request->destino_credito;
-        $prestamo->recurrencia = $request->recurrencia;
-        $prestamo->tasa = $request->tasa_interes;
-        $prestamo->tiempo = $request->tiempo_credito;
-        $prestamo->monto_total = $request->monto;
-        $prestamo->fecha_desembolso = $request->fecha_desembolso;
-        $prestamo->periodo_gracia_dias = $request->periodo_gracia_dias;
-        $prestamo->porcentaje_credito = $request->porcentaje_venta_credito;
-        $prestamo->estado = "pendiente";
-        $prestamo->categoria = 'produccion';
-        $prestamo->nombre_prestamo = $request->nombre_prestamo;
-        $prestamo->cantidad_integrantes = $request->cantidad_grupo;
-        $prestamo->descripcion_negocio = $request->descripcion_negocio;
-        $prestamo->user_id = Auth::id();
-        $prestamo->save();
-
-        // Actualizar la garantía
-        $garantia = Garantia::where('id_prestamo', $prestamo->id)->first();
-        if (!$garantia) {
-            $garantia = new Garantia();
-            $garantia->id_prestamo = $prestamo->id;
-        }
-        $garantia->descripcion = $request->descripcion_garantia;
-        $garantia->valor_mercado = $request->valor_mercado;
-        $garantia->valor_realizacion = $request->valor_realizacion;
-        $garantia->valor_gravamen = $request->valor_gravamen;
-        if ($request->hasFile('archivo_garantia') && $request->file('archivo_garantia')->isValid()) {
-            $nombreUnico = Str::uuid();
-            $extension = $request->file('archivo_garantia')->getClientOriginalExtension();
-            $nombreArchivo = $nombreUnico . '.' . $extension;
-            $ruta = $request->file('archivo_garantia')->storeAs('public/documentos_garantia', $nombreArchivo);
-            $garantia->documento_pdf = $ruta;
-        }
-        $garantia->save();
-
-        // Actualizar activos
-        $activos = Activos::where('prestamo_id', $prestamo->id)->first();
-        if (!$activos) {
-            $activos = new Activos();
-            $activos->prestamo_id = $prestamo->id;
-        }
-        $activos->cuentas_por_cobrar = $request->cuentas_por_cobrar;
-        $activos->saldo_en_caja_bancos = $request->saldo_caja_bancos;
-        $activos->adelanto_a_proveedores = $request->adelanto_a_proveedores;
-        $activos->otros = $request->otros;
-        $activos->save();
-
-        // Actualizar créditos de clientes y cronograma
-        CreditoCliente::where('prestamo_id', $prestamo->id)->delete();
-        $this->updateClienteYcronograma($prestamo, $request);
-
-        // Guardar datos del crédito agrícola
-        $this->updateArrayData($decodedData, $prestamo->id, $request);
-
-        DB::commit();
-        return response()->json(['message' => 'Crédito actualizado con éxito', 'data' => $prestamo], 200);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['message' => 'Error al actualizar el crédito: ' . $e], 500);
-    }
 }
-
-
-}
-
