@@ -121,7 +121,8 @@
                     <td colspan="3"></td>
                     <td style="text-align: right;"><b>Total</b></td>
                     <td>{{ number_format($totalInteresesIndividuales[$cliente->id], 2) }}</td>
-                    <td colspan="2"></td>
+                    <td>{{ number_format($totalAmortizacionIndividuales[$cliente->id], 2) }}</td>
+                    <td>{{ number_format($totalMontoIndividuales[$cliente->id], 2) }}</td>
                 </tr>
             </tfoot>
         </table>
@@ -133,8 +134,8 @@
         <div style="width: 100%; margin-top: 50px; text-align: center;">
             <div style="width: 45%; float: left; text-align: center;">
                 <p>__________________________</p>
-                <p>Asesor de Crédito</p>
-                <p>{{ $responsable->name }}</p>
+                <p>Auxiliar de Operaciones </p>
+                <p>{{ Auth::user()->name }}</p>
             </div>
             <div style="width: 45%; float: right; text-align: center;">
                 <p>__________________________</p>

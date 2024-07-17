@@ -87,11 +87,15 @@ class PdfController extends Controller
 
         // Calcular la suma de los intereses del cronograma grupal
         $totalInteresGrupal = $cuotas->whereNull('cliente_id')->sum('interes');
+        $totalAmortizacionGrupal = $cuotas->where('cliente_id')->sum('amortizacion');
+        $totalMontoGrupal = $cuotas->where('cliente_id')->sum('monto');
 
         // Calcular las sumas de los intereses para cada cliente
         $totalInteresesIndividuales = [];
         foreach ($prestamo->clientes as $cliente) {
             $totalInteresesIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('interes');
+            $totalAmortizacionIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('amortizacion');
+            $totalMontoIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('monto');
         }
 
         $data = compact(
@@ -100,7 +104,12 @@ class PdfController extends Controller
             'cuotas',
             'credito_cliente',
             'totalInteresGrupal',
-            'totalInteresesIndividuales'
+            'totalInteresesIndividuales',
+            'totalAmortizacionIndividuales',
+            'totalMontoIndividuales',
+            'totalAmortizacionGrupal',
+            'totalMontoGrupal',
+            
         );
 
         $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
@@ -129,6 +138,8 @@ class PdfController extends Controller
         $totalInteresesIndividuales = [];
         foreach ($prestamo->clientes as $cliente) {
             $totalInteresesIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('interes');
+            $totalAmortizacionIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('amortizacion');
+            $totalMontoIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('monto');
         }
 
         $data = compact(
@@ -137,7 +148,9 @@ class PdfController extends Controller
             'cuotas',
             'credito_cliente',
             //'totalInteresGrupal',
-            'totalInteresesIndividuales'
+            'totalInteresesIndividuales',
+            'totalAmortizacionIndividuales',
+            'totalMontoIndividuales'
         );
 
         $pdf = Pdf::loadView('pdf.cronogramaindividual', $data)->setPaper('a4', 'landscape');

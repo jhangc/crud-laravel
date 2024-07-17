@@ -113,7 +113,8 @@
                 <td colspan="3"></td>
                 <td style="text-align: right;"><b>Total</b></td>
                 <td>{{ number_format($totalInteresGrupal, 2) }}</td>
-                <td colspan="2"></td>
+                <td>{{ number_format($totalAmortizacionGrupal, 2) }}</td>
+                <td>{{ number_format($totalMontoGrupal, 2) }}</td>
             </tr>
         </tfoot>
     </table>
@@ -125,8 +126,8 @@
     <!-- Sección de firma del asesor de crédito -->
     <div style="width: 100%; margin-top: 50px; text-align: center;">
         <div style="display: inline-block; text-align: center;">
-            <p>__________________________</p>
-            <p>Firma del Asesor de Crédito</p>
+            <p>Auxiliar de Operaciones </p>
+            <p>{{ Auth::user()->name }}</p>
             <p>{{ $responsable->name }}</p>
         </div>
     </div>
@@ -203,7 +204,8 @@
                     <td colspan="3"></td>
                     <td style="text-align: right;"><b>Total</b></td>
                     <td>{{ number_format($totalInteresesIndividuales[$cliente->id], 2) }}</td>
-                    <td colspan="2"></td>
+                    <td>{{ number_format($totalAmortizacionIndividuales[$cliente->id], 2) }}</td>
+                    <td>{{ number_format($totalMontoIndividuales[$cliente->id], 2) }}</td>
                 </tr>
             </tfoot>
         </table>
@@ -215,8 +217,8 @@
         <div style="width: 100%; margin-top: 50px; text-align: center;">
             <div style="width: 45%; float: left; text-align: center;">
                 <p>__________________________</p>
-                <p>Asesor de Crédito</p>
-                <p>{{ $responsable->name }}</p>
+                <p>Auxiliar de Operaciones </p>
+                <p>{{ Auth::user()->name }}</p>
             </div>
             <div style="width: 45%; float: right; text-align: center;">
                 <p>__________________________</p>
