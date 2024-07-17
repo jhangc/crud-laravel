@@ -204,7 +204,7 @@
                     <td colspan="3"></td>
                     <td style="text-align: right;"><b>Total</b></td>
                     <td>{{ number_format($totalInteresesIndividuales[$cliente->id], 2) }}</td>
-                    <td>{{ number_format($totalAmortizacionIndividuales[$cliente->id], 2) }}</td>
+                    <td>{{ number_format($totalAmortizacionIndividuales[$cliente->id], 0) }}</td>
                     <td>{{ number_format($totalMontoIndividuales[$cliente->id], 2) }}</td>
                 </tr>
             </tfoot>
