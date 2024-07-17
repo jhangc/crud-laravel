@@ -110,7 +110,7 @@
                             <td>{{ $cuota->detalle }}</td>
                             <td>{{ number_format($cuota->capital, 2) }}</td>
                             <td>{{ number_format($cuota->interes, 2) }}</td>
-                            <td>{{ number_format($cuota->amortizacion, 2) }}</td>
+                            <td>{{ number_format($cuota->amortizacion, 0) }}</td>
                             <td>{{ number_format($cuota->total, 2) }}</td>
                         </tr>
                     @endif
