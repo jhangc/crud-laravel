@@ -1113,13 +1113,14 @@ class creditoController extends Controller
         $tiempo = $request->tiempo_credito;
         $frecuencia = $request->tipo_producto == 'grupal' ? $request->recurrencia1 : $request->recurrencia;
         $tasaInteres = $request->tasa_interes;
+        $tipo_producto = $request->tipo_producto;
 
         // Calcular los intereses del período de gracia
         $tasaDiaria = pow(1 + ($tasaInteres / 100), 1 / 360) - 1;
         $interesesPeriodoGracia = $monto * $tasaDiaria * $request->periodo_gracia_dias;
         $interesesMensualesPorGracia = $interesesPeriodoGracia / $tiempo;
 
-        $cuotas = $this->calcularCuota($monto, $tasaInteres, $tiempo, $frecuencia);
+        $cuotas = $this->calcularCuota($monto, $tasaInteres, $tiempo, $frecuencia,$interesesMensualesPorGracia,$tipo_producto);
 
         $fechaCuota = $fechaconperiodogracia->copy();
 
@@ -1145,11 +1146,9 @@ class creditoController extends Controller
 
             $cronograma = new Cronograma();
             $cronograma->fecha = clone $fechaCuota;
-            if($request->tipo_producto == 'grupal'){
-                $cronograma->monto = $cuota['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuota['cuota'];
-            }else{
-                $cronograma->monto = $cuota['cuota'] + $interesesMensualesPorGracia+ 0.011*$cuota['cuota'];
-            }
+
+
+            $cronograma->monto = $cuota['cuota'];
              // Cuota fija más intereses distribuidos y otros componentes
             $cronograma->numero = $cuota['numero_cuota'];
             $cronograma->capital = $cuota['capital'];
@@ -1161,6 +1160,60 @@ class creditoController extends Controller
             $cronograma->save();
         }
     }
+    
+    public function calcularCuota($monto, $tea, $periodos, $frecuencia,$interesesMensualesPorGracia,$tipo_producto)
+    {
+        switch ($frecuencia) {
+            case 'catorcenal':
+                $n = 24;
+                break;
+            case 'veinteochenal':
+                $n = 12;
+                break;
+            case 'quincenal':
+                $n = 24;
+                break;
+            case 'semestral':
+                $n = 2;
+                break;
+            case 'mensual':
+            default:
+                $n = 12;
+                break;
+        }
+
+        $tasaPeriodo = pow(1 + ($tea / 100), 1 / $n) - 1;
+        $cuota = ($monto * $tasaPeriodo * pow(1 + $tasaPeriodo, $periodos)) / (pow(1 + $tasaPeriodo, $periodos) - 1);
+
+        
+
+        if($tipo_producto == 'grupal'){
+            $cuota_real= $cuota + $interesesMensualesPorGracia + 0.021*$cuota;
+        }else{
+            $cuota_real= $cuota + $interesesMensualesPorGracia;
+        }
+
+        $saldo = $monto;
+        $cuotas = [];
+
+        for ($i = 0; $i < $periodos; $i++) {
+            $interesPeriodo = $saldo * $tasaPeriodo + $interesesMensualesPorGracia;
+            $amortizacion = $cuota_real - $interesPeriodo;
+            $saldo -= $amortizacion;
+
+            $cuotas[] = [
+                'numero_cuota' => $i + 1,
+                'capital' => round($saldo, 2),
+                'interes' => round($interesPeriodo, 2),
+                'amortizacion' => round($amortizacion, 2),
+                'cuota' => round($cuota_real, 2),
+                'saldo_deuda' => round($saldo, 2)
+            ];
+        }
+
+        return $cuotas;
+    }
+
 
     protected function saveArrayData(array $data, $prestamoId, $request)
     {
@@ -1383,51 +1436,7 @@ class creditoController extends Controller
     // }
 
 
-    public function calcularCuota($monto, $tea, $periodos, $frecuencia)
-    {
-        switch ($frecuencia) {
-            case 'catorcenal':
-                $n = 24;
-                break;
-            case 'veinteochenal':
-                $n = 12;
-                break;
-            case 'quincenal':
-                $n = 24;
-                break;
-            case 'semestral':
-                $n = 2;
-                break;
-            case 'mensual':
-            default:
-                $n = 12;
-                break;
-        }
-
-        $tasaPeriodo = pow(1 + ($tea / 100), 1 / $n) - 1;
-        $cuota = ($monto * $tasaPeriodo * pow(1 + $tasaPeriodo, $periodos)) / (pow(1 + $tasaPeriodo, $periodos) - 1);
-
-        $saldo = $monto;
-        $cuotas = [];
-
-        for ($i = 0; $i < $periodos; $i++) {
-            $interesPeriodo = $saldo * $tasaPeriodo;
-            $amortizacion = $cuota - $interesPeriodo;
-            $saldo -= $amortizacion;
-
-            $cuotas[] = [
-                'numero_cuota' => $i + 1,
-                'capital' => round($saldo, 2),
-                'interes' => round($interesPeriodo, 2),
-                'amortizacion' => round($amortizacion, 2),
-                'cuota' => round($cuota, 2),
-                'saldo_deuda' => round($saldo, 2)
-            ];
-        }
-
-        return $cuotas;
-    }
-
+    
     /**
      * Display the specified resource.
      */
