@@ -113,7 +113,7 @@
                 <td colspan="3"></td>
                 <td style="text-align: right;"><b>Total</b></td>
                 <td>{{ number_format($totalInteresGrupal, 2) }}</td>
-                <td>{{ number_format($totalAmortizacionGrupal, 2) }}</td>
+                <td>{{ number_format($totalAmortizacionGrupal, 0) }}</td>
                 <td>{{ number_format($totalMontoGrupal, 2) }}</td>
             </tr>
         </tfoot>
