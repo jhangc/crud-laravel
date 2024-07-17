@@ -187,9 +187,9 @@
                 <th style="border: 1px solid black;">HUELLA DIGITAL</th>
             </tr>
             <tr>
-                <td style="border: 1px solid black;">{{ $credito_cliente->clientes->nombre }}</td>
+                <td style="border: 1px solid black;"><br><br><br><br></td>
                 <td style="border: 1px solid black;"></td>
-                <td style="border: 1px solid black;">{{ $credito_cliente->clientes->conyuge }}</td>
+                <td style="border: 1px solid black;"><br><br><br><br></td>
                 <td style="border: 1px solid black;"></td>
             </tr>
             <tr>
@@ -199,7 +199,7 @@
                 <th style="border: 1px solid black;"></th>
             </tr>
             <tr>
-                <td style="border: 1px solid black;">{{ $credito_cliente->clientes->aval }}</td>
+                <td style="border: 1px solid black;"><br><br><br><br></td>
                 <td style="border: 1px solid black;"></td>
                 <td style="border: 1px solid black;"></td>
                 <td style="border: 1px solid black;"></td>
@@ -215,9 +215,9 @@
                 <th>HUELLA DIGITAL</th>
             </tr>
             <tr>
-                <td>{{ $credito_cliente->clientes->nombre }}</td>
+                <td><br><br><br><br></td>
                 <td></td>
-                <td>{{ $credito_cliente->clientes->aval }}</td>
+                <td><br><br><br><br></td>
                 <td></td>
             </tr>
         </table>
