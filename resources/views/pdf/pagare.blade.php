@@ -83,7 +83,7 @@
                 <th>MONTO</th>
             </tr>
             <tr>
-                <td>0001-24</td>
+                <td>{{ $correlativo->correlativo }}</td>
                 <td>Tarapoto</td>
                 <td>{{ \Carbon\Carbon::parse($prestamo->fecha_desembolso)->translatedFormat('d-F-Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($prestamo->fecha_fin)->translatedFormat('d-F-Y') }}</td>

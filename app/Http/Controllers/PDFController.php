@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Luecano\NumeroALetras\NumeroALetras;
+use App\Models\CorrelativoPagare;
 
 class PdfController extends Controller
 {
@@ -236,43 +237,48 @@ class PdfController extends Controller
     }
 
     public function generatepagarePDF(Request $request, $id)
-    {
-        $prestamo = \App\Models\credito::find($id);
-        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
-        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
-        $responsable = auth()->user();
-
-        // Usa Carbon para obtener la fecha actual
-        $date = Carbon::now();
-
-        // Formatea la fecha con la configuración regional establecida
-        $formattedDate = $date->translatedFormat('d \d\e F \d\e\l Y');
-
-        $tasaInteres = $prestamo->tasa;
-        // $frecuencia = $request->tipo_producto == 'grupal' ? $request->recurrencia1 : $request->recurrencia;
-
-        // $tasaperiodo = $this->calcularCuota($tasaInteres,$frecuencia);
-
-        $tasadiaria = number_format((pow(1 + ($tasaInteres / 100), 1 / 360) - 1)*100,2);
-
-        // Convertir monto a letras
-        $formatter = new NumeroALetras();
-        $montoEnLetras = $formatter->toMoney($prestamo->monto, 2, 'soles', 'centimos');
-
-        $data = compact(
-            'prestamo',
-            'responsable',
-            'cuotas',
-            'credito_cliente',
-            'formattedDate',
-            'montoEnLetras',
-            'tasadiaria'
-        );
-
-        // Generar y retornar el PDF
-        $pdf = Pdf::loadView('pdf.pagare', $data)->setPaper('a4');
-        return $pdf->stream('pagare.pdf');
+{
+    $prestamo = \App\Models\Credito::find($id);
+    if (!$prestamo) {
+        return response()->json(['error' => 'Crédito no encontrado'], 404);
     }
+
+    $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
+    $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
+    $responsable = auth()->user();
+
+    // Usa Carbon para obtener la fecha actual
+    $date = Carbon::now();
+
+    // Formatea la fecha con la configuración regional establecida
+    $formattedDate = $date->translatedFormat('d \d\e F \d\e\l Y');
+
+    $tasaInteres = $prestamo->tasa;
+
+    $tasadiaria = number_format((pow(1 + ($tasaInteres / 100), 1 / 360) - 1) * 100, 2);
+
+    // Convertir monto a letras
+    $formatter = new NumeroALetras();
+    $montoEnLetras = $formatter->toMoney($prestamo->monto, 2, 'soles', 'centimos');
+
+    // Generar o obtener el correlativo
+    $correlativo = CorrelativoPagare::generateCorrelativo($id);
+
+    $data = compact(
+        'prestamo',
+        'responsable',
+        'cuotas',
+        'credito_cliente',
+        'formattedDate',
+        'montoEnLetras',
+        'tasadiaria',
+        'correlativo'
+    );
+
+    // Generar y retornar el PDF
+    $pdf = Pdf::loadView('pdf.pagare', $data)->setPaper('a4');
+    return $pdf->stream('pagare.pdf');
+}
 
     
 
