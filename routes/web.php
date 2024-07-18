@@ -43,6 +43,7 @@ Route::put('/admin/usuarios/{id}', [App\Http\Controllers\UsuarioController::clas
 Route::delete('/admin/usuarios/{id}', [App\Http\Controllers\UsuarioController::class, 'destroy'])->name('usuarios.destroy')->middleware('auth');
 
 Route::get('/admin/creditos', [App\Http\Controllers\creditoController::class, 'index'])->name('creditos.index')->middleware('auth');
+
 Route::get('/admin/creditos/simulador', [App\Http\Controllers\creditoController::class, 'viewSimulador'])->name('creditos.simulador')->middleware('auth');
 //ir al credito nuevo
 Route::get('/admin/creditos/createnuevo', [App\Http\Controllers\creditoController::class, 'createnuevo'])->name('creditos.createnuevo')->middleware('auth');
