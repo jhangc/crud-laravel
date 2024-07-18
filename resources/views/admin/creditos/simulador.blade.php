@@ -21,6 +21,8 @@
                                             <option value="">Seleccione una opción...</option>
                                             <option value="mensual">Mensual</option>
                                             <option value="quincenal">Quincenal</option>
+                                            <option value="trimestral">Trimestral</option>
+                                            <option value="semestral">Semestral</option>
                                         </select>
                                     </div>
                                 </div>
@@ -114,9 +116,9 @@
             const periodoGraciaDias = parseInt(document.getElementById('periodo_gracia_dias').value);
             let fechaInicio = new Date(new Date(fechaDesembolso).setDate(new Date(fechaDesembolso).getDate() +
                 periodoGraciaDias));
-            
+
             // Calcular los intereses del período de gracia
-            const tasaDiaria = Math.pow(1 + (tea/ 100), 1 / 360) - 1;
+            const tasaDiaria = Math.pow(1 + (tea / 100), 1 / 360) - 1;
             const interesesPeriodoGracia = monto * tasaDiaria * periodoGraciaDias;
             const interesesMensualesPorGracia = interesesPeriodoGracia / periodos;
 
@@ -133,6 +135,9 @@
                     break;
                 case 'semestral':
                     n = 2;
+                    break;
+                case 'trimestral':
+                    n = 4;
                     break;
                 case 'mensual':
                 default:
@@ -163,6 +168,14 @@
                         fechaVencimiento = new Date(new Date(fechaInicio).setDate(fechaInicio.getDate() + ((i + 1) * 15)));
                         break;
                     case 'mensual':
+                        fechaVencimiento = new Date(new Date(fechaInicio).setMonth(fechaInicio.getMonth() + (i + 1)));
+                        break;
+                    case 'trimestral':
+                        fechaVencimiento = new Date(new Date(fechaInicio).setMonth(fechaInicio.getMonth() + ((i + 1) * 3)));
+                        break;
+                    case 'semestral':
+                        fechaVencimiento = new Date(new Date(fechaInicio).setMonth(fechaInicio.getMonth() + ((i + 1) * 6)));
+                        break;
                     default:
                         fechaVencimiento = new Date(new Date(fechaInicio).setMonth(fechaInicio.getMonth() + (i + 1)));
                         break;
