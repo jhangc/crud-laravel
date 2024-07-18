@@ -238,7 +238,7 @@ class PdfController extends Controller
 
     public function generatepagarePDF(Request $request, $id)
 {
-    $prestamo = \App\Models\Credito::find($id);
+    $prestamo = \App\Models\credito::find($id);
     if (!$prestamo) {
         return response()->json(['error' => 'Crédito no encontrado'], 404);
     }
