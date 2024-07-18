@@ -45,6 +45,14 @@ class creditoController extends Controller
     }
 
 
+    public function viewSimulador()
+    {
+        
+        // Pasar los créditos a la vista
+        return view('admin.creditos.simulador');
+    }
+
+
 
     public function comercio()
     {

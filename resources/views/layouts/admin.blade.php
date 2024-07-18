@@ -165,6 +165,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             </li>
                         @endrole
 
+                        <li class="nav-item">
+                            <a href="{{ url('/admin/creditos/simulador') }}" class="nav-link active">
+                                <i class="nav-icon fas"><i class="bi bi-credit-card"></i></i>
+                                <p> Simulador</p>
+                            </a>
+
+                        </li>
+
                         @role('Administrador|Asesor de creditos')
                             <li class="nav-item">
                                 <a href="#" class="nav-link active">
@@ -181,19 +189,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                             <p>Lista de clientes</p>
                                         </a>
                                         <!-- <a href="{{ url('/admin/clientes/evaluar') }}" class="nav-link active">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Evaluar al cliente</p>
-                                        </a>
+                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <p>Evaluar al cliente</p>
+                                                </a>
 
-                                        <a href="{{ url('/admin/clientes/ratios') }}" class="nav-link active">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Ratios FInancieros</p>
-                                        </a> -->
+                                                <a href="{{ url('/admin/clientes/ratios') }}" class="nav-link active">
+                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <p>Ratios FInancieros</p>
+                                                </a> -->
                                     </li>
                                 </ul>
                             </li>
                         @endrole
-                       <!-- validad operaciones -->
+                        <!-- validad operaciones -->
                         @php
                             $sucursalId = Auth::user()->sucursal_id;
                             $usuarioId = Auth::user()->id;
@@ -217,38 +225,38 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
-                                        {{-- @if($operacionesAbiertas)
-                                        @if($cajaAbierta) --}}
-                                            <a href="{{ url('/admin/caja/pagarcredito') }}" class="nav-link active">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Desembolsar Crédito</p>
-                                            </a>
-                                            <a href="{{ url('/admin/caja/cobrar') }}" class="nav-link active">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Cobrar Crédito</p>
-                                            </a>
+                                        {{-- @if ($operacionesAbiertas)
+                                        @if ($cajaAbierta) --}}
+                                        <a href="{{ url('/admin/caja/pagarcredito') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Desembolsar Crédito</p>
+                                        </a>
+                                        <a href="{{ url('/admin/caja/cobrar') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Cobrar Crédito</p>
+                                        </a>
                                         {{-- @endif
-                                            @if(!$cajaAbierta) --}}
-                                                <a href="{{ url('/admin/caja/habilitar') }}" class="nav-link active">
-                                                    <i class="far fa-circle nav-icon"></i>
-                                                    <p>Habilitar caja</p>
-                                                </a>
-                                            {{-- @endif
-                                            @if($cajaAbierta) --}}
-                                                <a href="{{ url('/admin/caja/arqueo') }}" class="nav-link active">
-                                                    <i class="far fa-circle nav-icon"></i>
-                                                    <p>Arqueo de Caja</p>
-                                                </a>
-                                            {{-- @endif
-                                            @if($cajaAbierta) --}}
-                                            <a href="{{ url('/admin/caja/pagares') }}" class="nav-link active">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Pagares</p>
-                                            </a>
-                                            {{-- @endif
+                                            @if (!$cajaAbierta) --}}
+                                        <a href="{{ url('/admin/caja/habilitar') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Habilitar caja</p>
+                                        </a>
+                                        {{-- @endif
+                                            @if ($cajaAbierta) --}}
+                                        <a href="{{ url('/admin/caja/arqueo') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Arqueo de Caja</p>
+                                        </a>
+                                        {{-- @endif
+                                            @if ($cajaAbierta) --}}
+                                        <a href="{{ url('/admin/caja/pagares') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Pagares</p>
+                                        </a>
+                                        {{-- @endif
                                         @else 
                                             <span class="nav-link text-warning">Operaciones no iniciadas</span>
-                                        @endif--}}
+                                        @endif --}}
                                     </li>
                                 </ul>
                             </li>
