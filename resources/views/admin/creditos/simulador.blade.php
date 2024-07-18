@@ -110,11 +110,15 @@
             const periodos = parseInt(document.getElementById('tiempo_credito').value);
             const frecuencia = document.getElementById('recurrencia').value;
             const fechaDesembolso = document.getElementById('fecha_desembolso').value;
-            const interesesMensualesPorGracia = 0; // You can set this value based on your logic
 
             const periodoGraciaDias = parseInt(document.getElementById('periodo_gracia_dias').value);
             let fechaInicio = new Date(new Date(fechaDesembolso).setDate(new Date(fechaDesembolso).getDate() +
                 periodoGraciaDias));
+            
+            // Calcular los intereses del período de gracia
+            const tasaDiaria = Math.pow(1 + (tea/ 100), 1 / 360) - 1;
+            const interesesPeriodoGracia = monto * tasaDiaria * periodoGraciaDias;
+            const interesesMensualesPorGracia = interesesPeriodoGracia / periodos;
 
             let n;
             switch (frecuencia) {

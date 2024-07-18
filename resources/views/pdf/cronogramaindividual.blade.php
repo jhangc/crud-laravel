@@ -85,6 +85,11 @@
                 <td><b>Periodo:</b></td>
                 <td>{{ $prestamo->recurrencia }}</td>
             </tr>
+
+            <tr>
+                <td><b>Asesor de crédito:</b></td>
+                <td>{{ $responsable->name }}</td>
+            </tr>
         </table>
 
         <table class="principal contenido">
