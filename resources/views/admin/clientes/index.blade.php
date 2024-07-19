@@ -103,7 +103,7 @@
                             <td>{{ $cliente->profesion }}</td>
                             <td>{{ $cliente->estado_civil }}</td>
                             <td>{{ $cliente->conyugue }}</td>
-                            <td>{{ $cliente->dni_conyugue }} {{$cliente->foto}}</td>
+                            <td>{{ $cliente->dni_conyugue }}</td>
                             <td>
                                 @if ($cliente->foto)
                                 <a href="{{url('storage/foto/'.$cliente->id) }}" target="_blank">
