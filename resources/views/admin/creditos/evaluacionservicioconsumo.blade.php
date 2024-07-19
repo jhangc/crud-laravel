@@ -121,7 +121,7 @@
                                 {{-- PASIVO TOTAL / PATRIMONIO NETO --}}
                                 <td>Solvencia</td>
                                 <td class="{{ $solvencia > 1 ? 'text-danger' : '' }}">{{ $solvencia }}</td>
-                                <td>tiene que ser (<=1)< /td>
+                                <td>tiene que ser (<=1) </td>
                             </tr>
                             <tr>
                                 <td>Cuota de endeudamiento</td>
