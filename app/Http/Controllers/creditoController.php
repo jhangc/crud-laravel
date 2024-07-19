@@ -922,22 +922,40 @@ class creditoController extends Controller
     }
 
     public function pagocuota(Request $request)
-    {
-        
-        // Registrar el ingreso
-        $ingreso=Ingreso::create([
-            'prestamo_id' => $request->prestamo_id,
-            'cliente_id' => $request->cliente_id,
-            'cronograma_id' => $request->cronograma_id,
-            'numero_cuota' => $request->numero_cuota,
-            'monto' => $request->monto,
-            'fecha_pago' => now()->toDateString(),
-            'hora_pago' => now()->toTimeString(),
-            'sucursal_id' => auth()->user()->sucursal_id,
-        ]);
+{
+    $user = auth()->user();
 
-        return response()->json(['success' => 'Cuota pagada con éxito', 'ingreso_id' => $ingreso->id]);
+    // Retrieve the last open cash transaction for the logged-in user
+    $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
+        ->whereNull('hora_cierre')
+        ->orderBy('created_at', 'desc')
+        ->first();
+
+    // Check if there is an open cash transaction
+    if (!$ultimaTransaccion) {
+        return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
     }
+
+    // Register the income
+    $ingreso = Ingreso::create([
+        'transaccion_id' => $ultimaTransaccion->id,
+        'prestamo_id' => $request->prestamo_id,
+        'cliente_id' => $request->cliente_id,
+        'cronograma_id' => $request->cronograma_id,
+        'numero_cuota' => $request->numero_cuota,
+        'monto' => $request->monto,
+        'fecha_pago' => now()->toDateString(),
+        'hora_pago' => now()->toTimeString(),
+        'sucursal_id' => $user->sucursal_id,
+    ]);
+
+    // Update the total income in the cash transaction
+    $ultimaTransaccion->cantidad_ingresos = $ultimaTransaccion->cantidad_ingresos + $request->monto;
+    $ultimaTransaccion->save();
+
+    return response()->json(['success' => 'Cuota pagada con éxito', 'ingreso_id' => $ingreso->id]);
+}
+
 
 
 
