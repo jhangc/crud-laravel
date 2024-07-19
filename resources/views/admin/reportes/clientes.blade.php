@@ -38,13 +38,13 @@
                             <th>
                                 <center>Dni</center>
                             </th>
-                            {{-- <<th>
+                            <th>
                                 <center>Teléfono</center>
                             </th>
                             <th>
                                 <center>Email</center>
                             </th>
-                            <th>
+                            {{-- <th>
                                 <center>Dirección de Domicilio</center>
                             </th>
                             th>
@@ -54,20 +54,20 @@
                                 <center>Lugar de Nacimiento</center>
                             </th>
                             <th>
-                                <center>Fecha de Nacimiento</center> --}}
-                            </th>
+                                <center>Fecha de Nacimiento</center>
+                            </th> --}}
                             <th>
                                 <center>Profesión</center>
                             </th>
                             <th>
                                 <center>Estado Civil</center>
                             </th>
-                            <th>
+                            {{-- <th>
                                 <center>Conyugue</center>
                             </th>
                             <th>
                                 <center>Dni Conyugue</center>
-                            </th>
+                            </th> --}}
                             
                         </tr>
                     </thead>
@@ -83,9 +83,9 @@
                             <td style="text-align: center">{{ $contador }}</td>
                             <td>{{ $cliente->nombre }}</td>
                             <td>{{ $cliente->documento_identidad }}</td>
-                            {{-- <td>{{ $cliente->telefono }}</td>
+                            <td>{{ $cliente->telefono }}</td>
                             <td>{{ $cliente->email }}</td>
-                            <td>{{ $cliente->direccion }}</td>
+                            {{-- <td>{{ $cliente->direccion }}</td>
                             <td>{{ $cliente->direccion_laboral }}</td>
                             <td>{{ $cliente->lugar_nacimiento }}</td>
                             <td>
@@ -93,8 +93,8 @@
                             </td> --}}
                             <td>{{ $cliente->profesion }}</td>
                             <td>{{ $cliente->estado_civil }}</td>
-                            <td>{{ $cliente->conyugue }}</td>
-                            <td>{{ $cliente->dni_conyugue }}</td>
+                            {{-- <td>{{ $cliente->conyugue }}</td>
+                            <td>{{ $cliente->dni_conyugue }}</td> --}}
 
                         </tr>
                         @endforeach
