@@ -204,7 +204,7 @@
 
             if (solvencia > 1 ||
                 indiceEndeudamiento <= cuotaprestamo ||
-                totalgarantia <= totalprestamo ||
+                totalgarantia < totalprestamo ||
                 cuotaExcedente >= 1) {
                 return 'rechazado por sistema';
             }
