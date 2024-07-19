@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\cliente;
+use App\Models\Departamento;
+use App\Models\Provincia;
+use App\Models\Distrito;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -51,9 +54,24 @@ class clienteController extends Controller
      */
     public function create()
     {
-        return view('admin.clientes.create');
+        $departamentos = Departamento::all();
+        $provincias = collect();
+        $distritos = collect();
+
+        return view('admin.clientes.create', compact('departamentos', 'provincias', 'distritos'));
     }
 
+    public function getProvincias($dep_id)
+    {
+        $provincias = Provincia::where('dep_id', $dep_id)->pluck('pro_nombre', 'pro_id');
+        return response()->json($provincias);
+    }
+
+    public function getDistritos($prov_id)
+    {
+        $distritos = Distrito::where('pro_id', $prov_id)->pluck('dis_nombre', 'dis_id');
+        return response()->json($distritos);
+    }
     /**
      * Store a newly created resource in storage.
      */
@@ -65,6 +83,7 @@ class clienteController extends Controller
             'documento_identidad' => 'required|max:50',
             'telefono' => 'nullable|max:15',
             'email' => 'nullable|email|unique:clientes,email',
+            'distrito' => 'required|exists:distritos,dis_id',
             'direccion' => 'required|max:255',
             'direccion_laboral' => 'nullable|max:255',
             'lugar_nacimiento' => 'nullable|max:255',
@@ -94,6 +113,7 @@ class clienteController extends Controller
         $cliente->telefono = $request->telefono;
         $cliente->email = $request->email;
         $cliente->direccion = $request->direccion;
+        $cliente->distrito_id = $request->distrito; // Guardar distrito_id
         $cliente->direccion_laboral = $request->direccion_laboral;
         $cliente->lugar_nacimiento = $request->lugar_nacimiento;
         if (!empty($request->fecha_nacimiento)) {
@@ -191,11 +211,47 @@ class clienteController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
+
     public function edit(string $id)
     {
-        $cliente = cliente::findOrFail($id);
-        return view('admin.clientes.edit', ['cliente' => $cliente]);
+        $cliente = Cliente::with('distrito.provincia.departamento')->findOrFail($id);
+        $departamentos = Departamento::all();
+
+        $departamentoNombre = '';
+        $provinciaNombre = '';
+        $distritoNombre = '';
+        $provincias = collect();
+        $distritos = collect();
+
+        if ($cliente->distrito) {
+            $distritoNombre = $cliente->distrito->dis_nombre;
+
+            if ($cliente->distrito->provincia) {
+                $provinciaNombre = $cliente->distrito->provincia->pro_nombre;
+                $provincias = Provincia::where('dep_id', $cliente->distrito->provincia->dep_id)->get();
+
+                if ($cliente->distrito->provincia->departamento) {
+                    $departamentoNombre = $cliente->distrito->provincia->departamento->dep_nombre;
+                }
+
+                $distritos = Distrito::where('pro_id', $cliente->distrito->provincia->pro_id)->get();
+            }
+        }
+
+        return view('admin.clientes.edit', [
+            'cliente' => $cliente,
+            'departamentos' => $departamentos,
+            'provincias' => $provincias,
+            'distritos' => $distritos,
+            'departamentoNombre' => $departamentoNombre,
+            'provinciaNombre' => $provinciaNombre,
+            'distritoNombre' => $distritoNombre,
+        ]);
     }
+
+
+
+
 
     /**
      * Update the specified resource in storage.
@@ -207,12 +263,31 @@ class clienteController extends Controller
             'nombre' => 'required|max:100',
             'documento_identidad' => 'required|max:50',
             'telefono' => 'nullable|max:15',
-            'email' => 'required|unique:clientes,email,' . $id,
+            'email' => 'nullable|email|unique:clientes,email,' . $id,
+            'distrito' => 'required|exists:distritos,dis_id',
             'direccion' => 'required|max:255',
+            'direccion_laboral' => 'nullable|max:255',
+            'lugar_nacimiento' => 'nullable|max:255',
+            'fecha_nacimiento' => 'nullable|date',
+            'profesion' => 'nullable|max:100',
+            'estado_civil' => 'nullable|max:50',
+            'conyugue' => 'nullable|max:100',
+            'dni_conyugue' => 'nullable|max:50',
+            'direccion_conyugue' => 'nullable|max:255',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'dni_pdf' => 'nullable|mimes:pdf|max:2048',
+            'activo' => 'boolean',
+            'actividad_economica' => 'nullable|max:255',
+            'sexo' => 'nullable|max:255',
+            'referencia' => 'nullable|max:255',
+            'aval' => 'nullable|max:255',
+            'numero_dni_aval' => 'nullable|max:50',
+            'direccion_aval' => 'nullable|max:255',
+            'dni_aval' => 'nullable|mimes:pdf|max:2048'
         ]);
 
         // Buscar al cliente por su ID
-        $cliente = cliente::find($id);
+        $cliente = Cliente::find($id);
 
         // Actualizar los datos del cliente
         $cliente->nombre = $request->nombre;
@@ -220,6 +295,67 @@ class clienteController extends Controller
         $cliente->telefono = $request->telefono;
         $cliente->email = $request->email;
         $cliente->direccion = $request->direccion;
+        $cliente->distrito_id = $request->distrito; // Guardar distrito_id
+        $cliente->direccion_laboral = $request->direccion_laboral;
+        $cliente->lugar_nacimiento = $request->lugar_nacimiento;
+        if (!empty($request->fecha_nacimiento)) {
+            $cliente->fecha_nacimiento = $request->fecha_nacimiento;
+        }
+        $cliente->profesion = $request->profesion;
+        $cliente->estado_civil = $request->estado_civil;
+        $cliente->conyugue = $request->conyugue;
+        $cliente->dni_conyugue = $request->dni_conyugue;
+        $cliente->direccion_conyugue = $request->direccion_conyugue;
+        $cliente->numero_dni_aval = $request->numero_dni_aval;
+        $cliente->direccion_aval = $request->direccion_aval;
+        $cliente->actividad_economica = $request->actividad_economica;
+        $cliente->sexo = $request->sexo;
+        $cliente->referencia = $request->referencia;
+        $cliente->aval = $request->aval;
+
+        // Manejar la carga de archivos (foto, dni_pdf y dni_aval)
+        if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
+            // Genera un UUID único para el nombre del archivo
+            $nombreUnico = Str::uuid();
+            // Obtiene la extensión original del archivo
+            $extension = $request->file('foto')->getClientOriginalExtension();
+            // Construye el nombre del archivo utilizando el UUID y la extensión
+            $nombreArchivo = $nombreUnico . '.' . $extension;
+            // Guarda la foto en el directorio especificado con el nombre generado
+            $ruta = $request->file('foto')->storeAs('public/fotos_clientes', $nombreArchivo);
+            // Asigna la ruta del archivo al atributo 'foto' del cliente
+            $cliente->foto = $ruta;
+        }
+
+        if ($request->hasFile('dni_pdf') && $request->file('dni_pdf')->isValid()) {
+            // Genera un nombre único para el archivo utilizando un UUID
+            $nombreUnico = Str::uuid();
+            // Obtiene la extensión original del archivo
+            $extension = $request->file('dni_pdf')->getClientOriginalExtension();
+            // Construye el nombre del archivo utilizando el UUID y la extensión
+            $nombreArchivo = $nombreUnico . '.' . $extension;
+            // Guarda el PDF en el directorio especificado con el nombre generado
+            $ruta = $request->file('dni_pdf')->storeAs('public/documentos_clientes', $nombreArchivo);
+            // Asigna la ruta del archivo al atributo 'dni_pdf' del cliente
+            $cliente->dni_pdf = $ruta;
+        }
+
+        if ($request->hasFile('dni_aval') && $request->file('dni_aval')->isValid()) {
+            // Genera un nombre único para el archivo utilizando un UUID
+            $nombreUnico = Str::uuid();
+            // Obtiene la extensión original del archivo
+            $extension = $request->file('dni_aval')->getClientOriginalExtension();
+            // Construye el nombre del archivo utilizando el UUID y la extensión
+            $nombreArchivo = $nombreUnico . '.' . $extension;
+            // Guarda el archivo en el directorio especificado con el nombre generado
+            $ruta = $request->file('dni_aval')->storeAs('public/documentos_aval', $nombreArchivo);
+            // Asigna la ruta del archivo al atributo 'dni_aval' del cliente
+            $cliente->dni_aval = $ruta;
+        }
+
+        $cliente->activo = $request->activo ?? true; // Si no se proporciona el valor de activo, se establece en true
+        $cliente->sucursal_id = 1; // Asignar el ID de la sucursal
+
         $cliente->save();
 
         // Redireccionar a la página de inicio
@@ -227,6 +363,8 @@ class clienteController extends Controller
             ->with('mensaje', 'Se actualizó al cliente de manera correcta')
             ->with('icono', 'success');
     }
+
+
 
     /**
      * Remove the specified resource from storage.

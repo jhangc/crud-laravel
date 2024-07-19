@@ -127,9 +127,13 @@ Route::get('/generar-pagare/{id}', [PDFController::class, 'generatepagarePDF'])-
 Route::get('/generar-ticket-desembolso/{id}', [PDFController::class, 'generateticket'])->name('generar-ticket');
 
 
-Route::get('/inicio-operaciones', [IniciarOpeController::class, 'index'])->name('inicio_operaciones.index');
-Route::post('/inicio-operaciones', [IniciarOpeController::class, 'store'])->name('inicio_operaciones.store');
-Route::post('/inicio-operaciones/start/{id}', [IniciarOpeController::class, 'start'])->name('inicio_operaciones.start');
-Route::post('/inicio-operaciones/close', [IniciarOpeController::class, 'close'])->name('inicio_operaciones.close');
+Route::get('/inicio-operaciones', [IniciarOpeController::class, 'index'])->name('inicio_operaciones.index')->middleware('auth');
+Route::post('/inicio-operaciones', [IniciarOpeController::class, 'store'])->name('inicio_operaciones.store')->middleware('auth');
+Route::post('/inicio-operaciones/start/{id}', [IniciarOpeController::class, 'start'])->name('inicio_operaciones.start')->middleware('auth');
+Route::post('/inicio-operaciones/close', [IniciarOpeController::class, 'close'])->name('inicio_operaciones.close')->middleware('auth');
+
+
+Route::get('/getProvincias/{dep_id}', [App\Http\Controllers\clienteController::class, 'getProvincias'])->name('clientes.getProvincias')->middleware('auth');
+Route::get('/getDistritos/{prov_id}', [App\Http\Controllers\clienteController::class, 'getDistritos'])->name('clientes.getDistritos')->middleware('auth');
 
 

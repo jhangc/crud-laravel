@@ -18,6 +18,7 @@ class cliente extends Model
         'telefono',
         'email',
         'direccion',
+        'distrito_id',
         'activo',
         'direccion_laboral',
         'lugar_nacimiento',
@@ -44,6 +45,11 @@ class cliente extends Model
     public function creditos()
     {
         return $this->belongsToMany(credito::class, 'Credito_Cliente', 'cliente_id', 'prestamo_id');
+    }
+
+    public function distrito()
+    {
+        return $this->belongsTo(Distrito::class, 'distrito_id', 'dis_id');
     }
 
 }
