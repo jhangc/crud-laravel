@@ -327,7 +327,7 @@
                                     <input type="file" name="dni_aval" id="dni_aval" accept=".pdf"
                                         class="form-control-file">
                                     @if ($cliente->dni_aval)
-                                        <a href="{{ url('storage/' . $cliente->dni_aval) }}" target="_blank">Ver PDF
+                                        <a href="{{ Storage::url($cliente->dni_aval) }} " target="_blank">Ver PDF
                                             actual</a>
                                     @endif
                                     @error('dni_aval')
@@ -343,7 +343,7 @@
                                     <label for="foto">Foto</label>
                                     <input type="file" name="foto" accept="image/*" class="form-control-file">
                                     @if ($cliente->foto)
-                                        <img src="{{ url('storage/' . $cliente->foto) }}" alt="Foto del cliente"
+                                        <img src="{{ Storage::url($cliente->foto) }}" alt="Foto del cliente"
                                             width="100">
                                     @endif
                                     @error('foto')
@@ -357,7 +357,7 @@
                                     <label for="dni_pdf">DNI en PDF</label>
                                     <input type="file" name="dni_pdf" accept=".pdf" class="form-control-file">
                                     @if ($cliente->dni_pdf)
-                                        <a href="{{ url('storage/' . $cliente->dni_pdf) }}" target="_blank">Ver PDF
+                                        <a href="{{ Storage::url($cliente->dni_pdf) }}" target="_blank">Ver PDF
                                             actual</a>
                                     @endif
                                     @error('dni_pdf')
