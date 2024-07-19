@@ -934,7 +934,7 @@ class PdfController extends Controller
     }
     public function generateticket($id)
     {
-        $prestamo = \App\Models\Credito::find($id);
+        $prestamo = \App\Models\credito::find($id);
         $creditos = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
     
         // Obtener el usuario autenticado
@@ -983,8 +983,8 @@ class PdfController extends Controller
             return response()->json(['error' => 'Pago no encontrado.'], 404);
         }
 
-        $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
-        $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
+        $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
+        $cliente = \App\Models\cliente::find($ingreso->cliente_id);
 
         $user = auth()->user();
         $montoTotalGrupo = $ingreso->monto_cuota;
