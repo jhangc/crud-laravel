@@ -63,10 +63,10 @@
                                     <td>{{ $usuario->direccion }}</td>
                                     <td style="text-align:center">
                                         <div class="btn-group" role="group" aria-label="Basic example">
-                                            <a href="{{ route('usuarios.show', $usuario->id) }}" type="button"
+                                            {{-- <a href="{{ route('usuarios.show', $usuario->id) }}" type="button"
                                                 class="btn btn-info">
                                                 <i class="bi bi-eye"></i>
-                                            </a>
+                                            </a> --}}
                                             <a href="{{ route('usuarios.edit', $usuario->id) }}" type="button"
                                                 class="btn btn-success"><i class="bi bi-pencil"></i></a>
                                             <form action="{{ route('usuarios.destroy', $usuario->id) }}"

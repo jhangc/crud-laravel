@@ -77,7 +77,13 @@ class UsuarioController extends Controller
     public function edit($id)
     {
         $usuario = User::findOrFail($id);
-        return view('admin.usuarios.edit', ['usuario' => $usuario]);
+        $roles = Role::all(); // Obtiene todos los roles disponibles
+        $usuarioRole = $usuario->roles->first(); // Obtiene el primer rol del usuario, ya que solo tiene un rol asignado
+        return view('admin.usuarios.edit', [
+            'usuario' => $usuario,
+            'roles' => $roles,
+            'usuarioRole' => $usuarioRole
+        ]);
     }
 
     /**

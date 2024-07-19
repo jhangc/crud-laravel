@@ -100,9 +100,9 @@ Route::get('/admin/cobranza/carta', [App\Http\Controllers\creditoController::cla
 Route::get('/admin/cobranza/generarcompromiso', [App\Http\Controllers\creditoController::class, 'viewgenerarcompromiso'])->name('cobranza.generarcompromiso')->middleware('auth');
 Route::get('/admin/cobranza/generarnotificacion', [App\Http\Controllers\creditoController::class, 'viewgenerarnotificacion'])->name('cobranza.generarnotificacion')->middleware('auth');
 
-Route::get('/admin/reportes/clientes', [App\Http\Controllers\clienteController::class, 'viewreportecliente'])->name('reporte.cliente')->middleware('auth');
-Route::get('/admin/reportes/prestamosactivos', [App\Http\Controllers\creditoController::class, 'viewprestamosactivos'])->name('reporte.prestamosactivos')->middleware('auth');
-Route::get('/admin/reportes/prestamosvencidos', [App\Http\Controllers\creditoController::class, 'viewprestamosvencidos'])->name('reporte.prestamosvencidos')->middleware('auth');
+Route::get('/admin/reportes/clientes', [App\Http\Controllers\ReporteController::class, 'viewreportecliente'])->name('reporte.cliente')->middleware('auth');
+Route::get('/admin/reportes/prestamosactivos', [App\Http\Controllers\ReporteController::class, 'viewprestamosactivos'])->name('reporte.prestamosactivos')->middleware('auth');
+Route::get('/admin/reportes/prestamosvencidos', [App\Http\Controllers\ReporteController::class, 'viewprestamosvencidos'])->name('reporte.prestamosvencidos')->middleware('auth');
 
 Route::get('/admin/transacciones/egresos', [App\Http\Controllers\creditoController::class, 'viewegresos'])->name('transacciones.egresos')->middleware('auth');
 Route::get('/admin/transacciones/ingresos', [App\Http\Controllers\creditoController::class, 'viewingresos'])->name('transacciones.ingresos')->middleware('auth');
@@ -136,4 +136,5 @@ Route::post('/inicio-operaciones/close', [IniciarOpeController::class, 'close'])
 Route::get('/getProvincias/{dep_id}', [App\Http\Controllers\clienteController::class, 'getProvincias'])->name('clientes.getProvincias')->middleware('auth');
 Route::get('/getDistritos/{prov_id}', [App\Http\Controllers\clienteController::class, 'getDistritos'])->name('clientes.getDistritos')->middleware('auth');
 
-
+//para exportar excel
+Route::get('/admin/reportes/clientes/export', [App\Http\Controllers\ExcelController::class, 'export'])->name('reporte.clientes.export')->middleware('auth');
