@@ -435,29 +435,58 @@ class UpdateController extends Controller
         $tasaPeriodo = pow(1 + ($tea / 100), 1 / $n) - 1;
         $cuota = ($monto * $tasaPeriodo * pow(1 + $tasaPeriodo, $periodos)) / (pow(1 + $tasaPeriodo, $periodos) - 1);
 
-        if($tipo_producto == 'grupal'){
-            $cuota_real= $cuota + $interesesMensualesPorGracia + 0.021*$cuota;
-        }else{
-            $cuota_real= $cuota + $interesesMensualesPorGracia;
+        if ($tipo_producto == 'grupal') {
+            $cuota_real = $cuota + $interesesMensualesPorGracia + 0.021 * $cuota;
+        } else if ($interesesMensualesPorGracia > 0) {
+            $cuota_real = $cuota + $interesesMensualesPorGracia + 0.011 * $cuota;
+        } else {
+            $cuota_real = $cuota;
         }
 
         $saldo = $monto;
         $cuotas = [];
+        $totalAmortizacion = 0;
+        $totalSoles = 0;
 
         for ($i = 0; $i < $periodos; $i++) {
-            $interesPeriodo = $saldo * $tasaPeriodo+$interesesMensualesPorGracia;
-            $amortizacion = $cuota - $interesPeriodo;
+
+            if ($tipo_producto == 'grupal') {
+                $interesPeriodo = $saldo * $tasaPeriodo + $interesesMensualesPorGracia + 0.021 * $cuota;
+            } else if ($interesesMensualesPorGracia > 0) {
+                $interesPeriodo = $saldo * $tasaPeriodo + $interesesMensualesPorGracia + 0.011 * $cuota;
+            } else {
+                $interesPeriodo = $saldo * $tasaPeriodo;
+            }
+
+            $amortizacion = $cuota_real - $interesPeriodo;
             $saldo -= $amortizacion;
 
             $cuotas[] = [
                 'numero_cuota' => $i + 1,
-                'capital' => round($monto - $saldo, 2), // Capital amortizado
+                'capital' => round($saldo, 2),
                 'interes' => round($interesPeriodo, 2),
                 'amortizacion' => round($amortizacion, 2),
                 'cuota' => round($cuota_real, 2),
                 'saldo_deuda' => round($saldo, 2)
             ];
+
+            $totalAmortizacion += round($amortizacion, 2);
+            $totalSoles += round($cuota_real, 2);
         }
+
+
+        $diferenciaAmortizacion = $monto - $totalAmortizacion;
+        $diferenciaTotalSoles = ($cuota_real * $periodos) - $totalSoles;
+
+        if ($diferenciaAmortizacion !== 0 || $diferenciaTotalSoles !== 0) {
+            $ultimaCuota = &$cuotas[count($cuotas) - 1];
+            $ultimaCuota['amortizacion'] += round($diferenciaAmortizacion, 2);
+            $ultimaCuota['cuota'] += round($diferenciaTotalSoles, 2);
+            $ultimaCuota['capital'] = 0; // El saldo al final debe ser 0
+            $totalAmortizacion += round($diferenciaAmortizacion, 2);
+            $totalSoles += round($diferenciaTotalSoles, 2);
+        }
+
 
         return $cuotas;
     }

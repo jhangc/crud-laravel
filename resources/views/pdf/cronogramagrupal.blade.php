@@ -48,10 +48,10 @@
 <body>
 
     <h2>CRONOGRAMA DE CRÉDITOS</h2>
-    <table style="border: none !important; width: 100%; margin-bottom:30px">
+    <table style="border: none !important; width: 100%; margin-bottom:0px">
         <tr>
             <td><b>Agencia:</b></td>
-            <td>Tarapoto</td>
+            <td>{{ $sucursal->nombre }}</td>
             <td><b>Tipo de Crédito:</b></td>
             <td>{{ $prestamo->tipo }}</td>
             <td><b>Producto:</b></td>
@@ -80,8 +80,6 @@
             <td>{{ $responsable->name }}</td>
         </tr>
     </table>
-
-    <br><br>
 
     <!-- Cronograma Grupal -->
     <h4 class="card-title" style="text-align: center; margin: 0;">Cronograma Grupal</h4>
@@ -128,22 +126,22 @@
     <p><strong>Asesor de crédito:</strong> {{ $responsable->name }}</p><br> --}}
 
     <!-- Sección de firma del asesor de crédito -->
-    <div style="width: 100%; margin-top: 50px; text-align: center;">
-        <div style="display: inline-block; text-align: center;">
+    <div style="width: 100%; margin-top: 40px; text-align: center;">
+        <div style="display: inline-block; text-align: center; line-height:0.5">
+            <p>________________________</p>
             <p>Auxiliar de Operaciones </p>
             <p>{{ Auth::user()->name }}</p>
-            <p>{{ $responsable->name }}</p>
         </div>
     </div>
 
     <!-- Cronograma Individual -->
     @foreach ($prestamo->clientes as $cliente)
-        <h4 class="card-title individual" style="text-align: center; margin: 20px 20px 40px 20px;">Cronograma individual
+        <h4 class="card-title individual" style="text-align: center; margin-bottom: 20px;">Cronograma individual
             de: {{ $cliente->nombre }}</h4>
-        <table style="border: none !important; width: 100%; margin-bottom:30px">
+        <table style="border: none !important; width: 100%; margin-bottom:0px">
             <tr>
                 <td><b>Agencia:</b></td>
-                <td>Tarapoto</td>
+                <td>{{ $sucursal->nombre }}</td>
                 <td><b>Tipo de Crédito:</b></td>
                 <td>{{ $prestamo->tipo }}</td>
                 <td><b>Producto:</b></td>
@@ -224,12 +222,12 @@
 
         <!-- Sección de firmas -->
         <div style="width: 100%; margin-top: 50px; text-align: center;">
-            <div style="width: 45%; float: left; text-align: center;">
+            <div style="width: 45%; float: left; text-align: center;line-height:0.5 ">
                 <p>__________________________</p>
                 <p>Auxiliar de Operaciones </p>
                 <p>{{ Auth::user()->name }}</p>
             </div>
-            <div style="width: 45%; float: right; text-align: center;">
+            <div style="width: 45%; float: right; text-align: center;line-height:0.5">
                 <p>__________________________</p>
                 <p>Cliente</p>
                 <p>{{ $cliente->nombre }}</p>

@@ -78,6 +78,8 @@ class PdfController extends Controller
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
         $responsable = \App\Models\User::find($prestamo->user_id);
 
+        $sucursal = \App\Models\Sucursal::first();
+
         // Formatear los datos adicionales necesarios
         foreach ($cuotas as $cuota) {
             $cuota->dias = (new \DateTime($cuota->fecha))->diff(new \DateTime($prestamo->fecha_desembolso))->days;
@@ -110,7 +112,8 @@ class PdfController extends Controller
             'totalMontoIndividuales',
             'totalAmortizacionGrupal',
             'totalMontoGrupal',
-            
+            'sucursal'
+
         );
 
         $pdf = Pdf::loadView('pdf.cronogramagrupal', $data)->setPaper('a4', 'landscape');
@@ -123,6 +126,32 @@ class PdfController extends Controller
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
         $responsable = \App\Models\User::find($prestamo->user_id);
+        $sucursal = \App\Models\Sucursal::first();
+
+        // Calcular la tasa de interés por período
+        $frecuencia = $prestamo->recurrencia; // Asegúrate de que la frecuencia esté definida en el modelo crédito
+        $tasa_interes_anual = $prestamo->tasa; // La TEA está en el modelo crédito
+
+        switch ($frecuencia) {
+            case 'catorcenal':
+                $n = 24;
+                break;
+            case 'veinteochenal':
+                $n = 12;
+                break;
+            case 'quincenal':
+                $n = 24;
+                break;
+            case 'semestral':
+                $n = 2;
+                break;
+            case 'mensual':
+            default:
+                $n = 12;
+                break;
+        }
+
+        $tasa_interes_periodo = round((pow(1 + ($tasa_interes_anual / 100), 1 / $n) - 1) * 100, 2);
 
         // Formatear los datos adicionales necesarios
         foreach ($cuotas as $cuota) {
@@ -132,11 +161,10 @@ class PdfController extends Controller
             $cuota->total = $cuota->monto; // Incluyendo cualquier otro componente necesario
         }
 
-        // // Calcular la suma de los intereses del cronograma grupal
-        // $totalInteresGrupal = $cuotas->whereNull('cliente_id')->sum('interes');
-
         // Calcular las sumas de los intereses para cada cliente
         $totalInteresesIndividuales = [];
+        $totalAmortizacionIndividuales = [];
+        $totalMontoIndividuales = [];
         foreach ($prestamo->clientes as $cliente) {
             $totalInteresesIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('interes');
             $totalAmortizacionIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('amortizacion');
@@ -148,15 +176,17 @@ class PdfController extends Controller
             'responsable',
             'cuotas',
             'credito_cliente',
-            //'totalInteresGrupal',
             'totalInteresesIndividuales',
             'totalAmortizacionIndividuales',
-            'totalMontoIndividuales'
+            'totalMontoIndividuales',
+            'tasa_interes_periodo', // Pasar la tasa de interés por período a la vista
+            'sucursal'
         );
 
         $pdf = Pdf::loadView('pdf.cronogramaindividual', $data)->setPaper('a4', 'landscape');
         return $pdf->stream('cronogramaindividual.pdf');
     }
+
 
 
     public function generatecrontratogrupalPDF(Request $request, $id)
@@ -237,51 +267,48 @@ class PdfController extends Controller
     }
 
     public function generatepagarePDF(Request $request, $id)
-{
-    $prestamo = \App\Models\credito::find($id);
-    if (!$prestamo) {
-        return response()->json(['error' => 'Crédito no encontrado'], 404);
+    {
+        $prestamo = \App\Models\credito::find($id);
+        if (!$prestamo) {
+            return response()->json(['error' => 'Crédito no encontrado'], 404);
+        }
+
+        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
+        $responsable = auth()->user();
+
+        // Usa Carbon para obtener la fecha actual
+        $date = Carbon::now();
+
+        // Formatea la fecha con la configuración regional establecida
+        $formattedDate = $date->translatedFormat('d \d\e F \d\e\l Y');
+
+        $tasaInteres = $prestamo->tasa;
+
+        $tasadiaria = number_format((pow(1 + ($tasaInteres / 100), 1 / 360) - 1) * 100, 2);
+
+        // Convertir monto a letras
+        $formatter = new NumeroALetras();
+        $montoEnLetras = $formatter->toMoney($prestamo->monto, 2, 'soles', 'centimos');
+
+        // Generar o obtener el correlativo
+        $correlativo = CorrelativoPagare::generateCorrelativo($id);
+
+        $data = compact(
+            'prestamo',
+            'responsable',
+            'cuotas',
+            'credito_cliente',
+            'formattedDate',
+            'montoEnLetras',
+            'tasadiaria',
+            'correlativo'
+        );
+
+        // Generar y retornar el PDF
+        $pdf = Pdf::loadView('pdf.pagare', $data)->setPaper('a4');
+        return $pdf->stream('pagare.pdf');
     }
-
-    $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
-    $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
-    $responsable = auth()->user();
-
-    // Usa Carbon para obtener la fecha actual
-    $date = Carbon::now();
-
-    // Formatea la fecha con la configuración regional establecida
-    $formattedDate = $date->translatedFormat('d \d\e F \d\e\l Y');
-
-    $tasaInteres = $prestamo->tasa;
-
-    $tasadiaria = number_format((pow(1 + ($tasaInteres / 100), 1 / 360) - 1) * 100, 2);
-
-    // Convertir monto a letras
-    $formatter = new NumeroALetras();
-    $montoEnLetras = $formatter->toMoney($prestamo->monto, 2, 'soles', 'centimos');
-
-    // Generar o obtener el correlativo
-    $correlativo = CorrelativoPagare::generateCorrelativo($id);
-
-    $data = compact(
-        'prestamo',
-        'responsable',
-        'cuotas',
-        'credito_cliente',
-        'formattedDate',
-        'montoEnLetras',
-        'tasadiaria',
-        'correlativo'
-    );
-
-    // Generar y retornar el PDF
-    $pdf = Pdf::loadView('pdf.pagare', $data)->setPaper('a4');
-    return $pdf->stream('pagare.pdf');
-}
-
-    
-
 
     public function generatePDF(Request $request, $id)
     {
@@ -583,7 +610,7 @@ class PdfController extends Controller
                     if ($margenmanual !== null) {
                         $margenventas = $margenmanual->margen_utilidad;
                     } else {
-                        $margenventas = 0; 
+                        $margenventas = 0;
                     }
 
                     $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;

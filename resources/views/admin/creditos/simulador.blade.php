@@ -51,7 +51,7 @@
                                     <div class="form-group">
                                         <label for="periodo_gracia_dias">Periodo de Gracia (días)</label>
                                         <input type="number" name="periodo_gracia_dias" id="periodo_gracia_dias"
-                                            class="form-control" required>
+                                            class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -112,16 +112,15 @@
             const periodos = parseInt(document.getElementById('tiempo_credito').value);
             const frecuencia = document.getElementById('recurrencia').value;
             const fechaDesembolso = document.getElementById('fecha_desembolso').value;
-
-            const periodoGraciaDias = parseInt(document.getElementById('periodo_gracia_dias').value);
-            let fechaInicio = new Date(new Date(fechaDesembolso).setDate(new Date(fechaDesembolso).getDate() +
-                periodoGraciaDias));
-
-            // Calcular los intereses del período de gracia
+    
+            const periodoGraciaDias = parseInt(document.getElementById('periodo_gracia_dias').value) || 0;
+    
+            let fechaInicio = new Date(new Date(fechaDesembolso).setDate(new Date(fechaDesembolso).getDate() + periodoGraciaDias));
+    
             const tasaDiaria = Math.pow(1 + (tea / 100), 1 / 360) - 1;
             const interesesPeriodoGracia = monto * tasaDiaria * periodoGraciaDias;
             const interesesMensualesPorGracia = interesesPeriodoGracia / periodos;
-
+    
             let n;
             switch (frecuencia) {
                 case 'catorcenal':
@@ -144,24 +143,36 @@
                     n = 12;
                     break;
             }
-
+    
             const tasaPeriodo = Math.pow(1 + (tea / 100), 1 / n) - 1;
-            const cuota = (monto * tasaPeriodo * Math.pow(1 + tasaPeriodo, periodos)) / (Math.pow(1 + tasaPeriodo,
-                periodos) - 1);
-            const cuota_real = cuota + interesesMensualesPorGracia;
-
+            const cuota = (monto * tasaPeriodo * Math.pow(1 + tasaPeriodo, periodos)) / (Math.pow(1 + tasaPeriodo, periodos) - 1);
+    
+            let cuota_real;
+    
+            if (periodoGraciaDias > 0) {
+                cuota_real = cuota + interesesMensualesPorGracia + 0.011 * cuota;
+            } else {
+                cuota_real = cuota;
+            }
+    
             let saldo = monto;
             let cuotas = [];
             let totalCapital = 0;
             let totalInteres = 0;
             let totalAmortizacion = 0;
             let totalSoles = 0;
-
+    
             for (let i = 0; i < periodos; i++) {
-                const interesPeriodo = saldo * tasaPeriodo + interesesMensualesPorGracia;
+                let interesPeriodo;
+                if (periodoGraciaDias > 0) {
+                    interesPeriodo = saldo * tasaPeriodo + interesesMensualesPorGracia + 0.011 * cuota;
+                } else {
+                    interesPeriodo = saldo * tasaPeriodo;
+                }
+    
                 const amortizacion = cuota_real - interesPeriodo;
                 saldo -= amortizacion;
-
+    
                 let fechaVencimiento;
                 switch (frecuencia) {
                     case 'quincenal':
@@ -180,7 +191,7 @@
                         fechaVencimiento = new Date(new Date(fechaInicio).setMonth(fechaInicio.getMonth() + (i + 1)));
                         break;
                 }
-
+    
                 cuotas.push({
                     numero_cuota: i + 1,
                     fecha_vencimiento: fechaVencimiento,
@@ -189,31 +200,46 @@
                     amortizacion: amortizacion.toFixed(2),
                     cuota: cuota_real.toFixed(2)
                 });
-
+    
                 totalInteres += parseFloat(interesPeriodo.toFixed(2));
                 totalAmortizacion += parseFloat(amortizacion.toFixed(2));
                 totalSoles += parseFloat(cuota_real.toFixed(2));
             }
-
+    
+            // Ajustar la última cuota de amortización y total de cuotas
+            const diferenciaAmortizacion = monto - totalAmortizacion;
+            const diferenciaTotalSoles = (cuota_real * periodos) - totalSoles;
+            
+            if (diferenciaAmortizacion !== 0 || diferenciaTotalSoles !== 0) {
+                const ultimaCuota = cuotas[cuotas.length - 1];
+                ultimaCuota.amortizacion = (parseFloat(ultimaCuota.amortizacion) + diferenciaAmortizacion).toFixed(2);
+                ultimaCuota.cuota = (parseFloat(ultimaCuota.cuota) + diferenciaTotalSoles).toFixed(2);
+                ultimaCuota.capital = 0; // El saldo al final debe ser 0
+                totalAmortizacion += diferenciaAmortizacion;
+                totalSoles += diferenciaTotalSoles;
+            }
+    
             let tablaProyecciones = document.getElementById('tablaProyecciones');
             tablaProyecciones.innerHTML = '';
             cuotas.forEach(cuota => {
                 let row = `
-            <tr>
-                <td>${cuota.numero_cuota}</td>
-                <td>${cuota.fecha_vencimiento.toISOString().split('T')[0]}</td>
-                <td>${cuota.capital}</td>
-                <td>${cuota.interes}</td>
-                <td>${cuota.amortizacion}</td>
-                <td>${cuota.cuota}</td>
-            </tr>
-        `;
+                    <tr>
+                        <td>${cuota.numero_cuota}</td>
+                        <td>${cuota.fecha_vencimiento.toISOString().split('T')[0]}</td>
+                        <td>${cuota.capital}</td>
+                        <td>${cuota.interes}</td>
+                        <td>${cuota.amortizacion}</td>
+                        <td>${cuota.cuota}</td>
+                    </tr>
+                `;
                 tablaProyecciones.innerHTML += row;
             });
-
+    
             document.getElementById('totalInteres').textContent = totalInteres.toFixed(2);
             document.getElementById('totalAmortizacion').textContent = totalAmortizacion.toFixed(2);
             document.getElementById('totalSoles').textContent = totalSoles.toFixed(2);
         }
     </script>
+    
+    
 @endsection

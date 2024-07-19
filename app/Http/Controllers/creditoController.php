@@ -47,7 +47,7 @@ class creditoController extends Controller
 
     public function viewSimulador()
     {
-        
+
         return view('admin.creditos.simulador');
     }
 
@@ -396,7 +396,7 @@ class creditoController extends Controller
                         if ($margenmanual !== null) {
                             $margenventas = $margenmanual->margen_utilidad;
                         } else {
-                            $margenventas = 0; 
+                            $margenventas = 0;
                         }
 
                         $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
@@ -736,32 +736,32 @@ class creditoController extends Controller
         $usuarioId = Auth::user()->id;
         $sucursalId = Auth::user()->sucursal_id;
         $cajaAbierta = CajaTransaccion::where('sucursal_id', $sucursalId)
-                                    ->where('user_id', $usuarioId)
-                                    ->whereNull('hora_cierre')
-                                    ->first();
-    
+            ->where('user_id', $usuarioId)
+            ->whereNull('hora_cierre')
+            ->first();
+
         if (!$cajaAbierta) {
             return redirect('/admin/caja')->with('error', 'No hay una caja abierta.');
         }
-    
+
         // Obtener ingresos y egresos de la caja abierta
         $ingresos = $cajaAbierta->cantidad_ingresos;
         $egresos = $cajaAbierta->cantidad_egresos;
         $montoApertura = $cajaAbierta->monto_apertura;
-    
+
         return view('admin.caja.arqueo', compact('cajaAbierta', 'ingresos', 'egresos', 'montoApertura'));
     }
-    
+
 
     public function viewHabilitarCaja()
     {
         $user = Auth::user();
         $sucursal_id = $user->sucursal_id;
         $cajas = Caja::where('sucursal_id', $sucursal_id)
-                     ->whereDoesntHave('transacciones', function($query) {
-                         $query->whereNull('fecha_cierre');
-                     })
-                     ->get();
+            ->whereDoesntHave('transacciones', function ($query) {
+                $query->whereNull('fecha_cierre');
+            })
+            ->get();
 
         return view('admin.caja.habilitar', compact('cajas'));
     }
@@ -769,9 +769,9 @@ class creditoController extends Controller
     public function ultimaTransaccion($caja_id)
     {
         $transaccion = CajaTransaccion::with('user')
-                                      ->where('caja_id', $caja_id)
-                                      ->orderBy('created_at', 'desc')
-                                      ->first();
+            ->where('caja_id', $caja_id)
+            ->orderBy('created_at', 'desc')
+            ->first();
 
         if ($transaccion) {
             return response()->json(['success' => true, 'transaccion' => $transaccion]);
@@ -822,7 +822,7 @@ class creditoController extends Controller
             'depositos' => 'required|numeric|min:0',
             'saldo_final' => 'required|regex:/^S\/\. \d+(\.\d{1,2})?$/',
         ]);
-    
+
         $billetes = [
             200 => $request->input('billete_200'),
             100 => $request->input('billete_100'),
@@ -830,7 +830,7 @@ class creditoController extends Controller
             20 => $request->input('billete_20'),
             10 => $request->input('billete_10')
         ];
-    
+
         $monedas = [
             5 => $request->input('moneda_5'),
             2 => $request->input('moneda_2'),
@@ -839,16 +839,16 @@ class creditoController extends Controller
             0.2 => $request->input('moneda_0_2'),
             0.1 => $request->input('moneda_0_1')
         ];
-    
-        $totalEfectivo = array_sum(array_map(function($billete, $cantidad) {
+
+        $totalEfectivo = array_sum(array_map(function ($billete, $cantidad) {
             return $billete * $cantidad;
-        }, array_keys($billetes), $billetes)) + array_sum(array_map(function($moneda, $cantidad) {
+        }, array_keys($billetes), $billetes)) + array_sum(array_map(function ($moneda, $cantidad) {
             return $moneda * $cantidad;
         }, array_keys($monedas), $monedas));
-    
+
         $depositos = $request->input('depositos');
         $saldoFinal = floatval(str_replace('S/. ', '', $request->input('saldo_final')));
-    
+
         $transaccion = CajaTransaccion::find($request->input('caja_id'));
         $transaccion->json_cierre = json_encode([
             'billetes' => $billetes,
@@ -859,10 +859,10 @@ class creditoController extends Controller
         $transaccion->hora_cierre = now();
         $transaccion->fecha_cierre = now();
         $transaccion->save();
-    
+
         return response()->json(['success' => true]);
     }
-    
+
     public function viewpagarcredito()
     {
         // Obtener solo los clientes activos (activo = 1)
@@ -1127,7 +1127,7 @@ class creditoController extends Controller
         $interesesPeriodoGracia = $monto * $tasaDiaria * $request->periodo_gracia_dias;
         $interesesMensualesPorGracia = $interesesPeriodoGracia / $tiempo;
 
-        $cuotas = $this->calcularCuota($monto, $tasaInteres, $tiempo, $frecuencia,$interesesMensualesPorGracia,$tipo_producto);
+        $cuotas = $this->calcularCuota($monto, $tasaInteres, $tiempo, $frecuencia, $interesesMensualesPorGracia, $tipo_producto);
 
         $fechaCuota = $fechaconperiodogracia->copy();
 
@@ -1154,9 +1154,7 @@ class creditoController extends Controller
             $cronograma = new Cronograma();
             $cronograma->fecha = clone $fechaCuota;
 
-
-            $cronograma->monto = $cuota['cuota'];
-             // Cuota fija más intereses distribuidos y otros componentes
+            $cronograma->monto = $cuota['cuota']; // Cuota fija más intereses distribuidos y otros componentes
             $cronograma->numero = $cuota['numero_cuota'];
             $cronograma->capital = $cuota['capital'];
             $cronograma->interes = $cuota['interes'];
@@ -1167,8 +1165,8 @@ class creditoController extends Controller
             $cronograma->save();
         }
     }
-    
-    public function calcularCuota($monto, $tea, $periodos, $frecuencia,$interesesMensualesPorGracia,$tipo_producto)
+
+    public function calcularCuota($monto, $tea, $periodos, $frecuencia, $interesesMensualesPorGracia, $tipo_producto)
     {
         switch ($frecuencia) {
             case 'catorcenal':
@@ -1192,19 +1190,29 @@ class creditoController extends Controller
         $tasaPeriodo = pow(1 + ($tea / 100), 1 / $n) - 1;
         $cuota = ($monto * $tasaPeriodo * pow(1 + $tasaPeriodo, $periodos)) / (pow(1 + $tasaPeriodo, $periodos) - 1);
 
-        
-
-        if($tipo_producto == 'grupal'){
-            $cuota_real= $cuota + $interesesMensualesPorGracia + 0.021*$cuota;
-        }else{
-            $cuota_real= $cuota + $interesesMensualesPorGracia;
+        if ($tipo_producto == 'grupal') {
+            $cuota_real = $cuota + $interesesMensualesPorGracia + 0.021 * $cuota;
+        } else if ($interesesMensualesPorGracia > 0) {
+            $cuota_real = $cuota + $interesesMensualesPorGracia + 0.011 * $cuota;
+        } else {
+            $cuota_real = $cuota;
         }
 
         $saldo = $monto;
         $cuotas = [];
+        $totalAmortizacion = 0;
+        $totalSoles = 0;
 
         for ($i = 0; $i < $periodos; $i++) {
-            $interesPeriodo = $saldo * $tasaPeriodo + $interesesMensualesPorGracia;
+
+            if ($tipo_producto == 'grupal') {
+                $interesPeriodo = $saldo * $tasaPeriodo + $interesesMensualesPorGracia + 0.021 * $cuota;
+            } else if ($interesesMensualesPorGracia > 0) {
+                $interesPeriodo = $saldo * $tasaPeriodo + $interesesMensualesPorGracia + 0.011 * $cuota;
+            } else {
+                $interesPeriodo = $saldo * $tasaPeriodo;
+            }
+
             $amortizacion = $cuota_real - $interesPeriodo;
             $saldo -= $amortizacion;
 
@@ -1216,10 +1224,28 @@ class creditoController extends Controller
                 'cuota' => round($cuota_real, 2),
                 'saldo_deuda' => round($saldo, 2)
             ];
+
+            $totalAmortizacion += round($amortizacion, 2);
+            $totalSoles += round($cuota_real, 2);
         }
+
+
+        $diferenciaAmortizacion = $monto - $totalAmortizacion;
+        $diferenciaTotalSoles = ($cuota_real * $periodos) - $totalSoles;
+
+        if ($diferenciaAmortizacion !== 0 || $diferenciaTotalSoles !== 0) {
+            $ultimaCuota = $cuotas[count($cuotas) - 1];
+            $ultimaCuota['amortizacion'] += round($diferenciaAmortizacion, 2);
+            $ultimaCuota['cuota'] += round($diferenciaTotalSoles, 2);
+            $ultimaCuota['capital'] = 0; // El saldo al final debe ser 0
+            $totalAmortizacion += round($diferenciaAmortizacion, 2);
+            $totalSoles += round($diferenciaTotalSoles, 2);
+        }
+
 
         return $cuotas;
     }
+
 
 
     protected function saveArrayData(array $data, $prestamoId, $request)
@@ -1443,7 +1469,7 @@ class creditoController extends Controller
     // }
 
 
-    
+
     /**
      * Display the specified resource.
      */

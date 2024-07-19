@@ -49,14 +49,13 @@
 
     <h2>CRONOGRAMA DE CRÉDITOS</h2>
    
-
     <!-- Cronograma Individual -->
     @foreach ($prestamo->clientes as $cliente)
        
-        <table style="border: none !important; width: 100%; margin-bottom:30px">
+        <table style="border: none !important; width: 100%; margin-bottom:0px">
             <tr>
                 <td><b>Agencia:</b></td>
-                <td>Tarapoto</td>
+                <td>{{ $sucursal->nombre }}</td>
                 <td><b>Tipo de Crédito:</b></td>
                 <td>{{ $prestamo->tipo }}</td>
                 <td><b>Producto:</b></td>
@@ -80,8 +79,8 @@
             <tr>
                 <td><b>Fecha de Desembolso:</b></td>
                 <td>{{ $prestamo->fecha_desembolso }}</td>
-                <td><b>Tasa (%):</b></td>
-                <td>{{ $prestamo->tasa }}</td>
+                <td><b>Tasa de interes:</b></td>
+                <td>{{ $tasa_interes_periodo }}%</td>
                 <td><b>Periodo:</b></td>
                 <td>{{ $prestamo->recurrencia }}</td>
             </tr>
@@ -137,12 +136,12 @@
 
         <!-- Sección de firmas -->
         <div style="width: 100%; margin-top: 50px; text-align: center;">
-            <div style="width: 45%; float: left; text-align: center;">
+            <div style="width: 45%; float: left; text-align: center; line-height:0.5">
                 <p>__________________________</p>
                 <p>Auxiliar de Operaciones </p>
                 <p>{{ Auth::user()->name }}</p>
             </div>
-            <div style="width: 45%; float: right; text-align: center;">
+            <div style="width: 45%; float: right; text-align: center; line-height:0.5">
                 <p>__________________________</p>
                 <p>Cliente</p>
                 <p>{{ $cliente->nombre }}</p>
