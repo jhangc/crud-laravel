@@ -205,13 +205,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         @php
                             $sucursalId = Auth::user()->sucursal_id;
                             $usuarioId = Auth::user()->id;
-                            // $operacionesAbiertas = App\Models\InicioOperaciones::where('sucursal_id', $sucursalId)
-                            //                                                     ->where('permiso_abierto', true)
-                            //                                                     ->exists();
-                            // $cajaAbierta = App\Models\CajaTransaccion::where('sucursal_id', $sucursalId)
-                            //                                     ->where('user_id', $usuarioId)
-                            //                                     ->whereNull('hora_cierre')
-                            //                                     ->exists();
+                            $operacionesAbiertas = App\Models\InicioOperaciones::where('sucursal_id', $sucursalId)
+                                                                                ->where('permiso_abierto', true)
+                                                                                ->exists();
+                            $cajaAbierta = App\Models\CajaTransaccion::where('sucursal_id', $sucursalId)
+                                                                ->where('user_id', $usuarioId)
+                                                                ->whereNull('hora_cierre')
+                                                                ->exists();
                         @endphp
 
                         @role('Administrador|Cajera')
@@ -225,8 +225,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
-                                        {{-- @if ($operacionesAbiertas)
-                                        @if ($cajaAbierta) --}}
+                                         @if ($operacionesAbiertas)
+                                        @if ($cajaAbierta) 
                                         <a href="{{ url('/admin/caja/pagarcredito') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Desembolsar Crédito</p>
@@ -235,28 +235,28 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Cobrar Crédito</p>
                                         </a>
-                                        {{-- @endif
-                                            @if (!$cajaAbierta) --}}
+                                         @endif
+                                            @if (!$cajaAbierta) 
                                         <a href="{{ url('/admin/caja/habilitar') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Habilitar caja</p>
                                         </a>
-                                        {{-- @endif
-                                            @if ($cajaAbierta) --}}
+                                         @endif
+                                            @if ($cajaAbierta) 
                                         <a href="{{ url('/admin/caja/arqueo') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Arqueo de Caja</p>
                                         </a>
-                                        {{-- @endif
-                                            @if ($cajaAbierta) --}}
+                                         @endif
+                                            @if ($cajaAbierta) 
                                         <a href="{{ url('/admin/caja/pagares') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Pagares</p>
                                         </a>
-                                        {{-- @endif
+                                        @endif
                                         @else 
                                             <span class="nav-link text-warning">Operaciones no iniciadas</span>
-                                        @endif --}}
+                                        @endif 
                                     </li>
                                 </ul>
                             </li>
