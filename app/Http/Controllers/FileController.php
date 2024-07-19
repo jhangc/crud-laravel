@@ -3,12 +3,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-
+use App\Models\cliente;
 class FileController extends Controller
 {
     public function getFoto($filename)
     {
-        $path =  $filename;
+        $cliente = cliente::findOrFail($filename);
+
+        $path =$cliente->foto;
 
         if (!Storage::exists($path)) {
             abort(404);
@@ -22,7 +24,10 @@ class FileController extends Controller
 
     public function getPdf($filename)
     {
-        $path =$filename;
+        $cliente = cliente::findOrFail($filename);
+
+        $path =$cliente->dni_pdf;
+
 
         if (!Storage::exists($path)) {
             abort(404);

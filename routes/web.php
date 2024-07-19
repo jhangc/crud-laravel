@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\IniciarOpeController;
-
+use App\Http\Controllers\FileController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -141,4 +141,8 @@ Route::get('/admin/reportes/clientes/export', [App\Http\Controllers\ExcelControl
 Route::get('/admin/creditos/vercuotaspago/{id}', [App\Http\Controllers\creditoController::class, 'verpagocuota'])->name('creditos.verpagocuota')->middleware('auth');
 Route::post('/admin/creditos/pagocuota', [App\Http\Controllers\creditoController::class, 'pagocuota'])->name('creditos.pagocuota')->middleware('auth');
 Route::get('/admin/generar-ticket-pago/{id}', [PDFController::class, 'generarTicketDePago'])->name('generar.ticket.pago');
+
+Route::get('/storage/foto/{filename}', [FileController::class, 'getFoto'])->name('getFoto');
+Route::get('/storage/pdf/{filename}', [FileController::class, 'getPdf'])->name('getPdf');
+
 
