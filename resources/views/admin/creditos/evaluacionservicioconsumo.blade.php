@@ -192,7 +192,7 @@
     var saldoFinal = parseFloat('{{ $saldo_final }}');
     var cuotaprestamo = parseFloat('{{ $cuotaprestamo }}');
 
-    if (solvencia > 1 ||
+    if (solvencia <= 1 ||
         indiceEndeudamiento <= cuotaprestamo ||
         totalgarantia <= saldoFinal ||
         cuotaExcedente >= 1) {
