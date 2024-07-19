@@ -106,20 +106,20 @@
                             <td>{{ $cliente->dni_conyugue }} {{$cliente->foto}}</td>
                             <td>
                                 @if ($cliente->foto)
-                                <!-- <a href="{{url('storage/foto/'.$cliente->id) }}" target="_blank">
+                                <a href="{{url('storage/foto/'.$cliente->id) }}" target="_blank">
                                     <img src="{{url('storage/foto/'.$cliente->id) }}" alt="Foto del Cliente" style="width: 50px; height: 50px;">
-                                </a> -->
-                                <a href="{{ Storage::url($cliente->foto) }}" target="_blank">
-                                    <img src="{{ Storage::url($cliente->foto) }}" alt="Foto del Cliente" style="width: 50px; height: 50px;">
                                 </a>
+                                <!-- <a href="{{ Storage::url($cliente->foto) }}" target="_blank">
+                                    <img src="{{ Storage::url($cliente->foto) }}" alt="Foto del Cliente" style="width: 50px; height: 50px;">
+                                </a> -->
                                 @else
                                 Sin Foto
                                 @endif
                             </td>
                             <td>
                                 @if ($cliente->dni_pdf)
-                                <!-- <a href="{{url('storage/pdf/'.$cliente->id) }}" target="_blank">Descargar DNI</a> -->
-                                <a href="{{ Storage::url($cliente->dni_pdf) }}" target="_blank">Descargar DNI</a>
+                                <a href="{{url('storage/pdf/'.$cliente->id) }}" target="_blank">Descargar DNI</a>
+                                <!-- <a href="{{ Storage::url($cliente->dni_pdf) }}" target="_blank">Descargar DNI</a> -->
                                 @else
                                 Sin PDF
                                 @endif
