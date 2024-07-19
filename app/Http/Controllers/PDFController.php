@@ -934,17 +934,63 @@ class PdfController extends Controller
     }
     public function generateticket($id)
     {
-        $prestamo = \App\Models\credito::find($id);
-        $creditos = \App\Models\CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
-        $prestamo->estado = 'pagado';
-        $prestamo->save();
-
+        $prestamo = \App\Models\Credito::find($id);
+        $creditos = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
+    
+        // Obtener el usuario autenticado
+        $user = auth()->user();
+    
+        // Obtener la sucursal del usuario autenticado
+        $sucursal_id = $user->sucursal_id;
+    
+        // Obtener la última transacción de caja abierta por el asesor (usuario actual)
+        $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
+            ->whereNull('hora_cierre')
+            ->orderBy('created_at', 'desc')
+            ->first();
+    
         // Calcular el monto total del grupo
         $montoTotalGrupo = $creditos->sum('monto_indivual');
-
+    
+        // Crear el egreso
+        $egreso = \App\Models\Egreso::create([
+            'transaccion_id' => $ultimaTransaccion->id,
+            'prestamo_id' => $prestamo->id,
+            'fecha_egreso' => now()->toDateString(),
+            'hora_egreso' => now()->toTimeString(),
+            'monto' => $montoTotalGrupo,
+            'sucursal_id' => $sucursal_id,
+        ]);
+    
+        // Actualizar la cantidad de egresos en la transacción de caja
+        $ultimaTransaccion->cantidad_egresos = $ultimaTransaccion->cantidad_egresos + $montoTotalGrupo;
+        $ultimaTransaccion->save();
+    
+        // Actualizar el estado del préstamo a 'pagado'
+        $prestamo->estado = 'pagado';
+        $prestamo->save();
+    
         $pdf = Pdf::loadView('pdf.ticket', compact('prestamo', 'creditos', 'montoTotalGrupo'))
             ->setPaper([0, 0, 205, 800]);
-
+    
         return $pdf->stream('ticket.pdf');
     }
+    public function generarTicketDePago($id)
+    {
+        $ingreso = \App\Models\Ingreso::find($id);
+
+        if (!$ingreso) {
+            return response()->json(['error' => 'Pago no encontrado.'], 404);
+        }
+
+        $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
+        $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
+
+        $user = auth()->user();
+        $montoTotalGrupo = $ingreso->monto_cuota;
+        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'montoTotalGrupo', 'cliente', 'ingreso'))
+            ->setPaper([0, 0, 205, 400]);
+        return $pdf->stream('ticket.pdf');
+    }
+
 }

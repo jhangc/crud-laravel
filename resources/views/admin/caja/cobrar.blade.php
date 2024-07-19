@@ -68,7 +68,7 @@
                                         @endif
                                     </td>
                                     <td style="display: flex; align-items: center; justify-content:center;">
-                                        <a href="{{  route('caja.pagar', ['id' => $credito->id]) }}" class="btn btn-primary" style="margin-left:10px">Cobrar</a>
+                                        <a href="{{  route('creditos.verpagocuota', ['id' => $credito->id]) }}" class="btn btn-primary" style="margin-left:10px">Cobrar</a>
                                         
                                     </td>
                                 </tr>

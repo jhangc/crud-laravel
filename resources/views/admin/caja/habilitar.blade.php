@@ -115,7 +115,6 @@
         </div>
     </div>
 </div>
-
 <script>
     function mostrarArqueo() {
         var cajaId = document.getElementById('caja_id').value;
@@ -128,9 +127,10 @@
                     document.getElementById('caja_id_hidden').value = cajaId;
                     document.getElementById('monto_apertura').value = data.transaccion.monto_apertura;
                     document.getElementById('total_apertura').value = data.transaccion.monto_apertura;
-                    document.getElementById('total_ingresos').value = data.transaccion.cantidad_ingresos;
-                    document.getElementById('total_egresos').value = data.transaccion.cantidad_egresos;
+                    document.getElementById('total_ingresos').value = data.transaccion.cantidad_ingresos || 0;
+                    document.getElementById('total_egresos').value = data.transaccion.cantidad_egresos || 0;
                     document.getElementById('total_efectivo').value = data.transaccion.monto_cierre;
+
                     // Llenar los detalles de la transacción en el div de arqueo
                     document.getElementById('arqueoDetalles').innerHTML = `
                       <div class="row">
@@ -146,8 +146,8 @@
                     `;
 
                     // Llenar los valores de billetes y monedas
-                    var billetes = data.transaccion.json_cierre && data.transaccion.json_cierre.billetes ? data.transaccion.json_cierre.billetes : {200: 0, 100: 0, 50: 0, 20: 0, 10: 0};
-                    var monedas = data.transaccion.json_cierre && data.transaccion.json_cierre.monedas ? data.transaccion.json_cierre.monedas : {5: 0, 2: 0, 1: 0, 0.5: 0, 0.2: 0, 0.1: 0};
+                    var billetes = JSON.parse(data.transaccion.json_cierre).billetes;
+                    var monedas = JSON.parse(data.transaccion.json_cierre).monedas;
 
                     for (var billete in billetes) {
                         document.getElementById('billete_' + billete).value = billetes[billete];
@@ -231,4 +231,5 @@
         window.location.href = '/';
     }
 </script>
+
 @endsection

@@ -15,7 +15,7 @@ use App\Models\Cronograma;
 use App\Models\Caja;
 use App\Models\CajaTransaccion;
 use App\Models\InicioOperaciones;
-
+use App\Models\Ingreso;
 
 
 class creditoController extends Controller
@@ -803,66 +803,7 @@ class creditoController extends Controller
 
         return response()->json(['success' => true, 'transaccion_id' => $transaccion->id]);
     }
-    public function guardarArqueo(Request $request)
-    {
-        $request->validate([
-            'caja_id' => 'required|exists:caja_transacciones,id',
-            'monto_apertura' => 'required|numeric',
-            'billete_200' => 'required|integer|min:0',
-            'billete_100' => 'required|integer|min:0',
-            'billete_50' => 'required|integer|min:0',
-            'billete_20' => 'required|integer|min:0',
-            'billete_10' => 'required|integer|min:0',
-            'moneda_5' => 'required|integer|min:0',
-            'moneda_2' => 'required|integer|min:0',
-            'moneda_1' => 'required|integer|min:0',
-            'moneda_0_5' => 'required|integer|min:0',
-            'moneda_0_2' => 'required|integer|min:0',
-            'moneda_0_1' => 'required|integer|min:0',
-            'depositos' => 'required|numeric|min:0',
-            'saldo_final' => 'required|regex:/^S\/\. \d+(\.\d{1,2})?$/',
-        ]);
-
-        $billetes = [
-            200 => $request->input('billete_200'),
-            100 => $request->input('billete_100'),
-            50 => $request->input('billete_50'),
-            20 => $request->input('billete_20'),
-            10 => $request->input('billete_10')
-        ];
-
-        $monedas = [
-            5 => $request->input('moneda_5'),
-            2 => $request->input('moneda_2'),
-            1 => $request->input('moneda_1'),
-            0.5 => $request->input('moneda_0_5'),
-            0.2 => $request->input('moneda_0_2'),
-            0.1 => $request->input('moneda_0_1')
-        ];
-
-        $totalEfectivo = array_sum(array_map(function ($billete, $cantidad) {
-            return $billete * $cantidad;
-        }, array_keys($billetes), $billetes)) + array_sum(array_map(function ($moneda, $cantidad) {
-            return $moneda * $cantidad;
-        }, array_keys($monedas), $monedas));
-
-        $depositos = $request->input('depositos');
-        $saldoFinal = floatval(str_replace('S/. ', '', $request->input('saldo_final')));
-
-        $transaccion = CajaTransaccion::find($request->input('caja_id'));
-        $transaccion->json_cierre = json_encode([
-            'billetes' => $billetes,
-            'monedas' => $monedas,
-            'depositos' => $depositos
-        ]);
-        $transaccion->monto_cierre = $totalEfectivo;
-        $transaccion->hora_cierre = now();
-        $transaccion->fecha_cierre = now();
-        $transaccion->save();
-
-        return response()->json(['success' => true]);
-    }
-
+    
     public function viewpagarcredito()
     {
         // Obtener solo los clientes activos (activo = 1)
@@ -906,6 +847,97 @@ class creditoController extends Controller
         ));
     }
 
+    
+    public function guardarArqueo(Request $request)
+    {
+        $billetes = [
+            "200" => (string)$request->billete_200,
+            "100" => (string)$request->billete_100,
+            "50" => (string)$request->billete_50,
+            "20" => (string)$request->billete_20,
+            "10" => (string)$request->billete_10
+        ];
+
+        $monedas = [
+            "5" => (string)$request->moneda_5,
+            "2" => (string)$request->moneda_2,
+            "1" => (string)$request->moneda_1,
+            "0.5" => (string)$request->moneda_0_5,
+            "0.2" => (string)$request->moneda_0_2,
+            "0.1" => (string)$request->moneda_0_1
+        ];
+
+        $totalEfectivo = array_sum(array_map(function($billete, $cantidad) {
+            return (float)$billete * (float)$cantidad;
+        }, array_keys($billetes), $billetes)) + array_sum(array_map(function($moneda, $cantidad) {
+            return (float)$moneda * (float)$cantidad;
+        }, array_keys($monedas), $monedas));
+
+        $depositos = $request->input('depositos');
+        $saldoFinal = floatval(str_replace('S/. ', '', $request->input('saldo_final')));
+
+        $transaccion = CajaTransaccion::find($request->input('caja_id'));
+        $transaccion->json_cierre = json_encode([
+            'billetes' => $billetes,
+            'monedas' => $monedas,
+            'depositos' => (string)$depositos
+        ]);
+        $transaccion->monto_cierre = $totalEfectivo;
+        $transaccion->hora_cierre = now();
+        $transaccion->fecha_cierre = now();
+        $transaccion->save();
+
+        return response()->json(['success' => true]);
+    }
+    public function verpagocuota($id)
+    {
+        $credito = Credito::find($id);
+        $clientesCredito = CreditoCliente::where('prestamo_id', $id)->with('clientes')->get();
+        
+        $cuotasPorCliente = [];
+
+        foreach ($clientesCredito as $clienteCredito) {
+            $cuotas = Cronograma::where('id_prestamo', $id)
+                                ->where('cliente_id', $clienteCredito->cliente_id)
+                                ->get();
+
+            foreach ($cuotas as $cuota) {
+                $ingreso = Ingreso::where('prestamo_id', $id)
+                    ->where('numero_cuota', $cuota->numero)
+                    ->where('cliente_id', $clienteCredito->cliente_id)
+                    ->first();
+                if ($ingreso) {
+                    $cuota->estado = 'pagado';
+                    $cuota->fecha_pago =  $ingreso->fecha_pago;
+                } elseif (now()->greaterThan($cuota->fecha_vencimiento)) {
+                    $cuota->estado = 'vencida';
+                } else {
+                    $cuota->estado = 'pendiente';
+                }
+            }
+            $cuotasPorCliente[$clienteCredito->cliente_id] = $cuotas;
+        }
+
+        return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasPorCliente'));
+    }
+
+    public function pagocuota(Request $request)
+    {
+        
+        // Registrar el ingreso
+        $ingreso=Ingreso::create([
+            'prestamo_id' => $request->prestamo_id,
+            'cliente_id' => $request->cliente_id,
+            'cronograma_id' => $request->cronograma_id,
+            'numero_cuota' => $request->numero_cuota,
+            'monto' => $request->monto,
+            'fecha_pago' => now()->toDateString(),
+            'hora_pago' => now()->toTimeString(),
+            'sucursal_id' => auth()->user()->sucursal_id,
+        ]);
+
+        return response()->json(['success' => 'Cuota pagada con éxito', 'ingreso_id' => $ingreso->id]);
+    }
 
 
 

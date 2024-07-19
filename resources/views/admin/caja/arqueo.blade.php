@@ -85,18 +85,18 @@
                                 <input type="text" class="btn btn-info" id="total_ingresos" value="Ingresos: S/. {{ $ingresos ?? 0 }}" disabled>
                                 <input type="text" class="btn btn-info" id="total_egresos" value="Egresos: S/. {{ $egresos ?? 0 }}" disabled>
                                 <input type="text" class="btn btn-info" id="total_depositos_display" value="Depósitos: S/. 0.00" disabled>
-                                <input type="text" class="btn btn-info" id="total_efectivo" value="Total Efectivo: S/. 0.00" disabled>
+                                <input type="text" class="btn btn-info" id="total_efectivo_display" value="Total Efectivo: S/. 0.00" disabled>
                             </div>
                         </div>
                     </div>
-<br>
+                    <br>
                     <div class="row mt-3">
                         <div class="col-md-6">
-                            <label for="saldo_final">Saldo Final:</label>
+                            <label for="saldo_final">Saldo Final(Monto incial+ingresos-egresos):</label>
                             <input type="text" class="form-control" id="saldo_final" name="saldo_final" value="S/. 0.00" readonly>
                         </div>
                     </div>
-<br>
+                    <br>
                     <div class="form-group row">
                         <div class="col-md-6">
                             <button type="button" class="btn btn-primary btn-block" onclick="guardarArqueo()">Guardar Arqueo</button>
@@ -137,19 +137,34 @@
         var depositos = parseFloat(document.getElementById('depositos').value) || 0;
         document.getElementById('total_depositos').value = depositos.toFixed(2);
         
-        var totalFinal = totalEfectivo;
-        document.getElementById('total_efectivo').value = 'Total Efectivo: S/. ' + totalFinal.toFixed(2);
+        var totalFinalEfectivo = totalEfectivo;
+        document.getElementById('total_efectivo_display').value = 'Total Efectivo: S/. ' + totalFinalEfectivo.toFixed(2);
         document.getElementById('total_depositos_display').value = 'Depósitos: S/. ' + depositos.toFixed(2);
 
         var montoApertura = parseFloat(document.getElementById('monto_apertura').value) || 0;
         var ingresos = parseFloat('{{ $ingresos ?? 0 }}');
         var egresos = parseFloat('{{ $egresos ?? 0 }}');
-        var saldoFinal = totalFinal + depositos + montoApertura + ingresos - egresos;
+        var saldoFinal =  montoApertura +depositos+ ingresos - egresos;
         
         document.getElementById('saldo_final').value = 'S/. ' + saldoFinal.toFixed(2);
     }
 
     function guardarArqueo() {
+        var saldoFinal = parseFloat(document.getElementById('saldo_final').value.replace('S/. ', '')) || 0;
+        var montoApertura = parseFloat(document.getElementById('monto_apertura').value) || 0;
+        var ingresos = parseFloat('{{ $ingresos ?? 0 }}');
+        var egresos = parseFloat('{{ $egresos ?? 0 }}');
+
+        var totalEsperado = montoApertura + ingresos - egresos;
+        // if (saldoFinal !== totalEsperado) {
+        //     Swal.fire({
+        //         title: 'Error',
+        //         text: 'El saldo final no cuadra con el total esperado. No se puede cerrar la caja.',
+        //         icon: 'error'
+        //     });
+        //     return;
+        // }
+
         var formData = new FormData(document.getElementById('arqueoCajaForm'));
 
         fetch("{{ route('caja.guardarArqueo') }}", {
@@ -183,4 +198,3 @@
     }
 </script>
 @endsection
-

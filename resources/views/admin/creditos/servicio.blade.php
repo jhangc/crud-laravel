@@ -841,38 +841,38 @@
         limpiarCamposInventario1();
     }
 
-    function actualizarTablaInventario1() {
-        const tablaCuerpo = document.getElementById('tablaInventario1');
-        tablaCuerpo.innerHTML = '';
-        totalInventario1 = 0;
+    function editarProducto1(index, campo, valor) {
+    inventarioArray1[index][campo] = parseFloat(valor);
+    if (campo === 'precioUnitario' || campo === 'cantidad') {
+        inventarioArray1[index].montoTotal = (inventarioArray1[index].precioUnitario * inventarioArray1[index].cantidad).toFixed(2);
+    }
+    actualizarTablaInventario1();
+}
 
-        inventarioArray1.forEach((producto, index) => {
-            const row = tablaCuerpo.insertRow();
-            row.innerHTML = `
+function eliminarProducto1(index) {
+    inventarioArray1.splice(index, 1);
+    actualizarTablaInventario1();
+}
+
+function actualizarTablaInventario1() {
+    const tablaCuerpo = document.getElementById('tablaInventario1');
+    tablaCuerpo.innerHTML = '';
+    totalInventario1 = 0;
+
+    inventarioArray1.forEach((producto, index) => {
+        const row = tablaCuerpo.insertRow();
+        row.innerHTML = `
             <td>${producto.descripcion}</td>
             <td><input type="number" class="form-control" value="${producto.precioUnitario}" onchange="editarProducto1(${index}, 'precioUnitario', this.value)"></td>
             <td><input type="number" class="form-control" value="${producto.cantidad}" onchange="editarProducto1(${index}, 'cantidad', this.value)"></td>
             <td>${producto.montoTotal}</td>
             <td><button class="btn btn-danger btn-sm" onclick="eliminarProducto1(${index})"><i class="fa fa-trash"></i></button></td>
         `;
-            totalInventario1 = parseFloat(totalInventario1) + parseFloat(producto.montoTotal);
-        });
-        document.getElementById('totalgastosfamiliares').value = totalInventario1.toFixed(2);
-    }
+        totalInventario1 += parseFloat(producto.montoTotal);
+    });
+    document.getElementById('totalgastosfamiliares').value = totalInventario1.toFixed(2);
+}
 
-    function editarProducto1(index, campo, valor) {
-        inventarioArray[index][campo] = parseFloat(valor);
-        if (campo === 'precioUnitario' || campo === 'cantidad') {
-            inventarioArray[index].montoTotal = (inventarioArray[index].precioUnitario * inventarioArray[index]
-                .cantidad).toFixed(2);
-        }
-        actualizarTablaInventario1();
-    }
-
-    function eliminarProducto1(index) {
-        inventarioArray.splice(index, 1);
-        actualizarTablaInventario1();
-    }
 
     function limpiarCamposInventario1() {
         document.getElementById('descripcion_producto_inventario1').value = '';
