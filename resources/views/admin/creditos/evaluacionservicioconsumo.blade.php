@@ -202,7 +202,8 @@
             var cuotaprestamo = parseFloat('{{ $cuotaprestamo }}');
             var totalprestamo = parseFloat('{{ $totalprestamo }}');
 
-            if (solvencia > 1 ) {
+            if (solvencia > 1 ||
+                indiceEndeudamiento <= cuotaprestamo ) {
                 return 'rechazado por sistema';
             }
 
