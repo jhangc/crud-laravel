@@ -35,7 +35,6 @@
 
 
             <div class="card-body">
-
                 <div class="table-responsive">
                     <table id="creditosTable" class="table table-bordered table-sm table-striped table-hover">
                         <thead>
