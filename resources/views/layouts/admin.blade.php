@@ -139,6 +139,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Inciar Operación</p>
                                         </a>
+                                        <a href="{{ url('/admin/creditos/ingresosday') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Ingresos/Egresos de Caja Diario</p>
+                                        </a>
                                     </li>
                                 </ul>
                             </li>
