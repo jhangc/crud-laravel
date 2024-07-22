@@ -310,6 +310,50 @@ class PdfController extends Controller
         return $pdf->stream('pagare.pdf');
     }
 
+    public function generatecartacobranzaPDF(Request $request, $id)
+    {
+        $prestamo = \App\Models\credito::find($id);
+        if (!$prestamo) {
+            return response()->json(['error' => 'Crédito no encontrado'], 404);
+        }
+
+        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
+        $responsable = auth()->user();
+
+        // Usa Carbon para obtener la fecha actual
+        $date = Carbon::now();
+
+        // Formatea la fecha con la configuración regional establecida
+        $formattedDate = $date->translatedFormat('d \d\e F \d\e\l Y');
+
+        $tasaInteres = $prestamo->tasa;
+
+        $tasadiaria = number_format((pow(1 + ($tasaInteres / 100), 1 / 360) - 1) * 100, 2);
+
+        // Convertir monto a letras
+        $formatter = new NumeroALetras();
+        $montoEnLetras = $formatter->toMoney($prestamo->monto, 2, 'soles', 'centimos');
+
+        // Generar o obtener el correlativo
+        $correlativo = CorrelativoPagare::generateCorrelativo($id);
+
+        $data = compact(
+            'prestamo',
+            'responsable',
+            'cuotas',
+            'credito_cliente',
+            'formattedDate',
+            'montoEnLetras',
+            'tasadiaria',
+            'correlativo'
+        );
+
+        // Generar y retornar el PDF
+        $pdf = Pdf::loadView('pdf.cartacobranza', $data)->setPaper('a4');
+        return $pdf->stream('carta-cobranza.pdf');
+    }
+
     public function generatePDF(Request $request, $id)
     {
         $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL

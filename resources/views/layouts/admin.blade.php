@@ -263,7 +263,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         @endrole
 
 
-                        @role('Administrador')
+                        @role('Administrador|Asesor de creditos')
                             <li class="nav-item">
                                 <a href="#" class="nav-link active">
                                     <i class="nav-icon fas"><i class="bi bi-collection"></i></i>
@@ -281,17 +281,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <a href="{{ url('/admin/cobranza/generarnotificacion') }}"
                                             class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Generar Notificación</p>
+                                            <p>Notificación</p>
                                         </a>
                                         <a href="{{ url('/admin/cobranza/generarcompromiso') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Generar Compromiso</p>
+                                            <p>Compromiso</p>
                                         </a>
 
-                                        <a href="{{ url('/admin/cobranza/cargarcompromiso') }}" class="nav-link active">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Cargar Compromiso</p>
-                                        </a>
                                     </li>
                                 </ul>
                             </li>

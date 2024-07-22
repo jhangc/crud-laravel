@@ -101,8 +101,6 @@
         function cronogramaindividualPDF() {
             var prestamoId = '{{ $prestamo->id }}';
             var url = "{{ url('/generar-cronogramaindividual') }}" + '/' + prestamoId;
-
-
             // Abre la URL en una nueva pestaña
             window.open(url, '_blank');
         }

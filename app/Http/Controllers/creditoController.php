@@ -803,7 +803,7 @@ class creditoController extends Controller
 
         return response()->json(['success' => true, 'transaccion_id' => $transaccion->id]);
     }
-    
+
     public function viewpagarcredito()
     {
         // Obtener solo los clientes activos (activo = 1)
@@ -847,7 +847,7 @@ class creditoController extends Controller
         ));
     }
 
-    
+
     public function guardarArqueo(Request $request)
     {
         $billetes = [
@@ -867,9 +867,9 @@ class creditoController extends Controller
             "0.1" => (string)$request->moneda_0_1
         ];
 
-        $totalEfectivo = array_sum(array_map(function($billete, $cantidad) {
+        $totalEfectivo = array_sum(array_map(function ($billete, $cantidad) {
             return (float)$billete * (float)$cantidad;
-        }, array_keys($billetes), $billetes)) + array_sum(array_map(function($moneda, $cantidad) {
+        }, array_keys($billetes), $billetes)) + array_sum(array_map(function ($moneda, $cantidad) {
             return (float)$moneda * (float)$cantidad;
         }, array_keys($monedas), $monedas));
 
@@ -893,13 +893,13 @@ class creditoController extends Controller
     {
         $credito = Credito::find($id);
         $clientesCredito = CreditoCliente::where('prestamo_id', $id)->with('clientes')->get();
-        
+
         $cuotasPorCliente = [];
 
         foreach ($clientesCredito as $clienteCredito) {
             $cuotas = Cronograma::where('id_prestamo', $id)
-                                ->where('cliente_id', $clienteCredito->cliente_id)
-                                ->get();
+                ->where('cliente_id', $clienteCredito->cliente_id)
+                ->get();
 
             foreach ($cuotas as $cuota) {
                 $ingreso = Ingreso::where('prestamo_id', $id)
@@ -922,39 +922,39 @@ class creditoController extends Controller
     }
 
     public function pagocuota(Request $request)
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    // Retrieve the last open cash transaction for the logged-in user
-    $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
-        ->whereNull('hora_cierre')
-        ->orderBy('created_at', 'desc')
-        ->first();
+        // Retrieve the last open cash transaction for the logged-in user
+        $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
+            ->whereNull('hora_cierre')
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-    // Check if there is an open cash transaction
-    if (!$ultimaTransaccion) {
-        return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
+        // Check if there is an open cash transaction
+        if (!$ultimaTransaccion) {
+            return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
+        }
+
+        // Register the income
+        $ingreso = Ingreso::create([
+            'transaccion_id' => $ultimaTransaccion->id,
+            'prestamo_id' => $request->prestamo_id,
+            'cliente_id' => $request->cliente_id,
+            'cronograma_id' => $request->cronograma_id,
+            'numero_cuota' => $request->numero_cuota,
+            'monto' => $request->monto,
+            'fecha_pago' => now()->toDateString(),
+            'hora_pago' => now()->toTimeString(),
+            'sucursal_id' => $user->sucursal_id,
+        ]);
+
+        // Update the total income in the cash transaction
+        $ultimaTransaccion->cantidad_ingresos = $ultimaTransaccion->cantidad_ingresos + $request->monto;
+        $ultimaTransaccion->save();
+
+        return response()->json(['success' => 'Cuota pagada con éxito', 'ingreso_id' => $ingreso->id]);
     }
-
-    // Register the income
-    $ingreso = Ingreso::create([
-        'transaccion_id' => $ultimaTransaccion->id,
-        'prestamo_id' => $request->prestamo_id,
-        'cliente_id' => $request->cliente_id,
-        'cronograma_id' => $request->cronograma_id,
-        'numero_cuota' => $request->numero_cuota,
-        'monto' => $request->monto,
-        'fecha_pago' => now()->toDateString(),
-        'hora_pago' => now()->toTimeString(),
-        'sucursal_id' => $user->sucursal_id,
-    ]);
-
-    // Update the total income in the cash transaction
-    $ultimaTransaccion->cantidad_ingresos = $ultimaTransaccion->cantidad_ingresos + $request->monto;
-    $ultimaTransaccion->save();
-
-    return response()->json(['success' => 'Cuota pagada con éxito', 'ingreso_id' => $ingreso->id]);
-}
 
 
 
@@ -967,12 +967,19 @@ class creditoController extends Controller
 
     public function viewcargarcompromiso()
     {
+
+
         return view('admin.cobranza.cargarcompromiso');
     }
 
     public function viewcarta()
     {
-        return view('admin.cobranza.carta');
+        // Obtener solo los clientes activos (activo = 1)
+        $creditos = credito::with('clientes')
+            ->where('activo', 1)
+            ->whereDate('fecha_fin', '<', now()->toDateString())
+            ->get();
+        return view('admin.cobranza.carta', ['creditos' => $creditos]);
     }
 
     public function viewgenerarcompromiso()
