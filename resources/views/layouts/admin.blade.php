@@ -354,22 +354,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
-                                        <a href="{{ url('/admin/reportes/clientes') }}" class="nav-link active">
+                                        <a href="{{ url('/admin/reportes/creditoindividual') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Clientes</p>
+                                            <p>Creditos Individuales</p>
                                         </a>
-                                        <a href="{{ url('/admin/reportes/prestamosactivos') }}" class="nav-link active">
+                                        <a href="{{ url('/admin/reportes/creditogrupal') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Prestamos activos</p>
-                                        </a>
-                                        {{-- <a href="{{ url('/admin/usuarios') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Transacciones</p>
-                                    </a> --}}
-
-                                        <a href="{{ url('/admin/reportes/prestamosvencidos') }}" class="nav-link active">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Prestamos vencidos</p>
+                                            <p>Creditos Individuales</p>
                                         </a>
                                     </li>
                                 </ul>
