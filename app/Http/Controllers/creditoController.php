@@ -158,7 +158,13 @@ class creditoController extends Controller
                     // Inicializar variables
                     $pesoTotal = 0;
                     $sumaPonderadaRelacion = 0;
-                    $margenventas = ($margenmanual->margen_utilidad) * 100;
+                    //$margenventas = ($margenmanual->margen_utilidad) * 100;
+
+                    if ($margenmanual !== null) {
+                        $margenventas = ($margenmanual->margen_utilidad) * 100;
+                    } else {
+                        $margenventas = 0;
+                    }
 
                     // Recorrer las proyecciones para calcular el monto total de ventas y la relación de compra-venta promedio ponderada
                     foreach ($proyecciones as $proyeccion) {
@@ -314,7 +320,13 @@ class creditoController extends Controller
                         $saldo_disponible_negocio = $margensoles - $totalcuotadeuda;
                         $saldo_final = $saldo_disponible_negocio - $totalgastosfamiliares;
 
-                        $margenventas = ($margenmanual->margen_utilidad) * 100;
+                        //$margenventas = ($margenmanual->margen_utilidad) * 100;
+
+                        if ($margenmanual !== null) {
+                            $margenventas = ($margenmanual->margen_utilidad) * 100;
+                        } else {
+                            $margenventas = 0;
+                        }
 
                         $rentabilidad_ventas = $totalVentas != 0 ? round(($saldo_disponible_negocio / $totalVentas) * 100, 2) : 0;
                         $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
@@ -511,7 +523,13 @@ class creditoController extends Controller
                         $totalCuotasCreditos = $deudas->sum('cuota');
                         $totalPrestamos = $prestamo->monto_total;
 
-                        $margenventas = ($margenmanual->margen_utilidad) * 100;
+                        //$margenventas = ($margenmanual->margen_utilidad) * 100;
+
+                        if ($margenmanual !== null) {
+                            $margenventas = ($margenmanual->margen_utilidad) * 100;
+                        } else {
+                            $margenventas = 0;
+                        }
 
                         $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio) * 100, 2) : 0;
 
@@ -640,7 +658,12 @@ class creditoController extends Controller
                         $totalCuotasCreditos = $deudas->sum('cuota');
                         $totalPrestamos = $prestamo->monto_total;
 
-                        $margenventas = ($margenmanual->margen_utilidad) * 100;
+                        if ($margenmanual !== null) {
+                            $margenventas = ($margenmanual->margen_utilidad) * 100;
+                        } else {
+                            $margenventas = 0;
+                        }
+                        //$margenventas = ($margenmanual->margen_utilidad) * 100;
 
                         $roe = $patrimonio != 0 ? round(($saldo_disponible_negocio / $patrimonio) * 100, 2) : 0;
 
