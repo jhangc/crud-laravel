@@ -109,7 +109,8 @@
                         <tbody>
                             <tr>
                                 <td>Total Garantia (S/.)</td>
-                                <td class="{{ $totalgarantia < $totalprestamo ? 'text-danger' : '' }}">
+                                <td
+                                    class="{{ $prestamo->destino !== 'activo fijo' && $totalgarantia < $totalprestamo ? 'text-danger' : '' }}">
                                     {{ number_format($totalgarantia, 2) }}</td>
                                 <td>tiene que ser mayor o igual al total de crédito</td>
                             </tr>
@@ -120,22 +121,26 @@
                             <tr>
                                 {{-- PASIVO TOTAL / PATRIMONIO NETO --}}
                                 <td>Solvencia</td>
-                                <td class="{{ $solvencia > 1 ? 'text-danger' : '' }}">{{ $solvencia }}</td>
+                                <td
+                                    class="{{ $prestamo->destino !== 'activo fijo' && $solvencia > 1 ? 'text-danger' : '' }}">
+                                    {{ $solvencia }}</td>
                                 <td>tiene que ser (<=1) </td>
                             </tr>
                             <tr>
                                 <td>Cuota de endeudamiento</td>
-                                <td class="{{ $saldo_final <= $cuotaprestamo ? 'text-danger' : '' }}">
+                                <td
+                                    class="{{ $prestamo->destino !== 'activo fijo' && $saldo_final <= $cuotaprestamo ? 'text-danger' : '' }}">
                                     {{ number_format($saldo_final, 2) }}</td>
                                 <td>tiene que ser mayor a la cuota del crédito</td>
                             </tr>
                             <tr>
                                 {{-- Cuota de préstamo / saldo final --}}
                                 <td>cuotaexcedente</td>
-                                <td class="{{ $cuotaexcedente >= 1 ? 'text-danger' : '' }}">{{ $cuotaexcedente }}</td>
+                                <td
+                                    class="{{ $prestamo->destino !== 'activo fijo' && $cuotaexcedente >= 1 ? 'text-danger' : '' }}">
+                                    {{ $cuotaexcedente }}</td>
                                 <td>tiene que ser <1 </td>
                             </tr>
-
                         </tbody>
                     </table>
                 </div>
@@ -194,6 +199,7 @@
         }
 
         function verificarCondiciones() {
+            var destino = '{{ $prestamo->destino }}';
             var totalgarantia = parseFloat('{{ $totalgarantia }}');
             var solvencia = parseFloat('{{ $solvencia }}');
             var indiceEndeudamiento = parseFloat('{{ $saldo_final }}');
@@ -201,6 +207,10 @@
             var saldoFinal = parseFloat('{{ $saldo_final }}');
             var cuotaprestamo = parseFloat('{{ $cuotaprestamo }}');
             var totalprestamo = parseFloat('{{ $totalprestamo }}');
+
+            if (destino === 'activo fijo') {
+                return 'revisado'; // No realiza validaciones adicionales
+            }
 
             if (solvencia > 1 ||
                 indiceEndeudamiento <= cuotaprestamo ||
