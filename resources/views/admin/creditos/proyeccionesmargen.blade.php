@@ -29,9 +29,6 @@
         @if ($estado === 'observado')
             <h6><b>MOTIVO DE OBSERVACIÓN:</b>{{ $comentarioadministrador }}</h6>
         @endif
-
-
-
 </div>
 
 
@@ -276,7 +273,7 @@
                         <tr>
                             {{-- División entre saldo total disponible y ventas total --}}
                             <td>Rentabilidad de las ventas</td>
-                            <td class="{{ abs($rentabilidad_ventas - $margenventas) > 5 ? 'text-danger' : '' }}">{{ $rentabilidad_ventas }}%</td>
+                            <td class="{{ $prestamo->destino !== 'activo fijo' && abs($rentabilidad_ventas - $margenventas) > 5 ? 'text-danger' : '' }}">{{ $rentabilidad_ventas }}%</td>
                             <td>Tiene que ser ± 5% de la rentabilidad</td>
                         </tr>
                         <tr>
@@ -300,7 +297,7 @@
                         <tr>
                             {{-- Activo corriente - pasivo corriente --}}
                             <td>Capital de trabajo (S/.)</td>
-                            <td class="{{ $capital_trabajo <= $totalprestamo ? 'text-danger' : '' }}">{{ $capital_trabajo }}</td>
+                            <td class="{{ $prestamo->destino !== 'activo fijo' && $capital_trabajo <= $totalprestamo ? 'text-danger' : '' }}">{{ $capital_trabajo }}</td>
                             <td>tiene que ser mayor al préstamo</td>
                         </tr>
                         <tr>
@@ -405,6 +402,15 @@
         var saldoFinal = parseFloat('{{ $saldo_final }}');
         var cuotaprestamo = parseFloat('{{ $cuotaprestamo }}');
 
+        if (destino === 'activo fijo' && liquidez <= 1 && roa <= 5 &&
+            roe <= 10  &&
+            solvencia > 1 &&
+            indiceEndeudamiento > 40 &&
+            cuotaExcedente >= 1 &&
+            saldoFinal <= cuotaprestamo) {
+                return 'revisado'; // No realiza validaciones adicionales
+        }
+        
         if (Math.abs(rentabilidadVentas - margenVentas) > 5 ||
             liquidez <= 1 ||
             roa <= 5 ||
