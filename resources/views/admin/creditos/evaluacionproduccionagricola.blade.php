@@ -123,16 +123,16 @@
                             <tr>
                                 {{-- activo corriente mas fijo  --}}
                                 <td><b>Activo</b></td>
-                                <td>{{ $activo}}</td>
+                                <td>{{ $activo }}</td>
                             </tr>
                             <tr>
                                 <td style="padding-left: 20px;">Activo corriente (circulante)</td>
-                                <td> {{ $activo_corriente}}</td>
+                                <td> {{ $activo_corriente }}</td>
                             </tr>
 
                             <tr>
                                 <td style="padding-left: 40px;">Inventario</td>
-                                <td>{{ $total_inventario}}</td>
+                                <td>{{ $total_inventario }}</td>
                             </tr>
 
                             <tr>
@@ -173,7 +173,7 @@
             </div>
         </div>
 
-        
+
 
         <div class="col-md-6">
             <div class="card card-outline card-warning">
@@ -222,10 +222,11 @@
                                 <td>{{ number_format($totalgastosfamiliares, 2) }}</td>
                             </tr>
                             <tr>
-    <td>Saldo final disponible</td>
-    <td class="{{ $saldo_final <= $cuotaprestamo ? 'text-danger' : '' }}">{{ $saldo_final }}</td>
+                                <td>Saldo final disponible</td>
+                                <td class="{{ $saldo_final <= $cuotaprestamo ? 'text-danger' : '' }}">{{ $saldo_final }}
+                                </td>
 
-</tr>
+                            </tr>
 
                         </tbody>
                     </table>
@@ -250,89 +251,97 @@
                             </tr>
                         </thead>
                         <tbody>
-                        <tr>
-    {{-- Colocar del cuadro del excel --}}
-    <td>Rentabilidad del negocio (%)</td>
-    <td>{{ $margenventas }}%</td>
-    <td>Es el margen generico segun actividad</td>
-</tr>
-<tr>
-    {{-- División entre saldo total disponible y ventas total --}}
-    <td>Rentabilidad de las ventas</td>
-    <td class="{{ abs($rentabilidad_ventas - $margenventas) > 5 ? 'text-danger' : '' }}">{{ $rentabilidad_ventas }}%</td>
-    <td>tiene que ser +- 5 de la rentabilidad</td>
-</tr>
-<tr>
-    {{-- Total costo / total inventario --}}
-    <td>Rotación de inventario (en días)</td>
-    <td>{{ $rotacion_inventario }}</td>
-    <td>cada que tiempo se rota los productos en días</td>
-</tr>
-<tr>
-    {{-- Activo corriente / pasivo corriente --}}
-    <td>Liquidez</td>
-    <td class="{{ $liquidez <= 1 ? 'text-danger' : '' }}">{{ $liquidez }}</td>
-    <td>tiene que ser (>1)</td>
-</tr>
-<tr>
-    {{-- Utilidad neta / activos totales --}}
-    <td>ROA (%)</td>
-    <td class="{{ $roa <= 5 ? 'text-danger' : '' }}">{{ $roa }}%</td>
-    <td>tiene que ser (>5%)</td>
-</tr>
-<tr>
-    {{-- Activo corriente - pasivo corriente --}}
-    <td>Capital de trabajo (S/.)</td>
-    <td class="{{ $capital_trabajo <= $totalprestamo ? 'text-danger' : '' }}">{{ $capital_trabajo }}</td>
-    <td>tiene que ser mayor al prestamo</td>
-</tr>
-<tr>
-    {{-- Utilidad neta / patrimonio neto --}}
-    <td>ROE (%)</td>
-    <td class="{{ $roe <= 10 ? 'text-danger' : '' }}">{{ $roe }}%</td>
-    <td>tiene que ser (>10%)</td>
-</tr>
-<tr>
-    {{-- Pasivo total / patrimonio neto --}}
-    <td>Solvencia</td>
-    <td class="{{ $solvencia > 1 ? 'text-danger' : '' }}">{{ $solvencia }}</td>
-    <td>tiene que ser (<=1)</td>
-</tr>
-<tr>
-    {{-- Pasivo total / activo total --}}
-    <td>Índice de endeudamiento</td>
-    <td class="{{ $indice_endeudamiento > 40 ? 'text-danger' : '' }}">{{ $indice_endeudamiento }}%</td>
-    <td>tiene que ser (<=40%)</td>
-</tr>
-<tr>
-    {{-- Pasivo total / activo total --}}
-    <td>Cuota de endeudamiento</td>
-    <td class="{{ $saldo_final <= $cuotaprestamo ? 'text-danger' : '' }}">{{ $saldo_final }}</td>
-    <td>tiene que ser mayor a la cuota propuesta</td>
-</tr>
-<tr>
-    {{-- Pasivo total + préstamos / patrimonio --}}
-    <td>Endeudamiento patrimonial</td>
-    <td class="{{ $Endeudamientopatrimonial > 1 ? 'text-danger' : '' }}">{{ $Endeudamientopatrimonial }}</td>
-    <td>tiene que ser (<=1)</td>
-</tr>
-<tr>
-    {{-- Cuota de préstamo / saldo final --}}
-    <td>cuotaexcedente</td>
-    <td class="{{ $cuotaexcedente >= 1 ? 'text-danger' : '' }}">{{ $cuotaexcedente }}</td>
-    <td>tiene que ser (<1)</td>
-</tr>
-<tr>
-    <td>Saldo final disponible</td>
-    <td class="{{ $saldo_final <= $cuotaprestamo ? 'text-danger' : '' }}">{{ $saldo_final }}</td>
-    <td>tiene que ser mayor a la cuota del préstamo</td>
-</tr>
+                            <tr>
+                                {{-- Colocar del cuadro del excel --}}
+                                <td>Rentabilidad del negocio (%)</td>
+                                <td>{{ $margenventas }}%</td>
+                                <td>Es el margen generico segun actividad</td>
+                            </tr>
+                            <tr>
+                                {{-- División entre saldo total disponible y ventas total --}}
+                                <td>Rentabilidad de las ventas</td>
+                                <td
+                                    class="{{ $prestamo->destino !== 'activo fijo' && abs($rentabilidad_ventas - $margenventas) > 5 ? 'text-danger' : '' }}">
+                                    {{ $rentabilidad_ventas }}%</td>
+                                <td>tiene que ser +- 5 de la rentabilidad</td>
+                            </tr>
+                            <tr>
+                                {{-- Total costo / total inventario --}}
+                                <td>Rotación de inventario (en días)</td>
+                                <td>{{ $rotacion_inventario }}</td>
+                                <td>cada que tiempo se rota los productos en días</td>
+                            </tr>
+                            <tr>
+                                {{-- Activo corriente / pasivo corriente --}}
+                                <td>Liquidez</td>
+                                <td class="{{ $liquidez <= 1 ? 'text-danger' : '' }}">{{ $liquidez }}</td>
+                                <td>tiene que ser (>1)</td>
+                            </tr>
+                            <tr>
+                                {{-- Utilidad neta / activos totales --}}
+                                <td>ROA (%)</td>
+                                <td class="{{ $roa <= 5 ? 'text-danger' : '' }}">{{ $roa }}%</td>
+                                <td>tiene que ser (>5%)</td>
+                            </tr>
+                            <tr>
+                                {{-- Activo corriente - pasivo corriente --}}
+                                <td>Capital de trabajo (S/.)</td>
+                                <td
+                                    class="{{ $prestamo->destino !== 'activo fijo' && $capital_trabajo <= $totalprestamo ? 'text-danger' : '' }}">
+                                    {{ $capital_trabajo }}</td>
+                                <td>tiene que ser mayor al prestamo</td>
+                            </tr>
+                            <tr>
+                                {{-- Utilidad neta / patrimonio neto --}}
+                                <td>ROE (%)</td>
+                                <td class="{{ $roe <= 10 ? 'text-danger' : '' }}">{{ $roe }}%</td>
+                                <td>tiene que ser (>10%)</td>
+                            </tr>
+                            <tr>
+                                {{-- Pasivo total / patrimonio neto --}}
+                                <td>Solvencia</td>
+                                <td class="{{ $solvencia > 1 ? 'text-danger' : '' }}">{{ $solvencia }}</td>
+                                <td>tiene que ser (<=1)< /td>
+                            </tr>
+                            <tr>
+                                {{-- Pasivo total / activo total --}}
+                                <td>Índice de endeudamiento</td>
+                                <td class="{{ $indice_endeudamiento > 40 ? 'text-danger' : '' }}">
+                                    {{ $indice_endeudamiento }}%</td>
+                                <td>tiene que ser (<=40%)< /td>
+                            </tr>
+                            <tr>
+                                {{-- Pasivo total / activo total --}}
+                                <td>Cuota de endeudamiento</td>
+                                <td class="{{ $saldo_final <= $cuotaprestamo ? 'text-danger' : '' }}">{{ $saldo_final }}
+                                </td>
+                                <td>tiene que ser mayor a la cuota propuesta</td>
+                            </tr>
+                            <tr>
+                                {{-- Pasivo total + préstamos / patrimonio --}}
+                                <td>Endeudamiento patrimonial</td>
+                                <td class="{{ $Endeudamientopatrimonial > 1 ? 'text-danger' : '' }}">
+                                    {{ $Endeudamientopatrimonial }}</td>
+                                <td>tiene que ser (<=1)< /td>
+                            </tr>
+                            <tr>
+                                {{-- Cuota de préstamo / saldo final --}}
+                                <td>cuotaexcedente</td>
+                                <td class="{{ $cuotaexcedente >= 1 ? 'text-danger' : '' }}">{{ $cuotaexcedente }}</td>
+                                <td>tiene que ser (<1)< /td>
+                            </tr>
+                            <tr>
+                                <td>Saldo final disponible</td>
+                                <td class="{{ $saldo_final <= $cuotaprestamo ? 'text-danger' : '' }}">{{ $saldo_final }}
+                                </td>
+                                <td>tiene que ser mayor a la cuota del préstamo</td>
+                            </tr>
 
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div> 
+        </div>
     </div>
 
     @if ($modulo === 'aprobar')
@@ -347,9 +356,12 @@
                             echo htmlspecialchars($comentarioadministrador, ENT_QUOTES, 'UTF-8');
                         } ?></textarea>
                 </div>
-                <button type="button" onclick="confirmarAccion('aprobar')" class="btn btn-primary btnprestamo">Aprobar</button>
-                <button type="button" onclick="confirmarAccion('observar')" class="btn btn-warning btnprestamo">Observar</button>
-                <button type="button" onclick="confirmarAccion('rechazar')" class="btn btn-danger btnprestamo">Rechazar</button>
+                <button type="button" onclick="confirmarAccion('aprobar')"
+                    class="btn btn-primary btnprestamo">Aprobar</button>
+                <button type="button" onclick="confirmarAccion('observar')"
+                    class="btn btn-warning btnprestamo">Observar</button>
+                <button type="button" onclick="confirmarAccion('rechazar')"
+                    class="btn btn-danger btnprestamo">Rechazar</button>
                 <a href="{{ url('admin/creditos') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
             </div>
         </div>
@@ -363,10 +375,11 @@
                         echo htmlspecialchars($comentarioasesor, ENT_QUOTES, 'UTF-8');
                     } ?></textarea>
                 </div>
-                <button type="button" onclick="confirmarAccion('guardar')" class="btn btn-primary btnprestamo" {{ in_array($prestamo->estado, ['revisado', 'rechazado por sistema']) ? 'disabled' : '' }}>Guardar</button>
+                <button type="button" onclick="confirmarAccion('guardar')" class="btn btn-primary btnprestamo"
+                    {{ in_array($prestamo->estado, ['revisado', 'rechazado por sistema']) ? 'disabled' : '' }}>Guardar</button>
                 <button type="button" class="btn btn-secondary btnprestamo" onclick="imprimirPDF()">Imprimir</button>
 
-                
+
                 <a href="{{ url('admin/creditos') }}" class="btn btn-secondary btnprestamo">Cancelar</a>
             </div>
         </div>
@@ -376,96 +389,105 @@
 
     <script>
         function imprimirPDF() {
-        var prestamoId = '{{$prestamo->id}}';
-        var url = '{{ url('/generar-pdf')}}' + '/' + prestamoId;
+            var prestamoId = '{{ $prestamo->id }}';
+            var url = '{{ url('/generar-pdf') }}' + '/' + prestamoId;
 
-        // Abre la URL en una nueva pestaña
-        window.open(url, '_blank');
-    }
+            // Abre la URL en una nueva pestaña
+            window.open(url, '_blank');
+        }
 
 
         function verificarCondiciones() {
-    var rentabilidadVentas = parseFloat('{{ $rentabilidad_ventas }}');
-    var margenVentas = parseFloat('{{ $margenventas }}');
-    var liquidez = parseFloat('{{ $liquidez }}');
-    var roa = parseFloat('{{ $roa }}');
-    var capitalTrabajo = parseFloat('{{ $capital_trabajo }}');
-    var totalPrestamo = parseFloat('{{ $totalprestamo }}');
-    var roe = parseFloat('{{ $roe }}');
-    var solvencia = parseFloat('{{ $solvencia }}');
-    var indiceEndeudamiento = parseFloat('{{ $indice_endeudamiento }}');
-    var cuotaExcedente = parseFloat('{{ $cuotaexcedente }}');
-    var saldoFinal = parseFloat('{{ $saldo_final }}');
-    var cuotaprestamo = parseFloat('{{ $cuotaprestamo }}');
+            var destino = '{{ $prestamo->destino }}';
+            var rentabilidadVentas = parseFloat('{{ $rentabilidad_ventas }}');
+            var margenVentas = parseFloat('{{ $margenventas }}');
+            var liquidez = parseFloat('{{ $liquidez }}');
+            var roa = parseFloat('{{ $roa }}');
+            var capitalTrabajo = parseFloat('{{ $capital_trabajo }}');
+            var totalPrestamo = parseFloat('{{ $totalprestamo }}');
+            var roe = parseFloat('{{ $roe }}');
+            var solvencia = parseFloat('{{ $solvencia }}');
+            var indiceEndeudamiento = parseFloat('{{ $indice_endeudamiento }}');
+            var cuotaExcedente = parseFloat('{{ $cuotaexcedente }}');
+            var saldoFinal = parseFloat('{{ $saldo_final }}');
+            var cuotaprestamo = parseFloat('{{ $cuotaprestamo }}');
 
-    if (Math.abs(rentabilidadVentas - margenVentas) > 5 ||
-        liquidez <= 1 ||
-        roa <= 5 ||
-        capitalTrabajo <= totalPrestamo ||
-        roe <= 10 ||
-        solvencia > 1 ||
-        indiceEndeudamiento > 40 ||
-        cuotaExcedente >= 1 ||
-        saldoFinal <= cuotaprestamo) {
-        return 'rechazado por sistema';
-    }
+            if (destino === 'activo fijo' && liquidez > 1 && roa > 5 &&
+                roe > 10 &&
+                solvencia < 1 &&
+                indiceEndeudamiento < 40 &&
+                cuotaExcedente < 1 &&
+                saldoFinal > cuotaprestamo) {
+                return 'revisado'; // No realiza validaciones adicionales
+            }
 
-    return 'revisado';
-}
+            if (Math.abs(rentabilidadVentas - margenVentas) > 5 ||
+                liquidez <= 1 ||
+                roa <= 5 ||
+                capitalTrabajo <= totalPrestamo ||
+                roe <= 10 ||
+                solvencia > 1 ||
+                indiceEndeudamiento > 40 ||
+                cuotaExcedente >= 1 ||
+                saldoFinal <= cuotaprestamo) {
+                return 'rechazado por sistema';
+            }
 
-function confirmarAccion(accion) {
-        var comentarioElement = document.getElementById('comentario');
-        var comentarioadministradorElement = document.getElementById('comentarioadministrador');
-
-        var comentario = comentarioElement ? comentarioElement.value : null;
-        var comentarioadministrador = comentarioadministradorElement ? comentarioadministradorElement.value : null;
-
-
-        var accionTexto;
-        if (accion === 'aprobar') {
-            accionTexto = 'aprobar';
-        } else if (accion === 'rechazar') {
-            accionTexto = 'rechazar';
-        } else if (accion === 'observar') {
-            accionTexto = 'observar';
-        } else if (accion === 'guardar') {
-            accionTexto = 'guardar';
-        } else {
-            return;
+            return 'revisado';
         }
 
-        var confirmacion = confirm('¿Está seguro que desea ' + accionTexto + ' este crédito?');
-        if (confirmacion) {
-        var estado = verificarCondiciones();
-        enviarSolicitud(accion, comentario, comentarioadministrador, estado);
-    }
-    }
+        function confirmarAccion(accion) {
+            var comentarioElement = document.getElementById('comentario');
+            var comentarioadministradorElement = document.getElementById('comentarioadministrador');
 
-    function enviarSolicitud(accion, comentario, comentarioadministrador, estado) {
-    var creditoid = document.getElementById('credito_id').value;
-    var data = {
-        _token: '{{ csrf_token() }}',
-        id: creditoid,
-        comentario: comentario,
-        comentarioadministrador: comentarioadministrador,
-        accion: accion,
-        estado: estado
-    };
+            var comentario = comentarioElement ? comentarioElement.value : null;
+            var comentarioadministrador = comentarioadministradorElement ? comentarioadministradorElement.value : null;
 
-    $.ajax({
-        url: '{{ url('/admin/credito')}}/'+accion,
-        type: 'GET',
-        data: data,
-        success: function(response) {
-            alert(response.mensaje);
-            window.location.href = response.redirect;
-        },
-        error: function(xhr) {
-            console.error(xhr);
-            alert('Ocurrió un error al realizar la acción.');
+
+            var accionTexto;
+            if (accion === 'aprobar') {
+                accionTexto = 'aprobar';
+            } else if (accion === 'rechazar') {
+                accionTexto = 'rechazar';
+            } else if (accion === 'observar') {
+                accionTexto = 'observar';
+            } else if (accion === 'guardar') {
+                accionTexto = 'guardar';
+            } else {
+                return;
+            }
+
+            var confirmacion = confirm('¿Está seguro que desea ' + accionTexto + ' este crédito?');
+            if (confirmacion) {
+                var estado = verificarCondiciones();
+                enviarSolicitud(accion, comentario, comentarioadministrador, estado);
+            }
         }
-    });
-}
+
+        function enviarSolicitud(accion, comentario, comentarioadministrador, estado) {
+            var creditoid = document.getElementById('credito_id').value;
+            var data = {
+                _token: '{{ csrf_token() }}',
+                id: creditoid,
+                comentario: comentario,
+                comentarioadministrador: comentarioadministrador,
+                accion: accion,
+                estado: estado
+            };
+
+            $.ajax({
+                url: '{{ url('/admin/credito') }}/' + accion,
+                type: 'GET',
+                data: data,
+                success: function(response) {
+                    alert(response.mensaje);
+                    window.location.href = response.redirect;
+                },
+                error: function(xhr) {
+                    console.error(xhr);
+                    alert('Ocurrió un error al realizar la acción.');
+                }
+            });
+        }
     </script>
 @endsection
-
