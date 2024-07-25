@@ -389,6 +389,7 @@
 
 
     function verificarCondiciones() {
+        var destino = '{{ $prestamo->destino }}';
         var rentabilidadVentas = parseFloat('{{ $rentabilidad_ventas }}');
         var margenVentas = parseFloat('{{ $margenventas }}');
         var liquidez = parseFloat('{{ $liquidez }}');
