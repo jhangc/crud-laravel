@@ -406,7 +406,7 @@
             roe > 10  &&
             solvencia < 1 &&
             indiceEndeudamiento < 40 &&
-            cuotaExcedente > 1 &&
+            cuotaExcedente < 1 &&
             saldoFinal > cuotaprestamo) {
                 return 'revisado'; // No realiza validaciones adicionales
         }
