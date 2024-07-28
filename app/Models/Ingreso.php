@@ -19,6 +19,10 @@ class Ingreso extends Model
         'fecha_pago',
         'hora_pago',
         'monto',
+        'monto_mora',          // Nuevo campo
+        'dias_mora',           // Nuevo campo
+        'porcentaje_mora',     // Nuevo campo
+        'monto_total_pago_final', // Nuevo campo
         'sucursal_id',
     ];
 

@@ -925,17 +925,34 @@ class creditoController extends Controller
                 ->get();
 
             foreach ($cuotas as $cuota) {
+                // Asegurarse de que fecha_vencimiento sea una instancia de Carbon
+                $fecha_vencimiento = Carbon::parse($cuota->fecha);
+
                 $ingreso = Ingreso::where('prestamo_id', $id)
                     ->where('numero_cuota', $cuota->numero)
                     ->where('cliente_id', $clienteCredito->cliente_id)
                     ->first();
+
                 if ($ingreso) {
                     $cuota->estado = 'pagado';
-                    $cuota->fecha_pago =  $ingreso->fecha_pago;
-                } elseif (now()->greaterThan($cuota->fecha_vencimiento)) {
+                    $cuota->fecha_pago = $ingreso->fecha_pago;
+                    $cuota->dias_mora = $ingreso->dias_mora;
+                    $cuota->monto_mora = $ingreso->monto_mora;
+                    $cuota->porcentaje_mora = $ingreso->porcentaje_mora;
+                    $cuota->monto_total_pago_final = round($ingreso->monto+$ingreso->monto_mora, 2);
+                    $cuota->ingreso_id = $ingreso->id;
+                } elseif (now()->greaterThan($fecha_vencimiento)) {
                     $cuota->estado = 'vencida';
+                    $cuota->dias_mora = now()->diffInDays($fecha_vencimiento);
+                    $cuota->porcentaje_mora = 0.3; // 0.3% por día de mora por cada mil soles
+                    $cuota->monto_mora = round(($cuota->monto * $cuota->porcentaje_mora / 1000) * $cuota->dias_mora * 5, 2);
+                    $cuota->monto_total_pago_final = round($cuota->monto + $cuota->monto_mora, 2);
                 } else {
                     $cuota->estado = 'pendiente';
+                    $cuota->dias_mora = 0;
+                    $cuota->monto_mora = 0;
+                    $cuota->porcentaje_mora = 0;
+                    $cuota->monto_total_pago_final = round($cuota->monto, 2);
                 }
             }
             $cuotasPorCliente[$clienteCredito->cliente_id] = $cuotas;
@@ -943,22 +960,21 @@ class creditoController extends Controller
 
         return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasPorCliente'));
     }
-
     public function pagocuota(Request $request)
     {
         $user = auth()->user();
-
+    
         // Retrieve the last open cash transaction for the logged-in user
         $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
             ->whereNull('hora_cierre')
             ->orderBy('created_at', 'desc')
             ->first();
-
+    
         // Check if there is an open cash transaction
         if (!$ultimaTransaccion) {
             return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
         }
-
+    
         // Register the income
         $ingreso = Ingreso::create([
             'transaccion_id' => $ultimaTransaccion->id,
@@ -966,20 +982,22 @@ class creditoController extends Controller
             'cliente_id' => $request->cliente_id,
             'cronograma_id' => $request->cronograma_id,
             'numero_cuota' => $request->numero_cuota,
-            'monto' => $request->monto,
+            'monto' =>$request->monto, // Monto cuota
+            'monto_mora' => $request->monto_mora,
+            'dias_mora' => $request->dias_mora,
+            'porcentaje_mora' => $request->porcentaje_mora,
             'fecha_pago' => now()->toDateString(),
             'hora_pago' => now()->toTimeString(),
             'sucursal_id' => $user->sucursal_id,
+            'monto_total_pago_final' => round($request->monto-$request->monto_mora,2), // Monto total a pagar (incluyendo mora)
         ]);
-
+    
         // Update the total income in the cash transaction
         $ultimaTransaccion->cantidad_ingresos = $ultimaTransaccion->cantidad_ingresos + $request->monto;
         $ultimaTransaccion->save();
-
+    
         return response()->json(['success' => 'Cuota pagada con éxito', 'ingreso_id' => $ingreso->id]);
     }
-
-
 
 
     public function viewpagares()

@@ -1027,13 +1027,19 @@ class PdfController extends Controller
             return response()->json(['error' => 'Pago no encontrado.'], 404);
         }
 
-        $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
-        $cliente = \App\Models\cliente::find($ingreso->cliente_id);
+        $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
+        $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
+        $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
 
-        $user = auth()->user();
-        $montoTotalGrupo = $ingreso->monto_cuota;
-        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'montoTotalGrupo', 'cliente', 'ingreso'))
-            ->setPaper([0, 0, 205, 400]);
+        // Obtener la siguiente cuota
+        $siguienteCuota = \App\Models\Cronograma::where('id_prestamo', $ingreso->prestamo_id)
+            ->where('numero', '>', $ingreso->numero_cuota)
+            ->orderBy('numero', 'asc')
+            ->first();
+        $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
+
+        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota'))
+            ->setPaper([0, 0, 200, 400]); // Ajustar el tamaño del papel si es necesario
         return $pdf->stream('ticket.pdf');
     }
 

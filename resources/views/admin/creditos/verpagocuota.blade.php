@@ -11,6 +11,9 @@
                     <th>Cuota</th>
                     <th>Monto</th>
                     <th>Fecha Vencimiento</th>
+                    <th>Días de Mora</th>
+                    <th>Monto de Mora</th>
+                    <th>Monto Total a Pagar</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
@@ -19,8 +22,11 @@
                 @foreach ($cuotasPorCliente[$clienteCredito->cliente_id] as $cuota)
                     <tr>
                         <td>{{ $cuota->numero }}</td>
-                        <td>{{ $cuota->monto }}</td>
+                        <td>{{ number_format($cuota->monto, 2) }}</td>
                         <td>{{ $cuota->fecha }}</td>
+                        <td>{{ $cuota->dias_mora }}</td>
+                        <td>{{ number_format($cuota->monto_mora, 2) }}</td>
+                        <td>{{ number_format($cuota->monto_total_pago_final, 2) }}</td>
                         <td>
                             @if ($cuota->estado == 'pagado')
                                 <span class="badge badge-success">Pagado</span>
@@ -31,13 +37,15 @@
                             @endif
                         </td>
                         <td>
-                            @if ($cuota->estado == 'pendiente')
-                                <button class="btn btn-primary" onclick="pagarCuota({{ $credito->id }}, {{ $clienteCredito->cliente_id }}, {{ $cuota->id }}, {{ $cuota->numero }}, {{ $cuota->monto }})">Pagar</button>
+                            @if ($cuota->estado == 'pagado')
+                                {{ $cuota->fecha_pago }}
+                                <a href="{{ route('generar.ticket.pago', ['id' =>$cuota->ingreso_id]) }}" target="_blank" class="btn btn-info">ver Ticket</a>
+                            @elseif ($cuota->estado == 'pendiente' || $cuota->estado == 'vencida')
+                                <button class="btn btn-{{ $cuota->estado == 'vencida' ? 'warning' : 'primary' }}" onclick="pagarCuota({{ $credito->id }}, {{ $clienteCredito->cliente_id }}, {{ $cuota->id }}, {{ $cuota->numero }}, {{ $cuota->monto_total_pago_final }}, {{ $cuota->monto }}, {{ $cuota->dias_mora }}, {{ $cuota->porcentaje_mora }})">Pagar</button>
                             @else
-                                {{$cuota->fecha_pago}}
+                                {{ $cuota->fecha_pago }}
                             @endif
                         </td>
-
                     </tr>
                 @endforeach
             </tbody>
@@ -48,10 +56,10 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-function pagarCuota(prestamo_id, cliente_id, cronograma_id, numero_cuota, monto) {
+function pagarCuota(prestamo_id, cliente_id, cronograma_id, numero_cuota, monto_total_pago_final, monto, dias_mora, porcentaje_mora) {
     Swal.fire({
         title: '¿Está seguro?',
-        text: `Está a punto de pagar la cuota #${numero_cuota} por un monto de S/. ${monto}.`,
+        text: `Está a punto de pagar la cuota #${numero_cuota} por un monto de S/. ${monto_total_pago_final.toFixed(2)}.`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Sí, pagar',
@@ -67,7 +75,10 @@ function pagarCuota(prestamo_id, cliente_id, cronograma_id, numero_cuota, monto)
                     cliente_id: cliente_id,
                     cronograma_id: cronograma_id,
                     numero_cuota: numero_cuota,
-                    monto: monto
+                    monto: monto_total_pago_final,
+                    monto_mora: (monto_total_pago_final - monto).toFixed(2),
+                    dias_mora: dias_mora,
+                    porcentaje_mora: porcentaje_mora
                 },
                 success: function(response) {
                     Swal.fire({
