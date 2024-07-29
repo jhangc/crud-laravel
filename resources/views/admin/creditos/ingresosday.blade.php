@@ -70,9 +70,25 @@
 
             <div id="datosCierre" style="display:none;">
                 <h2>Datos de Cierre</h2>
-                <p>Saldo Final Esperado: <span id="saldoFinalEsperado"></span></p>
-                <p>Saldo Final Real: <span id="saldoFinalReal"></span></p>
-                <p>Desajuste: <span id="desajuste"></span></p>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Saldo Final Esperado</th>
+                        <td><span id="saldoFinalEsperado"></span></td>
+                    </tr>
+                    <tr>
+                        <th>Saldo Final Real</th>
+                        <td><span id="saldoFinalReal"></span></td>
+                    </tr>
+                    <tr>
+                        <th>Desajuste</th>
+                        <td><span id="desajuste"></span></td>
+                    </tr>
+                    <tr>
+                        <th>Mensaje de Desajuste</th>
+                        <td><span id="mensajeDesajuste" class="text-danger"></span></td>
+                    </tr>
+                </table>
+                <button type="button" class="btn btn-secondary" onclick="generarPDF()">Generar PDF</button>
             </div>
         </div>
     </div>
@@ -149,6 +165,16 @@
                         document.getElementById('saldoFinalEsperado').innerText = data.saldoFinalEsperado;
                         document.getElementById('saldoFinalReal').innerText = data.saldoFinalReal;
                         document.getElementById('desajuste').innerText = data.desajuste;
+
+                        let mensajeDesajuste = '';
+                        if (parseFloat(data.desajuste) === 0) {
+                            mensajeDesajuste = 'No hay desajuste.';
+                        } else if (parseFloat(data.desajuste) > 0) {
+                            mensajeDesajuste = 'Sobró dinero en la caja.';
+                        } else {
+                            mensajeDesajuste = 'Falto dinero en la caja.';
+                        }
+                        document.getElementById('mensajeDesajuste').innerText = mensajeDesajuste;
                         document.getElementById('datosCierre').style.display = 'block';
                     } else {
                         document.getElementById('datosCierre').style.display = 'none';
@@ -169,6 +195,11 @@
                     });
                 }
             });
+    }
+
+    function generarPDF() {
+        var cajaId = document.getElementById('caja_id').value;
+        window.open('/admin/generar-transacciones-pdf/' + cajaId, '_blank');
     }
 </script>
 @endsection

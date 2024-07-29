@@ -1027,7 +1027,7 @@ class PdfController extends Controller
             return response()->json(['error' => 'Pago no encontrado.'], 404);
         }
 
-        $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
+        $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
         $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
         $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
 
@@ -1042,5 +1042,144 @@ class PdfController extends Controller
             ->setPaper([0, 0, 200, 400]); // Ajustar el tamaño del papel si es necesario
         return $pdf->stream('ticket.pdf');
     }
+    public function generarTransaccionesPDF($caja_id)
+    {
+        $caja = \App\Models\Caja::findOrFail($caja_id);
+        $today = \Carbon\Carbon::today();
 
+        // Verificar si la caja tiene una transacción abierta o cerrada hoy
+        $ultimaTransaccion = $caja->transacciones()->whereDate('created_at', $today)->latest()->first();
+
+        if (!$ultimaTransaccion) {
+            return redirect()->back()->with('error', 'No hay transacciones abiertas para esta caja en el día de hoy.');
+        }
+
+        $cajaCerrada = $ultimaTransaccion->hora_cierre ? true : false;
+        $ingresos = \App\Models\Ingreso::where('transaccion_id', $ultimaTransaccion->id)
+                            ->with('cliente', 'transaccion.user')
+                            ->get();
+
+        $egresos = \App\Models\Egreso::where('transaccion_id', $ultimaTransaccion->id)
+                        ->with(['prestamo.clientes', 'transaccion.user'])
+                        ->get();
+
+        $gastos = \App\Models\Gasto::where('caja_transaccion_id', $ultimaTransaccion->id)
+                                ->with('user')
+                                ->get();
+
+        // Preparar datos de egresos con clientes
+        $egresosConClientes = $egresos->map(function($egreso) {
+            return [
+                'hora_egreso' => $egreso->hora_egreso,
+                'monto' => number_format($egreso->monto, 2),
+                'clientes' => $egreso->prestamo->clientes->pluck('nombre')->toArray(),
+                'usuario' => $egreso->transaccion->user->name
+            ];
+        });
+
+        // Preparar datos de gastos
+        $gastosConDetalles = $gastos->map(function($gasto) {
+            return [
+                'hora_gasto' => $gasto->created_at->format('H:i:s'),
+                'monto' => number_format($gasto->monto_gasto, 2),
+                'numero_documento' => $gasto->numero_doc,
+                'usuario' => $gasto->user->name
+            ];
+        });
+
+        $datosCierre = null;
+        $desajuste = null;
+        if ($cajaCerrada) {
+            $datosCierre = json_decode($ultimaTransaccion->json_cierre, true);
+
+            // Calcular el saldo final real
+            $saldoFinalReal = array_sum(array_map(function($cantidad, $valor) {
+                return $cantidad * $valor;
+            }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
+
+            $saldoFinalReal += array_sum(array_map(function($cantidad, $valor) {
+                return $cantidad * $valor;
+            }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
+
+            $saldoFinalReal += $datosCierre['depositos'];
+
+            // Calcular el saldo final esperado
+            $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
+
+            $desajuste =  $saldoFinalReal-$saldoFinalEsperado;
+
+            // Formatear valores a dos decimales
+            $saldoFinalReal = number_format($saldoFinalReal, 2);
+            $saldoFinalEsperado = number_format($saldoFinalEsperado, 2);
+            $desajuste = number_format($desajuste, 2);
+        }
+
+        $pdf = Pdf::loadView('pdf.transacciones', compact(
+            'caja', 'ingresos', 'egresos', 'egresosConClientes', 'gastosConDetalles', 'saldoFinalReal', 'saldoFinalEsperado', 'desajuste','ultimaTransaccion'
+        ));
+
+        return $pdf->stream('transacciones.pdf');
+    }
+    public function generarArqueoPDF($id)
+    {
+        $transaccion = \App\Models\CajaTransaccion::findOrFail($id);
+
+        if (!$transaccion) {
+            return redirect()->back()->with('error', 'Transacción no encontrada.');
+        }
+
+        $ingresos = \App\Models\Ingreso::where('transaccion_id', $transaccion->id)->with('cliente', 'transaccion.user')->get();
+        $egresos = \App\Models\Egreso::where('transaccion_id', $transaccion->id)->with(['prestamo.clientes', 'transaccion.user'])->get();
+        $gastos = \App\Models\Gasto::where('caja_transaccion_id', $transaccion->id)->with('user')->get();
+
+        $datosCierre = json_decode($transaccion->json_cierre, true);
+
+        // Preparar datos de egresos con clientes
+        $egresosConClientes = $egresos->map(function($egreso) {
+            return [
+                'hora_egreso' => $egreso->hora_egreso,
+                'monto' => number_format($egreso->monto, 2),
+                'clientes' => $egreso->prestamo->clientes->pluck('nombre')->toArray(),
+                'usuario' => $egreso->transaccion->user->name
+            ];
+        });
+
+        // Preparar datos de gastos
+        $gastosConDetalles = $gastos->map(function($gasto) {
+            return [
+                'hora_gasto' => $gasto->created_at->format('H:i:s'),
+                'monto' => number_format($gasto->monto_gasto, 2),
+                'numero_documento' => $gasto->numero_doc,
+                'usuario' => $gasto->user->name
+            ];
+        });
+
+        // Calcular el saldo final real
+        $saldoFinalReal = array_sum(array_map(function($cantidad, $valor) {
+            return $cantidad * $valor;
+        }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
+
+        $saldoFinalReal += array_sum(array_map(function($cantidad, $valor) {
+            return $cantidad * $valor;
+        }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
+
+        $saldoFinalReal += $datosCierre['depositos'];
+
+        // Calcular el saldo final esperado
+        $saldoFinalEsperado = $transaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
+
+        $desajuste = $saldoFinalEsperado - $saldoFinalReal;
+
+        // Formatear valores a dos decimales
+        $saldoFinalReal = number_format($saldoFinalReal, 2);
+        $saldoFinalEsperado = number_format($saldoFinalEsperado, 2);
+        $desajuste = number_format($desajuste, 2);
+
+        $data = compact('transaccion', 'ingresos', 'egresosConClientes', 'gastosConDetalles', 'saldoFinalReal', 'saldoFinalEsperado', 'desajuste', 'datosCierre');
+
+        $pdf = Pdf::loadView('pdf.arqueo', $data);
+
+        return $pdf->stream('arqueo.pdf');
+    }
+  
 }

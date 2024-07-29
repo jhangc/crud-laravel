@@ -94,8 +94,7 @@ class AdminController extends Controller
         $today = Carbon::today();
 
         // Verificar si la caja tiene una transacción abierta o cerrada hoy
-        $ultimaTransaccion = $caja->transacciones()->whereDate('created_at', $today)->latest()->first();
-
+        $ultimaTransaccion = $caja->transacciones()->whereDate('created_at', $today)->orderBy('created_at', 'desc')->first();
         if (!$ultimaTransaccion) {
             return response()->json([
                 'success' => false,
@@ -105,17 +104,14 @@ class AdminController extends Controller
 
         $cajaCerrada = $ultimaTransaccion->hora_cierre ? true : false;
         $ingresos = Ingreso::where('transaccion_id', $ultimaTransaccion->id)
-                            ->whereDate('created_at', $today)
                             ->with('cliente', 'transaccion.user') // Incluir relaciones
                             ->get();
 
         $egresos = Egreso::where('transaccion_id', $ultimaTransaccion->id)
-                          ->whereDate('created_at', $today)
                           ->with(['prestamo.clientes', 'transaccion.user']) // Incluir relaciones
                           ->get();
 
         $gastos = Gasto::where('caja_transaccion_id', $ultimaTransaccion->id)
-                          ->whereDate('created_at', $today)
                           ->with('user') // Incluir relación con el usuario
                           ->get();
 
@@ -158,7 +154,7 @@ class AdminController extends Controller
             // Calcular el saldo final esperado
             $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
 
-            $desajuste = $saldoFinalEsperado - $saldoFinalReal;
+            $desajuste =  $saldoFinalReal-$saldoFinalEsperado;
 
             // Formatear valores a dos decimales
             $saldoFinalReal = number_format($saldoFinalReal, 2);

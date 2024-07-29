@@ -163,3 +163,9 @@ Route::get('/admin/gastos/{id}/edit', [GastoController::class, 'edit'])->name('g
 Route::post('/admin/gastos', [GastoController::class, 'store'])->name('gastos.store')->middleware('auth');
 Route::delete('/admin/gastos/{id}', [GastoController::class, 'destroy'])->name('gastos.destroy')->middleware('auth');
 
+//reporte de cja diairo
+Route::get('/admin/generar-transacciones-pdf/{caja_id}', [PDFController::class, 'generarTransaccionesPDF'])->name('caja.generarTransaccionesPDF');
+Route::get('/admin/caja/generar-arqueo-pdf/{id}', [PdfController::class, 'generarArqueoPDF'])->name('pdf.generarArqueoPDF');
+
+
+

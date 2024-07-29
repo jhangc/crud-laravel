@@ -913,7 +913,7 @@ class creditoController extends Controller
         $transaccion->fecha_cierre = now();
         $transaccion->save();
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'transaccion_id' => $transaccion->id]);
     }
     public function verpagocuota($id)
     {

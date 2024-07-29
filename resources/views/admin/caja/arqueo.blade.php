@@ -186,12 +186,22 @@
             .then(data => {
                 if (data.success) {
                     Swal.fire({
-                        title: 'Éxito',
-                        text: 'Arqueo guardado correctamente.',
-                        icon: 'success'
-                    }).then(() => {
+                    title: 'Éxito',
+                    text: 'Arqueo guardado correctamente.',
+                    icon: 'success'
+                }).then(() => {
+                    var newWindow = window.open('/admin/caja/generar-arqueo-pdf/' + data.transaccion_id, '_blank');
+                    if (newWindow) {
+                        newWindow.focus();
                         window.location.href = '/';
-                    });
+                    } else {
+                        Swal.fire({
+                            title: 'Aviso',
+                            text: 'Por favor, permite las ventanas emergentes para ver el PDF.',
+                            icon: 'warning'
+                        });
+                    }
+                });
                 } else {
                     Swal.fire({
                         title: 'Error',
