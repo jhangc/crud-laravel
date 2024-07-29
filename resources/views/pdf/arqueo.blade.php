@@ -28,6 +28,7 @@
 <body>
     <h1>Arqueo de Caja</h1>
     <h3>Fecha: {{ \Carbon\Carbon::parse($transaccion->updated_at)->format('d/m/Y H:i:s') }}</h3>
+    <h3>Usuario: {{ $usuario->name }}</h3>
 
     <h2>Billetes</h2>
     <table>

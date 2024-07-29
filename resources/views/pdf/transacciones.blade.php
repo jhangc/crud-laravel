@@ -27,7 +27,7 @@
 </head>
 <body>
     <div class="header">
-        <h2>Transacciones de Caja</h2>
+        <h2>Transacciones de  {{$caja->nombre}}</h2>
         <p>Fecha: {{ \Carbon\Carbon::now()->format('d/m/Y') }}</p>
     </div>
     <div class="content">
