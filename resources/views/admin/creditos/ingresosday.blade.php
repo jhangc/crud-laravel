@@ -76,7 +76,7 @@
                         <td><span id="saldoFinalEsperado"></span></td>
                     </tr>
                     <tr>
-                        <th>Saldo Final Real</th>
+                        <th>Saldo Final Real-Caja</th>
                         <td><span id="saldoFinalReal"></span></td>
                     </tr>
                     <tr>

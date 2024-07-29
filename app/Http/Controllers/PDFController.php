@@ -1162,7 +1162,7 @@ class PdfController extends Controller
         $egresosConClientes = $egresos->map(function ($egreso) {
             return [
                 'hora_egreso' => $egreso->hora_egreso,
-                'monto' => number_format($egreso->monto, 2),
+                'monto' => $egreso->monto,
                 'clientes' => $egreso->prestamo->clientes->pluck('nombre')->toArray(),
                 'usuario' => $egreso->transaccion->user->name
             ];
@@ -1172,12 +1172,12 @@ class PdfController extends Controller
         $gastosConDetalles = $gastos->map(function ($gasto) {
             return [
                 'hora_gasto' => $gasto->created_at->format('H:i:s'),
-                'monto' => number_format($gasto->monto_gasto, 2),
-                'numero_documento' => $gasto->numero_doc,
+                'monto' => $gasto->monto_gasto,
+                'numero_documento' => $gasto->numero_doc.'-'.$gasto->serie_doc,
+                'responsable' => $gasto->numero_documento_responsable.'-'.$gasto->nombre_responsable,
                 'usuario' => $gasto->user->name
             ];
         });
-
         $datosCierre = null;
         $desajuste = null;
         if ($cajaCerrada) {
@@ -1200,9 +1200,9 @@ class PdfController extends Controller
             $desajuste =  $saldoFinalReal - $saldoFinalEsperado;
 
             // Formatear valores a dos decimales
-            $saldoFinalReal = number_format($saldoFinalReal, 2);
-            $saldoFinalEsperado = number_format($saldoFinalEsperado, 2);
-            $desajuste = number_format($desajuste, 2);
+            $saldoFinalReal = $saldoFinalReal;
+            $saldoFinalEsperado = $saldoFinalEsperado;
+            $desajuste = $desajuste;
         }
 
         $pdf = Pdf::loadView('pdf.transacciones', compact(
@@ -1237,7 +1237,7 @@ class PdfController extends Controller
         $egresosConClientes = $egresos->map(function ($egreso) {
             return [
                 'hora_egreso' => $egreso->hora_egreso,
-                'monto' => number_format($egreso->monto, 2),
+                'monto' => $egreso->monto,
                 'clientes' => $egreso->prestamo->clientes->pluck('nombre')->toArray(),
                 'usuario' => $egreso->transaccion->user->name
             ];
@@ -1247,11 +1247,13 @@ class PdfController extends Controller
         $gastosConDetalles = $gastos->map(function ($gasto) {
             return [
                 'hora_gasto' => $gasto->created_at->format('H:i:s'),
-                'monto' => number_format($gasto->monto_gasto, 2),
-                'numero_documento' => $gasto->numero_doc,
+                'monto' => $gasto->monto_gasto,
+                'numero_documento' => $gasto->numero_doc.'-'.$gasto->serie_doc,
+                'responsable' => $gasto->numero_documento_responsable.'-'.$gasto->nombre_responsable,
                 'usuario' => $gasto->user->name
             ];
         });
+        
 
         // Calcular el saldo final real
         $saldoFinalReal = array_sum(array_map(function ($cantidad, $valor) {
@@ -1275,7 +1277,7 @@ class PdfController extends Controller
         $desajuste = number_format($desajuste, 2);
 
         $usuario = $transaccion->user;
-
+        // dd($egresosConClientes);
         $data = compact('transaccion', 'ingresos', 'egresosConClientes', 'gastosConDetalles', 'saldoFinalReal', 'saldoFinalEsperado', 'desajuste', 'datosCierre', 'usuario');
 
         $pdf = Pdf::loadView('pdf.arqueo', $data);

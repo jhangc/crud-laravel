@@ -85,18 +85,20 @@
             </tr>
         </thead>
         <tbody>
+            @php $totalIngresos = 0; @endphp
             @foreach ($ingresos as $ingreso)
                 <tr>
                     <td>{{ $ingreso->hora_pago }}</td>
-                    <td>S/. {{ number_format($ingreso->monto, 2) }}</td>
+                    <td>S/. {{ number_format(floatval($ingreso->monto), 2) }}</td>
                     <td>{{ $ingreso->cliente->nombre }}</td>
                     <td>{{ $ingreso->transaccion->user->name }}</td>
                     <td>{{ $ingreso->numero_cuota }}</td>
                 </tr>
+                @php $totalIngresos += floatval($ingreso->monto); @endphp
             @endforeach
         </tbody>
     </table>
-    <h3>Total de Ingresos: S/. {{ number_format($ingresos->sum('monto'), 2) }}</h3>
+    <h3>Total de Ingresos: S/. {{ number_format($totalIngresos, 2) }}</h3>
 
     <h2>Egresos</h2>
     <table>
@@ -109,17 +111,19 @@
             </tr>
         </thead>
         <tbody>
+            @php $totalEgresos = 0; @endphp
             @foreach ($egresosConClientes as $egreso)
                 <tr>
                     <td>{{ $egreso['hora_egreso'] }}</td>
-                    <td>S/. {{ $egreso['monto'] }}</td>
+                    <td>S/. {{ number_format($egreso['monto'], 2) }}</td>
                     <td>{{ implode(', ', $egreso['clientes']) }}</td>
                     <td>{{ $egreso['usuario'] }}</td>
                 </tr>
+                @php $totalEgresos += floatval($egreso['monto']); @endphp
             @endforeach
         </tbody>
     </table>
-    <h3>Total de Egresos: S/. {{ number_format($egresosConClientes->sum('monto'), 2) }}</h3>
+    <h3>Total de Egresos: S/. {{ number_format($totalEgresos, 2) }}</h3>
 
     <h2>Gastos</h2>
     <table>
@@ -128,20 +132,24 @@
                 <th>Hora de Gasto</th>
                 <th>Monto</th>
                 <th>Número de Documento</th>
+                <th>Responsable</th>
                 <th>Usuario</th>
             </tr>
         </thead>
         <tbody>
+            @php $totalGastos = 0; @endphp
             @foreach ($gastosConDetalles as $gasto)
                 <tr>
                     <td>{{ $gasto['hora_gasto'] }}</td>
-                    <td>S/. {{ $gasto['monto'] }}</td>
+                    <td>S/. {{ number_format(floatval($gasto['monto']), 2) }}</td>
                     <td>{{ $gasto['numero_documento'] }}</td>
+                    <td>{{$gasto['responsable']}}</td>
                     <td>{{ $gasto['usuario'] }}</td>
                 </tr>
+                @php $totalGastos += floatval($gasto['monto']); @endphp
             @endforeach
         </tbody>
     </table>
-    <h3>Total de Gastos: S/. {{ number_format($gastosConDetalles->sum('monto'), 2) }}</h3>
+    <h3>Total de Gastos: S/. {{ number_format($totalGastos, 2) }}</h3>
 </body>
 </html>

@@ -46,18 +46,20 @@
                 </tr>
             </thead>
             <tbody>
+                @php $totalIngresos = 0; @endphp
                 @foreach($ingresos as $ingreso)
                 <tr>
                     <td>{{ $ingreso->hora_pago }}</td>
-                    <td>{{ number_format($ingreso->monto, 2) }}</td>
+                    <td>S/. {{ number_format($ingreso->monto, 2) }}</td>
                     <td>{{ $ingreso->cliente->nombre }}</td>
                     <td>{{ $ingreso->transaccion->user->name }}</td>
                     <td>{{ $ingreso->numero_cuota }}</td>
                 </tr>
+                @php $totalIngresos += floatval($ingreso->monto); @endphp
                 @endforeach
             </tbody>
         </table>
-        <p>Total de Ingresos: S/.{{ number_format($ingresos->sum('monto'), 2) }}</p>
+        <p>Total de Ingresos: S/.{{ number_format($totalIngresos, 2) }}</p>
 
         <h3>Egresos</h3>
         <table>
@@ -70,54 +72,60 @@
                 </tr>
             </thead>
             <tbody>
+                @php $totalEgresos = 0; @endphp
                 @foreach($egresosConClientes as $egreso)
                 <tr>
                     <td>{{ $egreso['hora_egreso'] }}</td>
-                    <td>{{ $egreso['monto'] }}</td>
+                    <td>S/. {{ number_format($egreso['monto'], 2) }}</td>
                     <td>{{ implode(', ', $egreso['clientes']) }}</td>
                     <td>{{ $egreso['usuario'] }}</td>
                 </tr>
+                @php $totalEgresos += floatval($egreso['monto']); @endphp
                 @endforeach
             </tbody>
         </table>
-        <p>Total de Egresos: S/.{{ number_format($egresos->sum('monto'), 2) }}</p>
+        <p>Total de Egresos: S/.{{ number_format($totalEgresos, 2) }}</p>
 
         <h3>Gastos</h3>
         <table>
-            <thead>
-                <tr>
-                    <th>Hora de Gasto</th>
-                    <th>Monto</th>
-                    <th>Número de Documento</th>
-                    <th>Usuario</th>
-                </tr>
-            </thead>
-            <tbody>
+        <thead>
+            <tr>
+                <th>Hora de Gasto</th>
+                <th>Monto</th>
+                <th>Número de Documento</th>
+                <th>Responsable</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $totalGastos = 0; @endphp
                 @foreach($gastosConDetalles as $gasto)
                 <tr>
                     <td>{{ $gasto['hora_gasto'] }}</td>
-                    <td>{{ $gasto['monto'] }}</td>
+                    <td>S/. {{ number_format($gasto['monto'], 2) }}</td>
                     <td>{{ $gasto['numero_documento'] }}</td>
+                    <td>{{$gasto['responsable']}}</td>
                     <td>{{ $gasto['usuario'] }}</td>
                 </tr>
-                @endforeach
-            </tbody>
-        </table>
-        <p>Total de Gastos: S/.{{ number_format($gastosConDetalles->sum('monto'), 2) }}</p>
+                @php $totalGastos += floatval($gasto['monto']); @endphp
+            @endforeach
+        </tbody>
+    </table>
+        <p>Total de Gastos: S/.{{ number_format($totalGastos, 2) }}</p>
 
         <h3>Datos de Cierre</h3>
         <table>
             <tr>
                 <th>Saldo Final Esperado</th>
-                <td>S/.{{ $saldoFinalEsperado }}</td>
+                <td>S/.{{ number_format($saldoFinalEsperado, 2) }}</td>
             </tr>
             <tr>
-                <th>Saldo Final Real</th>
-                <td>S/.{{ $saldoFinalReal }}</td>
+                <th>Saldo Final Real-Caja</th>
+                <td>S/.{{ number_format($saldoFinalReal, 2) }}</td>
             </tr>
             <tr>
                 <th>Desajuste</th>
-                <td>S/.{{ $desajuste }}</td>
+                <td>S/.{{ number_format($desajuste, 2) }}</td>
             </tr>
             <tr>
                 <th>Mensaje de Desajuste</th>
@@ -127,7 +135,7 @@
                     @elseif ($desajuste > 0)
                         Sobró dinero en la caja.
                     @else
-                      Falta dinero en la caja.
+                        Falta dinero en la caja.
                     @endif
                 </td>
             </tr>
