@@ -12,6 +12,7 @@ use App\Models\credito;
 use App\Models\CreditoCliente;
 use App\Models\Cronograma;
 use App\Models\cliente;
+use App\Models\CorrelativoCredito;
 
 
 class PdfController extends Controller
@@ -107,6 +108,15 @@ class PdfController extends Controller
             $totalMontoIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('monto');
         }
 
+        // Obtener correlativos generales y de los integrantes
+        $correlativosGenerales = CorrelativoCredito::where('id_prestamo', $id)
+            ->whereNull('id_cliente')
+            ->first();
+
+        $correlativosIntegrantes = CorrelativoCredito::where('id_prestamo', $id)
+            ->whereNotNull('id_cliente')
+            ->get();
+
         $data = compact(
             'prestamo',
             'responsable',
@@ -118,7 +128,9 @@ class PdfController extends Controller
             'totalMontoIndividuales',
             'totalAmortizacionGrupal',
             'totalMontoGrupal',
-            'sucursal'
+            'sucursal',
+            'correlativosGenerales',
+            'correlativosIntegrantes'
 
         );
 
@@ -195,23 +207,37 @@ class PdfController extends Controller
 
 
 
-    public function generatecrontratogrupalPDF(Request $request, $id)
+    public function generatecontratogrupalPDF(Request $request, $id)
     {
         $prestamo = credito::find($id);
+        if (!$prestamo) {
+            return response()->json(['error' => 'Crédito no encontrado'], 404);
+        }
+
+
+        CorrelativoCredito::generateCorrelativosGrupales($prestamo->id);
+
         $cuotas = Cronograma::where('id_prestamo', $id)->get();
-        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
-        //$responsable = auth()->user();
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->with('clientes')->get();
+
+        // Obtener correlativos generales y de los integrantes
+        $correlativosGenerales = CorrelativoCredito::where('id_prestamo', $id)
+            ->whereNull('id_cliente')
+            ->first();
+
+        // $correlativosIntegrantes = CorrelativoCredito::where('id_prestamo', $id)
+        //     ->whereNotNull('id_cliente')
+        //     ->get();
 
         $data = compact(
             'prestamo',
-            //'responsable',
             'cuotas',
-            'credito_cliente'
+            'credito_cliente',
+            'correlativosGenerales'
         );
 
-
-        $pdf = Pdf::loadView('pdf.contratogrupal', $data)->setPaper('a4');
-        return $pdf->stream('ticket.pdf');
+        $pdf = PDF::loadView('pdf.contratogrupal', $data)->setPaper('a4');
+        return $pdf->stream('contratogrupal.pdf');
     }
 
 
@@ -1173,8 +1199,8 @@ class PdfController extends Controller
             return [
                 'hora_gasto' => $gasto->created_at->format('H:i:s'),
                 'monto' => $gasto->monto_gasto,
-                'numero_documento' => $gasto->numero_doc.'-'.$gasto->serie_doc,
-                'responsable' => $gasto->numero_documento_responsable.'-'.$gasto->nombre_responsable,
+                'numero_documento' => $gasto->numero_doc . '-' . $gasto->serie_doc,
+                'responsable' => $gasto->numero_documento_responsable . '-' . $gasto->nombre_responsable,
                 'usuario' => $gasto->user->name
             ];
         });
@@ -1248,12 +1274,12 @@ class PdfController extends Controller
             return [
                 'hora_gasto' => $gasto->created_at->format('H:i:s'),
                 'monto' => $gasto->monto_gasto,
-                'numero_documento' => $gasto->numero_doc.'-'.$gasto->serie_doc,
-                'responsable' => $gasto->numero_documento_responsable.'-'.$gasto->nombre_responsable,
+                'numero_documento' => $gasto->numero_doc . '-' . $gasto->serie_doc,
+                'responsable' => $gasto->numero_documento_responsable . '-' . $gasto->nombre_responsable,
                 'usuario' => $gasto->user->name
             ];
         });
-        
+
 
         // Calcular el saldo final real
         $saldoFinalReal = array_sum(array_map(function ($cantidad, $valor) {

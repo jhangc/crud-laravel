@@ -17,6 +17,8 @@ use App\Models\CajaTransaccion;
 use App\Models\InicioOperaciones;
 use App\Models\Ingreso;
 use App\Models\Gasto;
+use App\Models\CorrelativoCredito;
+
 
 
 class creditoController extends Controller
@@ -104,7 +106,7 @@ class creditoController extends Controller
 
         $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
 
-        $prestamo = \App\Models\credito::find($id);
+        $prestamo = credito::find($id);
         $proyecciones = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
         $deudas = \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
         $gastosOperativos = \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
@@ -115,8 +117,8 @@ class creditoController extends Controller
         $gastosfamiliares = \App\Models\GastosFamiliares::where('id_prestamo', $id)->get();
         $activos = \App\Models\Activos::where('prestamo_id', $id)->first();
         $ventasdiarias = \App\Models\VentasDiarias::where('prestamo_id', $id)->get();
-        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->first();
-        $cuotastodas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
+        $cuotas = Cronograma::where('id_prestamo', $id)->first();
+        $cuotastodas = Cronograma::where('id_prestamo', $id)->get();
         $inventarioterminado = \App\Models\Inventario::where('id_prestamo', $id)
             ->where('tipo_inventario', 1)
             ->get();
@@ -1191,6 +1193,7 @@ class creditoController extends Controller
             }
             $prestamo->user_id = Auth::id();
             $prestamo->save();
+
             //garantia
             $garantia = \App\Models\Garantia::create([
                 'descripcion' => $request->descripcion_garantia,
@@ -1244,6 +1247,8 @@ class creditoController extends Controller
                     }
                     //guardar cronograma del  credito en general
                     $this->guardarCronograma($prestamo, null, $request, $request->monto);
+
+                    
                 }
             }
 
@@ -1641,9 +1646,9 @@ class creditoController extends Controller
      */
     public function show($id)
     {
-        $credito = \App\Models\credito::find($id);
+        $credito = credito::find($id);
         $garantia = \App\Models\Garantia::where('id_prestamo', $id)->first();
-        $clientes = \App\Models\CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
+        $clientes = CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
         $activos = \App\Models\Activos::where('prestamo_id', $id)->first();
         $proyeccionesVentas = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
         $ventasDiarias = \App\Models\VentasDiarias::where('prestamo_id', $id)->get();

@@ -18,7 +18,7 @@
         .principal th,
         .principal td {
             border: 1px solid black;
-            padding: 8px;
+            padding: 5px;
             text-align: left;
         }
 
@@ -78,12 +78,15 @@
         <tr>
             <td><b>Asesor de crédito:</b></td>
             <td>{{ $responsable->name }}</td>
+            <td><b>Codigo</b></td>
+            <td>{{$correlativosGenerales->correlativo}}</td>
         </tr>
     </table>
+    <br>
 
     <!-- Cronograma Grupal -->
     <h4 class="card-title" style="text-align: center; margin: 0;">Cronograma Grupal</h4>
-    <table class="principal contenido">
+    <table class="principal contenido" >
         <thead>
             <tr>
                 <th>N° CUOTA</th>
@@ -174,6 +177,14 @@
             <tr>
                 <td><b>Asesor de crédito:</b></td>
                 <td>{{ $responsable->name }}</td>
+                <td><b>Codigo</b></td>
+                <td>
+                @foreach ($correlativosIntegrantes as $correlativo)
+                    @if ($correlativo->id_cliente == $cliente->id)
+                        {{ $correlativo->correlativo }}
+                    @endif
+                @endforeach
+            </td>
             </tr>
         </table>
 
