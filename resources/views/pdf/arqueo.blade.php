@@ -85,6 +85,7 @@
             </tr>
         </thead>
         <tbody>
+            @php $totalIngresos = 0; @endphp
             @foreach ($ingresos as $ingreso)
                 <tr>
                     <td>{{ $ingreso->hora_pago }}</td>
@@ -93,10 +94,11 @@
                     <td>{{ $ingreso->transaccion->user->name }}</td>
                     <td>{{ $ingreso->numero_cuota }}</td>
                 </tr>
+                @php $totalIngresos += $ingreso->monto; @endphp
             @endforeach
         </tbody>
     </table>
-    <h3>Total de Ingresos: S/. {{ number_format($ingresos->sum('monto'), 2) }}</h3>
+    <h3>Total de Ingresos: S/. {{ number_format($totalIngresos, 2) }}</h3>
 
     <h2>Egresos</h2>
     <table>
@@ -109,6 +111,7 @@
             </tr>
         </thead>
         <tbody>
+            @php $totalEgresos = 0; @endphp
             @foreach ($egresosConClientes as $egreso)
                 <tr>
                     <td>{{ $egreso['hora_egreso'] }}</td>
@@ -116,10 +119,11 @@
                     <td>{{ implode(', ', $egreso['clientes']) }}</td>
                     <td>{{ $egreso['usuario'] }}</td>
                 </tr>
+                @php $totalEgresos += $egreso['monto']; @endphp
             @endforeach
         </tbody>
     </table>
-    <h3>Total de Egresos: S/. {{ number_format($egresosConClientes->sum('monto'), 2) }}</h3>
+    <h3>Total de Egresos: S/. {{ number_format($totalEgresos, 2) }}</h3>
 
     <h2>Gastos</h2>
     <table>
@@ -132,6 +136,7 @@
             </tr>
         </thead>
         <tbody>
+            @php $totalGastos = 0; @endphp
             @foreach ($gastosConDetalles as $gasto)
                 <tr>
                     <td>{{ $gasto['hora_gasto'] }}</td>
@@ -139,9 +144,10 @@
                     <td>{{ $gasto['numero_documento'] }}</td>
                     <td>{{ $gasto['usuario'] }}</td>
                 </tr>
+                @php $totalGastos += $gasto['monto']; @endphp
             @endforeach
         </tbody>
     </table>
-    <h3>Total de Gastos: S/. {{ number_format($gastosConDetalles->sum('monto'), 2) }}</h3>
+    <h3>Total de Gastos: S/. {{ number_format($totalGastos, 2) }}</h3>
 </body>
 </html>
