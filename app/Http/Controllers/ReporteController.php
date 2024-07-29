@@ -84,7 +84,7 @@ class ReporteController extends Controller
                 ->withCount('creditoClientes as cliente_creditos_count')
                 ->where('activo', 1)
                 ->where('estado', 'pagado')
-                ->where('producto', '==', 'grupal')
+                ->where('producto', 'grupal')
                 ->get();
         } else {
             // Si no es administrador, obtener solo los créditos registrados por el usuario y que no sean grupales
@@ -98,7 +98,7 @@ class ReporteController extends Controller
                 ->withCount('creditoClientes as cliente_creditos_count')
                 ->where('activo', 1)
                 ->where('estado', 'pagado')
-                ->where('producto', '==', 'grupal')
+                ->where('producto', 'grupal')
                 ->where('user_id', $user->id) // Filtrar por el usuario autenticado
                 ->get();
         }
