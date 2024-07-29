@@ -65,4 +65,19 @@ class Credito extends Model
         return $this->hasMany(Cronograma::class, 'id_prestamo', 'id');
     }
 
+    public function correlativoPagare()
+    {
+        return $this->hasOne(CorrelativoPagare::class, 'id_prestamo', 'id');
+    }
+
+    public function garantia()
+    {
+        return $this->hasOne(Garantia::class, 'id_prestamo', 'id');
+    }
+
+    public function ingresos()
+    {
+        return $this->hasMany(Ingreso::class, 'prestamo_id', 'id');
+    }
+
 }

@@ -5,6 +5,7 @@ use App\Exports\ClientesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PrestamosExport;
 use Illuminate\Http\Request;
+use App\Exports\CreditosIndividualesExport;
 
 class ExcelController extends Controller
 {
@@ -16,5 +17,10 @@ class ExcelController extends Controller
     public function exportPrestamosActivos()
     {
         return Excel::download(new PrestamosExport, 'prestamosactivos.xlsx');
+    }
+
+    public function exportarCreditoIndividual()
+    {
+        return Excel::download(new CreditosIndividualesExport, 'creditos_individuales.xlsx');
     }
 }

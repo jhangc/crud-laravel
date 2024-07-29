@@ -1,16 +1,17 @@
 <?php
 
 namespace App\Exports;
-use Carbon\Carbon;
 
 use App\Models\credito;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Carbon\Carbon; // Asegúrate de importar Carbon
 
-class ClientesExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize
+class CreditosIndividualesExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
 {
     /**
      * @return \Illuminate\Support\Collection
@@ -92,13 +93,13 @@ class ClientesExport implements FromCollection, WithHeadings, WithStyles, Should
         ];
     }
 
-        /**
+    /**
      * @param mixed $credito
      * @return array
      */
     public function map($credito): array
     {
-        $contador = 0;
+        static $contador = 0;
         $contador++;
         $cliente = $credito->creditoClientes->first()->clientes; // Obtener el primer cliente relacionado
 
@@ -211,7 +212,7 @@ class ClientesExport implements FromCollection, WithHeadings, WithStyles, Should
             1    => ['font' => ['bold' => true], 'alignment' => ['horizontal' => 'center']],
 
             // Apply borders to the entire sheet
-            'A1:U1' => ['borders' => [
+            'A1:AW1' => ['borders' => [
                 'outline' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                 ],
@@ -219,5 +220,4 @@ class ClientesExport implements FromCollection, WithHeadings, WithStyles, Should
         ];
     }
 }
-
 

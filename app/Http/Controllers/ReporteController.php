@@ -29,23 +29,83 @@ class ReporteController extends Controller
         // Verificar si el usuario tiene alguno de los roles
         if ($roles->contains('Administrador')) {
             // Si es administrador o cajera, obtener todos los créditos activos y que no sean grupales
-            $creditos = Credito::with(['clientes', 'creditoClientes.cliente', 'user','cronograma'])
+            $creditos = Credito::with(['clientes', 
+                            'creditoClientes.clientes', 
+                            'user.sucursal',
+                            'cronograma',
+                            'correlativoPagare',
+                            'garantia',
+                            'ingresos'])
+                ->withCount('creditoClientes as cliente_creditos_count')
                 ->where('activo', 1)
                 ->where('estado', 'pagado')
                 ->where('producto', '!=', 'grupal')
                 ->get();
         } else {
             // Si no es administrador, obtener solo los créditos registrados por el usuario y que no sean grupales
-            $creditos = Credito::with(['clientes', 'creditoClientes.cliente', 'user','cronograma'])
+            $creditos = Credito::with(['clientes', 
+                            'creditoClientes.clientes', 
+                            'user.sucursal',
+                            'cronograma',
+                            'correlativoPagare',
+                            'garantia',
+                            'ingresos'])
+                ->withCount('creditoClientes as cliente_creditos_count')
                 ->where('activo', 1)
-                ->where('user_id', $user->id)
+                ->where('estado', 'pagado')
                 ->where('producto', '!=', 'grupal')
+                ->where('user_id', $user->id) // Filtrar por el usuario autenticado
                 ->get();
         }
 
         //dd($creditos);
 
         return view('admin.reportes.creditoindividual', ['creditos' => $creditos]);
+    }
+
+    public function viewreportecreditogrupal()
+    {
+        // Obtener el usuario autenticado
+        $user = Auth::user();
+
+        // Obtener todos los roles del usuario autenticado
+        $roles = $user->roles->pluck('name');
+
+        // Verificar si el usuario tiene alguno de los roles
+        if ($roles->contains('Administrador')) {
+            // Si es administrador o cajera, obtener todos los créditos activos y que no sean grupales
+            $creditos = Credito::with(['clientes', 
+                            'creditoClientes.clientes', 
+                            'user.sucursal',
+                            'cronograma',
+                            'correlativoPagare',
+                            'garantia',
+                            'ingresos'])
+                ->withCount('creditoClientes as cliente_creditos_count')
+                ->where('activo', 1)
+                ->where('estado', 'pagado')
+                ->where('producto', '==', 'grupal')
+                ->get();
+        } else {
+            // Si no es administrador, obtener solo los créditos registrados por el usuario y que no sean grupales
+            $creditos = Credito::with(['clientes', 
+                            'creditoClientes.clientes', 
+                            'user.sucursal',
+                            'cronograma',
+                            'correlativoPagare',
+                            'garantia',
+                            'ingresos'])
+                ->withCount('creditoClientes as cliente_creditos_count')
+                ->where('activo', 1)
+                ->where('estado', 'pagado')
+                ->where('producto', '==', 'grupal')
+                ->where('user_id', $user->id) // Filtrar por el usuario autenticado
+                ->get();
+        }
+
+        //dd($creditos);
+
+        return view('admin.reportes.creditogrupal', ['creditos' => $creditos]);
     }
 
 

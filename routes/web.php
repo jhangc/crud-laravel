@@ -144,7 +144,7 @@ Route::get('/getDistritos/{prov_id}', [App\Http\Controllers\clienteController::c
 //para exportar excel
 Route::get('/admin/reportes/clientes/export', [App\Http\Controllers\ExcelController::class, 'export'])->name('reporte.clientes.export')->middleware('auth');
 Route::get('/admin/reportes/credito/exportcreditoactivo', [App\Http\Controllers\ExcelController::class, 'exportPrestamosActivos'])->name('reporte.prestamos.exportactivos')->middleware('auth');
-
+Route::get('/admin/reportes/credito/exportarcreditosindividual', [App\Http\Controllers\ExcelController::class, 'exportarCreditoIndividual'])->name('reporte.clientes.exporticreditoindividual')->middleware('auth');
 
 Route::get('/admin/creditos/vercuotaspago/{id}', [App\Http\Controllers\creditoController::class, 'verpagocuota'])->name('creditos.verpagocuota')->middleware('auth');
 Route::post('/admin/creditos/pagocuota', [App\Http\Controllers\creditoController::class, 'pagocuota'])->name('creditos.pagocuota')->middleware('auth');

@@ -52,4 +52,9 @@ class cliente extends Model
         return $this->belongsTo(Distrito::class, 'distrito_id', 'dis_id');
     }
 
+    public function totalcreditos()
+    {
+        return $this->hasManyThrough(credito::class, CreditoCliente::class, 'cliente_id', 'id', 'id', 'prestamo_id');
+    }
+
 }

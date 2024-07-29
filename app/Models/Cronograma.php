@@ -22,6 +22,11 @@ class Cronograma extends Model
         'saldo_deuda'
     ];
 
+    protected $dates = [
+        'fecha_vencimiento',
+        // otros campos de fecha
+    ];
+
     public function clientes()
     {
         return $this->belongsToMany(cliente::class, 'cliente_id');

@@ -366,7 +366,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         </a>
                                         <a href="{{ url('/admin/reportes/creditogrupal') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Creditos Individuales</p>
+                                            <p>Creditos Grupales</p>
                                         </a>
                                     </li>
                                 </ul>

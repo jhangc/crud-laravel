@@ -18,5 +18,10 @@ class Garantia extends Model
         'estado',
         'id_prestamo',
     ];
+
+    public function credito()
+    {
+        return $this->belongsTo(Credito::class, 'id_prestamo');
+    }
 }
 
