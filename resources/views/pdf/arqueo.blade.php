@@ -132,6 +132,7 @@
                 <th>Hora de Gasto</th>
                 <th>Monto</th>
                 <th>Número de Documento</th>
+                <th>Responsable</th>
                 <th>Usuario</th>
             </tr>
         </thead>
@@ -142,6 +143,7 @@
                     <td>{{ $gasto['hora_gasto'] }}</td>
                     <td>S/. {{ number_format(floatval($gasto['monto']), 2) }}</td>
                     <td>{{ $gasto['numero_documento'] }}</td>
+                    <td>{{$gasto['responsable']}}</td>
                     <td>{{ $gasto['usuario'] }}</td>
                 </tr>
                 @php $totalGastos += floatval($gasto['monto']); @endphp

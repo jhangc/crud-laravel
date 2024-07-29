@@ -88,27 +88,29 @@
 
         <h3>Gastos</h3>
         <table>
-            <thead>
-                <tr>
-                    <th>Hora de Gasto</th>
-                    <th>Monto</th>
-                    <th>Número de Documento</th>
-                    <th>Usuario</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $totalGastos = 0; @endphp
+        <thead>
+            <tr>
+                <th>Hora de Gasto</th>
+                <th>Monto</th>
+                <th>Número de Documento</th>
+                <th>Responsable</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $totalGastos = 0; @endphp
                 @foreach($gastosConDetalles as $gasto)
                 <tr>
                     <td>{{ $gasto['hora_gasto'] }}</td>
                     <td>S/. {{ number_format(floatval($gasto['monto']), 2) }}</td>
                     <td>{{ $gasto['numero_documento'] }}</td>
+                    <td>{{$gasto['responsable']}}</td>
                     <td>{{ $gasto['usuario'] }}</td>
                 </tr>
                 @php $totalGastos += floatval($gasto['monto']); @endphp
-                @endforeach
-            </tbody>
-        </table>
+            @endforeach
+        </tbody>
+    </table>
         <p>Total de Gastos: S/.{{ number_format($totalGastos, 2) }}</p>
 
         <h3>Datos de Cierre</h3>
@@ -118,7 +120,7 @@
                 <td>S/.{{ number_format($saldoFinalEsperado, 2) }}</td>
             </tr>
             <tr>
-                <th>Saldo Final Real</th>
+                <th>Saldo Final Real-Caja</th>
                 <td>S/.{{ number_format($saldoFinalReal, 2) }}</td>
             </tr>
             <tr>
