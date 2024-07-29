@@ -102,7 +102,7 @@
                 @foreach($gastosConDetalles as $gasto)
                 <tr>
                     <td>{{ $gasto['hora_gasto'] }}</td>
-                    <td>S/. {{ number_format(floatval($gasto['monto']), 2) }}</td>
+                    <td>S/. {{ number_format($gasto['monto'], 2) }}</td>
                     <td>{{ $gasto['numero_documento'] }}</td>
                     <td>{{$gasto['responsable']}}</td>
                     <td>{{ $gasto['usuario'] }}</td>
