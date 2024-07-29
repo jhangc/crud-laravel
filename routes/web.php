@@ -130,6 +130,9 @@ Route::get('/generar-pagare/{id}', [PDFController::class, 'generatepagarePDF'])-
 Route::get('/generar-ticket-desembolso/{id}', [PDFController::class, 'generateticket'])->name('generar-ticket');
 
 Route::get('/generar-carta-cobranza/{id}', [PDFController::class, 'generatecartacobranzaPDF'])->name('carta-cobranza-pdf');
+Route::get('/generar-carta-cobranza-grupal/{id}', [PDFController::class, 'generatecartacobranzagrupalPDF'])->name('carta-cobranza-grupal-pdf');
+
+Route::get('/generar-detalle-cliente/{id}', [PDFController::class, 'generatedetalleclientePDF'])->name('detalle-cliente-pdf');
 
 
 Route::get('/inicio-operaciones', [IniciarOpeController::class, 'index'])->name('inicio_operaciones.index')->middleware('auth');

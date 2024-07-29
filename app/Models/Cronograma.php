@@ -36,4 +36,9 @@ class Cronograma extends Model
     {
         return $this->belongsToMany(Credito::class, 'id_prestamo');
     }
+
+    public function ingresos()
+    {
+        return $this->hasMany(Ingreso::class, 'cronograma_id');
+    }
 }

@@ -942,7 +942,7 @@ class creditoController extends Controller
                     $cuota->dias_mora = $ingreso->dias_mora;
                     $cuota->monto_mora = $ingreso->monto_mora;
                     $cuota->porcentaje_mora = $ingreso->porcentaje_mora;
-                    $cuota->monto_total_pago_final = round($ingreso->monto+$ingreso->monto_mora, 2);
+                    $cuota->monto_total_pago_final = round($ingreso->monto + $ingreso->monto_mora, 2);
                     $cuota->ingreso_id = $ingreso->id;
                 } elseif (now()->greaterThan($fecha_vencimiento)) {
                     $cuota->estado = 'vencida';
@@ -966,18 +966,18 @@ class creditoController extends Controller
     public function pagocuota(Request $request)
     {
         $user = auth()->user();
-    
+
         // Retrieve the last open cash transaction for the logged-in user
         $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
             ->whereNull('hora_cierre')
             ->orderBy('created_at', 'desc')
             ->first();
-    
+
         // Check if there is an open cash transaction
         if (!$ultimaTransaccion) {
             return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
         }
-    
+
         // Register the income
         $ingreso = Ingreso::create([
             'transaccion_id' => $ultimaTransaccion->id,
@@ -985,20 +985,20 @@ class creditoController extends Controller
             'cliente_id' => $request->cliente_id,
             'cronograma_id' => $request->cronograma_id,
             'numero_cuota' => $request->numero_cuota,
-            'monto' =>$request->monto, // Monto cuota
+            'monto' => $request->monto, // Monto cuota
             'monto_mora' => $request->monto_mora,
             'dias_mora' => $request->dias_mora,
             'porcentaje_mora' => $request->porcentaje_mora,
             'fecha_pago' => now()->toDateString(),
             'hora_pago' => now()->toTimeString(),
             'sucursal_id' => $user->sucursal_id,
-            'monto_total_pago_final' => round($request->monto-$request->monto_mora,2), // Monto total a pagar (incluyendo mora)
+            'monto_total_pago_final' => round($request->monto - $request->monto_mora, 2), // Monto total a pagar (incluyendo mora)
         ]);
-    
+
         // Update the total income in the cash transaction
         $ultimaTransaccion->cantidad_ingresos = $ultimaTransaccion->cantidad_ingresos + $request->monto;
         $ultimaTransaccion->save();
-    
+
         return response()->json(['success' => 'Cuota pagada con éxito', 'ingreso_id' => $ingreso->id]);
     }
 
@@ -1018,12 +1018,77 @@ class creditoController extends Controller
 
     public function viewcarta()
     {
-        // Obtener solo los clientes activos (activo = 1)
-        $creditos = credito::with('clientes')
-            ->where('activo', 1)
-            ->whereDate('fecha_fin', '<', now()->toDateString())
-            ->get();
-        return view('admin.cobranza.carta', ['creditos' => $creditos]);
+        $today = Carbon::now()->toDateString();
+
+        // Obtener el usuario autenticado
+        $user = Auth::user();
+
+        // Obtener todos los roles del usuario autenticado
+        $roles = $user->roles->pluck('name');
+
+        // Verificar si el usuario tiene alguno de los roles
+        if ($roles->contains('Administrador')) {
+            $creditos = Credito::with([
+                'clientes',
+                'creditoClientes.clientes',
+                'user.sucursal',
+                'cronograma',
+                'correlativoPagare',
+                'garantia',
+                'ingresos'
+            ])
+                ->withCount('creditoClientes as cliente_creditos_count')
+                ->where('activo', 1)
+                ->whereHas('cronograma', function ($query) use ($today) {
+                    $query->where('fecha', '<', $today)
+                        ->whereDoesntHave('ingresos');
+                })
+                ->get();
+        } else{
+            $creditos = Credito::with([
+                'clientes',
+                'creditoClientes.clientes',
+                'user.sucursal',
+                'cronograma',
+                'correlativoPagare',
+                'garantia',
+                'ingresos'
+            ])
+                ->withCount('creditoClientes as cliente_creditos_count')
+                ->where('activo', 1)
+                ->where('user_id', $user->id)
+                ->whereHas('cronograma', function ($query) use ($today) {
+                    $query->where('fecha', '<', $today)
+                        ->whereDoesntHave('ingresos');
+                })
+                ->get();
+        }
+
+        
+
+        $result = $creditos->map(function ($credito) use ($today) {
+            // Filtrar cronograma para obtener solo las cuotas pendientes
+            $cuotaPendiente = $credito->cronograma->filter(function ($cuota) use ($today) {
+                return $cuota->fecha < $today && $cuota->ingresos->isEmpty();
+            })->first();
+
+            if ($cuotaPendiente) {
+                $diasDeAtraso = Carbon::now()->diffInDays(Carbon::parse($cuotaPendiente->fecha));
+
+                return [
+                    'id' => $credito->id,
+                    'nombre_cliente' => $credito->producto == 'grupal' ? $credito->nombre_prestamo : $credito->clientes->first()->nombre,
+                    'producto' => $credito->producto,
+                    'cuota' => $cuotaPendiente->numero, // Asumimos que 'numero' es el número de cuota
+                    'fecha' => $cuotaPendiente->fecha,
+                    'dias_de_atraso' => $diasDeAtraso
+                ];
+            }
+
+            return null; // Return null if no pending cuota
+        })->filter(); // filter() to remove null values
+
+        return view('admin.cobranza.carta', ['creditos' => $result]);
     }
 
     public function viewgenerarcompromiso()
@@ -1555,8 +1620,8 @@ class creditoController extends Controller
             foreach ($data['tipoProductoArray'] as $inventarioData) {
                 \App\Models\TipoProducto::create([
                     'producto' => $inventarioData['PRODUCTO'],
-                    'precio' =>  !empty($inventarioData['precio_unitario']) ? $inventarioData['precio_unitario']:0,
-                    'porcentaje' => !empty($inventarioData['procentaje_producto']) ?$inventarioData['procentaje_producto']: 0,
+                    'precio' =>  !empty($inventarioData['precio_unitario']) ? $inventarioData['precio_unitario'] : 0,
+                    'porcentaje' => !empty($inventarioData['procentaje_producto']) ? $inventarioData['procentaje_producto'] : 0,
                     'id_prestamo' => $prestamoId,
 
                 ]);

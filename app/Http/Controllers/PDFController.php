@@ -8,6 +8,12 @@ use Carbon\Carbon;
 use Luecano\NumeroALetras\NumeroALetras;
 use App\Models\CorrelativoPagare;
 
+use App\Models\credito;
+use App\Models\CreditoCliente;
+use App\Models\Cronograma;
+use App\Models\cliente;
+
+
 class PdfController extends Controller
 {
     // public function generatePDF(Request $request)
@@ -20,8 +26,8 @@ class PdfController extends Controller
     public function generatecronogramaPDF(Request $request, $id)
     {
         $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
-        $prestamo = \App\Models\credito::find($id);
-        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->first();
+        $prestamo = credito::find($id);
+        $cuotas = Cronograma::where('id_prestamo', $id)->first();
 
         $inventarioterminado = \App\Models\Inventario::where('id_prestamo', $id)
             ->where('tipo_inventario', 1)
@@ -73,9 +79,9 @@ class PdfController extends Controller
 
     public function generatecronogramagrupalPDF(Request $request, $id)
     {
-        $prestamo = \App\Models\credito::find($id);
-        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
-        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
+        $prestamo = credito::find($id);
+        $cuotas = Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
         $responsable = \App\Models\User::find($prestamo->user_id);
 
         $sucursal = \App\Models\Sucursal::first();
@@ -122,9 +128,9 @@ class PdfController extends Controller
 
     public function generatecronogramaindividualPDF(Request $request, $id)
     {
-        $prestamo = \App\Models\credito::find($id);
-        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
-        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
+        $prestamo = credito::find($id);
+        $cuotas = Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
         $responsable = \App\Models\User::find($prestamo->user_id);
         $sucursal = \App\Models\Sucursal::first();
 
@@ -191,9 +197,9 @@ class PdfController extends Controller
 
     public function generatecrontratogrupalPDF(Request $request, $id)
     {
-        $prestamo = \App\Models\credito::find($id);
-        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
-        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
+        $prestamo = credito::find($id);
+        $cuotas = Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
         //$responsable = auth()->user();
 
         $data = compact(
@@ -208,11 +214,13 @@ class PdfController extends Controller
         return $pdf->stream('ticket.pdf');
     }
 
+
+
     public function generatecrontratoindividualPDF(Request $request, $id)
     {
-        $prestamo = \App\Models\credito::find($id);
-        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
-        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first(); // Obtener un solo cliente
+        $prestamo = credito::find($id);
+        $cuotas = Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->with('clientes')->first(); // Obtener un solo cliente
         //$responsable = auth()->user();
         // Usa Carbon para obtener la fecha actual
         $date = Carbon::now();
@@ -237,9 +245,9 @@ class PdfController extends Controller
 
     public function generatecartillaPDF(Request $request, $id)
     {
-        $prestamo = \App\Models\credito::find($id);
-        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
-        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
+        $prestamo = credito::find($id);
+        $cuotas = Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
         $responsable = auth()->user();
 
 
@@ -268,13 +276,13 @@ class PdfController extends Controller
 
     public function generatepagarePDF(Request $request, $id)
     {
-        $prestamo = \App\Models\credito::find($id);
+        $prestamo = credito::find($id);
         if (!$prestamo) {
             return response()->json(['error' => 'Crédito no encontrado'], 404);
         }
 
-        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
-        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
+        $cuotas = Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
         $responsable = auth()->user();
 
         // Usa Carbon para obtener la fecha actual
@@ -310,20 +318,92 @@ class PdfController extends Controller
         return $pdf->stream('pagare.pdf');
     }
 
+
+
+
     public function generatecartacobranzaPDF(Request $request, $id)
     {
-        $prestamo = \App\Models\credito::find($id);
+        $prestamo = Credito::find($id);
         if (!$prestamo) {
             return response()->json(['error' => 'Crédito no encontrado'], 404);
         }
 
-        $cuotas = \App\Models\Cronograma::where('id_prestamo', $id)->get();
-        $credito_cliente = \App\Models\CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
-        $responsable = auth()->user();
+        $cuotas = Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
+        $responsable = $prestamo->user;
 
         // Usa Carbon para obtener la fecha actual
         $date = Carbon::now();
 
+        $fecha_desembolso = Carbon::parse($prestamo->fecha_desembolso);
+        $formattedfechadesembolso = $fecha_desembolso->translatedFormat('d \d\e F \d\e\l Y');
+        // Formatea la fecha con la configuración regional establecida
+        $formattedDate = $date->translatedFormat('d \d\e F \d\e\l Y');
+
+
+        $tasaInteres = $prestamo->tasa;
+
+        $tasadiaria = number_format((pow(1 + ($tasaInteres / 100), 1 / 360) - 1) * 100, 2);
+
+        // Convertir monto a letras
+        $formatter = new NumeroALetras();
+        $montoEnLetras = $formatter->toMoney($prestamo->monto, 2, 'soles', 'centimos');
+
+        // Generar o obtener el correlativo
+        $correlativo = CorrelativoPagare::generateCorrelativo($id);
+
+        // Obtener la deuda vencida y los días de atraso
+        $cuotaPendiente = $cuotas->filter(function ($cuota) {
+            return $cuota->fecha < Carbon::now()->toDateString() && $cuota->ingresos->isEmpty();
+        })->first();
+
+        $diasDeAtraso = $cuotaPendiente ? Carbon::now()->diffInDays(Carbon::parse($cuotaPendiente->fecha)) : 0;
+        $deudaVencida = $cuotaPendiente ? $cuotaPendiente->monto : 0;
+
+        $data = compact(
+            'prestamo',
+            'responsable',
+            'cuotas',
+            'credito_cliente',
+            'formattedDate',
+            'montoEnLetras',
+            'tasadiaria',
+            'correlativo',
+            'diasDeAtraso',
+            'deudaVencida',
+            'formattedfechadesembolso'
+        );
+
+        // Generar y retornar el PDF
+        $pdf = PDF::loadView('pdf.cartacobranza', $data)->setPaper('a4');
+        return $pdf->stream('carta-cobranza.pdf');
+    }
+
+
+
+
+
+
+    public function generatecartacobranzagrupalPDF(Request $request, $id)
+    {
+        $prestamo = Credito::find($id);
+        if (!$prestamo) {
+            return response()->json(['error' => 'Crédito no encontrado'], 404);
+        }
+
+        // Obtener las cuotas generales del crédito grupal (donde id_cliente es null)
+        $cuotas = Cronograma::where('id_prestamo', $id)
+            ->whereNull('cliente_id')
+            ->get();
+
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
+        $responsable = $prestamo->user;
+
+        // Usa Carbon para obtener la fecha actual
+        $date = Carbon::now();
+
+        $fecha_desembolso = Carbon::parse($prestamo->fecha_desembolso);
+        $formattedfechadesembolso = $fecha_desembolso->translatedFormat('d \d\e F \d\e\l Y');
         // Formatea la fecha con la configuración regional establecida
         $formattedDate = $date->translatedFormat('d \d\e F \d\e\l Y');
 
@@ -338,6 +418,14 @@ class PdfController extends Controller
         // Generar o obtener el correlativo
         $correlativo = CorrelativoPagare::generateCorrelativo($id);
 
+        // Obtener la deuda vencida y los días de atraso
+        $cuotaPendiente = $cuotas->filter(function ($cuota) {
+            return $cuota->fecha < Carbon::now()->toDateString() && $cuota->ingresos->isEmpty();
+        })->first();
+
+        $diasDeAtraso = $cuotaPendiente ? Carbon::now()->diffInDays(Carbon::parse($cuotaPendiente->fecha)) : 0;
+        $deudaVencida = $cuotaPendiente ? $cuotaPendiente->monto : 0;
+
         $data = compact(
             'prestamo',
             'responsable',
@@ -346,11 +434,14 @@ class PdfController extends Controller
             'formattedDate',
             'montoEnLetras',
             'tasadiaria',
-            'correlativo'
+            'correlativo',
+            'diasDeAtraso',
+            'deudaVencida',
+            'formattedfechadesembolso'
         );
 
         // Generar y retornar el PDF
-        $pdf = Pdf::loadView('pdf.cartacobranza', $data)->setPaper('a4');
+        $pdf = PDF::loadView('pdf.cartacobranzagrupal', $data)->setPaper('a4');
         return $pdf->stream('carta-cobranza.pdf');
     }
 
@@ -980,22 +1071,22 @@ class PdfController extends Controller
     {
         $prestamo = \App\Models\credito::find($id);
         $creditos = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
-    
+
         // Obtener el usuario autenticado
         $user = auth()->user();
-    
+
         // Obtener la sucursal del usuario autenticado
         $sucursal_id = $user->sucursal_id;
-    
+
         // Obtener la última transacción de caja abierta por el asesor (usuario actual)
         $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
             ->whereNull('hora_cierre')
             ->orderBy('created_at', 'desc')
             ->first();
-    
+
         // Calcular el monto total del grupo
         $montoTotalGrupo = $creditos->sum('monto_indivual');
-    
+
         // Crear el egreso
         $egreso = \App\Models\Egreso::create([
             'transaccion_id' => $ultimaTransaccion->id,
@@ -1005,18 +1096,18 @@ class PdfController extends Controller
             'monto' => $montoTotalGrupo,
             'sucursal_id' => $sucursal_id,
         ]);
-    
+
         // Actualizar la cantidad de egresos en la transacción de caja
         $ultimaTransaccion->cantidad_egresos = $ultimaTransaccion->cantidad_egresos + $montoTotalGrupo;
         $ultimaTransaccion->save();
-    
+
         // Actualizar el estado del préstamo a 'pagado'
         $prestamo->estado = 'pagado';
         $prestamo->save();
-    
+
         $pdf = Pdf::loadView('pdf.ticket', compact('prestamo', 'creditos', 'montoTotalGrupo'))
             ->setPaper([0, 0, 205, 800]);
-    
+
         return $pdf->stream('ticket.pdf');
     }
     public function generarTicketDePago($id)
@@ -1056,19 +1147,19 @@ class PdfController extends Controller
 
         $cajaCerrada = $ultimaTransaccion->hora_cierre ? true : false;
         $ingresos = \App\Models\Ingreso::where('transaccion_id', $ultimaTransaccion->id)
-                            ->with('cliente', 'transaccion.user')
-                            ->get();
+            ->with('cliente', 'transaccion.user')
+            ->get();
 
         $egresos = \App\Models\Egreso::where('transaccion_id', $ultimaTransaccion->id)
-                        ->with(['prestamo.clientes', 'transaccion.user'])
-                        ->get();
+            ->with(['prestamo.clientes', 'transaccion.user'])
+            ->get();
 
         $gastos = \App\Models\Gasto::where('caja_transaccion_id', $ultimaTransaccion->id)
-                                ->with('user')
-                                ->get();
+            ->with('user')
+            ->get();
 
         // Preparar datos de egresos con clientes
-        $egresosConClientes = $egresos->map(function($egreso) {
+        $egresosConClientes = $egresos->map(function ($egreso) {
             return [
                 'hora_egreso' => $egreso->hora_egreso,
                 'monto' => number_format($egreso->monto, 2),
@@ -1078,7 +1169,7 @@ class PdfController extends Controller
         });
 
         // Preparar datos de gastos
-        $gastosConDetalles = $gastos->map(function($gasto) {
+        $gastosConDetalles = $gastos->map(function ($gasto) {
             return [
                 'hora_gasto' => $gasto->created_at->format('H:i:s'),
                 'monto' => number_format($gasto->monto_gasto, 2),
@@ -1093,11 +1184,11 @@ class PdfController extends Controller
             $datosCierre = json_decode($ultimaTransaccion->json_cierre, true);
 
             // Calcular el saldo final real
-            $saldoFinalReal = array_sum(array_map(function($cantidad, $valor) {
+            $saldoFinalReal = array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
 
-            $saldoFinalReal += array_sum(array_map(function($cantidad, $valor) {
+            $saldoFinalReal += array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
 
@@ -1106,7 +1197,7 @@ class PdfController extends Controller
             // Calcular el saldo final esperado
             $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
 
-            $desajuste =  $saldoFinalReal-$saldoFinalEsperado;
+            $desajuste =  $saldoFinalReal - $saldoFinalEsperado;
 
             // Formatear valores a dos decimales
             $saldoFinalReal = number_format($saldoFinalReal, 2);
@@ -1115,7 +1206,15 @@ class PdfController extends Controller
         }
 
         $pdf = Pdf::loadView('pdf.transacciones', compact(
-            'caja', 'ingresos', 'egresos', 'egresosConClientes', 'gastosConDetalles', 'saldoFinalReal', 'saldoFinalEsperado', 'desajuste','ultimaTransaccion'
+            'caja',
+            'ingresos',
+            'egresos',
+            'egresosConClientes',
+            'gastosConDetalles',
+            'saldoFinalReal',
+            'saldoFinalEsperado',
+            'desajuste',
+            'ultimaTransaccion'
         ));
 
         return $pdf->stream('transacciones.pdf');
@@ -1135,7 +1234,7 @@ class PdfController extends Controller
         $datosCierre = json_decode($transaccion->json_cierre, true);
 
         // Preparar datos de egresos con clientes
-        $egresosConClientes = $egresos->map(function($egreso) {
+        $egresosConClientes = $egresos->map(function ($egreso) {
             return [
                 'hora_egreso' => $egreso->hora_egreso,
                 'monto' => number_format($egreso->monto, 2),
@@ -1145,7 +1244,7 @@ class PdfController extends Controller
         });
 
         // Preparar datos de gastos
-        $gastosConDetalles = $gastos->map(function($gasto) {
+        $gastosConDetalles = $gastos->map(function ($gasto) {
             return [
                 'hora_gasto' => $gasto->created_at->format('H:i:s'),
                 'monto' => number_format($gasto->monto_gasto, 2),
@@ -1155,11 +1254,11 @@ class PdfController extends Controller
         });
 
         // Calcular el saldo final real
-        $saldoFinalReal = array_sum(array_map(function($cantidad, $valor) {
+        $saldoFinalReal = array_sum(array_map(function ($cantidad, $valor) {
             return $cantidad * $valor;
         }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
 
-        $saldoFinalReal += array_sum(array_map(function($cantidad, $valor) {
+        $saldoFinalReal += array_sum(array_map(function ($cantidad, $valor) {
             return $cantidad * $valor;
         }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
 
@@ -1184,5 +1283,16 @@ class PdfController extends Controller
         return $pdf->stream('arqueo.pdf');
     }
 
-  
+    public function generatedetalleclientePDF(Request $request, $id)
+    {
+        $cliente = Cliente::find($id);
+        if (!$cliente) {
+            return response()->json(['error' => 'Cliente no encontrado'], 404);
+        }
+
+        $data = ['cliente' => $cliente];
+
+        $pdf = PDF::loadView('pdf.detallecliente', $data)->setPaper('a4');
+        return $pdf->stream('detalle-cliente.pdf');
+    }
 }

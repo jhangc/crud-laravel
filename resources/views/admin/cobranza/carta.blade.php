@@ -15,40 +15,36 @@
                         <tr>
                             <th>Nro</th>
                             <th>ID</th>
-                            <th>Nombres</th>
-                            <th>Negocio</th>
+                            <th>Nombre del Cliente/Grupo</th>
                             <th>Producto</th>
-                            <th>Monto (S/.)</th>
-                            <th>Fecha de vencimiento</th>
+                            <th>Cuota</th>
+                            <th>Fecha de Vencimiento</th>
+                            <th>Días de Atraso</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php $contador = 0; @endphp
                         @foreach ($creditos as $credito)
-                        @php
-                        $contador++;
-                        $id = $credito->id;
-                        @endphp
+                        @php $contador++; @endphp
                         <tr>
                             <td>{{ $contador }}</td>
-                            <td>{{ $credito->id }}</td>
-                            <td>
-                                @foreach($credito->clientes as $cliente)
-                                {{ $cliente->nombre }}<br>
-                                @endforeach
-                            </td>
-                            <td>{{ $credito->descripcion_negocio}}</td>
-                            <td>{{ $credito->producto }}</td>
+                            <td>{{ $credito['id'] }}</td>
 
-                            <td>{{ $credito->monto_total }}</td>
-                            <td>{{ \Carbon\Carbon::parse($credito->fecha_fin)->format('Y-m-d') }}</td>
+                            <td> 
+                                {{ $credito['nombre_cliente'] }}
+                            </td>
+                            <td>{{ $credito['producto'] }}</td>
+                            <td>{{ $credito['cuota'] }}</td>
+                            <td>{{ $credito['fecha'] }}</td>
+                            <td>{{ $credito['dias_de_atraso'] }}</td>
                             <td style="display: flex; align-items: center; justify-content:center;">
-                                @if ($credito->producto != "grupal")
-                                    <a href="{{ route('carta-cobranza-pdf', $credito->id) }}" target="_blank" class="btn btn-primary" style="margin-left:10px">Generar Carta</a>
+                                @if ($credito['producto']!='grupal')
+                                <a href="{{ route('carta-cobranza-pdf', $credito['id']) }}" target="_blank" class="btn btn-primary" style="margin-left:10px">Generar Carta</a>
                                 @else
-                                    <a href="{{ route('carta-cobranza-grupal-pdf', $credito->id) }}" target="_blank" class="btn btn-primary" style="margin-left:10px">Generar Carta</a>
+                                <a href="{{ route('carta-cobranza-grupal-pdf', $credito['id']) }}" target="_blank" class="btn btn-primary" style="margin-left:10px">Generar Carta</a>
                                 @endif
+                                
                             </td>
                         </tr>
                         @endforeach

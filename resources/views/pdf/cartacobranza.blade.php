@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carta de Cobranza Crédito Individual</title>
+    <title>Carta de Cobranza Crédito Grupal</title>
 
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
+            line-height: 2;
         }
 
         .header {
@@ -73,25 +73,30 @@
     <div class="content">
         <h1>CARTA DE COBRANZA DE DEUDA VENCIDA</h1>
 
-        <p>Tarapoto …. de …….. del 202….</p>
+        <p><i>Tarapoto {{$formattedDate}}</i></p>
 
-        <p>SEÑOR(A): ………………………..</p>
-        <p>DIRECCIÓN: ……………………………………….</p>
-        <p>DISTRITO: ……………………………. PROVINCIA: ……………………. DEPARTAMENTO: ………………………</p>
-        <p>DEUDA VENCIDA (*) S/………………………………</p>
-        <p>DIAS DE ATRASO: …………………………</p>
+        @php
+        $cliente = $prestamo->creditoClientes->first()->clientes; 
+        @endphp
+
+        <p><b>SEÑOR(A):</b> {{ $cliente->nombre }}</p>
+        <p><b>DIRECCIÓN:</b> {{$prestamo->clientes->first()->direccion}}</p>
+
+
+        <p><b>DISTRITO:</b> {{$cliente->distrito->dis_nombre}}
+            <b>PROVINCIA:</b> {{$cliente->distrito->provincia->pro_nombre}}
+            <b>DEPARTAMENTO:</b> {{$cliente->distrito->provincia->departamento->dep_nombre}}</p>
+        <p><b>DEUDA VENCIDA (*) </b> S/ {{$deudaVencida}}</p>
+        <p><b>DIAS DE ATRASO:</b> {{$diasDeAtraso}}</p>
 
         <p>De nuestra consideración:</p>
-        <p>Por intermedio de la presente tenemos a bien dirigirnos a usted y a la vez recordarle que el día ……. de …….. del 202… usted suscribió un pagaré en su calidad de titular del crédito a favor de nuestra representada, el mismo que a la fecha cuenta con ..…. días de atraso por lo que le solicitamos acercarse a nuestra oficina para que realice el pago de la deuda vencida. Se ejerce este derecho con base en el inciso primero del artículo 12 del Código Civil.</p>
+        <p>Por intermedio de la presente tenemos a bien dirigirnos a usted y a la vez recordarle que el día {{$formattedfechadesembolso}} usted suscribió un pagaré en su calidad de titular del crédito a favor de nuestra representada, el mismo que a la fecha cuenta con {{$diasDeAtraso}} días de atraso por lo que le solicitamos acercarse a nuestra oficina para que realice el pago de la deuda vencida. Se ejerce este derecho con base en el inciso primero del artículo 12 del Código Civil.</p>
 
         <p>Es importante manifestarle que la puntualidad en los pagos evitará que la deuda se incremente por efecto de los intereses moratorios y también lo califique como buen cliente, evitando mala calificación por incumplimiento de pago en las centrales de riesgos. Además, lo ayudará a mantener una buena relación comercial con Grupo CrediPalmo.</p>
 
         <p>Asimismo, le indicamos que de hacer caso omiso a la presente comunicación, el expediente de crédito será derivado al área legal, donde nuestro abogado iniciará las acciones judiciales que correspondan ante el órgano jurisdiccional competente o, en todo caso, impulsará cualquier acción legal que ya se haya trabajado en su contra.</p>
 
-        <p>En caso tuviera alguna duda o consulta sobre la comunicación, puede comunicarse con su asesor de negocios al número de celular …………………………………………….. o también</p>
-
-        <p>Para mayor información, puede acercarse a nuestra oficina ubicada en la calle JR. Juan Vargas N°248 – Tarapoto.</p>
-
+        <p>En caso tuviera alguna duda o consulta sobre la comunicación, puede comunicarse con su asesor de negocios al correo: {{$prestamo->user->email}} o también Para mayor información, puede acercarse a nuestra oficina ubicada en la calle JR. Juan Vargas N°248 – Tarapoto.</p>
     </div>
 </body>
 

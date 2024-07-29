@@ -126,10 +126,9 @@
                             </td>
                             <td style="text-align:center">
                                 <div class="btn-group" role="group" aria-label="Basic example">
-                                    {{-- <a href="{{ route('clientes.show', $cliente->id) }}" type="button"
-                                    class="btn btn-info">
-                                    <i class="bi bi-eye"></i>
-                                    </a> --}}
+                                    <a href="{{ route('detalle-cliente-pdf', $cliente->id) }}"  target="_blank" type="button" class="btn btn-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
                                     <a href="{{ route('clientes.edit', $cliente->id) }}" type="button" class="btn btn-success"><i class="bi bi-pencil"></i></a>
                                     <form action="{{ route('clientes.destroy', $cliente->id) }}" onclick="preguntar<?= $id ?>(event)" method="post" id="miFormulario<?= $id ?>">
                                         @csrf
