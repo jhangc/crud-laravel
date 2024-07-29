@@ -25,5 +25,10 @@ class CreditoCliente extends Model
     {
         return $this->belongsTo(cliente::class, 'cliente_id','id');
     }
+    //no mover  metodos  , crear  nuevos  , puedes joder  otras funciones
+    public function clientes()
+    {
+        return $this->belongsTo(cliente::class, 'cliente_id','id');
+    }
 }
 

@@ -1175,11 +1175,14 @@ class PdfController extends Controller
         $saldoFinalEsperado = number_format($saldoFinalEsperado, 2);
         $desajuste = number_format($desajuste, 2);
 
-        $data = compact('transaccion', 'ingresos', 'egresosConClientes', 'gastosConDetalles', 'saldoFinalReal', 'saldoFinalEsperado', 'desajuste', 'datosCierre');
+        $usuario = $transaccion->user;
+
+        $data = compact('transaccion', 'ingresos', 'egresosConClientes', 'gastosConDetalles', 'saldoFinalReal', 'saldoFinalEsperado', 'desajuste', 'datosCierre', 'usuario');
 
         $pdf = Pdf::loadView('pdf.arqueo', $data);
 
         return $pdf->stream('arqueo.pdf');
     }
+
   
 }
