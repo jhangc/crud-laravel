@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Models\Gasto;
 
 class AdminController extends Controller
 {
@@ -92,7 +93,7 @@ class AdminController extends Controller
         $caja = Caja::findOrFail($id);
         $today = Carbon::today();
 
-        // Verificar si la caja tiene una transacción abierta
+        // Verificar si la caja tiene una transacción abierta o cerrada hoy
         $ultimaTransaccion = $caja->transacciones()->whereDate('created_at', $today)->latest()->first();
 
         if (!$ultimaTransaccion) {
@@ -102,6 +103,7 @@ class AdminController extends Controller
             ]);
         }
 
+        $cajaCerrada = $ultimaTransaccion->hora_cierre ? true : false;
         $ingresos = Ingreso::where('transaccion_id', $ultimaTransaccion->id)
                             ->whereDate('created_at', $today)
                             ->with('cliente', 'transaccion.user') // Incluir relaciones
@@ -112,22 +114,70 @@ class AdminController extends Controller
                           ->with(['prestamo.clientes', 'transaccion.user']) // Incluir relaciones
                           ->get();
 
+        $gastos = Gasto::where('caja_transaccion_id', $ultimaTransaccion->id)
+                          ->whereDate('created_at', $today)
+                          ->with('user') // Incluir relación con el usuario
+                          ->get();
+
         // Preparar datos de egresos con clientes
         $egresosConClientes = $egresos->map(function($egreso) {
             return [
                 'hora_egreso' => $egreso->hora_egreso,
-                'monto' => $egreso->monto,
+                'monto' => number_format($egreso->monto, 2),
                 'clientes' => $egreso->prestamo->clientes->pluck('nombre')->toArray(),
                 'usuario' => $egreso->transaccion->user->name
             ];
         });
 
+        // Preparar datos de gastos
+        $gastosConDetalles = $gastos->map(function($gasto) {
+            return [
+                'hora_gasto' => $gasto->created_at->format('H:i:s'),
+                'monto' => number_format($gasto->monto_gasto, 2),
+                'numero_documento' => $gasto->numero_doc,
+                'usuario' => $gasto->user->name
+            ];
+        });
+
+        $datosCierre = null;
+        $desajuste = null;
+        if ($cajaCerrada) {
+            $datosCierre = json_decode($ultimaTransaccion->json_cierre, true);
+
+            // Calcular el saldo final real
+            $saldoFinalReal = array_sum(array_map(function($cantidad, $valor) {
+                return $cantidad * $valor;
+            }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
+
+            $saldoFinalReal += array_sum(array_map(function($cantidad, $valor) {
+                return $cantidad * $valor;
+            }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
+
+            $saldoFinalReal += $datosCierre['depositos'];
+
+            // Calcular el saldo final esperado
+            $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
+
+            $desajuste = $saldoFinalEsperado - $saldoFinalReal;
+
+            // Formatear valores a dos decimales
+            $saldoFinalReal = number_format($saldoFinalReal, 2);
+            $saldoFinalEsperado = number_format($saldoFinalEsperado, 2);
+            $desajuste = number_format($desajuste, 2);
+        }
+
+        //  dd($saldoFinalEsperado);
+
         return response()->json([
             'success' => true,
             'ingresos' => $ingresos,
-            'egresos' => $egresosConClientes
+            'egresos' => $egresosConClientes,
+            'gastos' => $gastosConDetalles,
+            'cajaCerrada' => $cajaCerrada,
+            'datosCierre' => $datosCierre??[],
+            'saldoFinalReal' => $saldoFinalReal??0,
+            'saldoFinalEsperado' => $saldoFinalEsperado??0,
+            'desajuste' => $desajuste??0
         ]);
     }
-
-
 }

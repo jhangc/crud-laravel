@@ -78,7 +78,7 @@
             <p><span class="label">Monto Total a Pagar:</span> <span class="value">S/.{{ number_format($ingreso->monto, 2) }}</span></p>
             <br>
             <p><span class="label">Observaciones:</span></p>
-            <p><span class="label">Capital:</span> <span class="value">S/.{{ number_format($cronograma->capital, 2) }}</span></p>
+            <!-- <p><span class="label">Capital:</span> <span class="value">S/.{{ number_format($cronograma->capital, 2) }}</span></p> -->
             <p><span class="label">Interés:</span> <span class="value">S/.{{ number_format($cronograma->interes, 2) }}</span></p>
             <p><span class="label">Amortización:</span> <span class="value">S/.{{ number_format($cronograma->amortizacion, 2) }}</span></p>
             <p><span class="label">Saldo de Deuda:</span> <span class="value">S/.{{ number_format($cronograma->saldo_deuda, 2) }}</span></p>

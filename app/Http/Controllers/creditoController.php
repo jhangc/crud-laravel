@@ -16,6 +16,7 @@ use App\Models\Caja;
 use App\Models\CajaTransaccion;
 use App\Models\InicioOperaciones;
 use App\Models\Ingreso;
+use App\Models\Gasto;
 
 
 class creditoController extends Controller
@@ -767,12 +768,14 @@ class creditoController extends Controller
             return redirect('/admin/caja')->with('error', 'No hay una caja abierta.');
         }
 
-        // Obtener ingresos y egresos de la caja abierta
+        // Obtener ingresos, egresos y gastos de la caja abierta
         $ingresos = $cajaAbierta->cantidad_ingresos;
         $egresos = $cajaAbierta->cantidad_egresos;
         $montoApertura = $cajaAbierta->monto_apertura;
 
-        return view('admin.caja.arqueo', compact('cajaAbierta', 'ingresos', 'egresos', 'montoApertura'));
+        $gastos = Gasto::where('caja_transaccion_id', $cajaAbierta->id)->sum('monto_gasto');
+
+        return view('admin.caja.arqueo', compact('cajaAbierta', 'ingresos', 'egresos', 'montoApertura', 'gastos'));
     }
 
 

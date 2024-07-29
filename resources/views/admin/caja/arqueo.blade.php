@@ -30,7 +30,7 @@
                             <div class="form-group row">
                                 <label class="col-sm-2 col-form-label">{{ $billete }}.00</label>
                                 <div class="col-sm-4">
-                                    <input type="number" class="form-control" id="billete_{{ $billete }}" name="billete_{{ $billete }}" value="0" onchange="calcularTotal()">
+                                    <input type="number" class="form-control" id="billete_{{ $billete }}" name="billete_{{ $billete }}" value="0" onchange="calcularTotalcaja()">
                                 </div>
                                 <label class="col-sm-2 col-form-label">= S/. </label>
                                 <div class="col-sm-4">
@@ -49,7 +49,7 @@
                             <div class="form-group row">
                                 <label class="col-sm-2 col-form-label">{{ number_format($moneda, 2) }}</label>
                                 <div class="col-sm-4">
-                                    <input type="number" class="form-control" id="moneda_{{ str_replace('.', '_', $moneda) }}" name="moneda_{{ str_replace('.', '_', $moneda) }}" value="0" onchange="calcularTotal()">
+                                    <input type="number" class="form-control" id="moneda_{{ str_replace('.', '_', $moneda) }}" name="moneda_{{ str_replace('.', '_', $moneda) }}" value="0" onchange="calcularTotalcaja()">
                                 </div>
                                 <label class="col-sm-2 col-form-label">= S/. </label>
                                 <div class="col-sm-4">
@@ -67,7 +67,7 @@
                             <div class="form-group row">
                                 <label class="col-sm-2 col-form-label">Depósitos</label>
                                 <div class="col-sm-4">
-                                    <input type="number" class="form-control" id="depositos" name="depositos" value="0" onchange="calcularTotal()">
+                                    <input type="number" class="form-control" id="depositos" name="depositos" value="0" onchange="calcularTotalcaja()">
                                 </div>
                                 <label class="col-sm-2 col-form-label">= S/. </label>
                                 <div class="col-sm-4">
@@ -80,20 +80,25 @@
                     <!-- Totales -->
                     <div class="row ">
                         <div class="col-md-12">
-                            <div class="btn-group btn-group-justified" role="group" aria-label="Total Efectivo">
-                                <input type="text" class="btn btn-info" id="total_apertura" value="Apertura: S/. {{ $montoApertura }}" disabled>
-                                <input type="text" class="btn btn-info" id="total_ingresos" value="Ingresos: S/. {{ $ingresos ?? 0 }}" disabled>
-                                <input type="text" class="btn btn-info" id="total_egresos" value="Egresos: S/. {{ $egresos ?? 0 }}" disabled>
-                                <input type="text" class="btn btn-info" id="total_depositos_display" value="Depósitos: S/. 0.00" disabled>
-                                <input type="text" class="btn btn-info" id="total_efectivo_display" value="Total Efectivo: S/. 0.00" disabled>
+                            <div class="btn-group btn-group-justified" role="group" aria-label="Total Efectivo" style="background: ;">
+                                <!-- <input type="text" class="btn btn-info" id="total_apertura" value="Apertura: S/. {{ $montoApertura }}" disabled> -->
+                                <input type="text" class="btn btn-success" id="total_ingresos" value="Ingresos: S/. {{ $ingresos ?? 0 }}"  style="font-weight: bold;" >
+                                <input type="text" class="btn btn-warning" id="total_egresos" value="Egresos: S/. {{ $egresos ?? 0 }}"  style="font-weight: bold;" >
+                                <input type="text" class="btn btn-danger" id="total_gastos" value="Gastos: S/. {{ $gastos ?? 0 }}"  style="font-weight: bold;" >
+                                <input type="text" class="btn btn-info" id="total_depositos_display" value="Depósitos: S/. 0.00"  style="font-weight: bold;" >
+                                <input type="text" class="btn btn-primary" id="total_efectivo_display" value="Total Efectivo: S/. 0.00"  style="font-weight: bold;" >
                             </div>
                         </div>
                     </div>
                     <br>
                     <div class="row mt-3">
+                        <!-- <div class="col-md-6"> -->
+                            <!-- <label for="saldo_final">Saldo Final (Monto de apertura + Ingresos - Egresos - Gastos):</label> -->
+                            <input type="hidden" class="form-control" id="saldo_final" name="saldo_final" value="S/. 0.00" readonly>
+                        <!-- </div> -->
                         <div class="col-md-6">
-                            <label for="saldo_final">Saldo Final(Monto incial+ingresos-egresos):</label>
-                            <input type="text" class="form-control" id="saldo_final" name="saldo_final" value="S/. 0.00" readonly>
+                            <label for="saldo_finalcaja">Saldo Final en Caja (Total efectivo + Depósitos):</label>
+                            <input type="text" class="form-control" id="saldo_finalcaja" name="saldo_finalcaja" value="S/. 0.00" readonly>
                         </div>
                     </div>
                     <br>
@@ -113,6 +118,17 @@
 
 <script>
     function calcularTotal() {
+        var montoApertura = parseFloat(document.getElementById('monto_apertura').value) || 0;
+        var ingresos = parseFloat('{{ $ingresos ?? 0 }}');
+        var egresos = parseFloat('{{ $egresos ?? 0 }}');
+        var gastos = parseFloat('{{ $gastos ?? 0 }}');
+        var saldoFinal = montoApertura + ingresos - egresos - gastos;
+        
+        document.getElementById('saldo_final').value = 'S/. ' + saldoFinal.toFixed(2);
+    }
+    calcularTotal();
+
+    function calcularTotalcaja() {
         var billetes = [200, 100, 50, 20, 10];
         var monedas = [5, 2, 1, 0.5, 0.2, 0.1];
 
@@ -137,29 +153,22 @@
         var depositos = parseFloat(document.getElementById('depositos').value) || 0;
         document.getElementById('total_depositos').value = depositos.toFixed(2);
         
-        var totalFinalEfectivo = totalEfectivo;
-        document.getElementById('total_efectivo_display').value = 'Total Efectivo: S/. ' + totalFinalEfectivo.toFixed(2);
+        var totalFinalEfectivo = totalEfectivo + depositos;
+        document.getElementById('total_efectivo_display').value = 'Total Efectivo: S/. ' + totalEfectivo.toFixed(2);
         document.getElementById('total_depositos_display').value = 'Depósitos: S/. ' + depositos.toFixed(2);
 
-        var montoApertura = parseFloat(document.getElementById('monto_apertura').value) || 0;
-        var ingresos = parseFloat('{{ $ingresos ?? 0 }}');
-        var egresos = parseFloat('{{ $egresos ?? 0 }}');
-        var saldoFinal =  montoApertura +depositos+ ingresos - egresos;
-        
-        document.getElementById('saldo_final').value = 'S/. ' + saldoFinal.toFixed(2);
+        var saldoFinal = totalFinalEfectivo;
+        document.getElementById('saldo_finalcaja').value = 'S/. ' + saldoFinal.toFixed(2);
     }
 
     function guardarArqueo() {
+        var saldoFinalCaja = parseFloat(document.getElementById('saldo_finalcaja').value.replace('S/. ', '')) || 0;
         var saldoFinal = parseFloat(document.getElementById('saldo_final').value.replace('S/. ', '')) || 0;
-        var montoApertura = parseFloat(document.getElementById('monto_apertura').value) || 0;
-        var ingresos = parseFloat('{{ $ingresos ?? 0 }}');
-        var egresos = parseFloat('{{ $egresos ?? 0 }}');
 
-        var totalEsperado = montoApertura + ingresos - egresos;
-        // if (saldoFinal !== totalEsperado) {
+        // if (saldoFinalCaja !== saldoFinal) {
         //     Swal.fire({
         //         title: 'Error',
-        //         text: 'El saldo final no cuadra con el total esperado. No se puede cerrar la caja.',
+        //         text: 'El saldo final en caja no cuadra con el saldo final calculado. No se puede cerrar la caja.',
         //         icon: 'error'
         //     });
         //     return;

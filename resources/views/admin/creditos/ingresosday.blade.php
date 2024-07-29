@@ -3,7 +3,7 @@
 @section('content')
 <div class="row">
     <div class="col-md-12">
-        <h1>Transacciones de Caja</h1>
+        <h3>Transacciones de Caja Diario</h3>
         <div id="seleccionarCajaDiv">
             <form id="seleccionarCajaForm" class="form-inline">
                 <div class="form-group mr-2">
@@ -20,7 +20,7 @@
 
         <div id="transacciones" style="display:none;">
             <h2>Ingresos</h2>
-            <table class="table table-striped">
+            <table id="ingresosTable" class="table table-striped">
                 <thead>
                     <tr>
                         <th>Hora de Pago</th>
@@ -37,7 +37,7 @@
             <h3>Total de Ingresos: <span id="totalIngresos"></span></h3>
 
             <h2>Egresos</h2>
-            <table class="table table-striped">
+            <table id="egresosTable" class="table table-striped">
                 <thead>
                     <tr>
                         <th>Hora de Egreso</th>
@@ -51,6 +51,29 @@
                 </tbody>
             </table>
             <h3>Total de Egresos: <span id="totalEgresos"></span></h3>
+
+            <h2>Gastos</h2>
+            <table id="gastosTable" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Hora de Gasto</th>
+                        <th>Monto</th>
+                        <th>Número de Documento</th>
+                        <th>Usuario</th>
+                    </tr>
+                </thead>
+                <tbody id="gastosBody">
+                    <!-- Aquí se llenarán los gastos -->
+                </tbody>
+            </table>
+            <h3>Total de Gastos: <span id="totalGastos"></span></h3>
+
+            <div id="datosCierre" style="display:none;">
+                <h2>Datos de Cierre</h2>
+                <p>Saldo Final Esperado: <span id="saldoFinalEsperado"></span></p>
+                <p>Saldo Final Real: <span id="saldoFinalReal"></span></p>
+                <p>Desajuste: <span id="desajuste"></span></p>
+            </div>
         </div>
     </div>
 </div>
@@ -67,9 +90,11 @@
                     // Limpiar las tablas
                     document.getElementById('ingresosBody').innerHTML = '';
                     document.getElementById('egresosBody').innerHTML = '';
+                    document.getElementById('gastosBody').innerHTML = '';
 
                     let totalIngresos = 0;
                     let totalEgresos = 0;
+                    let totalGastos = 0;
 
                     // Llenar los ingresos
                     data.ingresos.forEach(ingreso => {
@@ -102,10 +127,40 @@
                     });
 
                     // Mostrar el total de egresos
-                    document.getElementById('totalEgresos').innerText = totalEgresos.toFixed(2);
+                    document.getElementById('totalEgresos').innerText = (totalEgresos).toFixed(2);
+
+                    // Llenar los gastos
+                    data.gastos.forEach(gasto => {
+                        document.getElementById('gastosBody').innerHTML += `
+                            <tr>
+                                <td>${gasto.hora_gasto}</td>
+                                <td>${gasto.monto}</td>
+                                <td>${gasto.numero_documento}</td>
+                                <td>${gasto.usuario}</td>
+                            </tr>
+                        `;
+                        totalGastos += parseFloat(gasto.monto);
+                    });
+
+                    // Mostrar el total de gastos
+                    document.getElementById('totalGastos').innerText = totalGastos.toFixed(2);
+
+                    if (data.cajaCerrada) {
+                        document.getElementById('saldoFinalEsperado').innerText = data.saldoFinalEsperado;
+                        document.getElementById('saldoFinalReal').innerText = data.saldoFinalReal;
+                        document.getElementById('desajuste').innerText = data.desajuste;
+                        document.getElementById('datosCierre').style.display = 'block';
+                    } else {
+                        document.getElementById('datosCierre').style.display = 'none';
+                    }
 
                     document.getElementById('seleccionarCajaDiv').style.display = 'none';
                     document.getElementById('transacciones').style.display = 'block';
+
+                    // Inicializar DataTables
+                    $('#ingresosTable').DataTable();
+                    $('#egresosTable').DataTable();
+                    $('#gastosTable').DataTable();
                 } else {
                     Swal.fire({
                         title: 'Error',
@@ -116,5 +171,4 @@
             });
     }
 </script>
-
 @endsection

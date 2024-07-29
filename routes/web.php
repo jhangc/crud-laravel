@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\IniciarOpeController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\GastoController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -156,4 +157,9 @@ Route::get('/admin/creditos/ingresosday', [App\Http\Controllers\AdminController:
 Route::get('/admin/creditos/egresosday', [App\Http\Controllers\AdminController::class, 'updateCreditoagricola'])->name('creditos.updateCreditoAgricola')->middleware('auth');
 Route::get('/admin/caja/obtener-transacciones/{id}', [App\Http\Controllers\AdminController::class, 'obtenerTransaccionesCaja'])->name('creditos.obtenerTransaccionesCaja')->middleware('auth');
 
+// Rutas para la gestión de gastos
+Route::get('/admin/gastos', [GastoController::class, 'index'])->name('gastos.index')->middleware('auth');
+Route::get('/admin/gastos/{id}/edit', [GastoController::class, 'edit'])->name('gastos.edit')->middleware('auth');
+Route::post('/admin/gastos', [GastoController::class, 'store'])->name('gastos.store')->middleware('auth');
+Route::delete('/admin/gastos/{id}', [GastoController::class, 'destroy'])->name('gastos.destroy')->middleware('auth');
 

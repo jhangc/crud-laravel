@@ -258,6 +258,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                             <p>Pagares</p>
                                         </a>
                                         @endif
+                                        @if ($cajaAbierta) 
+                                        <a href="{{ url('/admin/gastos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Gastos</p>
+                                        </a>
+                                        @endif
                                         @else 
                                             <span class="nav-link text-warning">Operaciones no iniciadas</span>
                                         @endif 
