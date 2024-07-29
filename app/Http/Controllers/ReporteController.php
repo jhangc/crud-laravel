@@ -19,32 +19,34 @@ class ReporteController extends Controller
     {
     }
     public function viewreportecreditoindividual()
-{
-    // Obtener el usuario autenticado
-    $user = Auth::user();
+    {
+        // Obtener el usuario autenticado
+        $user = Auth::user();
 
-    // Obtener todos los roles del usuario autenticado
-    $roles = $user->roles->pluck('name');
+        // Obtener todos los roles del usuario autenticado
+        $roles = $user->roles->pluck('name');
 
-    // Verificar si el usuario tiene alguno de los roles
-    if ($roles->contains('Administrador')) {
-        // Si es administrador o cajera, obtener todos los créditos activos y que no sean grupales
-        $creditos = Credito::with(['clientes', 'creditoClientes', 'user'])
-            ->where('activo', 1)
-            ->where('estado', 'pagado')
-            ->where('producto', '!=', 'grupal')
-            ->get();
-    } else {
-        // Si no es administrador, obtener solo los créditos registrados por el usuario y que no sean grupales
-        $creditos = Credito::with(['clientes', 'creditoClientes', 'user'])
-            ->where('activo', 1)
-            ->where('user_id', $user->id)
-            ->where('producto', '!=', 'grupal')
-            ->get();
+        // Verificar si el usuario tiene alguno de los roles
+        if ($roles->contains('Administrador')) {
+            // Si es administrador o cajera, obtener todos los créditos activos y que no sean grupales
+            $creditos = Credito::with(['clientes', 'creditoClientes.cliente', 'user','cronograma'])
+                ->where('activo', 1)
+                ->where('estado', 'pagado')
+                ->where('producto', '!=', 'grupal')
+                ->get();
+        } else {
+            // Si no es administrador, obtener solo los créditos registrados por el usuario y que no sean grupales
+            $creditos = Credito::with(['clientes', 'creditoClientes.cliente', 'user','cronograma'])
+                ->where('activo', 1)
+                ->where('user_id', $user->id)
+                ->where('producto', '!=', 'grupal')
+                ->get();
+        }
+
+        //dd($creditos);
+
+        return view('admin.reportes.creditoindividual', ['creditos' => $creditos]);
     }
-
-    return view('admin.reportes.creditoindividual', ['creditos' => $creditos]);
-}
 
 
     public function viewprestamosactivos()

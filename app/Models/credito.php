@@ -12,6 +12,7 @@ class Credito extends Model
     protected $table = 'prestamos'; // Nombre de la tabla en la base de datos
 
     protected $fillable = [
+        'user_id',
         'tipo',
         'producto',
         'subproducto',
@@ -56,6 +57,12 @@ class Credito extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id'); // Relación con el usuario que creó el préstamo
+        return $this->belongsTo(User::class, 'user_id','id'); // Relación con el usuario que creó el préstamo
     }
+
+    public function cronograma()
+    {
+        return $this->hasMany(Cronograma::class, 'id_prestamo', 'id');
+    }
+
 }

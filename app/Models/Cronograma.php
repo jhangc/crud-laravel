@@ -26,4 +26,9 @@ class Cronograma extends Model
     {
         return $this->belongsToMany(cliente::class, 'cliente_id');
     }
+
+    public function credito()
+    {
+        return $this->belongsToMany(Credito::class, 'id_prestamo');
+    }
 }
