@@ -89,12 +89,12 @@
             @foreach ($ingresos as $ingreso)
                 <tr>
                     <td>{{ $ingreso->hora_pago }}</td>
-                    <td>S/. {{ number_format($ingreso->monto, 2) }}</td>
+                    <td>S/. {{ number_format(floatval($ingreso->monto), 2) }}</td>
                     <td>{{ $ingreso->cliente->nombre }}</td>
                     <td>{{ $ingreso->transaccion->user->name }}</td>
                     <td>{{ $ingreso->numero_cuota }}</td>
                 </tr>
-                @php $totalIngresos += $ingreso->monto; @endphp
+                @php $totalIngresos += floatval($ingreso->monto); @endphp
             @endforeach
         </tbody>
     </table>
@@ -115,11 +115,11 @@
             @foreach ($egresosConClientes as $egreso)
                 <tr>
                     <td>{{ $egreso['hora_egreso'] }}</td>
-                    <td>S/. {{ $egreso['monto'] }}</td>
+                    <td>S/. {{ number_format(floatval($egreso['monto']), 2) }}</td>
                     <td>{{ implode(', ', $egreso['clientes']) }}</td>
                     <td>{{ $egreso['usuario'] }}</td>
                 </tr>
-                @php $totalEgresos += $egreso['monto']; @endphp
+                @php $totalEgresos += floatval($egreso['monto']); @endphp
             @endforeach
         </tbody>
     </table>
@@ -140,11 +140,11 @@
             @foreach ($gastosConDetalles as $gasto)
                 <tr>
                     <td>{{ $gasto['hora_gasto'] }}</td>
-                    <td>S/. {{ $gasto['monto'] }}</td>
+                    <td>S/. {{ number_format(floatval($gasto['monto']), 2) }}</td>
                     <td>{{ $gasto['numero_documento'] }}</td>
                     <td>{{ $gasto['usuario'] }}</td>
                 </tr>
-                @php $totalGastos += $gasto['monto']; @endphp
+                @php $totalGastos += floatval($gasto['monto']); @endphp
             @endforeach
         </tbody>
     </table>
