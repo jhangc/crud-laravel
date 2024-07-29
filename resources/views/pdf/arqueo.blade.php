@@ -115,11 +115,11 @@
             @foreach ($egresosConClientes as $egreso)
                 <tr>
                     <td>{{ $egreso['hora_egreso'] }}</td>
-                    <td>S/. {{ number_format(floatval($egreso->monto), 2)}}</td>
+                    <td>S/. {{ number_format($egreso['monto'], 2) }}</td>
                     <td>{{ implode(', ', $egreso['clientes']) }}</td>
                     <td>{{ $egreso['usuario'] }}</td>
                 </tr>
-                @php $totalEgresos += floatval($egreso->monto); @endphp
+                @php $totalEgresos += floatval($egreso['monto']); @endphp
             @endforeach
         </tbody>
     </table>
