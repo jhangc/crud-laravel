@@ -1170,7 +1170,7 @@ class PdfController extends Controller
         }
 
         $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
-        $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
+        $cliente = \App\Models\cliente::find($ingreso->cliente_id);
         $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
 
         // Obtener la siguiente cuota
@@ -1338,7 +1338,7 @@ class PdfController extends Controller
 
     public function generatedetalleclientePDF(Request $request, $id)
     {
-        $cliente = Cliente::find($id);
+        $cliente = cliente::find($id);
         if (!$cliente) {
             return response()->json(['error' => 'Cliente no encontrado'], 404);
         }
