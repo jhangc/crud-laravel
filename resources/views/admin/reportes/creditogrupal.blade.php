@@ -153,7 +153,7 @@
                         <td>{{ $credito->id }}</td>
                         <td>{{ $credito->fecha_desembolso }}</td>
                         <td>{{ $credito->fecha_fin}}</td>
-                        <td>{{ $ultimaCuotaPagada->cronograma_id }}</td>
+                        <td>{{ $ultimaCuotaPagada->cronograma_id ?? 0 }}</td>
                         <td>{{ $credito->tiempo }}</td>
                         <td>{{ $credito->recurrencia }}</td>
                         <td>{{ $credito->periodo_gracia_dias }}</td>
