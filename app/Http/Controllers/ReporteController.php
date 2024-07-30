@@ -29,13 +29,15 @@ class ReporteController extends Controller
         // Verificar si el usuario tiene alguno de los roles
         if ($roles->contains('Administrador')) {
             // Si es administrador o cajera, obtener todos los créditos activos y que no sean grupales
-            $creditos = Credito::with(['clientes', 
-                            'creditoClientes.clientes', 
-                            'user.sucursal',
-                            'cronograma',
-                            'correlativoPagare',
-                            'garantia',
-                            'ingresos'])
+            $creditos = Credito::with([
+                'clientes',
+                'creditoClientes.clientes',
+                'user.sucursal',
+                'cronograma',
+                'correlativoPagare',
+                'garantia',
+                'ingresos'
+            ])
                 ->withCount('creditoClientes as cliente_creditos_count')
                 ->where('activo', 1)
                 ->where('estado', 'pagado')
@@ -43,13 +45,15 @@ class ReporteController extends Controller
                 ->get();
         } else {
             // Si no es administrador, obtener solo los créditos registrados por el usuario y que no sean grupales
-            $creditos = Credito::with(['clientes', 
-                            'creditoClientes.clientes', 
-                            'user.sucursal',
-                            'cronograma',
-                            'correlativoPagare',
-                            'garantia',
-                            'ingresos'])
+            $creditos = Credito::with([
+                'clientes',
+                'creditoClientes.clientes',
+                'user.sucursal',
+                'cronograma',
+                'correlativoPagare',
+                'garantia',
+                'ingresos'
+            ])
                 ->withCount('creditoClientes as cliente_creditos_count')
                 ->where('activo', 1)
                 ->where('estado', 'pagado')
@@ -74,28 +78,39 @@ class ReporteController extends Controller
         // Verificar si el usuario tiene alguno de los roles
         if ($roles->contains('Administrador')) {
             // Si es administrador o cajera, obtener todos los créditos activos y que no sean grupales
-            $creditos = Credito::with(['clientes', 
-                            'creditoClientes.clientes', 
-                            'user.sucursal',
-                            'cronograma',
-                            'correlativoPagare',
-                            'garantia',
-                            'ingresos'])
-                ->withCount('creditoClientes as cliente_creditos_count')
+            $creditos = Credito::with([
+                'clientes',
+                'creditoClientes.clientes',
+                'user.sucursal',
+                'cronograma' => function($query) {
+                        $query->whereNull('cliente_id'); // Filtro para cuotas generales
+                    },
+                'garantia',
+                'correlativos' => function ($query) {
+                    $query->whereNull('id_cliente');
+                },
+                'ingresos'
+            ])
                 ->where('activo', 1)
                 ->where('estado', 'pagado')
                 ->where('producto', 'grupal')
                 ->get();
         } else {
             // Si no es administrador, obtener solo los créditos registrados por el usuario y que no sean grupales
-            $creditos = Credito::with(['clientes', 
-                            'creditoClientes.clientes', 
-                            'user.sucursal',
-                            'cronograma',
-                            'correlativoPagare',
-                            'garantia',
-                            'ingresos'])
-                ->withCount('creditoClientes as cliente_creditos_count')
+            $creditos = Credito::with([
+                'clientes',
+                'creditoClientes.clientes',
+                'user.sucursal',
+                'cronograma' => function($query) {
+                        $query->whereNull('cliente_id'); // Filtro para cuotas generales
+                    },
+                'correlativoPagare',
+                'garantia',
+                'correlativos' => function ($query) {
+                    $query->whereNull('id_cliente');
+                },
+                'ingresos'
+            ])
                 ->where('activo', 1)
                 ->where('estado', 'pagado')
                 ->where('producto', 'grupal')

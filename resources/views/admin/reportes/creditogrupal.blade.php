@@ -17,7 +17,7 @@
                 </div>
                 <div class="col-md-6">
                     <div class="card-tools float-right">
-                        <a href="{{ url('/admin/reportes/credito/exportarcreditosindividual') }}" class="btn btn-success"><i class="bi bi-file-earmark-excel"></i> Exportar a Excel</a>
+                        <a href="{{ url('/admin/reportes/credito/exportarcreditosgrupal') }}" class="btn btn-success"><i class="bi bi-file-earmark-excel"></i> Exportar a Excel</a>
                     </div>
                 </div>
             </div>
@@ -60,12 +60,10 @@
                         <th>Interés por cobrar</th>
                         <th>Nombre de asesor de credito</th>
                         <th>TEA</th>
-                        
                         <th>Tipo de cronograma</th>
                         <th>Monto Cuota</th>
                         <th>Monto Garantia</th>
                         <th>N° Integrantes</th>
-                        <th>Numero Creditos</th>
                     </tr>
                 </thead>
 
@@ -79,13 +77,24 @@
                     $contador++;
                     $cliente = $credito->creditoClientes->first()->clientes; // Obtener el primer cliente relacionado
 
-                    $cuotasPagadas = $credito->ingresos->count();
-                    $cuotasTotales = $credito->cronograma->count();
+                    // Filtrar cuotas pagadas donde id_cliente es null
+                    $cuotasPagadas = $credito->ingresos()->whereHas('cronograma', function($query) {
+                    $query->whereNull('cliente_id');
+                    })->count();
+
+                    // Filtrar cuotas totales donde id_cliente es null
+                    $cuotasTotales = $credito->cronograma()->whereNull('cliente_id')->count();
+
+                    // Calcular cuotas pendientes
                     $cuotasPendientes = $cuotasTotales - $cuotasPagadas;
 
-                    $pagadasCronogramaIds = $credito->ingresos->pluck('cronograma_id');
-                    $cronogramaPagadas = $credito->cronograma->whereIn('id', $pagadasCronogramaIds);
-                    $cronogramaPendientes = $credito->cronograma->whereNotIn('id', $pagadasCronogramaIds);
+                    $pagadasCronogramaIds = $credito->ingresos()->whereHas('cronograma', function($query) {
+                                            $query->whereNull('cliente_id');
+                                            })->pluck('cronograma_id');
+
+                    // Filtrar cronograma pagadas y pendientes donde cliente_id es null
+                    $cronogramaPagadas = $credito->cronograma()->whereIn('id', $pagadasCronogramaIds)->whereNull('cliente_id')->get();
+                    $cronogramaPendientes = $credito->cronograma()->whereNotIn('id', $pagadasCronogramaIds)->whereNull('cliente_id')->get();
 
                     $capitalCancelado = $cronogramaPagadas->sum('amortizacion');
                     $interesCancelado = $cronogramaPagadas->last() ? $cronogramaPagadas->last()->interes : 0;
@@ -101,18 +110,25 @@
                     $saldoCapitalVencido = $cronogramaPendientesVencido->last() ? $cronogramaPendientesVencido->last()->amortizacion : 0;
                     $saldoCapitalCredito = $saldoCapitalNormal + $saldoCapitalVencido;
 
-                        // Obtener la fecha del último pago
+                    // Obtener la fecha del último pago
                     $ultimoPago = $credito->ingresos()->latest('fecha_pago')->first();
                     $fechaUltimoPago = $ultimoPago ? $ultimoPago->fecha_pago : 'No hay pagos';
 
                     // Obtener la fecha de vencimiento de la próxima cuota
                     $ultimaCuotaPagada = $credito->ingresos()->latest('fecha_pago')->first();
                     if ($ultimaCuotaPagada) {
-                    $proximaCuota = $credito->cronograma()->where('id', '>', $ultimaCuotaPagada->cronograma_id)->orderBy('fecha')->first();
-                    $fechaVencimientoProximaCuota = $proximaCuota ? $proximaCuota->fecha : 'No hay próxima cuota';
+                        $proximaCuota = $credito->cronograma()
+                            ->where('cliente_id', null) // Filtro para cuotas generales
+                            ->where('id', '>', $ultimaCuotaPagada->cronograma_id)
+                            ->orderBy('fecha')
+                            ->first();
+                        $fechaVencimientoProximaCuota = $proximaCuota ? $proximaCuota->fecha : 'No hay próxima cuota';
                     } else {
-                    $primeraCuota = $credito->cronograma()->orderBy('fecha')->first();
-                    $fechaVencimientoProximaCuota = $primeraCuota ? $primeraCuota->fecha : 'No hay cuotas';
+                        $primeraCuota = $credito->cronograma()
+                            ->where('cliente_id', null) // Filtro para cuotas generales
+                            ->orderBy('fecha')
+                            ->first();
+                        $fechaVencimientoProximaCuota = $primeraCuota ? $primeraCuota->fecha : 'No hay cuotas';
                     }
 
                     // Calcular los días de atraso
@@ -127,11 +143,17 @@
                         <td>{{ $credito->nombre_prestamo }}</td>
                         <td>{{$credito->user->sucursal->id}}</td>
                         <td>{{$credito->user->sucursal->nombre}}</td>
-                        <td>001</td>
+                        <td>
+                            @if($credito->correlativos->isNotEmpty())
+                                {{ $credito->correlativos->first()->correlativo }}
+                            @else
+                                No asignado
+                            @endif
+                        </td>
                         <td>{{ $credito->id }}</td>
                         <td>{{ $credito->fecha_desembolso }}</td>
-                        <td>ultima cuota </td>
-                        <td>{{ $fechaVencimientoProximaCuota }}</td>
+                        <td>{{ $credito->fecha_fin}}</td>
+                        <td>{{ $ultimaCuotaPagada->cronograma_id }}</td>
                         <td>{{ $credito->tiempo }}</td>
                         <td>{{ $credito->recurrencia }}</td>
                         <td>{{ $credito->periodo_gracia_dias }}</td>
@@ -155,11 +177,11 @@
                         <td>{{ $credito->user->name }}</td>
                         <td>{{ $credito->tasa }}</td>
                         
-                        <td>{{ $credito->cronograma->first()->tipo }}</td>
+                        <td>{{ $credito->recurrencia}}</td>
                         <td>{{ $credito->cronograma->first()->monto }}</td>
                         <td>{{ $credito->garantia ? $credito->garantia->valor_mercado : '0' }}</td>
                         <td>{{ $credito->cantidad_integrantes }}</td>
-                        <td>{{ $credito->cliente_creditos_count }}</td>
+                        <td>{{ $credito->cuotasPagadas }}</td>
 
                     </tr>
                     @endforeach

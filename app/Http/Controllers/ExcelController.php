@@ -6,6 +6,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PrestamosExport;
 use Illuminate\Http\Request;
 use App\Exports\CreditosIndividualesExport;
+use App\Exports\CreditosGrupalesExport;
 
 class ExcelController extends Controller
 {
@@ -22,5 +23,10 @@ class ExcelController extends Controller
     public function exportarCreditoIndividual()
     {
         return Excel::download(new CreditosIndividualesExport, 'creditos_individuales.xlsx');
+    }
+
+    public function exportarCreditoGrupal()
+    {
+        return Excel::download(new CreditosGrupalesExport, 'creditos_grupales.xlsx');
     }
 }

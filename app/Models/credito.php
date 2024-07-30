@@ -80,4 +80,9 @@ class Credito extends Model
         return $this->hasMany(Ingreso::class, 'prestamo_id', 'id');
     }
 
+    public function correlativos()
+    {
+        return $this->hasMany(CorrelativoCredito::class, 'id_prestamo');
+    }
+
 }
