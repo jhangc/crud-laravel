@@ -385,6 +385,9 @@ class UpdateController extends Controller
                 case 'semestral':
                     $fechaCuota->addMonths(6);
                     break;
+                case 'anual':
+                    $fechaCuota->addMonths(12);
+                    break;
                 case 'mensual':
                 default:
                     $fechaCuota->addMonth();
@@ -425,6 +428,9 @@ class UpdateController extends Controller
                 break;
             case 'semestral':
                 $n = 2;
+                break;
+            case 'anual':
+                $n = 1;
                 break;
             case 'mensual':
             default:

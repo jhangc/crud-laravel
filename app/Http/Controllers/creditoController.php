@@ -131,6 +131,10 @@ class creditoController extends Controller
             ->where('tipo_inventario', 3)
             ->get();
 
+        $tipo_producto_agricola = \App\Models\TipoProducto::where('id_prestamo', $id)->get();
+        $venta_mensual = \App\Models\VentasMensuales::where('id_prestamo', $id)->get();
+        $productos_agricolas = \App\Models\ProductoAgricola::where('id_prestamo', $id)->first();
+
         $descripcion = $prestamo->descripcion_negocio;
         $margenmanual = \App\Models\MargenVenta::where('giro_economico', $descripcion)->first();
 
@@ -597,36 +601,82 @@ class creditoController extends Controller
                             'estado'
                         ));
                     } else {
-                        $totalVentas = round((($ventasdiarias->sum('promedio')) * $factormes), 2);
+
+                        if ($productos_agricolas->ciclo_productivo_meses) {
+                            // Asegúrate de que el ciclo productivo en meses no sea cero para evitar división por cero
+                            if ($productos_agricolas->ciclo_productivo_meses != 0) {
+                                $cicloproductivo = 12 / $productos_agricolas->ciclo_productivo_meses;
+                            } else {
+                                // Maneja el caso donde ciclo_productivo_meses es cero
+                                $cicloproductivo = 1; // O cualquier valor o lógica que tenga sentido para tu caso
+                            }
+                        }
+
+                        $cantidad_cultivo = $cicloproductivo*$productos_agricolas->cantidad_cultivar*$productos_agricolas->rendimiento_unidad_siembra;
+
+                        //$totalVentas = round((($ventasdiarias->sum('promedio')) * $factormes), 2);
 
                         // Inicializar variables
-                        $pesoTotal = 0;
-                        $sumaPonderadaRelacion = 0;
+                        $totalVentas = 0;
+                        //$sumaPonderadaRelacion = 0;
 
                         // Recorrer las proyecciones para calcular el monto total de ventas y la relación de compra-venta promedio ponderada
-                        foreach ($proyecciones as $proyeccion) {
-                            $montoVenta = $totalVentas * ($proyeccion->proporcion_ventas / 100);
-                            // Calcular la relación de compra-venta
-                            $relacionCompraVenta = $proyeccion->precio_venta > 0 ? $proyeccion->precio_compra / $proyeccion->precio_venta : 0;
-                            $sumaPonderadaRelacion += $relacionCompraVenta * $montoVenta;
-                            $pesoTotal += $montoVenta;
+                        foreach ($tipo_producto_agricola  as $producto) {
+                            $montoVenta = $cantidad_cultivo*$producto->precio* ($producto->porcentaje / 100);
+                            $totalVentas += $montoVenta;
                         }
-                        // Calcular la relación de compra-venta promedio ponderada
-                        $relacionCompraVentaPromedio = $pesoTotal > 0 ? $sumaPonderadaRelacion / $pesoTotal : 0;
-                        // Calcular el costo total de ventas
-                        $totalCompras = round($totalVentas * $relacionCompraVentaPromedio, 2);
+
+
+                        $totalCompras=0;
+                        foreach ($gastosOperativos as $gastoOperativo) {
+                            $gasto = $gastoOperativo->precio_unitario * $gastoOperativo->cantidad;
+                            $totalCompras += $gasto;
+                        }
+
+                        //dd($prestamo->recurrencia);
+
+
+                        switch ($prestamo->recurrencia) {
+                            case 'catorcenal':
+                            case 'quincenal':
+                                $divisor = 24;
+                                break;
+                            case 'veinteochenal':
+                            case 'mensual':
+                                $divisor = 12;
+                                break;
+                            case 'semestral':
+                                $divisor = 2;
+                                break;
+                            case 'anual':
+                                $divisor = 1;
+                                break;
+                            default:
+                                $divisor = 12;
+                                break;
+                        }
+                        
+                        $totalVentas = $totalVentas / $divisor;
+                        $totalCompras = $totalCompras / $divisor;
+
+                        // Imprimir el valor de totalVentas con dd
+                        //dd($totalCompras);
 
                         if ($totalVentas != 0) {
                             $margenporcentaje = round(((1 - ($totalCompras / $totalVentas)) * 100), 2);
                         } else {
                             $margenporcentaje = 0; // O cualquier otro valor que consideres apropiado cuando $totalVentas es 0
                         }
-                        $proporcion_ventas = $proyecciones->sum('proporcion_ventas');
+
+
+
+                        //dd($margenporcentaje);
+                        $proporcion_ventas = $venta_mensual->sum('porcentaje');
                         // Cálculos
                         $utilidadBruta = $totalVentas - $totalCompras;
-                        $totalGastosOperativos = $gastosOperativos->sum(fn ($gasto) => $gasto->precio_unitario * $gasto->cantidad);
-                        $total_venta_credito = (($prestamo->porcentaje_credito) * $totalVentas) / 100;
+                        $totalGastosOperativos = $totalCompras;
 
+                         
                         $totalinventarioterminado = $inventarioterminado->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
                         $totalinventarioproceso = $inventarioproceso->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
 
@@ -694,7 +744,6 @@ class creditoController extends Controller
                             'margenporcentaje',
                             'proporcion_ventas',
                             'totalGastosOperativos',
-                            'total_venta_credito',
                             'total_inventario',
                             'totalinventarioterminado',
                             'totalinventarioproceso',
@@ -728,7 +777,7 @@ class creditoController extends Controller
                             'comentarioasesor',
                             'comentarioadministrador',
                             'modulo',
-                            'estado'
+                            'estado',
                         ));
                     }
             }
@@ -1316,6 +1365,9 @@ class creditoController extends Controller
                 case 'semestral':
                     $fechaCuota->addMonths(6);
                     break;
+                case 'anual':
+                    $fechaCuota->addMonths(12);
+                    break;
                 case 'mensual':
                 default:
                     $fechaCuota->addMonth();
@@ -1351,6 +1403,9 @@ class creditoController extends Controller
                 break;
             case 'semestral':
                 $n = 2;
+                break;
+            case 'anual':
+                $n = 1;
                 break;
             case 'mensual':
             default:

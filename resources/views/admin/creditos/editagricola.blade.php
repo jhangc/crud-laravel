@@ -118,6 +118,8 @@
                                             <option value="">Seleccione una opción...</option>
                                             <option value="mensual" {{ old('recurrencia') == 'mensual' ? 'selected' : '' }}>Mensual</option>
                                             <option value="quincenal" {{ old('recurrencia') == 'quincenal' ? 'selected' : '' }}>Quincenal</option>
+                                            <option value="anual" {{ old('recurrencia') == 'anual' ? 'selected' : '' }}>Anual</option>
+                                            <option value="semestral" {{ old('recurrencia') == 'semestral' ? 'selected' : '' }}>Semestral</option>
                                         </select>
                                     </div>
                                 </div>

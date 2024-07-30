@@ -160,7 +160,7 @@
                                 {{-- PASIVO TOTAL / PATRIMONIO NETO --}}
                                 <td>Solvencia</td>
                                 <td class="{{ $solvencia > 1 ? 'text-danger' : '' }}">{{ $solvencia }}</td>
-                                <td>tiene que ser (<=1)</td>
+                                <td>tiene que ser menor o igual a 1</td>
                             </tr>
                             <tr>
                                 <td>Cuota de endeudamiento</td>
@@ -171,7 +171,7 @@
                                 {{-- Cuota de préstamo / saldo final --}}
                                 <td>cuotaexcedente</td>
                                 <td class="{{ $cuotaexcedente >= 1 ? 'text-danger' : '' }}">{{ $cuotaexcedente }}</td>
-                                <td>tiene que ser <1 </td>
+                                <td>tiene que ser menor a 1</td>
                             </tr>
 
                         </tbody>

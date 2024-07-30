@@ -347,13 +347,13 @@
                                 {{-- Pasivo total / patrimonio neto --}}
                                 <td>Solvencia</td>
                                 <td class="{{ $solvencia > 1 ? 'text-danger' : '' }}">{{ $solvencia }}</td>
-                                <td>tiene que ser (<=1)</td>
+                                <td>tiene que ser menor o igual a 1</td>
                             </tr>
                             <tr>
                                 {{-- Pasivo total / activo total --}}
                                 <td>Índice de endeudamiento</td>
                                 <td class="{{ $indice_endeudamiento > 40 ? 'text-danger' : '' }}">{{ $indice_endeudamiento }}%</td>
-                                <td>tiene que ser (<=40%)</td>
+                                <td>tiene que ser menor o igual a 40%</td>
                             </tr>
                             <tr>
                                 {{-- Pasivo total / activo total --}}
@@ -365,13 +365,13 @@
                                 {{-- Pasivo total + préstamos / patrimonio --}}
                                 <td>Endeudamiento patrimonial</td>
                                 <td class="{{ $Endeudamientopatrimonial > 1 ? 'text-danger' : '' }}">{{ $Endeudamientopatrimonial }}</td>
-                                <td>tiene que ser (<=1)</td>
+                                <td>tiene que ser menor o igual a 1</td>
                             </tr>
                             <tr>
                                 {{-- Cuota de préstamo / saldo final --}}
                                 <td>cuotaexcedente</td>
                                 <td class="{{ $cuotaexcedente >= 1 ? 'text-danger' : '' }}">{{ $cuotaexcedente }}</td>
-                                <td>tiene que ser (<1)</td>
+                                <td>tiene que ser menor a 1</td>
                             </tr>
 
                         </tbody>

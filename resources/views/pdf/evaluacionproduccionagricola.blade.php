@@ -58,8 +58,7 @@
         <h6><b>DESTINO:</b> {{ $prestamo->destino }}</h6>
         <h6><b>CLIENTES:</b>
             @foreach ($prestamo->clientes as $cliente)
-            {{ $cliente->nombre }}@if (!$loop->last)
-            ,
+            {{ $cliente->nombre }}@if (!$loop->last),
             @endif
             @endforeach
         </h6>
@@ -118,11 +117,7 @@
                                 <td>Gastos operativos</td>
                                 <td>{{ $totalGastosOperativos }}</td>
                             </tr>
-                            <tr>
-                                <!-- Total sventa al credito -->
-                                <td>Venta al credito</td>
-                                <td>{{ $total_venta_credito }}</td>
-                            </tr>
+
                             <tr>
                                 <!-- Total de inventario -->
                                 <td>Productos terminados</td>
@@ -319,12 +314,7 @@
                                 <td class="{{ $roa <= 5 ? 'text-danger' : '' }}">{{ $roa }}%</td>
                                 <td>tiene que ser (>5%)</td>
                             </tr>
-                            <tr>
-                                {{-- Activo corriente - pasivo corriente --}}
-                                <td>Capital de trabajo (S/.)</td>
-                                <td class="{{ $capital_trabajo <= $totalprestamo ? 'text-danger' : '' }}">{{ $capital_trabajo }}</td>
-                                <td>tiene que ser mayor al prestamo</td>
-                            </tr>
+
                             <tr>
                                 {{-- Utilidad neta / patrimonio neto --}}
                                 <td>ROE (%)</td>
@@ -335,13 +325,13 @@
                                 {{-- Pasivo total / patrimonio neto --}}
                                 <td>Solvencia</td>
                                 <td class="{{ $solvencia > 1 ? 'text-danger' : '' }}">{{ $solvencia }}</td>
-                                <td>tiene que ser (<=1)< /td>
+                                <td>tiene que ser menor o igual a 1 </td>
                             </tr>
                             <tr>
                                 {{-- Pasivo total / activo total --}}
                                 <td>Índice de endeudamiento</td>
                                 <td class="{{ $indice_endeudamiento > 40 ? 'text-danger' : '' }}">{{ $indice_endeudamiento }}%</td>
-                                <td>tiene que ser (<=40%)< /td>
+                                <td>tiene que ser menor o igual a 40% </td>
                             </tr>
                             <tr>
                                 {{-- Pasivo total / activo total --}}
@@ -353,13 +343,13 @@
                                 {{-- Pasivo total + préstamos / patrimonio --}}
                                 <td>Endeudamiento patrimonial</td>
                                 <td class="{{ $Endeudamientopatrimonial > 1 ? 'text-danger' : '' }}">{{ $Endeudamientopatrimonial }}</td>
-                                <td>tiene que ser (<=1)< /td>
+                                <td>tiene que ser menor o igual </td>
                             </tr>
                             <tr>
                                 {{-- Cuota de préstamo / saldo final --}}
                                 <td>cuotaexcedente</td>
                                 <td class="{{ $cuotaexcedente >= 1 ? 'text-danger' : '' }}">{{ $cuotaexcedente }}</td>
-                                <td>tiene que ser (<1)< /td>
+                                <td>tiene que ser menor a 1 </td>
                             </tr>
                             <tr>
                                 <td>Saldo final disponible</td>

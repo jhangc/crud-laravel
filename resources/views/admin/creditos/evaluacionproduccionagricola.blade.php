@@ -79,11 +79,7 @@
                                 <td>Gastos operativos</td>
                                 <td>{{ $totalGastosOperativos }}</td>
                             </tr>
-                            <tr>
-                                <!-- Total sventa al credito -->
-                                <td>Venta al credito</td>
-                                <td>{{ $total_venta_credito }}</td>
-                            </tr>
+
                             <tr>
                                 <!-- Total de inventario -->
                                 <td>Productos terminados</td>
@@ -283,14 +279,14 @@
                                 <td class="{{ $roa <= 5 ? 'text-danger' : '' }}">{{ $roa }}%</td>
                                 <td>tiene que ser (>5%)</td>
                             </tr>
-                            <tr>
+                            <!-- <tr>
                                 {{-- Activo corriente - pasivo corriente --}}
                                 <td>Capital de trabajo (S/.)</td>
                                 <td
                                     class="{{ $prestamo->destino !== 'activo fijo' && $capital_trabajo <= $totalprestamo ? 'text-danger' : '' }}">
                                     {{ $capital_trabajo }}</td>
                                 <td>tiene que ser mayor al prestamo</td>
-                            </tr>
+                            </tr> -->
                             <tr>
                                 {{-- Utilidad neta / patrimonio neto --}}
                                 <td>ROE (%)</td>
@@ -301,14 +297,14 @@
                                 {{-- Pasivo total / patrimonio neto --}}
                                 <td>Solvencia</td>
                                 <td class="{{ $solvencia > 1 ? 'text-danger' : '' }}">{{ $solvencia }}</td>
-                                <td>tiene que ser (<=1)< /td>
+                                <td>tiene que ser (<=1) </td>
                             </tr>
                             <tr>
                                 {{-- Pasivo total / activo total --}}
                                 <td>Índice de endeudamiento</td>
                                 <td class="{{ $indice_endeudamiento > 40 ? 'text-danger' : '' }}">
                                     {{ $indice_endeudamiento }}%</td>
-                                <td>tiene que ser (<=40%)< /td>
+                                <td>tiene que ser (<=40%) </td>
                             </tr>
                             <tr>
                                 {{-- Pasivo total / activo total --}}
@@ -322,13 +318,13 @@
                                 <td>Endeudamiento patrimonial</td>
                                 <td class="{{ $Endeudamientopatrimonial > 1 ? 'text-danger' : '' }}">
                                     {{ $Endeudamientopatrimonial }}</td>
-                                <td>tiene que ser (<=1)< /td>
+                                <td>tiene que ser (<=1) </td>
                             </tr>
                             <tr>
                                 {{-- Cuota de préstamo / saldo final --}}
                                 <td>cuotaexcedente</td>
                                 <td class="{{ $cuotaexcedente >= 1 ? 'text-danger' : '' }}">{{ $cuotaexcedente }}</td>
-                                <td>tiene que ser (<1)< /td>
+                                <td>tiene que ser (<1)</td>
                             </tr>
                             <tr>
                                 <td>Saldo final disponible</td>
@@ -403,7 +399,7 @@
             var margenVentas = parseFloat('{{ $margenventas }}');
             var liquidez = parseFloat('{{ $liquidez }}');
             var roa = parseFloat('{{ $roa }}');
-            var capitalTrabajo = parseFloat('{{ $capital_trabajo }}');
+
             var totalPrestamo = parseFloat('{{ $totalprestamo }}');
             var roe = parseFloat('{{ $roe }}');
             var solvencia = parseFloat('{{ $solvencia }}');
@@ -424,7 +420,6 @@
             if (Math.abs(rentabilidadVentas - margenVentas) > 5 ||
                 liquidez <= 1 ||
                 roa <= 5 ||
-                capitalTrabajo <= totalPrestamo ||
                 roe <= 10 ||
                 solvencia > 1 ||
                 indiceEndeudamiento > 40 ||
