@@ -101,27 +101,7 @@
         @endif
     </div>
 
-    <div class="page-break"></div>
-
-    <div class="content">
-        <h2>DNI (PDF)</h2>
-        @if ($cliente->dni_pdf)
-            <embed src="{{url('storage/pdf/'.$cliente->id) }}" type="application/pdf" width="100%" height="600px" />
-        @else
-            <p>No se ha adjuntado el DNI en PDF.</p>
-        @endif
-    </div>
-
-    <div class="page-break"></div>
-
-    <div class="content">
-        <h2>DNI del Aval (PDF)</h2>
-        @if ($cliente->dni_aval)
-            <embed src="{{ url('storage/pdf/'.$cliente->dni_aval) }}" type="application/pdf" width="100%" height="600px" />
-        @else
-            <p>No se ha adjuntado el DNI del aval en PDF.</p>
-        @endif
-    </div>
+    
 
 </body>
 
