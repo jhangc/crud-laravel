@@ -22,7 +22,7 @@ class CreditosGrupalesExport implements FromCollection, WithHeadings, WithMappin
         $roles = $user->roles->pluck('name');
 
         if ($roles->contains('Administrador')) {
-            $creditos = Credito::with([
+            $creditos = credito::with([
                 'clientes',
                 'creditoClientes.clientes',
                 'user.sucursal',
@@ -40,7 +40,7 @@ class CreditosGrupalesExport implements FromCollection, WithHeadings, WithMappin
             ->where('producto', 'grupal')
             ->get();
         } else {
-            $creditos = Credito::with([
+            $creditos = credito::with([
                 'clientes',
                 'creditoClientes.clientes',
                 'user.sucursal',
