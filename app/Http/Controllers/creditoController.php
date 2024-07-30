@@ -629,7 +629,7 @@ class creditoController extends Controller
 
                         $totalCompras=0;
                         foreach ($gastosOperativos as $gastoOperativo) {
-                            $gasto = $gastoOperativo->precio_unitario * $gastoOperativo->cantidad;
+                            $gasto = $cicloproductivo*$gastoOperativo->precio_unitario * $gastoOperativo->cantidad;
                             $totalCompras += $gasto;
                         }
 
