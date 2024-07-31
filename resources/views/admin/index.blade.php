@@ -17,7 +17,7 @@
                 <div class="icon">
                     <i class="fas fa-money-bill"></i>
                 </div>
-                <a href="{{url('/admin/cajas')}}" class="small-box-footer">
+                <a href="#" class="small-box-footer">
                     Más información <i class="fas fa-arrow-circle-right"></i>
                 </a>
             </div>
@@ -46,7 +46,7 @@
                 <div class="icon">
                     <i class="fas fa-hand-holding-usd"></i>
                 </div>
-                <a href="{{url('/admin/prestamos')}}" class="small-box-footer">
+                <a href="#" class="small-box-footer">
                     Más información <i class="fas fa-arrow-circle-right"></i>
                 </a>
             </div>
@@ -60,7 +60,7 @@
                 <div class="icon">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <a href="{{url('/admin/cuotas-vencidas')}}" class="small-box-footer">
+                <a href="#" class="small-box-footer">
                     Más información <i class="fas fa-arrow-circle-right"></i>
                 </a>
             </div>
@@ -76,7 +76,7 @@
                 <div class="icon">
                     <i class="fas fa-vault"></i>
                 </div>
-                <a href="{{url('/admin/bovedas')}}" class="small-box-footer">
+                <a href="#" class="small-box-footer">
                     Más información <i class="fas fa-arrow-circle-right"></i>
                 </a>
             </div>
@@ -104,7 +104,7 @@
                 <div class="icon">
                     <i class="fas fa-wallet"></i>
                 </div>
-                <a href="{{url('/admin/cartera')}}" class="small-box-footer">
+                <a href="#" class="small-box-footer">
                     Más información <i class="fas fa-arrow-circle-right"></i>
                 </a>
             </div>
@@ -123,7 +123,7 @@
                 <div class="icon">
                     <i class="fas fa-money-bill"></i>
                 </div>
-                <a href="{{url('/admin/cajas')}}" class="small-box-footer">
+                <a href="#" class="small-box-footer">
                     Más información <i class="fas fa-arrow-circle-right"></i>
                 </a>
             </div>
@@ -137,7 +137,7 @@
                 <div class="icon">
                     <i class="fas fa-hand-holding-usd"></i>
                 </div>
-                <a href="{{url('/admin/prestamos')}}" class="small-box-footer">
+                <a href="#" class="small-box-footer">
                     Más información <i class="fas fa-arrow-circle-right"></i>
                 </a>
             </div>
@@ -151,7 +151,7 @@
                 <div class="icon">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <a href="{{url('/admin/cuotas-vencidas')}}" class="small-box-footer">
+                <a href="#" class="small-box-footer">
                     Más información <i class="fas fa-arrow-circle-right"></i>
                 </a>
             </div>
@@ -170,7 +170,7 @@
                 <div class="icon">
                     <i class="fas fa-hand-holding-usd"></i>
                 </div>
-                <a href="{{url('/admin/prestamos')}}" class="small-box-footer">
+                <a href="#" class="small-box-footer">
                     Más información <i class="fas fa-arrow-circle-right"></i>
                 </a>
             </div>
@@ -184,7 +184,7 @@
                 <div class="icon">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <a href="{{url('/admin/cuotas-vencidas')}}" class="small-box-footer">
+                <a href="#" class="small-box-footer">
                     Más información <i class="fas fa-arrow-circle-right"></i>
                 </a>
             </div>
