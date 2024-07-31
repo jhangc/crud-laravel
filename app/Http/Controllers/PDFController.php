@@ -1348,4 +1348,44 @@ class PdfController extends Controller
         $pdf = PDF::loadView('pdf.detallecliente', $data)->setPaper('a4');
         return $pdf->stream('detalle-cliente.pdf');
     }
+
+    public function generarTicketDePagogrupal($array){
+        $idsArray = explode('-', $array);
+
+    $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->get();
+
+    $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->get();
+
+    if ($ingresos->isEmpty()) {
+        return response()->json(['error' => 'Pagos no encontrados.'], 404);
+    }
+
+    $data = [];
+
+    foreach ($ingresos as $ingreso) {
+        $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
+        $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
+        $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
+
+        // Obtener la siguiente cuota
+        $siguienteCuota = \App\Models\Cronograma::where('id_prestamo', $ingreso->prestamo_id)
+            ->where('numero', '>', $ingreso->numero_cuota)
+            ->orderBy('numero', 'asc')
+            ->first();
+        $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
+
+        $data[] = [
+            'prestamo' => $prestamo,
+            'cliente' => $cliente,
+            'ingreso' => $ingreso,
+            'cronograma' => $cronograma,
+            'fechaSiguienteCuota' => $fechaSiguienteCuota
+        ];
+    }
+
+    // dd($data);
+
+    $pdf = Pdf::loadView('pdf.ticketpagogrupal', compact('data'))->setPaper([0, 0, 200, 400]);
+    return $pdf->stream('tickets.pdf');
+    }
 }

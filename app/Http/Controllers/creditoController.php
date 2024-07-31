@@ -966,27 +966,32 @@ class creditoController extends Controller
 
         return response()->json(['success' => true, 'transaccion_id' => $transaccion->id]);
     }
+
     public function verpagocuota($id)
     {
         $credito = Credito::find($id);
         $clientesCredito = CreditoCliente::where('prestamo_id', $id)->with('clientes')->get();
-
+    
+        $cuotasGenerales = [];
         $cuotasPorCliente = [];
-
+    
+        // Obtener todas las cuotas para calcular el estado de las generales
+        $todasLasCuotas = Cronograma::where('id_prestamo', $id)->get();
+    
         foreach ($clientesCredito as $clienteCredito) {
             $cuotas = Cronograma::where('id_prestamo', $id)
                 ->where('cliente_id', $clienteCredito->cliente_id)
                 ->get();
-
+    
             foreach ($cuotas as $cuota) {
                 // Asegurarse de que fecha_vencimiento sea una instancia de Carbon
                 $fecha_vencimiento = Carbon::parse($cuota->fecha);
-
+    
                 $ingreso = Ingreso::where('prestamo_id', $id)
                     ->where('numero_cuota', $cuota->numero)
                     ->where('cliente_id', $clienteCredito->cliente_id)
                     ->first();
-
+    
                 if ($ingreso) {
                     $cuota->estado = 'pagado';
                     $cuota->fecha_pago = $ingreso->fecha_pago;
@@ -1009,11 +1014,71 @@ class creditoController extends Controller
                     $cuota->monto_total_pago_final = round($cuota->monto, 2);
                 }
             }
+    
             $cuotasPorCliente[$clienteCredito->cliente_id] = $cuotas;
         }
+    
+        if ($credito->categoria == 'grupal') {
+            foreach ($todasLasCuotas as $cuotaGeneral) {
+                if (is_null($cuotaGeneral->cliente_id)) {
+                    $fecha_vencimiento = Carbon::parse($cuotaGeneral->fecha);
+                    $cuotasRelacionadas = Cronograma::where('id_prestamo', $id)
+                        ->where('fecha', $cuotaGeneral->fecha)
+                        ->whereNotNull('cliente_id')
+                        ->get();
+    
+                    $estadoGeneral = 'pagado';
+                    $pagadas = 0;
+                    $pendientes = 0;
+                    $vencidas = 0;
+                    $montoPagado = 0;
+                    $montoPendiente = 0;
+                    $montoVencido = 0;
+                    $ingreso_ids = [];
+    
+                    foreach ($cuotasRelacionadas as $cuotaRelacionada) {
+                        $ingresoRelacionado = Ingreso::where('prestamo_id', $id)
+                            ->where('numero_cuota', $cuotaRelacionada->numero)
+                            ->where('cliente_id', $cuotaRelacionada->cliente_id)
+                            ->first();
+    
+                        if (!$ingresoRelacionado) {
+                            if (now()->greaterThan($fecha_vencimiento)) {
+                                $estadoGeneral = 'vencida';
+                                $vencidas++;
+                                $montoVencido += $cuotaRelacionada->monto;
+                            } else {
+                                $estadoGeneral = 'pendiente';
+                                $pendientes++;
+                                $montoPendiente += $cuotaRelacionada->monto;
+                            }
+                        } else {
+                            $pagadas++;
+                            $montoPagado += $cuotaRelacionada->monto;
+                            $ingreso_ids[] = $ingresoRelacionado->id; // Almacenar IDs de ingresos
+                        }
+                    }
+    
+                    if ($pagadas > 0 && ($pendientes > 0 || $vencidas > 0)) {
+                        $estadoGeneral = 'parcial';
+                    }
+    
+                    $cuotaGeneral->estado = $estadoGeneral;
+                    $cuotaGeneral->pagadas = $pagadas;
+                    $cuotaGeneral->pendientes = $pendientes;
+                    $cuotaGeneral->vencidas = $vencidas;
+                    $cuotaGeneral->monto_pagado = $montoPagado;
+                    $cuotaGeneral->monto_pendiente = $montoPendiente;
+                    $cuotaGeneral->monto_vencido = $montoVencido;
+                    $cuotaGeneral->ingreso_ids = $ingreso_ids; // Añadir IDs de ingresos
+                    $cuotasGenerales[] = $cuotaGeneral;
+                }
+            }
+        }
+    
+        return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasGenerales', 'cuotasPorCliente'));
+    }    
 
-        return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasPorCliente'));
-    }
     public function pagocuota(Request $request)
     {
         $user = auth()->user();
@@ -1051,6 +1116,82 @@ class creditoController extends Controller
         $ultimaTransaccion->save();
 
         return response()->json(['success' => 'Cuota pagada con éxito', 'ingreso_id' => $ingreso->id]);
+    }
+    public function pagoGrupal(Request $request)
+    {
+        $user = auth()->user();
+
+        // Retrieve the last open cash transaction for the logged-in user
+        $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
+            ->whereNull('hora_cierre')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Check if there is an open cash transaction
+        if (!$ultimaTransaccion) {
+            return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
+        }
+
+        $prestamo_id = $request->prestamo_id;
+        $fecha = $request->fecha;
+
+        $cuotas = Cronograma::where('id_prestamo', $prestamo_id)
+            ->where('fecha', '=', $fecha)
+            // ->whereNotNull('cliente_id')
+            ->get();
+
+        $ingreso_ids = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($cuotas as $cuota) {
+                // Verificar si la cuota ya tiene un ingreso asociado
+                $ingresoExistente = Ingreso::where('prestamo_id', $prestamo_id)
+                    ->where('cronograma_id', $cuota->id)
+                    // ->where('cronograma_id', $cuota->id)
+                    ->first();
+
+                if (!$ingresoExistente) {
+                    $dias_mora = 0;
+                    $monto_mora = 0;
+                    $porcentaje_mora = 0.3; // Asumiendo 0.3% de mora por día por cada mil soles
+
+                    // Calcular mora si está vencida
+                    if (Carbon::now()->greaterThan(Carbon::parse($cuota->fecha))) {
+                        $dias_mora = Carbon::now()->diffInDays(Carbon::parse($cuota->fecha));
+                        $monto_mora = round(($cuota->monto * $porcentaje_mora / 1000) * $dias_mora * 5, 2);
+                    }
+
+                    // Register the income for each cuota
+                    $ingreso = Ingreso::create([
+                        'transaccion_id' => $ultimaTransaccion->id,
+                        'prestamo_id' => $cuota->id_prestamo,
+                        'cliente_id' => $cuota->cliente_id,
+                        'cronograma_id' => $cuota->id,
+                        'numero_cuota' => $cuota->numero,
+                        'monto' =>  round($cuota->monto + $monto_mora, 2),
+                        'monto_mora' => $monto_mora,
+                        'dias_mora' => $dias_mora,
+                        'porcentaje_mora' => $porcentaje_mora,
+                        'fecha_pago' => now()->toDateString(),
+                        'hora_pago' => now()->toTimeString(),
+                        'sucursal_id' => $user->sucursal_id,
+                        'monto_total_pago_final' => $cuota->monto,
+                    ]);
+                    $ingreso_ids[] = $ingreso->id;
+                    $ultimaTransaccion->cantidad_ingresos +=  $ingreso->monto; // Sumar directamente al campo de la transacción solo el monto de la cuota
+                }
+            }
+
+            $ultimaTransaccion->save(); // Guardar la transacción con la suma actualizada
+
+            DB::commit();
+
+            return response()->json(['success' => 'Pago grupal realizado con éxito', 'ingreso_ids' => $ingreso_ids]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Error al realizar el pago grupal: ' . $e->getMessage()], 500);
+        }
     }
 
 
