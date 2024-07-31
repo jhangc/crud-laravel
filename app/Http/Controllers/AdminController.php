@@ -154,6 +154,7 @@ class AdminController extends Controller
         $cajaCerrada = $ultimaTransaccion->hora_cierre ? true : false;
         $ingresos = Ingreso::where('transaccion_id', $ultimaTransaccion->id)
             ->with('cliente', 'transaccion.user') // Incluir relaciones
+            ->whereNotNull('cliente_id')
             ->get();
 
         $egresos = Egreso::where('transaccion_id', $ultimaTransaccion->id)

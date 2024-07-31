@@ -1198,6 +1198,7 @@ class PdfController extends Controller
 
         $cajaCerrada = $ultimaTransaccion->hora_cierre ? true : false;
         $ingresos = \App\Models\Ingreso::where('transaccion_id', $ultimaTransaccion->id)
+            ->whereNotNull('cliente_id')
             ->with('cliente', 'transaccion.user')
             ->get();
 
@@ -1278,8 +1279,12 @@ class PdfController extends Controller
             return redirect()->back()->with('error', 'Transacción no encontrada.');
         }
 
-        $ingresos = \App\Models\Ingreso::where('transaccion_id', $transaccion->id)->with('cliente', 'transaccion.user')->get();
-        $egresos = \App\Models\Egreso::where('transaccion_id', $transaccion->id)->with(['prestamo.clientes', 'transaccion.user'])->get();
+        $ingresos = \App\Models\Ingreso::where('transaccion_id', $transaccion->id)
+        ->whereNotNull('cliente_id')
+        ->with('cliente', 'transaccion.user')->get();
+        $egresos = \App\Models\Egreso::where('transaccion_id', $transaccion->id)
+        ->with(['prestamo.clientes', 'transaccion.user'])
+        ->get();
         $gastos = \App\Models\Gasto::where('caja_transaccion_id', $transaccion->id)->with('user')->get();
 
         $datosCierre = json_decode($transaccion->json_cierre, true);

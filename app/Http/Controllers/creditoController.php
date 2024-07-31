@@ -1178,8 +1178,10 @@ class creditoController extends Controller
                         'sucursal_id' => $user->sucursal_id,
                         'monto_total_pago_final' => $cuota->monto,
                     ]);
+                    if($ingreso->cliente_id!=null){
                     $ingreso_ids[] = $ingreso->id;
-                    $ultimaTransaccion->cantidad_ingresos +=  $ingreso->monto; // Sumar directamente al campo de la transacción solo el monto de la cuota
+                    $ultimaTransaccion->cantidad_ingresos +=  $ingreso->monto;
+                     }// Sumar directamente al campo de la transacción solo el monto de la cuota
                 }
             }
 
