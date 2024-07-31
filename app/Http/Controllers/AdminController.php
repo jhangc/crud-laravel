@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\credito;
+use App\Models\Cronograma;
 use App\Models\Caja;
+use App\Models\cliente;
 use App\Models\Ingreso;
 use App\Models\Egreso;
 use App\Models\CreditoCliente;
@@ -16,12 +18,56 @@ use App\Models\Gasto;
 
 class AdminController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         $usuarios = User::all();
-        return view('admin.index',['usuarios'=>$usuarios]);
+
+
+        // Obtener el usuario autenticado
+        $user = Auth::user();
+
+        // Obtener todos los roles del usuario autenticado
+        $roles = $user->roles->pluck('name');
+
+        // Verificar si el usuario tiene alguno de los roles
+        if ($roles->contains('Asesor de creditos')) {
+            // Obtener los IDs de créditos con estado pagado y registrados por el asesor de crédito actual
+            $idsCreditosPagados = credito::where('estado', 'pagado')
+                ->where('user_id', $user->id)
+                ->pluck('id')
+                ->toArray();
+
+            $creditosPagadosCount = count($idsCreditosPagados);
+        } else {
+            $idsCreditosPagados = credito::where('estado', 'pagado')->pluck('id')->toArray();
+            $creditosPagadosCount = count($idsCreditosPagados);
+        }
+
+
+        // Obtener los id_cronograma de la tabla ingresos
+        $idsCronogramaEnIngresos = Ingreso::pluck('cronograma_id')->toArray();
+
+        // Contar las cuotas vencidas
+        $cuotasVencidasCount = Cronograma::whereNotIn('id', $idsCronogramaEnIngresos)
+            ->whereIn('id_prestamo', $idsCreditosPagados)
+            ->where('fecha', '<', now())
+            ->count();
+
+        // Obtener el conteo de clientes activos
+        $clientesActivosCount = cliente::where('activo', 1)->count();
+
+
+        return view('admin.index', [
+            'usuarios' => $usuarios,
+            'creditosPagadosCount' => $creditosPagadosCount,
+            'cuotasVencidasCount' => $cuotasVencidasCount,
+            'clientesActivosCount' => $clientesActivosCount,
+        ]);
     }
 
-    public function aprobar(Request $request){
+
+    public function aprobar(Request $request)
+    {
         $credito = credito::find($request->id);
         $credito->estado = 'aprobado';
         $credito->comentario_administrador = $request->comentarioadministrador;
@@ -34,7 +80,8 @@ class AdminController extends Controller
         ]);
     }
 
-    public function rechazar(Request $request){
+    public function rechazar(Request $request)
+    {
         $credito = credito::find($request->id);
         $credito->estado = 'rechazado';
         $credito->comentario_administrador = $request->comentarioadministrador;
@@ -47,7 +94,8 @@ class AdminController extends Controller
         ]);
     }
 
-    public function observar(Request $request){
+    public function observar(Request $request)
+    {
         $credito = credito::find($request->id);
         $credito->estado = 'observado';
         $credito->comentario_administrador = $request->comentarioadministrador;
@@ -60,7 +108,8 @@ class AdminController extends Controller
         ]);
     }
 
-    public function guardar(Request $request){
+    public function guardar(Request $request)
+    {
         $credito = credito::find($request->id);
         if ($request->estado == 'rechazado por sistema') {
             $credito->estado = 'rechazado por sistema';
@@ -69,7 +118,7 @@ class AdminController extends Controller
         }
         $credito->comentario_asesor = $request->comentario;
         $credito->save();
-    
+
         return response()->json([
             'redirect' => route('creditos.index'),
             'mensaje' => 'El crédito ha sido ' . ($request->estado == 'rechazado por sistema' ? 'rechazado por el sistema' : 'revisado') . ' correctamente',
@@ -77,16 +126,16 @@ class AdminController extends Controller
         ]);
     }
 
-    public function ingresosday (Request $request){
+    public function ingresosday(Request $request)
+    {
         $sucursalId = Auth::user()->sucursal_id;  // Obtener la sucursal del usuario logueado
         $cajas = Caja::where('sucursal_id', $sucursalId)->get();
         return view('admin.creditos.ingresosday', compact('cajas'));
-        
     }
-    public function egresosday (Request $request){
-        
+    public function egresosday(Request $request)
+    {
     }
-   
+
 
     public function obtenerTransaccionesCaja($id)
     {
@@ -104,19 +153,19 @@ class AdminController extends Controller
 
         $cajaCerrada = $ultimaTransaccion->hora_cierre ? true : false;
         $ingresos = Ingreso::where('transaccion_id', $ultimaTransaccion->id)
-                            ->with('cliente', 'transaccion.user') // Incluir relaciones
-                            ->get();
+            ->with('cliente', 'transaccion.user') // Incluir relaciones
+            ->get();
 
         $egresos = Egreso::where('transaccion_id', $ultimaTransaccion->id)
-                          ->with(['prestamo.clientes', 'transaccion.user']) // Incluir relaciones
-                          ->get();
+            ->with(['prestamo.clientes', 'transaccion.user']) // Incluir relaciones
+            ->get();
 
         $gastos = Gasto::where('caja_transaccion_id', $ultimaTransaccion->id)
-                          ->with('user') // Incluir relación con el usuario
-                          ->get();
+            ->with('user') // Incluir relación con el usuario
+            ->get();
 
         // Preparar datos de egresos con clientes
-        $egresosConClientes = $egresos->map(function($egreso) {
+        $egresosConClientes = $egresos->map(function ($egreso) {
             return [
                 'hora_egreso' => $egreso->hora_egreso,
                 'monto' => $egreso->monto,
@@ -126,7 +175,7 @@ class AdminController extends Controller
         });
 
         // Preparar datos de gastos
-        $gastosConDetalles = $gastos->map(function($gasto) {
+        $gastosConDetalles = $gastos->map(function ($gasto) {
             return [
                 'hora_gasto' => $gasto->created_at->format('H:i:s'),
                 'monto' => $gasto->monto_gasto,
@@ -141,11 +190,11 @@ class AdminController extends Controller
             $datosCierre = json_decode($ultimaTransaccion->json_cierre, true);
 
             // Calcular el saldo final real
-            $saldoFinalReal = array_sum(array_map(function($cantidad, $valor) {
+            $saldoFinalReal = array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
 
-            $saldoFinalReal += array_sum(array_map(function($cantidad, $valor) {
+            $saldoFinalReal += array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
 
@@ -154,7 +203,7 @@ class AdminController extends Controller
             // Calcular el saldo final esperado
             $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
 
-            $desajuste =  $saldoFinalReal-$saldoFinalEsperado;
+            $desajuste =  $saldoFinalReal - $saldoFinalEsperado;
 
             // Formatear valores a dos decimales
             $saldoFinalReal = number_format($saldoFinalReal, 2);
@@ -170,10 +219,10 @@ class AdminController extends Controller
             'egresos' => $egresosConClientes,
             'gastos' => $gastosConDetalles,
             'cajaCerrada' => $cajaCerrada,
-            'datosCierre' => $datosCierre??[],
-            'saldoFinalReal' => $saldoFinalReal??0,
-            'saldoFinalEsperado' => $saldoFinalEsperado??0,
-            'desajuste' => $desajuste??0
+            'datosCierre' => $datosCierre ?? [],
+            'saldoFinalReal' => $saldoFinalReal ?? 0,
+            'saldoFinalEsperado' => $saldoFinalEsperado ?? 0,
+            'desajuste' => $desajuste ?? 0
         ]);
     }
 }

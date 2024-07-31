@@ -85,6 +85,14 @@
                     // Filtrar cuotas totales donde id_cliente es null
                     $cuotasTotales = $credito->cronograma()->whereNull('cliente_id')->count();
 
+                    $ultimaCuota = $credito->cronograma()
+                        ->whereNull('cliente_id')
+                        ->orderBy('fecha', 'desc')
+                        ->first();
+
+                    $fechaUltimaCuota = $ultimaCuota ? $ultimaCuota->fecha : 'No hay cuotas disponibles';
+
+
                     // Calcular cuotas pendientes
                     $cuotasPendientes = $cuotasTotales - $cuotasPagadas;
 
@@ -152,8 +160,8 @@
                         </td>
                         <td>{{ $credito->id }}</td>
                         <td>{{ $credito->fecha_desembolso }}</td>
-                        <td>{{ $credito->fecha_fin}}</td>
-                        <td>{{ $ultimaCuotaPagada->cronograma_id ?? 0 }}</td>
+                        <td>{{ $fechaUltimaCuota}}</td>
+                        <td>{{$fechaVencimientoProximaCuota}}</td>
                         <td>{{ $credito->tiempo }}</td>
                         <td>{{ $credito->recurrencia }}</td>
                         <td>{{ $credito->periodo_gracia_dias }}</td>

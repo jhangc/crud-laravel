@@ -49,7 +49,7 @@
             <div class="small-box bg-info">
                 <div class="inner">
                     
-                    <h3>60</h3>
+                    <h3>{{$creditosPagadosCount}}</h3>
                     <p>Prestamos activos</p>
                 </div>
                 <div class="icon">
@@ -66,7 +66,7 @@
             <div class="small-box bg-danger">
                 <div class="inner">
                     
-                    <h3>30</h3>
+                    <h3>{{$cuotasVencidasCount}}</h3>
                     <p>Cuotas Vencidas</p>
                 </div>
                 <div class="icon">
@@ -101,11 +101,7 @@
 
             <div class="small-box bg-primary">
                 <div class="inner">
-                    @php $contador_de_usuarios=0; @endphp
-                    @foreach($usuarios as $usuario)
-                        @php $contador_de_usuarios++; @endphp
-                    @endforeach
-                    <h3>{{$contador_de_usuarios}}</h3>
+                    <h3>{{$clientesActivosCount}}</h3>
                     <p>Clientes Registrados</p>
                 </div>
                 <div class="icon">
@@ -164,7 +160,7 @@
             <div class="small-box bg-info">
                 <div class="inner">
                     
-                    <h3>60</h3>
+                    <h3>{{$creditosPagadosCount}}</h3>
                     <p>Prestamos activos</p>
                 </div>
                 <div class="icon">
@@ -181,7 +177,7 @@
             <div class="small-box bg-danger">
                 <div class="inner">
                     
-                    <h3>30</h3>
+                    <h3>{{$cuotasVencidasCount}}</h3>
                     <p>Cuotas Vencidas</p>
                 </div>
                 <div class="icon">
@@ -222,7 +218,7 @@
             <div class="small-box bg-info">
                 <div class="inner">
                     
-                    <h3>60</h3>
+                    <h3>{{$creditosPagadosCount}}</h3>
                     <p>Prestamos activos</p>
                 </div>
                 <div class="icon">
@@ -239,7 +235,7 @@
             <div class="small-box bg-danger">
                 <div class="inner">
                     
-                    <h3>30</h3>
+                    <h3>{{$cuotasVencidasCount}}</h3>
                     <p>Cuotas Vencidas</p>
                 </div>
                 <div class="icon">
