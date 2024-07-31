@@ -18,8 +18,9 @@
         .principal th,
         .principal td {
             border: 1px solid black;
-            padding: 8px;
+            padding: 5px;
             text-align: left;
+            font-size: 12px;
         }
 
         th {

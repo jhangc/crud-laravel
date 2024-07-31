@@ -141,11 +141,31 @@ class CreditosIndividualesExport implements FromCollection, WithHeadings, WithMa
             $fechaVencimientoProximaCuota = $primeraCuota ? $primeraCuota->fecha : 'No hay cuotas';
         }
 
-        // Calcular los días de atraso
+        // Calcular los días de atraso o los días restantes
         $diasAtraso = 0;
-        if ($fechaVencimientoProximaCuota < $now) {
-            $diasAtraso = $now->diffInDays($fechaVencimientoProximaCuota);
+        if ($fechaVencimientoProximaCuota) {
+            if ($fechaVencimientoProximaCuota < $now) {
+                 $diasAtraso = $now->diffInDays($fechaVencimientoProximaCuota);
+             } else {
+                $diasAtraso = -$now->diffInDays($fechaVencimientoProximaCuota);
+            }
         }
+        // Calcular riesgo individual
+        $riesgoIndividual = 'normal';
+        if ($diasAtraso < 8) {
+            $riesgoIndividual = 'normal';
+        } elseif ($diasAtraso >= 8 && $diasAtraso <= 30) {
+            $riesgoIndividual = 'CPP';
+        } elseif ($diasAtraso > 30 && $diasAtraso <= 60) {
+         $riesgoIndividual = 'Deficiente';
+        } elseif ($diasAtraso > 60 && $diasAtraso <= 120) {
+            $riesgoIndividual = 'Dudoso';
+        } else {
+            $riesgoIndividual = 'Pérdida';
+        }
+
+        // Calcular situación contable
+        $situacionContable = $diasAtraso >= 1 ? 'Vencido' : 'Vigente';
 
         return [
             $contador,
@@ -175,8 +195,8 @@ class CreditosIndividualesExport implements FromCollection, WithHeadings, WithMa
             $saldoCapitalNormal,
             $saldoCapitalVencido,
             $diasAtraso,
-            'Normal',
-            'Vigente',
+            $riesgoIndividual,
+            $situacionContable,
             $interesporcobrar,
             $credito->user->name,
             $credito->tasa,
