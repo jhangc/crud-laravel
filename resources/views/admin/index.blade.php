@@ -118,7 +118,7 @@
             <div class="small-box bg-dark">
                 <div class="inner">
                     
-                    <h3>S/. 15 060</h3>
+                    <h3>S/. {{$balance}}</h3>
                     <p>Cartera Total</p>
                 </div>
                 <div class="icon">
@@ -195,23 +195,7 @@
 
     @role('Asesor de creditos')
     <div class="row">
-        <div class="col-lg-3 col-6">
-
-            <div class="small-box bg-success">
-                <div class="inner">
-                    
-                    <h3>S/. 12000</h3>
-                    <p>Monto en caja</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-user-plus"></i>
-                </div>
-                <a href="{{url('/admin/usuarios')}}" class="small-box-footer">
-                    Más información <i class="fas fa-arrow-circle-right"></i>
-                </a>
-            </div>
-        </div>
-        
+              
 
         <div class="col-lg-3 col-6">
 

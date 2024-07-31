@@ -56,12 +56,18 @@ class AdminController extends Controller
         // Obtener el conteo de clientes activos
         $clientesActivosCount = cliente::where('activo', 1)->count();
 
+        // Calcular la suma de todos los egresos menos los ingresos
+        $totalIngresos = Ingreso::whereNotNull('cliente_id')->sum('monto'); // Ajusta 'monto' según el nombre de tu campo de cantidad en la tabla ingresos
+        $totalEgresos = Egreso::sum('monto');  // Ajusta 'monto' según el nombre de tu campo de cantidad en la tabla egresos
+        $balance = $totalEgresos - $totalIngresos;
+
 
         return view('admin.index', [
             'usuarios' => $usuarios,
             'creditosPagadosCount' => $creditosPagadosCount,
             'cuotasVencidasCount' => $cuotasVencidasCount,
             'clientesActivosCount' => $clientesActivosCount,
+            'balance' => $balance,
         ]);
     }
 

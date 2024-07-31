@@ -20,6 +20,7 @@
             border: 1px solid black;
             padding: 5px;
             text-align: left;
+            font-size: 12px;
         }
 
         th {
@@ -79,14 +80,14 @@
             <td><b>Asesor de crédito:</b></td>
             <td>{{ $responsable->name }}</td>
             <td><b>Codigo</b></td>
-            <td>{{$correlativosGenerales->correlativo}}</td>
+            <td>{{ $correlativosGenerales->correlativo ?? 0 }}</td>
         </tr>
     </table>
     <br>
 
     <!-- Cronograma Grupal -->
     <h4 class="card-title" style="text-align: center; margin: 0;">Cronograma Grupal</h4>
-    <table class="principal contenido" >
+    <table class="principal contenido">
         <thead>
             <tr>
                 <th>N° CUOTA</th>
@@ -179,12 +180,12 @@
                 <td>{{ $responsable->name }}</td>
                 <td><b>Codigo</b></td>
                 <td>
-                @foreach ($correlativosIntegrantes as $correlativo)
-                    @if ($correlativo->id_cliente == $cliente->id)
-                        {{ $correlativo->correlativo }}
-                    @endif
-                @endforeach
-            </td>
+                    @foreach ($correlativosIntegrantes as $correlativo)
+                        @if ($correlativo->id_cliente == $cliente->id)
+                            {{ $correlativo->correlativo ?? 0 }}
+                        @endif
+                    @endforeach
+                </td>
             </tr>
         </table>
 
