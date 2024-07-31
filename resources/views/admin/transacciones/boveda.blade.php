@@ -11,6 +11,11 @@
             <div class="col-sm-12">
                 <h3 class="m-0">Bóvedas</h3>
             </div>
+            <div class="col-lg-3 mt-2">
+                <button onclick="agregarBoveda()" type="button" class="btn bg-info">
+                    <i class="fa fa-plus" aria-hidden="true"></i> Añadir  una Boveda
+                </button>
+            </div>
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body table-responsive" id="listarBovedas">
