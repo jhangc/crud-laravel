@@ -320,14 +320,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <li class="nav-item">
-                                        <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                        <a href="{{ url('/admin/boveda') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Ingresos</p>
+                                            <p>boveda</p>
                                         </a>
-                                        <a href="{{ url('/admin/transacciones/egresos') }}" class="nav-link active">
+                                        {{--<a href="{{ url('/admin/boveda') }}" class="nav-link active">
                                             <i class="far fa-circle nav-icon"></i>
                                             <p>Egresos</p>
-                                        </a>
+                                        </a>--}}
 
                                     </li>
                                 </ul>

@@ -9,6 +9,7 @@ use App\Http\Controllers\IniciarOpeController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\IngresoExtraController;
+use App\Http\Controllers\BovedaController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -178,6 +179,22 @@ Route::delete('/admin/ingresos-extras/{id}', [IngresoExtraController::class, 'de
 //reporte de cja diairo
 Route::get('/admin/generar-transacciones-pdf/{caja_id}', [PDFController::class, 'generarTransaccionesPDF'])->name('caja.generarTransaccionesPDF');
 Route::get('/admin/caja/generar-arqueo-pdf/{id}', [PdfController::class, 'generarArqueoPDF'])->name('pdf.generarArqueoPDF');
+
+Route::get('/admin/boveda', [BovedaController::class, 'index'])->name('boveda.index')->middleware('auth');
+Route::get('/admin/boveda/{id}/edit', [BovedaController::class, 'edit'])->name('boveda.edit')->middleware('auth');
+Route::post('/admin/boveda', [BovedaController::class, 'store'])->name('boveda.store')->middleware('auth');
+Route::post('/admin/boveda/{id}', [BovedaController::class, 'store'])->name('boveda.update')->middleware('auth');
+Route::delete('/admin/boveda/{id}', [BovedaController::class, 'destroy'])->name('boveda.destroy')->middleware('auth');
+
+// Movimientos de Bóveda
+Route::get('/admin/boveda/{id}/movimientos', [BovedaController::class, 'movimientos'])->name('boveda.movimientos')->middleware('auth');
+Route::post('/admin/boveda/{id}/movimientos', [BovedaController::class, 'agregarMovimiento'])->name('boveda.movimientos.store')->middleware('auth');
+Route::get('/admin/boveda/{id}/movimientos/{movimientoId}/edit', [BovedaController::class, 'editarMovimiento'])->name('boveda.movimientos.edit')->middleware('auth');
+Route::post('/admin/boveda/{id}/movimientos/{movimientoId}', [BovedaController::class, 'actualizarMovimiento'])->name('boveda.movimientos.update')->middleware('auth');
+Route::delete('/admin/boveda/{id}/movimientos/{movimientoId}', [BovedaController::class, 'eliminarMovimiento'])->name('boveda.movimientos.destroy')->middleware('auth');
+
+
+
 
 
 

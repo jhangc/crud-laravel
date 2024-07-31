@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Gasto;
 use App\Models\IngresoExtra;
+use App\Models\Boveda;
+use App\Models\MovimientoBoveda;
+use App\Models\CajaTransaccion;
 
 class AdminController extends Controller
 {
@@ -62,15 +65,61 @@ class AdminController extends Controller
         $totalEgresos = Egreso::sum('monto');  // Ajusta 'monto' según el nombre de tu campo de cantidad en la tabla egresos
         $balance = $totalEgresos - $totalIngresos;
 
-
+        // Obtener la última transacción de caja de la sucursal del usuario
+        $sucursalId = Auth::user()->sucursal_id;
+        $ultimaTransaccion = CajaTransaccion::where('sucursal_id', $sucursalId)
+            ->orderBy('created_at', 'desc')
+            ->first();
+    
+        $ultimaCajaTransacciones = null;
+        $ultimaCajaSaldo = null;
+        $nombreCaja = null;
+    
+        if ($ultimaTransaccion) {
+            $caja = $ultimaTransaccion->caja;
+            $nombreCaja = $caja->nombre;
+    
+            $ingresosCaja = Ingreso::where('transaccion_id', $ultimaTransaccion->id)->sum('monto');
+            $egresosCaja = Egreso::where('transaccion_id', $ultimaTransaccion->id)->sum('monto');
+            $ingresosExtrasCaja = IngresoExtra::where('caja_transaccion_id', $ultimaTransaccion->id)->sum('monto');
+            $gastosCaja = Gasto::where('caja_transaccion_id', $ultimaTransaccion->id)->sum('monto_gasto');
+            $ultimaCajaSaldo = $ultimaTransaccion->monto_apertura + $ingresosCaja + $ingresosExtrasCaja - $egresosCaja - $gastosCaja;
+    
+            $ultimaCajaTransacciones = [
+                'ingresos' => $ingresosCaja ?? 0,
+                'ingresos_extras' => $ingresosExtrasCaja ?? 0,
+                'egresos' => $egresosCaja ?? 0,
+                'gastos' => $gastosCaja ?? 0,
+                'saldo' => $ultimaCajaSaldo ?? 0,
+            ];
+        }
+    
+        // Obtener la última bóveda de la sucursal del usuario
+        $ultimaBoveda = Boveda::where('sucursal_id', $sucursalId)
+            ->orderBy('created_at', 'desc')
+            ->first();
+    
+        $ultimaBovedaSaldo = null;
+    
+        if ($ultimaBoveda) {
+            $movimientosBoveda = MovimientoBoveda::where('boveda_id', $ultimaBoveda->id)->get();
+            $totalIngresosBoveda = $movimientosBoveda->where('tipo', 'ingreso')->sum('monto');
+            $totalEgresosBoveda = $movimientosBoveda->where('tipo', 'egreso')->sum('monto');
+            $ultimaBovedaSaldo = $ultimaBoveda->monto_inicio + $totalIngresosBoveda - $totalEgresosBoveda;
+        }
+    
         return view('admin.index', [
             'usuarios' => $usuarios,
             'creditosPagadosCount' => $creditosPagadosCount,
             'cuotasVencidasCount' => $cuotasVencidasCount,
             'clientesActivosCount' => $clientesActivosCount,
             'balance' => $balance,
+            'ultimaCajaTransacciones' => $ultimaCajaTransacciones,
+            'ultimaBovedaSaldo' => $ultimaBovedaSaldo,
+            'nombreCaja' => $nombreCaja,
         ]);
     }
+    
 
 
     public function aprobar(Request $request)
