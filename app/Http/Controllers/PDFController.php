@@ -1368,8 +1368,8 @@ class PdfController extends Controller
     $data = [];
 
     foreach ($ingresos as $ingreso) {
-        $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
-        $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
+        $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
+        $cliente = \App\Models\cliente::find($ingreso->cliente_id);
         $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
 
         // Obtener la siguiente cuota
