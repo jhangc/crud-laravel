@@ -395,7 +395,7 @@ class UpdateController extends Controller
                 break;
             case 'mensual':
             default:
-                $fechaCuota->addMonth();
+                $fechaCuota->addDays(30);
                 break;
         }
 
