@@ -349,70 +349,70 @@ class UpdateController extends Controller
         }
     }
 
-    protected function guardarCronograma($prestamo, $cliente, $request, $montoIndividual)
-    {
-        // Eliminar el cronograma existente
+    protected function guardarCronograma($prestamo, $cliente, $request, $monto)
+{
+    // Eliminar el cronograma existente solo si es para un cliente específico
+    if ($cliente) {
         Cronograma::where('id_prestamo', $prestamo->id)->where('cliente_id', $cliente->id)->delete();
-
-        // Recalcular y guardar el nuevo cronograma
-        $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
-        $fechaconperiodogracia = clone $fecha_desembolso;
-        $fechaconperiodogracia->modify("+$request->periodo_gracia_dias days");
-        $tiempo = $request->tiempo_credito;
-        $montoTotal = $montoIndividual;
-        $frecuencia = $request->tipo_producto == 'grupal' ? $request->recurrencia1 : $request->recurrencia;
-        $tasaInteres = $request->tasa_interes;
-        $tasaDiaria = pow(1 + ($tasaInteres / 100), 1 / 360) - 1;
-        $interesesPeriodoGracia = $montoTotal * $tasaDiaria * $request->periodo_gracia_dias;
-        //$cuotas = $this->calcularCuota($montoTotal, $tasaInteres, $tiempo, $frecuencia, $interesesMensualesPorGracia,$tipo_producto);
-        $tipo_producto = $request->tipo_producto;
-        $interesesMensualesPorGracia = $interesesPeriodoGracia / $tiempo;
-        $fechaCuota = clone $fechaconperiodogracia;
-
-        $cuotaSinGracia = $this->calcularCuota($montoTotal, $tasaInteres, $tiempo, $frecuencia, $interesesMensualesPorGracia, $tipo_producto);
-
-        for ($i = 1; $i <= $tiempo; $i++) {
-            switch ($frecuencia) {
-                case 'catorcenal':
-                    $fechaCuota->addDays(14);
-                    break;
-                case 'quincenal':
-                    $fechaCuota->addDays(15);
-                    break;
-                case 'veinteochenal':
-                    $fechaCuota->addDays(28);
-                    break;
-                case 'semestral':
-                    $fechaCuota->addMonths(6);
-                    break;
-                case 'anual':
-                    $fechaCuota->addMonths(12);
-                    break;
-                case 'mensual':
-                default:
-                    $fechaCuota->addMonth();
-                    break;
-            }
-
-            $cronograma = new Cronograma();
-            $cronograma->fecha = clone $fechaCuota;
-
-
-            $cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'];
-
-
-            //$cronograma->monto = $cuotaSinGracia[$i - 1]['cuota'] + $interesesMensualesPorGracia + 0.021 * $cuotaSinGracia[$i - 1]['cuota'];
-
-            $cronograma->numero = $i;
-            $cronograma->id_prestamo = $prestamo->id;
-            $cronograma->cliente_id = $cliente->id;
-            $cronograma->capital = $cuotaSinGracia[$i - 1]['capital'];
-            $cronograma->interes = $cuotaSinGracia[$i - 1]['interes'];
-            $cronograma->amortizacion = $cuotaSinGracia[$i - 1]['amortizacion'];
-            $cronograma->saldo_deuda = $cuotaSinGracia[$i - 1]['saldo_deuda'];
-            $cronograma->save();
-        }
+    } else {
+        Cronograma::where('id_prestamo', $prestamo->id)->whereNull('cliente_id')->delete();
     }
+
+    // Recalcular y guardar el nuevo cronograma
+    $fecha_desembolso = Carbon::parse($request->fecha_desembolso);
+    $fechaconperiodogracia = clone $fecha_desembolso;
+    $fechaconperiodogracia->addDays($request->periodo_gracia_dias);
+    $tiempo = $request->tiempo_credito;
+    $frecuencia = $request->tipo_producto == 'grupal' ? $request->recurrencia1 : $request->recurrencia;
+    $tasaInteres = $request->tasa_interes;
+    $tipo_producto = $request->tipo_producto;
+
+    // Calcular los intereses del período de gracia
+    $tasaDiaria = pow(1 + ($tasaInteres / 100), 1 / 360) - 1;
+    $interesesPeriodoGracia = $monto * $tasaDiaria * $request->periodo_gracia_dias;
+    $interesesMensualesPorGracia = $interesesPeriodoGracia / $tiempo;
+
+    $cuotas = $this->calcularCuota($monto, $tasaInteres, $tiempo, $frecuencia, $interesesMensualesPorGracia, $tipo_producto);
+
+    $fechaCuota = $fechaconperiodogracia->copy();
+
+    foreach ($cuotas as $cuota) {
+        switch ($frecuencia) {
+            case 'catorcenal':
+                $fechaCuota->addDays(14);
+                break;
+            case 'quincenal':
+                $fechaCuota->addDays(15);
+                break;
+            case 'veinteochenal':
+                $fechaCuota->addDays(28);
+                break;
+            case 'semestral':
+                $fechaCuota->addMonths(6);
+                break;
+            case 'anual':
+                $fechaCuota->addMonths(12);
+                break;
+            case 'mensual':
+            default:
+                $fechaCuota->addMonth();
+                break;
+        }
+
+        $cronograma = new Cronograma();
+        $cronograma->fecha = clone $fechaCuota;
+        $cronograma->monto = $cuota['cuota']; // Cuota fija más intereses distribuidos y otros componentes
+        $cronograma->numero = $cuota['numero_cuota'];
+        $cronograma->capital = $cuota['capital'];
+        $cronograma->interes = $cuota['interes'];
+        $cronograma->amortizacion = $cuota['amortizacion'];
+        $cronograma->saldo_deuda = $cuota['saldo_deuda'];
+        $cronograma->id_prestamo = $prestamo->id;
+        $cronograma->cliente_id = $cliente ? $cliente->id : null; // Asignar cliente si es individual, null si es grupal
+        $cronograma->save();
+    }
+}
+
 
     public function calcularCuota($monto, $tea, $periodos, $frecuencia, $interesesMensualesPorGracia, $tipo_producto)
     {
@@ -649,21 +649,31 @@ class UpdateController extends Controller
     }
 
     protected function updateClientesYcronograma($prestamo, $clientesArray, $request)
-    {
-        if (is_array($clientesArray)) {
-            foreach ($clientesArray as $clienteData) {
-                $cliente = cliente::where('documento_identidad', $clienteData['documento'])->where('activo', 1)->first();
-                if ($cliente) {
-                    $credito_cliente = new CreditoCliente();
-                    $credito_cliente->prestamo_id = $prestamo->id;
-                    $credito_cliente->cliente_id = $cliente->id;
-                    $credito_cliente->monto_indivual = $clienteData['monto'];
-                    $credito_cliente->save();
-                    $this->guardarCronograma($prestamo, $cliente, $request, $clienteData['monto']);
-                }
+{
+    // Eliminar créditos de clientes y cronograma existente
+    CreditoCliente::where('prestamo_id', $prestamo->id)->delete();
+    Cronograma::where('id_prestamo', $prestamo->id)->delete();
+
+    // Actualizar clientes y cronograma individual
+    if (is_array($clientesArray)) {
+        foreach ($clientesArray as $clienteData) {
+            $cliente = Cliente::where('documento_identidad', $clienteData['documento'])->where('activo', 1)->first();
+            if ($cliente) {
+                $credito_cliente = new CreditoCliente();
+                $credito_cliente->prestamo_id = $prestamo->id;
+                $credito_cliente->cliente_id = $cliente->id;
+                $credito_cliente->monto_indivual = $clienteData['monto'];
+                $credito_cliente->save();
+                $this->guardarCronograma($prestamo, $cliente, $request, $clienteData['monto']);
             }
         }
     }
+
+    // Actualizar cronograma general del crédito grupal
+    if ($prestamo->categoria == 'grupal') {
+        $this->guardarCronograma($prestamo, null, $request, $prestamo->monto_total);
+    }
+}
     public function updateCreditoProduccion(Request $request, $id)
     {
         $decodedData = $request->all();
