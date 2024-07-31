@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Gasto;
+use App\Models\IngresoExtra;
 
 class AdminController extends Controller
 {
@@ -147,7 +148,7 @@ class AdminController extends Controller
     {
         $caja = Caja::findOrFail($id);
         $today = Carbon::today();
-
+    
         // Verificar si la caja tiene una transacción abierta o cerrada hoy
         $ultimaTransaccion = $caja->transacciones()->whereDate('created_at', $today)->orderBy('created_at', 'desc')->first();
         if (!$ultimaTransaccion) {
@@ -156,21 +157,25 @@ class AdminController extends Controller
                 'message' => 'No hay transacciones abiertas para esta caja en el día de hoy.'
             ]);
         }
-
+    
         $cajaCerrada = $ultimaTransaccion->hora_cierre ? true : false;
         $ingresos = Ingreso::where('transaccion_id', $ultimaTransaccion->id)
             ->with('cliente', 'transaccion.user') // Incluir relaciones
             ->whereNotNull('cliente_id')
             ->get();
-
+    
         $egresos = Egreso::where('transaccion_id', $ultimaTransaccion->id)
             ->with(['prestamo.clientes', 'transaccion.user']) // Incluir relaciones
             ->get();
-
+    
         $gastos = Gasto::where('caja_transaccion_id', $ultimaTransaccion->id)
             ->with('user') // Incluir relación con el usuario
             ->get();
-
+    
+        $ingresosExtras = IngresoExtra::where('caja_transaccion_id', $ultimaTransaccion->id)
+            ->with('user') // Incluir relación con el usuario
+            ->get();
+    
         // Preparar datos de egresos con clientes
         $egresosConClientes = $egresos->map(function ($egreso) {
             return [
@@ -180,7 +185,7 @@ class AdminController extends Controller
                 'usuario' => $egreso->transaccion->user->name
             ];
         });
-
+    
         // Preparar datos de gastos
         $gastosConDetalles = $gastos->map(function ($gasto) {
             return [
@@ -190,28 +195,39 @@ class AdminController extends Controller
                 'usuario' => $gasto->user->name
             ];
         });
-
+    
+        // Preparar datos de ingresos extras
+        $ingresosExtrasConDetalles = $ingresosExtras->map(function ($ingresoExtra) {
+            return [
+                'hora_ingreso' => $ingresoExtra->created_at->format('H:i:s'),
+                'monto' => $ingresoExtra->monto,
+                'motivo' => $ingresoExtra->motivo,
+                'numero_documento' => $ingresoExtra->numero_documento . '-' . $ingresoExtra->serie_documento,
+                'usuario' => $ingresoExtra->user->name
+            ];
+        });
+    
         $datosCierre = null;
         $desajuste = null;
         if ($cajaCerrada) {
             $datosCierre = json_decode($ultimaTransaccion->json_cierre, true);
-
+    
             // Calcular el saldo final real
             $saldoFinalReal = array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
-
+    
             $saldoFinalReal += array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
-
+    
             $saldoFinalReal += $datosCierre['depositos'];
-
+    
             // Calcular el saldo final esperado
-            $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
-
+            $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto') + $ingresosExtras->sum('monto');
+    
             $desajuste =  $saldoFinalReal - $saldoFinalEsperado;
-
+    
             // Formatear valores a dos decimales
             $saldoFinalReal = number_format($saldoFinalReal, 2);
             $saldoFinalEsperado = number_format($saldoFinalEsperado, 2);
@@ -225,6 +241,7 @@ class AdminController extends Controller
             'ingresos' => $ingresos,
             'egresos' => $egresosConClientes,
             'gastos' => $gastosConDetalles,
+            'ingresosExtras' => $ingresosExtrasConDetalles,
             'cajaCerrada' => $cajaCerrada,
             'datosCierre' => $datosCierre ?? [],
             'saldoFinalReal' => $saldoFinalReal ?? 0,

@@ -109,6 +109,33 @@
     </table>
     <h3>Total de Ingresos: S/. {{ number_format($totalIngresos, 2) }}</h3>
 
+    <h2>Ingresos Extras</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Hora de Ingreso</th>
+                <th>Monto</th>
+                <th>Motivo</th>
+                <th>Número de Documento</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $totalIngresosExtras = 0; @endphp
+            @foreach ($ingresosExtrasConDetalles as $ingresoExtra)
+                <tr>
+                    <td>{{ $ingresoExtra['hora_ingreso'] }}</td>
+                    <td>S/. {{ number_format(floatval($ingresoExtra['monto']), 2) }}</td>
+                    <td>{{ $ingresoExtra['motivo'] }}</td>
+                    <td>{{ $ingresoExtra['numero_documento'] }}</td>
+                    <td>{{ $ingresoExtra['usuario'] }}</td>
+                </tr>
+                @php $totalIngresosExtras += floatval($ingresoExtra['monto']); @endphp
+            @endforeach
+        </tbody>
+    </table>
+    <h3>Total de Ingresos Extras: S/. {{ number_format($totalIngresosExtras, 2) }}</h3>
+
     <h2>Egresos</h2>
     <table>
         <thead>

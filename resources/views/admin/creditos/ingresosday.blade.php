@@ -1,94 +1,139 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="row">
-    <div class="col-md-12">
-        <h3>Transacciones de Caja Diario</h3>
-        <div id="seleccionarCajaDiv">
-            <form id="seleccionarCajaForm" class="form-inline">
-                <div class="form-group mr-2">
-                    <label for="caja_id" class="mr-2">Seleccionar Caja</label>
-                    <select id="caja_id" name="caja_id" class="form-control">
-                        @foreach($cajas as $caja)
-                        <option value="{{ $caja->id }}">{{ $caja->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <button type="button" class="btn btn-primary" onclick="mostrarTransacciones()">Continuar</button>
-            </form>
+<div class="container mt-5">
+    <h3 class="mb-4">Transacciones de Caja Diario</h3>
+    <div id="seleccionarCajaDiv" class="mb-4">
+        <form id="seleccionarCajaForm" class="form-inline">
+            <div class="form-group mr-3">
+                <label for="caja_id" class="mr-2">Seleccionar Caja</label>
+                <select id="caja_id" name="caja_id" class="form-control">
+                    @foreach($cajas as $caja)
+                    <option value="{{ $caja->id }}">{{ $caja->nombre }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="mostrarTransacciones()">Continuar</button>
+        </form>
+    </div>
+
+    <div id="transacciones" style="display:none;">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4>Ingresos</h4>
+            </div>
+            <div class="card-body">
+                <table id="ingresosTable" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Hora de Pago</th>
+                            <th>Monto</th>
+                            <th>Cliente</th>
+                            <th>Usuario</th>
+                            <th>Cuota</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ingresosBody">
+                        <!-- Aquí se llenarán los ingresos -->
+                    </tbody>
+                </table>
+                <h5 class="mt-3">Total de Ingresos: <span id="totalIngresos"></span></h5>
+            </div>
         </div>
 
-        <div id="transacciones" style="display:none;">
-            <h2>Ingresos</h2>
-            <table id="ingresosTable" class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Hora de Pago</th>
-                        <th>Monto</th>
-                        <th>Cliente</th>
-                        <th>Usuario</th>
-                        <th>Cuota</th>
-                    </tr>
-                </thead>
-                <tbody id="ingresosBody">
-                    <!-- Aquí se llenarán los ingresos -->
-                </tbody>
-            </table>
-            <h3>Total de Ingresos: <span id="totalIngresos"></span></h3>
-
-            <h2>Egresos</h2>
-            <table id="egresosTable" class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Hora de Egreso</th>
-                        <th>Monto</th>
-                        <th>Clientes</th>
-                        <th>Usuario</th>
-                    </tr>
-                </thead>
-                <tbody id="egresosBody">
-                    <!-- Aquí se llenarán los egresos -->
-                </tbody>
-            </table>
-            <h3>Total de Egresos: <span id="totalEgresos"></span></h3>
-
-            <h2>Gastos</h2>
-            <table id="gastosTable" class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Hora de Gasto</th>
-                        <th>Monto</th>
-                        <th>Número de Documento</th>
-                        <th>Usuario</th>
-                    </tr>
-                </thead>
-                <tbody id="gastosBody">
-                    <!-- Aquí se llenarán los gastos -->
-                </tbody>
-            </table>
-            <h3>Total de Gastos: <span id="totalGastos"></span></h3>
-
-            <div id="datosCierre" style="display:none;">
-                <h2>Datos de Cierre</h2>
-                <table class="table table-bordered">
-                    <tr>
-                        <th>Saldo Final Esperado</th>
-                        <td><span id="saldoFinalEsperado"></span></td>
-                    </tr>
-                    <tr>
-                        <th>Saldo Final Real-Caja</th>
-                        <td><span id="saldoFinalReal"></span></td>
-                    </tr>
-                    <tr>
-                        <th>Desajuste</th>
-                        <td><span id="desajuste"></span></td>
-                    </tr>
-                    <tr>
-                        <th>Mensaje de Desajuste</th>
-                        <td><span id="mensajeDesajuste" class="text-danger"></span></td>
-                    </tr>
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h4>Ingresos Extras</h4>
+            </div>
+            <div class="card-body">
+                <table id="ingresosExtrasTable" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Hora de Ingreso</th>
+                            <th>Monto</th>
+                            <th>Motivo</th>
+                            <th>Número de Documento</th>
+                            <th>Usuario</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ingresosExtrasBody">
+                        <!-- Aquí se llenarán los ingresos extras -->
+                    </tbody>
                 </table>
-                <button type="button" class="btn btn-secondary" onclick="generarPDF()">Generar PDF</button>
+                <h5 class="mt-3">Total de Ingresos Extras: <span id="totalIngresosExtras"></span></h5>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-white">
+                <h4>Egresos</h4>
+            </div>
+            <div class="card-body">
+                <table id="egresosTable" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Hora de Egreso</th>
+                            <th>Monto</th>
+                            <th>Clientes</th>
+                            <th>Usuario</th>
+                        </tr>
+                    </thead>
+                    <tbody id="egresosBody">
+                        <!-- Aquí se llenarán los egresos -->
+                    </tbody>
+                </table>
+                <h5 class="mt-3">Total de Egresos: <span id="totalEgresos"></span></h5>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h4>Gastos</h4>
+            </div>
+            <div class="card-body">
+                <table id="gastosTable" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Hora de Gasto</th>
+                            <th>Monto</th>
+                            <th>Número de Documento</th>
+                            <th>Usuario</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gastosBody">
+                        <!-- Aquí se llenarán los gastos -->
+                    </tbody>
+                </table>
+                <h5 class="mt-3">Total de Gastos: <span id="totalGastos"></span></h5>
+            </div>
+        </div>
+
+        <div id="datosCierre" style="display:none;">
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4>Datos de Cierre</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Saldo Final Esperado</th>
+                            <td><span id="saldoFinalEsperado"></span></td>
+                        </tr>
+                        <tr>
+                            <th>Saldo Final Real-Caja</th>
+                            <td><span id="saldoFinalReal"></span></td>
+                        </tr>
+                        <tr>
+                            <th>Desajuste</th>
+                            <td><span id="desajuste"></span></td>
+                        </tr>
+                        <tr>
+                            <th>Mensaje de Desajuste</th>
+                            <td><span id="mensajeDesajuste" class="text-danger"></span></td>
+                        </tr>
+                    </table>
+                    <button type="button" class="btn btn-secondary mt-3" onclick="generarPDF()">Generar PDF</button>
+                </div>
             </div>
         </div>
     </div>
@@ -105,10 +150,12 @@
                 if (data.success) {
                     // Limpiar las tablas
                     document.getElementById('ingresosBody').innerHTML = '';
+                    document.getElementById('ingresosExtrasBody').innerHTML = '';
                     document.getElementById('egresosBody').innerHTML = '';
                     document.getElementById('gastosBody').innerHTML = '';
 
                     let totalIngresos = 0;
+                    let totalIngresosExtras = 0;
                     let totalEgresos = 0;
                     let totalGastos = 0;
 
@@ -129,6 +176,23 @@
                     // Mostrar el total de ingresos
                     document.getElementById('totalIngresos').innerText = totalIngresos.toFixed(2);
 
+                    // Llenar los ingresos extras
+                    data.ingresosExtras.forEach(ingresoExtra => {
+                        document.getElementById('ingresosExtrasBody').innerHTML += `
+                            <tr>
+                                <td>${ingresoExtra.hora_ingreso}</td>
+                                <td>${ingresoExtra.monto}</td>
+                                <td>${ingresoExtra.motivo}</td>
+                                <td>${ingresoExtra.numero_documento}</td>
+                                <td>${ingresoExtra.usuario}</td>
+                            </tr>
+                        `;
+                        totalIngresosExtras += parseFloat(ingresoExtra.monto);
+                    });
+
+                    // Mostrar el total de ingresos extras
+                    document.getElementById('totalIngresosExtras').innerText = totalIngresosExtras.toFixed(2);
+
                     // Llenar los egresos
                     data.egresos.forEach(egreso => {
                         document.getElementById('egresosBody').innerHTML += `
@@ -143,7 +207,7 @@
                     });
 
                     // Mostrar el total de egresos
-                    document.getElementById('totalEgresos').innerText = (totalEgresos).toFixed(2);
+                    document.getElementById('totalEgresos').innerText = totalEgresos.toFixed(2);
 
                     // Llenar los gastos
                     data.gastos.forEach(gasto => {
@@ -172,7 +236,7 @@
                         } else if (parseFloat(data.desajuste) > 0) {
                             mensajeDesajuste = 'Sobró dinero en la caja.';
                         } else {
-                            mensajeDesajuste = 'Falto dinero en la caja.';
+                            mensajeDesajuste = 'Faltó dinero en la caja.';
                         }
                         document.getElementById('mensajeDesajuste').innerText = mensajeDesajuste;
                         document.getElementById('datosCierre').style.display = 'block';
@@ -185,6 +249,7 @@
 
                     // Inicializar DataTables
                     $('#ingresosTable').DataTable();
+                    $('#ingresosExtrasTable').DataTable();
                     $('#egresosTable').DataTable();
                     $('#gastosTable').DataTable();
                 } else {

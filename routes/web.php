@@ -8,6 +8,7 @@ use App\Http\Controllers\PDFController;
 use App\Http\Controllers\IniciarOpeController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\GastoController;
+use App\Http\Controllers\IngresoExtraController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -168,6 +169,11 @@ Route::get('/admin/gastos', [GastoController::class, 'index'])->name('gastos.ind
 Route::get('/admin/gastos/{id}/edit', [GastoController::class, 'edit'])->name('gastos.edit')->middleware('auth');
 Route::post('/admin/gastos', [GastoController::class, 'store'])->name('gastos.store')->middleware('auth');
 Route::delete('/admin/gastos/{id}', [GastoController::class, 'destroy'])->name('gastos.destroy')->middleware('auth');
+//rutas de gestion de  ingresos
+Route::get('/admin/ingresos-extras', [IngresoExtraController::class, 'index'])->name('ingresos-extras.index')->middleware('auth');
+Route::get('/admin/ingresos-extras/{id}', [IngresoExtraController::class, 'edit'])->name('ingresos-extras.edit')->middleware('auth');
+Route::post('/admin/ingresos-extras', [IngresoExtraController::class, 'store'])->name('ingresos-extras.store')->middleware('auth');
+Route::delete('/admin/ingresos-extras/{id}', [IngresoExtraController::class, 'destroy'])->name('ingresos-extras.destroy')->middleware('auth');
 
 //reporte de cja diairo
 Route::get('/admin/generar-transacciones-pdf/{caja_id}', [PDFController::class, 'generarTransaccionesPDF'])->name('caja.generarTransaccionesPDF');

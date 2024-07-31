@@ -17,6 +17,7 @@ use App\Models\CajaTransaccion;
 use App\Models\InicioOperaciones;
 use App\Models\Ingreso;
 use App\Models\Gasto;
+use App\Models\IngresoExtra;
 use App\Models\CorrelativoCredito;
 
 
@@ -808,25 +809,26 @@ class creditoController extends Controller
 
     public function viewarqueo()
     {
-        $usuarioId = Auth::user()->id;
-        $sucursalId = Auth::user()->sucursal_id;
-        $cajaAbierta = CajaTransaccion::where('sucursal_id', $sucursalId)
-            ->where('user_id', $usuarioId)
-            ->whereNull('hora_cierre')
-            ->first();
+            $usuarioId = Auth::user()->id;
+            $sucursalId = Auth::user()->sucursal_id;
+            $cajaAbierta = CajaTransaccion::where('sucursal_id', $sucursalId)
+                ->where('user_id', $usuarioId)
+                ->whereNull('hora_cierre')
+                ->first();
 
-        if (!$cajaAbierta) {
-            return redirect('/admin/caja')->with('error', 'No hay una caja abierta.');
-        }
+            if (!$cajaAbierta) {
+                return redirect('/admin/caja')->with('error', 'No hay una caja abierta.');
+            }
 
-        // Obtener ingresos, egresos y gastos de la caja abierta
-        $ingresos = $cajaAbierta->cantidad_ingresos;
-        $egresos = $cajaAbierta->cantidad_egresos;
-        $montoApertura = $cajaAbierta->monto_apertura;
+            // Obtener ingresos, egresos, gastos y ingresos extras de la caja abierta
+            $ingresos = $cajaAbierta->cantidad_ingresos;
+            $egresos = $cajaAbierta->cantidad_egresos;
+            $montoApertura = $cajaAbierta->monto_apertura;
 
-        $gastos = Gasto::where('caja_transaccion_id', $cajaAbierta->id)->sum('monto_gasto');
+            $gastos = Gasto::where('caja_transaccion_id', $cajaAbierta->id)->sum('monto_gasto');
+            $ingresosExtras = IngresoExtra::where('caja_transaccion_id', $cajaAbierta->id)->sum('monto');
 
-        return view('admin.caja.arqueo', compact('cajaAbierta', 'ingresos', 'egresos', 'montoApertura', 'gastos'));
+            return view('admin.caja.arqueo', compact('cajaAbierta', 'ingresos', 'egresos', 'montoApertura', 'gastos', 'ingresosExtras'));
     }
 
 
@@ -1024,7 +1026,7 @@ class creditoController extends Controller
                     $fecha_vencimiento = Carbon::parse($cuotaGeneral->fecha);
                     $cuotasRelacionadas = Cronograma::where('id_prestamo', $id)
                         ->where('fecha', $cuotaGeneral->fecha)
-                        ->whereNotNull('cliente_id')
+                         ->whereNotNull('cliente_id')
                         ->get();
     
                     $estadoGeneral = 'pagado';
@@ -1056,6 +1058,16 @@ class creditoController extends Controller
                             $pagadas++;
                             $montoPagado += $cuotaRelacionada->monto;
                             $ingreso_ids[] = $ingresoRelacionado->id; // Almacenar IDs de ingresos
+                        }
+                        
+                    }
+                    if($estadoGeneral=='pagado'){
+                        $ingresoGeneral = Ingreso::where('prestamo_id', $id)
+                        ->where('numero_cuota', $cuotaGeneral->numero)
+                        ->whereNull('cliente_id')
+                        ->first();
+                       if($ingresoGeneral){
+                        $ingreso_ids[] = $ingresoGeneral->id;
                         }
                     }
     
@@ -1178,10 +1190,10 @@ class creditoController extends Controller
                         'sucursal_id' => $user->sucursal_id,
                         'monto_total_pago_final' => $cuota->monto,
                     ]);
-                    if($ingreso->cliente_id!=null){
                     $ingreso_ids[] = $ingreso->id;
+                    if($ingreso->cliente_id!=null){
                     $ultimaTransaccion->cantidad_ingresos +=  $ingreso->monto;
-                     }// Sumar directamente al campo de la transacción solo el monto de la cuota
+                     }
                 }
             }
 

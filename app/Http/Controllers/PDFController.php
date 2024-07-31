@@ -1210,6 +1210,10 @@ class PdfController extends Controller
             ->with('user')
             ->get();
 
+        $ingresosExtras = \App\Models\IngresoExtra::where('caja_transaccion_id', $ultimaTransaccion->id)
+            ->with('user')
+            ->get();
+
         // Preparar datos de egresos con clientes
         $egresosConClientes = $egresos->map(function ($egreso) {
             return [
@@ -1230,6 +1234,18 @@ class PdfController extends Controller
                 'usuario' => $gasto->user->name
             ];
         });
+
+        // Preparar datos de ingresos extras
+        $ingresosExtrasConDetalles = $ingresosExtras->map(function ($ingresoExtra) {
+            return [
+                'hora_ingreso' => $ingresoExtra->created_at->format('H:i:s'),
+                'monto' => $ingresoExtra->monto,
+                'motivo' => $ingresoExtra->motivo,
+                'numero_documento' => $ingresoExtra->numero_documento,
+                'usuario' => $ingresoExtra->user->name
+            ];
+        });
+
         $datosCierre = null;
         $desajuste = null;
         if ($cajaCerrada) {
@@ -1247,7 +1263,7 @@ class PdfController extends Controller
             $saldoFinalReal += $datosCierre['depositos'];
 
             // Calcular el saldo final esperado
-            $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
+            $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') + $ingresosExtras->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
 
             $desajuste =  $saldoFinalReal - $saldoFinalEsperado;
 
@@ -1260,6 +1276,7 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.transacciones', compact(
             'caja',
             'ingresos',
+            'ingresosExtrasConDetalles',
             'egresos',
             'egresosConClientes',
             'gastosConDetalles',
@@ -1271,6 +1288,7 @@ class PdfController extends Controller
 
         return $pdf->stream('transacciones.pdf');
     }
+
     public function generarArqueoPDF($id)
     {
         $transaccion = \App\Models\CajaTransaccion::findOrFail($id);
@@ -1280,12 +1298,13 @@ class PdfController extends Controller
         }
 
         $ingresos = \App\Models\Ingreso::where('transaccion_id', $transaccion->id)
-        ->whereNotNull('cliente_id')
-        ->with('cliente', 'transaccion.user')->get();
+            ->whereNotNull('cliente_id')
+            ->with('cliente', 'transaccion.user')->get();
         $egresos = \App\Models\Egreso::where('transaccion_id', $transaccion->id)
-        ->with(['prestamo.clientes', 'transaccion.user'])
-        ->get();
+            ->with(['prestamo.clientes', 'transaccion.user'])
+            ->get();
         $gastos = \App\Models\Gasto::where('caja_transaccion_id', $transaccion->id)->with('user')->get();
+        $ingresosExtras = \App\Models\IngresoExtra::where('caja_transaccion_id', $transaccion->id)->with('user')->get();
 
         $datosCierre = json_decode($transaccion->json_cierre, true);
 
@@ -1310,6 +1329,16 @@ class PdfController extends Controller
             ];
         });
 
+        // Preparar datos de ingresos extras
+        $ingresosExtrasConDetalles = $ingresosExtras->map(function ($ingresoExtra) {
+            return [
+                'hora_ingreso' => $ingresoExtra->created_at->format('H:i:s'),
+                'monto' => $ingresoExtra->monto,
+                'motivo' => $ingresoExtra->motivo,
+                'numero_documento' => $ingresoExtra->numero_documento . '-' . $ingresoExtra->serie_documento,
+                'usuario' => $ingresoExtra->user->name
+            ];
+        });
 
         // Calcular el saldo final real
         $saldoFinalReal = array_sum(array_map(function ($cantidad, $valor) {
@@ -1323,7 +1352,7 @@ class PdfController extends Controller
         $saldoFinalReal += $datosCierre['depositos'];
 
         // Calcular el saldo final esperado
-        $saldoFinalEsperado = $transaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
+        $saldoFinalEsperado = $transaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto') + $ingresosExtras->sum('monto');
 
         $desajuste = $saldoFinalEsperado - $saldoFinalReal;
 
@@ -1333,8 +1362,8 @@ class PdfController extends Controller
         $desajuste = number_format($desajuste, 2);
 
         $usuario = $transaccion->user;
-        // dd($egresosConClientes);
-        $data = compact('transaccion', 'ingresos', 'egresosConClientes', 'gastosConDetalles', 'saldoFinalReal', 'saldoFinalEsperado', 'desajuste', 'datosCierre', 'usuario');
+
+        $data = compact('transaccion', 'ingresos', 'egresosConClientes', 'gastosConDetalles', 'ingresosExtrasConDetalles', 'saldoFinalReal', 'saldoFinalEsperado', 'desajuste', 'datosCierre', 'usuario');
 
         $pdf = Pdf::loadView('pdf.arqueo', $data);
 
@@ -1355,42 +1384,42 @@ class PdfController extends Controller
     }
 
     public function generarTicketDePagogrupal($array){
-        $idsArray = explode('-', $array);
+            $idsArray = explode('-', $array);
 
-    $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->get();
+        $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->get();
 
-    $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->get();
+        $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->get();
 
-    if ($ingresos->isEmpty()) {
-        return response()->json(['error' => 'Pagos no encontrados.'], 404);
-    }
+        if ($ingresos->isEmpty()) {
+            return response()->json(['error' => 'Pagos no encontrados.'], 404);
+        }
 
-    $data = [];
+        $data = [];
 
-    foreach ($ingresos as $ingreso) {
-        $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
-        $cliente = \App\Models\cliente::find($ingreso->cliente_id);
-        $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
+        foreach ($ingresos as $ingreso) {
+            $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
+            $cliente = \App\Models\cliente::find($ingreso->cliente_id);
+            $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
 
-        // Obtener la siguiente cuota
-        $siguienteCuota = \App\Models\Cronograma::where('id_prestamo', $ingreso->prestamo_id)
-            ->where('numero', '>', $ingreso->numero_cuota)
-            ->orderBy('numero', 'asc')
-            ->first();
-        $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
+            // Obtener la siguiente cuota
+            $siguienteCuota = \App\Models\Cronograma::where('id_prestamo', $ingreso->prestamo_id)
+                ->where('numero', '>', $ingreso->numero_cuota)
+                ->orderBy('numero', 'asc')
+                ->first();
+            $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
 
-        $data[] = [
-            'prestamo' => $prestamo,
-            'cliente' => $cliente,
-            'ingreso' => $ingreso,
-            'cronograma' => $cronograma,
-            'fechaSiguienteCuota' => $fechaSiguienteCuota
-        ];
-    }
+            $data[] = [
+                'prestamo' => $prestamo,
+                'cliente' => $cliente,
+                'ingreso' => $ingreso,
+                'cronograma' => $cronograma,
+                'fechaSiguienteCuota' => $fechaSiguienteCuota
+            ];
+        }
 
-    // dd($data);
+        // dd($data);
 
-    $pdf = Pdf::loadView('pdf.ticketpagogrupal', compact('data'))->setPaper([0, 0, 200, 400]);
-    return $pdf->stream('tickets.pdf');
+        $pdf = Pdf::loadView('pdf.ticketpagogrupal', compact('data'))->setPaper([0, 0, 200, 400]);
+        return $pdf->stream('tickets.pdf');
     }
 }

@@ -78,16 +78,24 @@
                     </div>
                     <br>
                     <!-- Totales -->
-                    <div class="row ">
-                        <div class="col-md-12">
-                            <div class="btn-group btn-group-justified" role="group" aria-label="Total Efectivo" style="background: ;">
-                                <!-- <input type="text" class="btn btn-info" id="total_apertura" value="Apertura: S/. {{ $montoApertura }}" disabled> -->
-                                <input type="text" class="btn btn-success" id="total_ingresos" value="Ingresos: S/. {{ $ingresos ?? 0 }}"  style="font-weight: bold;" >
-                                <input type="text" class="btn btn-warning" id="total_egresos" value="Egresos: S/. {{ $egresos ?? 0 }}"  style="font-weight: bold;" >
-                                <input type="text" class="btn btn-danger" id="total_gastos" value="Gastos: S/. {{ $gastos ?? 0 }}"  style="font-weight: bold;" >
-                                <input type="text" class="btn btn-info" id="total_depositos_display" value="Depósitos: S/. 0.00"  style="font-weight: bold;" >
-                                <input type="text" class="btn btn-primary" id="total_efectivo_display" value="Total Efectivo: S/. 0.00"  style="font-weight: bold;" >
-                            </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <input type="text" class="form-control bg-success text-white" id="total_ingresos" value="Ingresos: S/. {{ $ingresos ?? 0 }}" readonly>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="text" class="form-control bg-warning text-dark" id="total_egresos" value="Egresos: S/. {{ $egresos ?? 0 }}" readonly>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="text" class="form-control bg-danger text-white" id="total_gastos" value="Gastos: S/. {{ $gastos ?? 0 }}" readonly>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="text" class="form-control bg-info text-white" id="total_ingresos_extras" value="Ingresos Extras: S/. {{ $ingresosExtras ?? 0 }}" readonly>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="text" class="form-control bg-info text-white" id="total_depositos_display" value="Depósitos: S/. 0.00" readonly>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="text" class="form-control bg-primary text-white" id="total_efectivo_display" value="Total Efectivo: S/. 0.00" readonly>
                         </div>
                     </div>
                     <br>
@@ -122,7 +130,8 @@
         var ingresos = parseFloat('{{ $ingresos ?? 0 }}');
         var egresos = parseFloat('{{ $egresos ?? 0 }}');
         var gastos = parseFloat('{{ $gastos ?? 0 }}');
-        var saldoFinal = montoApertura + ingresos - egresos - gastos;
+        var ingresosExtras = parseFloat('{{ $ingresosExtras ?? 0 }}');
+        var saldoFinal = montoApertura + ingresos - egresos - gastos + ingresosExtras;
         
         document.getElementById('saldo_final').value = 'S/. ' + saldoFinal.toFixed(2);
     }
