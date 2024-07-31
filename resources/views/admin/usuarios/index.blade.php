@@ -32,6 +32,9 @@
                                     <center>Cargo</center>
                                 </th>
                                 <th>
+                                    <center>Teléfono</center>
+                                </th>
+                                <th>
                                     <center>Dirección</center>
                                 </th>
                                 <th>
@@ -60,7 +63,9 @@
                                             @endforeach
                                         @endif
                                     </td>
+                                    <td>{{ $usuario->telefono }}</td>
                                     <td>{{ $usuario->direccion }}</td>
+                                    
                                     <td style="text-align:center">
                                         <div class="btn-group" role="group" aria-label="Basic example">
                                             {{-- <a href="{{ route('usuarios.show', $usuario->id) }}" type="button"

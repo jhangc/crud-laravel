@@ -84,7 +84,7 @@
 
         <p>Le solicitamos que en conjunto con su grupo, puedan regularizar esta situación en el menor plazo posible, y así evitar que la cuota se incremente, por efecto de los intereses moratorios. Recordemos que el cumplimiento puntual de los pagos del crédito hace posible estar bien calificadas en las centrales de riesgo y puedan acceder a más créditos.</p>
 
-        <p>Para mayor información puede acercarse a nuestra oficina ubicada en la calle JR. Juan Vargas N°248 – Tarapoto o comunicarse con su asesor al correo {{$responsable->email?? 'N/A'}}.</p>
+        <p>Para mayor información puede acercarse a nuestra oficina ubicada en la calle JR. Juan Vargas N°248 – Tarapoto o comunicarse con su asesor al telefono {{$responsable->telefono?? 'N/A'}}.</p>
     </div>
 </body>
 

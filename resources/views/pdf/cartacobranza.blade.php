@@ -96,7 +96,7 @@
 
         <p>Asimismo, le indicamos que de hacer caso omiso a la presente comunicación, el expediente de crédito será derivado al área legal, donde nuestro abogado iniciará las acciones judiciales que correspondan ante el órgano jurisdiccional competente o, en todo caso, impulsará cualquier acción legal que ya se haya trabajado en su contra.</p>
 
-        <p>En caso tuviera alguna duda o consulta sobre la comunicación, puede comunicarse con su asesor de negocios al correo: {{$prestamo->user->email}} o también Para mayor información, puede acercarse a nuestra oficina ubicada en la calle JR. Juan Vargas N°248 – Tarapoto.</p>
+        <p>En caso tuviera alguna duda o consulta sobre la comunicación, puede comunicarse con su asesor de negocios al celular: {{$prestamo->user->telefono}} o también Para mayor información, puede acercarse a nuestra oficina ubicada en la calle JR. Juan Vargas N°248 – Tarapoto.</p>
     </div>
 </body>
 

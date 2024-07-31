@@ -15,8 +15,12 @@ class UsuarioController extends Controller
      */
     public function index()
     {
-        // $usuarios = User::all();
-        $usuarios = User::with('roles')->get(); // Carga los usuarios y sus roles asociados
+        // Filtra los usuarios con estado 1 o null y carga los roles asociados
+        $usuarios = User::with('roles')->where(function ($query) {
+            $query->where('estado', 1)
+                ->orWhereNull('estado');
+        })->get();
+
         return view('admin.usuarios.index', ['usuarios' => $usuarios]);
     }
 
@@ -40,6 +44,7 @@ class UsuarioController extends Controller
             'password' => 'required|min:6|confirmed',
             'direccion' => 'nullable|max:255',  // Asegúrate de validar como email y que sea único en la tabla de usuarios
             'role' => 'required|exists:roles,id',  // Asegúrate de que el ID del rol exista en la tabla de roles
+            'telefono' => 'required|numeric',
         ]);
 
         $usuario = new User();
@@ -47,6 +52,8 @@ class UsuarioController extends Controller
         $usuario->email = $request->email;
         $usuario->password = Hash::make($request['password']);
         $usuario->direccion = $request->direccion;  // Guarda la dirección
+        $usuario->telefono = $request->telefono;
+        $usuario->estado = 1;
         $usuario->save();
 
         // Asignar rol por ID
@@ -93,27 +100,37 @@ class UsuarioController extends Controller
     {
         $request->validate([
             'name' => 'required|max:100',
-            'email' => 'required|unique:users',
-            'password' => 'required|confirmed',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'nullable|confirmed',
+            'telefono' => 'required|numeric',
         ]);
-
+    
         $usuario = User::find($id);
         $usuario->name = $request->name;
         $usuario->email = $request->email;
-        $usuario->password = Hash::make($request['password']);
+        if ($request->filled('password')) {
+            $usuario->password = Hash::make($request->password);
+        }
+        $usuario->telefono = $request->telefono;
+        $usuario->direccion = $request->direccion;
+        $usuario->estado = 1;
         $usuario->save();
-
+    
         return redirect()->route('usuarios.index')
             ->with('mensaje', 'Se actualizó al usuario de la manera correcta')
             ->with('icono', 'success');
     }
+    
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy($id)
     {
-        User::destroy($id);
+        $user = User::findOrFail($id);
+        $user->estado = 0; // Cambiar el estado a 0
+        $user->save();
+
         return redirect()->route('usuarios.index')
             ->with('mensaje', 'Se eliminó al usuario de la manera correcta')
             ->with('icono', 'success');

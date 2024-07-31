@@ -14,34 +14,43 @@
                     <form action="{{ url('/admin/usuarios', $usuario->id) }}" method="post">
                         @csrf
                         @method('PUT')
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="name">Nombre del usuario</label>
-                                    <input type="text" value="{{ $usuario->name }}" name="name" class="form-control" required>
-                                    @error('name')
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="name">Nombre del usuario</label>
+                                <input type="text" value="{{ $usuario->name }}" name="name" class="form-control"
+                                    required>
+                                @error('name')
                                     <small style="color: red">{{ $message }}</small>
-                                    @enderror
-                                </div>
+                                @enderror
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="email">Email</label>
-                                    <input type="email" value="{{ $usuario->email }}" name="email" class="form-control" required>
-                                    @error('email')
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" value="{{ $usuario->email }}" name="email" class="form-control"
+                                    required>
+                                @error('email')
                                     <small style="color: red">{{ $message }}</small>
-                                    @enderror
-                                </div>
+                                @enderror
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="direccion">Dirección</label>
-                                    <input type="text" value="{{ $usuario->direccion }}" name="direccion" class="form-control">
-                                </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="direccion">Dirección</label>
+                                <input type="text" value="{{ $usuario->direccion }}" name="direccion"
+                                    class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="telefono">Teléfono</label>
+                                <input type="text" value="{{ $usuario->telefono }}" name="telefono" class="form-control"
+                                    pattern="[0-9]+" title="Solo se permiten números">
+                                @error('telefono')
+                                    <small style="color: red">{{ $message }}</small>
+                                @enderror
                             </div>
                         </div>
                         <div class="col-md-12">
@@ -49,40 +58,67 @@
                                 <label for="role">Cargo</label>
                                 <select name="role" class="form-control">
                                     @foreach ($roles as $role)
-                                        <option value="{{ $role->id }}" {{ $usuarioRole && $usuarioRole->id == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                                        <option value="{{ $role->id }}"
+                                            {{ $usuarioRole && $usuarioRole->id == $role->id ? 'selected' : '' }}>
+                                            {{ $role->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="password">Password</label>
-                                    <input type="password" name="password" class="form-control">
-                                    @error('password')
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="password" id="password" class="form-control">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" onclick="togglePassword('password');">
+                                            <i class="fas fa-eye" id="password-icon"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                @error('password')
                                     <small style="color: red">{{ $message }}</small>
-                                    @enderror
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="password_confirmation">Repetir Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="password_confirmation" id="password_confirmation" class="form-control">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" onclick="togglePassword('password_confirmation');">
+                                            <i class="fas fa-eye" id="password_confirmation-icon"></i>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="password_confirmation">Repetir Password</label>
-                                    <input type="password" name="password_confirmation" class="form-control">
-                                </div>
-                            </div>
-                        </div>
+
                         <hr>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <a href="{{ url('admin/usuarios') }}" class="btn btn-secondary">Cancelar</a>
-                                <button type="submit" class="btn btn-success"><i class="bi bi-pencil-square"></i> Actualizar registro</button>
-                            </div>
+                        <div class="col-md-12">
+                            <a href="{{ url('admin/usuarios') }}" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-success"><i class="bi bi-pencil-square"></i>
+                                Actualizar registro</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+        <script>
+            function togglePassword(fieldId) {
+                const field = document.getElementById(fieldId);
+                const icon = document.getElementById(fieldId + '-icon');
+                if (field.type === 'password') {
+                    field.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    field.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+            </script>
     </div>
 @endsection

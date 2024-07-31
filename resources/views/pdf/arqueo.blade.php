@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Arqueo de Caja</title>
@@ -8,23 +9,31 @@
             font-family: Arial, sans-serif;
             font-size: 12px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+
+        th,
+        td {
             padding: 8px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
+
         th {
             background-color: #f2f2f2;
         }
-        h1, h2, h3 {
+
+        h1,
+        h2,
+        h3 {
             text-align: center;
         }
     </style>
 </head>
+
 <body>
     <h1>Arqueo de Caja</h1>
     <h3>Fecha: {{ \Carbon\Carbon::parse($transaccion->updated_at)->format('d/m/Y H:i:s') }}</h3>
@@ -143,7 +152,7 @@
                     <td>{{ $gasto['hora_gasto'] }}</td>
                     <td>S/. {{ number_format(floatval($gasto['monto']), 2) }}</td>
                     <td>{{ $gasto['numero_documento'] }}</td>
-                    <td>{{$gasto['responsable']}}</td>
+                    <td>{{ $gasto['responsable'] }}</td>
                     <td>{{ $gasto['usuario'] }}</td>
                 </tr>
                 @php $totalGastos += floatval($gasto['monto']); @endphp
@@ -151,5 +160,27 @@
         </tbody>
     </table>
     <h3>Total de Gastos: S/. {{ number_format($totalGastos, 2) }}</h3>
+
+
+    <br><br><br><br>
+    <table style="border-collapse: collapse; width: 100%;">
+        <tr>
+            <td style="border: none; text-align: center;">
+                <div style="width: 50%; margin: 0 auto;">
+                    <hr>
+                </div>
+                Firma de Ventanilla<br>
+            </td>
+
+            <td style="border: none; text-align: center;">
+                <div style="width: 50%; margin: 0 auto;">
+                    <hr>
+                </div>
+                Firma de Administrador<br>
+            </td>
+        </tr>
+    </table>
+
 </body>
+
 </html>
