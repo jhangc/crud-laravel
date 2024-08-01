@@ -73,59 +73,107 @@
                     @php
                     $contador++;
                     $cliente = $credito->creditoClientes->first()->clientes; // Obtener el primer cliente relacionado
+
+                    // Filtrar cuotas pagadas donde id_cliente es null
                     $cuotasPagadas = $credito->ingresos()->whereHas('cronograma', function($query) {
-                        $query->whereNull('cliente_id');
+                    $query->whereNull('cliente_id');
                     })->count();
+
+                    // Filtrar cuotas totales donde id_cliente es null
                     $cuotasTotales = $credito->cronograma()->whereNull('cliente_id')->count();
-                    $ultimaCuota = $credito->cronograma()->whereNull('cliente_id')->orderBy('fecha', 'desc')->first();
+
+                    $ultimaCuota = $credito->cronograma()
+                        ->whereNull('cliente_id')
+                        ->orderBy('fecha', 'desc')
+                        ->first();
+
                     $fechaUltimaCuota = $ultimaCuota ? $ultimaCuota->fecha : 'No hay cuotas disponibles';
+
+
+                    // Calcular cuotas pendientes
                     $cuotasPendientes = $cuotasTotales - $cuotasPagadas;
+
                     $pagadasCronogramaIds = $credito->ingresos()->whereHas('cronograma', function($query) {
-                        $query->whereNull('cliente_id');
-                    })->pluck('cronograma_id');
+                                            $query->whereNull('cliente_id');
+                                            })->pluck('cronograma_id');
+
+                    // Filtrar cronograma pagadas y pendientes donde cliente_id es null
                     $cronogramaPagadas = $credito->cronograma()->whereIn('id', $pagadasCronogramaIds)->whereNull('cliente_id')->get();
                     $cronogramaPendientes = $credito->cronograma()->whereNotIn('id', $pagadasCronogramaIds)->whereNull('cliente_id')->get();
+
                     $capitalCancelado = $cronogramaPagadas->sum('amortizacion');
                     $interesCancelado = $cronogramaPagadas->last() ? $cronogramaPagadas->last()->interes : 0;
+
                     $interesporcobrar = $cronogramaPendientes->sum('interes');
+
                     $interesMoratorioCancelado = $credito->ingresos->sum('monto_mora');
+
                     $now = \Carbon\Carbon::now();
+
                     $cronogramaPendientesNormal = $cronogramaPendientes->where('fecha', '>', $now);
                     $cronogramaPendientesVencido = $cronogramaPendientes->where('fecha', '<=', $now); 
-                    $saldoCapitalNormal = $cronogramaPendientesNormal->sum('amortizacion');
-                    $saldoCapitalVencido = $cronogramaPendientesVencido->sum('amortizacion');
-                    $saldoCapitalCredito = $saldoCapitalNormal + $saldoCapitalVencido;
+                    
+                    // $saldoCapitalNormal=$cronogramaPendientesNormal->last() ? $cronogramaPendientesNormal->last()->amortizacion : 0;
+                    // $saldoCapitalVencido = $cronogramaPendientesVencido->last() ? $cronogramaPendientesVencido->last()->amortizacion : 0;
+                    // $saldoCapitalCredito = $saldoCapitalNormal + $saldoCapitalVencido;
+
+                    // Obtener la fecha del último pago
                     $ultimoPago = $credito->ingresos()->latest('fecha_pago')->first();
                     $fechaUltimoPago = $ultimoPago ? $ultimoPago->fecha_pago : 'No hay pagos';
+
+                    // Obtener la fecha de vencimiento de la próxima cuota
                     $ultimaCuotaPagada = $credito->ingresos()->latest('fecha_pago')->first();
                     if ($ultimaCuotaPagada) {
-                        $proximaCuota = $credito->cronograma()->where('cliente_id', null)->where('id', '>', $ultimaCuotaPagada->cronograma_id)->orderBy('fecha')->first();
+                        $proximaCuota = $credito->cronograma()
+                            ->where('cliente_id', null) // Filtro para cuotas generales
+                            ->where('id', '>', $ultimaCuotaPagada->cronograma_id)
+                            ->orderBy('fecha')
+                            ->first();
                         $fechaVencimientoProximaCuota = $proximaCuota ? $proximaCuota->fecha : 'No hay próxima cuota';
                     } else {
-                        $primeraCuota = $credito->cronograma()->where('cliente_id', null)->orderBy('fecha')->first();
+                        $primeraCuota = $credito->cronograma()
+                            ->where('cliente_id', null) // Filtro para cuotas generales
+                            ->orderBy('fecha')
+                            ->first();
                         $fechaVencimientoProximaCuota = $primeraCuota ? $primeraCuota->fecha : 'No hay cuotas';
                     }
+
+                    // Calcular los días de atraso o los días restantes
                     $diasAtraso = 0;
                     if ($fechaVencimientoProximaCuota) {
                         if ($fechaVencimientoProximaCuota < $now) {
-                            $diasAtraso = $now->diffInDays($fechaVencimientoProximaCuota);
-                        } else {
+                             $diasAtraso = $now->diffInDays($fechaVencimientoProximaCuota);
+                         } else {
                             $diasAtraso = -$now->diffInDays($fechaVencimientoProximaCuota);
                         }
                     }
+
+                    // Calcular riesgo individual
                     $riesgoIndividual = 'normal';
                     if ($diasAtraso < 8) {
                         $riesgoIndividual = 'normal';
                     } elseif ($diasAtraso >= 8 && $diasAtraso <= 30) {
                         $riesgoIndividual = 'CPP';
                     } elseif ($diasAtraso > 30 && $diasAtraso <= 60) {
-                        $riesgoIndividual = 'Deficiente';
+                     $riesgoIndividual = 'Deficiente';
                     } elseif ($diasAtraso > 60 && $diasAtraso <= 120) {
                         $riesgoIndividual = 'Dudoso';
                     } else {
                         $riesgoIndividual = 'Pérdida';
                     }
+
+                    // Calcular situación contable
                     $situacionContable = $diasAtraso >= 1 ? 'Vencido' : 'Vigente';
+
+                    $saldoCapitalNormal=0;
+                    $saldoCapitalCredito = $credito->monto_total - $capitalCancelado;
+
+                    $saldoCapitalVencido = $cronogramaPendientesVencido->sum('amortizacion');
+
+                    if ($diasAtraso > 30) {
+                        $saldoCapitalVencido = $credito->monto_total;
+                    }
+
                     @endphp
                     <tr>
                         <td style="text-align: center">{{ $contador }}</td>
