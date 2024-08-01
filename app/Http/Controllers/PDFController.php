@@ -1190,7 +1190,9 @@ class PdfController extends Controller
         $today = \Carbon\Carbon::today();
 
         // Verificar si la caja tiene una transacción abierta o cerrada hoy
-        $ultimaTransaccion = $caja->transacciones()->whereDate('created_at', $today)->latest()->first();
+        $ultimaTransaccion = $caja->transacciones()
+        // ->whereDate('created_at', $today)
+        ->latest()->first();
 
         if (!$ultimaTransaccion) {
             return redirect()->back()->with('error', 'No hay transacciones abiertas para esta caja en el día de hoy.');

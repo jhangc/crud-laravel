@@ -133,6 +133,7 @@
                         </tr>
                     </table>
                     <button type="button" class="btn btn-secondary mt-3" onclick="generarPDF()">Generar PDF</button>
+                    <button type="button" class="btn btn-info mt-3" onclick="resetCaja()">Resetear Caja</button>
                 </div>
             </div>
         </div>
@@ -265,6 +266,27 @@
     function generarPDF() {
         var cajaId = document.getElementById('caja_id').value;
         window.open('/admin/generar-transacciones-pdf/' + cajaId, '_blank');
+    }
+    function resetCaja(){
+        var cajaId = document.getElementById('caja_id').value;
+        fetch('/admin/caja/resetcaja/' + cajaId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Correcto',
+                        text: data.message,
+                        icon: 'success'
+                    });
+                    window.location.reload();
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error'
+                    });
+                }
+        });
     }
 </script>
 @endsection

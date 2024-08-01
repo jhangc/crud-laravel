@@ -26,7 +26,7 @@
 
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-bordered table-sm table-striped table-hover">
+            <table id="tableindividual" class="table table-bordered table-sm table-striped table-hover">
                 <thead>
                     <tr>
                         <th>N°</th>
@@ -234,6 +234,51 @@
                         @endforeach
                 </tbody>
             </table>
+                
+            <script>
+                $(document).ready(function() {
+                    var spanish = {
+                        "sProcessing": "Procesando...",
+                        "sLengthMenu": "Mostrar _MENU_ registros",
+                        "sZeroRecords": "No se encontraron resultados",
+                        "sEmptyTable": "Ningún dato disponible en esta tabla",
+                        "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                        "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                        "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                        "sInfoPostFix": "",
+                        "sSearch": "Buscar:",
+                        "sUrl": "",
+                        "sInfoThousands": ",",
+                        "sLoadingRecords": "Cargando...",
+                        "oPaginate": {
+                            "sFirst": "Primero",
+                            "sLast": "Último",
+                            "sNext": "Siguiente",
+                            "sPrevious": "Anterior"
+                        },
+                        "oAria": {
+                            "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                            "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                        }
+                    };
+
+                    $('#tableindividual').DataTable({
+                        "paging": true,
+                        "lengthChange": false,
+                        "searching": true,
+                        "ordering": true,
+                        "info": true,
+                        "language": spanish,
+                        "autoWidth": true,
+                        "pageLength": 10
+                    });
+
+                    $('#btn-buscar-cliente').on('click', function() {
+                        var table = $('#tableindividual').DataTable();
+                        table.search($('#buscar-cliente').val()).draw();
+                    });
+                });
+            </script>
         </div>
     </div>
 </div>

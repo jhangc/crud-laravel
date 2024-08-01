@@ -164,6 +164,7 @@ Route::get('/storage/pdf/{filename}', [FileController::class, 'getPdf'])->name('
 Route::get('/admin/creditos/ingresosday', [App\Http\Controllers\AdminController::class, 'ingresosday'])->name('creditos.ingresosday')->middleware('auth');
 Route::get('/admin/creditos/egresosday', [App\Http\Controllers\AdminController::class, 'updateCreditoagricola'])->name('creditos.updateCreditoAgricola')->middleware('auth');
 Route::get('/admin/caja/obtener-transacciones/{id}', [App\Http\Controllers\AdminController::class, 'obtenerTransaccionesCaja'])->name('creditos.obtenerTransaccionesCaja')->middleware('auth');
+Route::get('/admin/caja/resetcaja/{id}', [App\Http\Controllers\AdminController::class, 'resetCaja'])->name('creditos.resetCaja')->middleware('auth');
 
 // Rutas para la gestión de gastos
 Route::get('/admin/gastos', [GastoController::class, 'index'])->name('gastos.index')->middleware('auth');

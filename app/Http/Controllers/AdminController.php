@@ -190,6 +190,7 @@ class AdminController extends Controller
     }
     public function egresosday(Request $request)
     {
+
     }
 
 
@@ -199,7 +200,9 @@ class AdminController extends Controller
         $today = Carbon::today();
     
         // Verificar si la caja tiene una transacción abierta o cerrada hoy
-        $ultimaTransaccion = $caja->transacciones()->whereDate('created_at', $today)->orderBy('created_at', 'desc')->first();
+        $ultimaTransaccion = $caja->transacciones()
+        // ->whereDate('created_at', $today)
+        ->orderBy('created_at', 'desc')->first();
         if (!$ultimaTransaccion) {
             return response()->json([
                 'success' => false,
@@ -297,5 +300,31 @@ class AdminController extends Controller
             'saldoFinalEsperado' => $saldoFinalEsperado ?? 0,
             'desajuste' => $desajuste ?? 0
         ]);
+    }
+    public function resetCaja($id){
+        $caja = Caja::findOrFail($id);
+        $today = Carbon::today();
+    
+        // Verificar si la caja tiene una transacción abierta o cerrada hoy
+        $ultimaTransaccion = $caja->transacciones()
+        // ->whereDate('created_at', $today)
+        ->orderBy('created_at', 'desc')->first();
+        if (!$ultimaTransaccion) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay transacciones abiertas para esta caja en el día de hoy.'
+            ]);
+        }
+        $ultimaTransaccion->hora_cierre=null;
+        $ultimaTransaccion->fecha_cierre=null;
+        $ultimaTransaccion->monto_cierre=null;
+        $ultimaTransaccion->json_cierre=null;
+        $ultimaTransaccion->save();
+        
+        return response()->json([
+            'success' => true,
+             'message' => 'Caja ,para volver a Llenar Arqueo , Indique a Cajera que vuelva  a recargar la Pagina.'
+        ]);
+
     }
 }
