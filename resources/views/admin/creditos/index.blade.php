@@ -109,7 +109,7 @@
                                         @endif
                                         <a href="{{ route('creditos.proyecciones', ['id' => $credito->id]) }}"
                                             class="btn btn-secondary mr-2"><i class="bi bi-bar-chart"></i></a>
-                                        @if($credito->estado != 'rechazado' && $credito->estado != 'revisado' $credito->estado != 'pagado' $credito->estado != 'cancelado')
+                                        @if($credito->estado != 'rechazado' && $credito->estado != 'revisado' && $credito->estado != 'pagado' && $credito->estado != 'cancelado')
                                             <a href="{{ route('creditos.edit', $credito->id) }}" type="button"
                                                 class="btn btn-success mr-2"><i class="bi bi-pencil"></i></a>
                                         @endif
