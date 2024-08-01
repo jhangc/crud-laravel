@@ -143,9 +143,9 @@ class CreditosGrupalesExport implements FromCollection, WithHeadings, WithMappin
         $cronogramaPendientesNormal = $cronogramaPendientes->where('fecha', '>', $now);
         $cronogramaPendientesVencido = $cronogramaPendientes->where('fecha', '<=', $now);
 
-        $saldoCapitalNormal = $cronogramaPendientesNormal->last() ? $cronogramaPendientesNormal->last()->amortizacion : 0;
-        $saldoCapitalVencido = $cronogramaPendientesVencido->last() ? $cronogramaPendientesVencido->last()->amortizacion : 0;
-        $saldoCapitalCredito = $saldoCapitalNormal + $saldoCapitalVencido;
+        // $saldoCapitalNormal = $cronogramaPendientesNormal->last() ? $cronogramaPendientesNormal->last()->amortizacion : 0;
+        // $saldoCapitalVencido = $cronogramaPendientesVencido->last() ? $cronogramaPendientesVencido->last()->amortizacion : 0;
+        // $saldoCapitalCredito = $saldoCapitalNormal + $saldoCapitalVencido;
 
         $ultimoPago = $credito->ingresos()->latest('fecha_pago')->first();
         $fechaUltimoPago = $ultimoPago ? $ultimoPago->fecha_pago : 'No hay pagos';
@@ -191,6 +191,16 @@ class CreditosGrupalesExport implements FromCollection, WithHeadings, WithMappin
 
         // Calcular situación contable
         $situacionContable = $diasAtraso >= 1 ? 'Vencido' : 'Vigente';
+
+
+        $saldoCapitalNormal=$capitalCancelado;
+        $saldoCapitalCredito = $credito->monto_total - $capitalCancelado;
+
+        $saldoCapitalVencido = $cronogramaPendientesVencido->sum('amortizacion');
+
+        if ($diasAtraso > 30) {
+            $saldoCapitalVencido = $credito->monto_total;
+        }
 
         return [
             $contador,
