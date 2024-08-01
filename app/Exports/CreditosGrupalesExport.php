@@ -193,7 +193,7 @@ class CreditosGrupalesExport implements FromCollection, WithHeadings, WithMappin
         $situacionContable = $diasAtraso >= 1 ? 'Vencido' : 'Vigente';
 
 
-        $saldoCapitalNormal=$capitalCancelado;
+        $saldoCapitalNormal=0;
         $saldoCapitalCredito = $credito->monto_total - $capitalCancelado;
 
         $saldoCapitalVencido = $cronogramaPendientesVencido->sum('amortizacion');

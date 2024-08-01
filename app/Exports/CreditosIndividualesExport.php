@@ -167,7 +167,7 @@ class CreditosIndividualesExport implements FromCollection, WithHeadings, WithMa
         // Calcular situación contable
         $situacionContable = $diasAtraso >= 1 ? 'Vencido' : 'Vigente';
 
-        $saldoCapitalNormal=$capitalCancelado;
+        $saldoCapitalNormal=0;
         $saldoCapitalCredito = $credito->monto_total - $capitalCancelado;
 
         $saldoCapitalVencido = $cronogramaPendientesVencido->sum('amortizacion');
