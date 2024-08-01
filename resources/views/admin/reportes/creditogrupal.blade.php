@@ -114,9 +114,11 @@
                     $now = \Carbon\Carbon::now();
 
                     $cronogramaPendientesNormal = $cronogramaPendientes->where('fecha', '>', $now);
-                    $cronogramaPendientesVencido = $cronogramaPendientes->where('fecha', '<=', $now); $saldoCapitalNormal=$cronogramaPendientesNormal->last() ? $cronogramaPendientesNormal->last()->amortizacion : 0;
-                    $saldoCapitalVencido = $cronogramaPendientesVencido->last() ? $cronogramaPendientesVencido->last()->amortizacion : 0;
-                    $saldoCapitalCredito = $saldoCapitalNormal + $saldoCapitalVencido;
+                    $cronogramaPendientesVencido = $cronogramaPendientes->where('fecha', '<=', $now); 
+                    
+                    // $saldoCapitalNormal=$cronogramaPendientesNormal->last() ? $cronogramaPendientesNormal->last()->amortizacion : 0;
+                    // $saldoCapitalVencido = $cronogramaPendientesVencido->last() ? $cronogramaPendientesVencido->last()->amortizacion : 0;
+                    // $saldoCapitalCredito = $saldoCapitalNormal + $saldoCapitalVencido;
 
                     // Obtener la fecha del último pago
                     $ultimoPago = $credito->ingresos()->latest('fecha_pago')->first();
@@ -165,6 +167,15 @@
 
                     // Calcular situación contable
                     $situacionContable = $diasAtraso >= 1 ? 'Vencido' : 'Vigente';
+
+                    $saldoCapitalNormal=$capitalCancelado;
+                    $saldoCapitalCredito = $credito->monto_total - $capitalCancelado;
+
+                    $saldoCapitalVencido = $cronogramaPendientesVencido->sum('amortizacion');
+
+                    if ($diasAtraso > 30) {
+                        $saldoCapitalVencido = $credito->monto_total;
+                    }
 
                     @endphp
 
