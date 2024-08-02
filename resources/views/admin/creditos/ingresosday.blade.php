@@ -120,6 +120,14 @@
                             <td><span id="saldoFinalEsperado"></span></td>
                         </tr>
                         <tr>
+                            <th>Saldo Efectivo-Caja</th>
+                            <td><span id="saldoEfectivo"></span></td>
+                        </tr>
+                        <tr>
+                            <th>Saldo Depositos-Caja</th>
+                            <td><span id="saldoDepositos"></span></td>
+                        </tr>
+                        <tr>
                             <th>Saldo Final Real-Caja</th>
                             <td><span id="saldoFinalReal"></span></td>
                         </tr>
@@ -228,6 +236,8 @@
 
                     if (data.cajaCerrada) {
                         document.getElementById('saldoFinalEsperado').innerText = data.saldoFinalEsperado;
+                        document.getElementById('saldoEfectivo').innerText = data.saldoEfectivo;
+                        document.getElementById('saldoDepositos').innerText = data.saldoDepositos;
                         document.getElementById('saldoFinalReal').innerText = data.saldoFinalReal;
                         document.getElementById('desajuste').innerText = data.desajuste;
 

@@ -265,16 +265,16 @@ class AdminController extends Controller
             $datosCierre = json_decode($ultimaTransaccion->json_cierre, true);
     
             // Calcular el saldo final real
-            $saldoFinalReal = array_sum(array_map(function ($cantidad, $valor) {
+            $saldoEfectivo = array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
     
-            $saldoFinalReal += array_sum(array_map(function ($cantidad, $valor) {
+            $saldoEfectivo += array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
     
-            $saldoFinalReal += $datosCierre['depositos'];
-    
+            $saldoDepositos = $datosCierre['depositos'];
+            $saldoFinalReal=$saldoDepositos+$saldoEfectivo;
             // Calcular el saldo final esperado
             $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto') + $ingresosExtras->sum('monto');
     
@@ -298,7 +298,9 @@ class AdminController extends Controller
             'datosCierre' => $datosCierre ?? [],
             'saldoFinalReal' => $saldoFinalReal ?? 0,
             'saldoFinalEsperado' => $saldoFinalEsperado ?? 0,
-            'desajuste' => $desajuste ?? 0
+            'desajuste' => $desajuste ?? 0,
+            'saldoEfectivo'=>$saldoEfectivo??0,
+            'saldoDepositos'=>$saldoDepositos??0,
         ]);
     }
     public function resetCaja($id){

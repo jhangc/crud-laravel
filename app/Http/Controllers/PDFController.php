@@ -1253,16 +1253,16 @@ class PdfController extends Controller
         if ($cajaCerrada) {
             $datosCierre = json_decode($ultimaTransaccion->json_cierre, true);
 
-            // Calcular el saldo final real
-            $saldoFinalReal = array_sum(array_map(function ($cantidad, $valor) {
+            $saldoEfectivo = array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
-
-            $saldoFinalReal += array_sum(array_map(function ($cantidad, $valor) {
+    
+            $saldoEfectivo += array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
-
-            $saldoFinalReal += $datosCierre['depositos'];
+    
+            $saldoDepositos = $datosCierre['depositos'];
+            $saldoFinalReal=$saldoDepositos+$saldoEfectivo;
 
             // Calcular el saldo final esperado
             $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') + $ingresosExtras->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
@@ -1285,7 +1285,9 @@ class PdfController extends Controller
             'saldoFinalReal',
             'saldoFinalEsperado',
             'desajuste',
-            'ultimaTransaccion'
+            'ultimaTransaccion',
+            'saldoEfectivo',
+            'saldoDepositos',
         ));
 
         return $pdf->stream('transacciones.pdf');
