@@ -144,10 +144,19 @@ class CreditosIndividualesExport implements FromCollection, WithHeadings, WithMa
         // Calcular los días de atraso o los días restantes
         $diasAtraso = 0;
         if ($fechaVencimientoProximaCuota) {
-            if ($fechaVencimientoProximaCuota < $now) {
-                 $diasAtraso = $now->diffInDays($fechaVencimientoProximaCuota);
-             } else {
-                $diasAtraso = -$now->diffInDays($fechaVencimientoProximaCuota);
+            $fechaVencimientoProximaCuotaFormatted = \Carbon\Carbon::parse(
+                $fechaVencimientoProximaCuota,
+            )->format('Y-m-d');
+            $fechaActualFormatted = $now->format('Y-m-d');
+
+            if ($fechaVencimientoProximaCuotaFormatted < $fechaActualFormatted) {
+                $diasAtraso = \Carbon\Carbon::parse($fechaActualFormatted)->diffInDays(
+                    $fechaVencimientoProximaCuotaFormatted,
+                );
+            } else {
+                $diasAtraso = -\Carbon\Carbon::parse($fechaActualFormatted)->diffInDays(
+                    $fechaVencimientoProximaCuotaFormatted,
+                );
             }
         }
         // Calcular riesgo individual
