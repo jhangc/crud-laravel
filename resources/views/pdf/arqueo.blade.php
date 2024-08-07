@@ -49,12 +49,14 @@
             </tr>
         </thead>
         <tbody>
+            @php $totalBilletes = 0; @endphp
             @foreach ($datosCierre['billetes'] as $denominacion => $cantidad)
                 <tr>
                     <td>S/. {{ $denominacion }}</td>
                     <td>{{ $cantidad }}</td>
                     <td>S/. {{ number_format($denominacion * $cantidad, 2) }}</td>
                 </tr>
+                @php $totalBilletes += $denominacion * $cantidad; @endphp
             @endforeach
         </tbody>
     </table>
@@ -69,15 +71,19 @@
             </tr>
         </thead>
         <tbody>
+            @php $totalMonedas = 0; @endphp
             @foreach ($datosCierre['monedas'] as $denominacion => $cantidad)
                 <tr>
                     <td>S/. {{ number_format($denominacion, 2) }}</td>
                     <td>{{ $cantidad }}</td>
                     <td>S/. {{ number_format($denominacion * $cantidad, 2) }}</td>
                 </tr>
+                @php $totalMonedas += $denominacion * $cantidad; @endphp
             @endforeach
         </tbody>
     </table>
+
+    <h3>Total Efectivo: S/. {{ number_format($totalBilletes + $totalMonedas, 2) }}</h3>
 
     <h2>Depósitos</h2>
     <p>Total Depósitos: S/. {{ number_format($datosCierre['depositos'], 2) }}</p>

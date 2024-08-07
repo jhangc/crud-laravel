@@ -155,6 +155,14 @@
                 <td>S/.{{ number_format($saldoFinalEsperado, 2) }}</td>
             </tr>
             <tr>
+                <th>Saldo Efectivo Caja</th>
+                <td>S/.{{ number_format($saldoEfectivo, 2) }}</td>
+            </tr>
+            <tr>
+                <th>Saldo  Depositos Caja</th>
+                <td>S/.{{ number_format($saldoDepositos, 2) }}</td>
+            </tr>
+            <tr>
                 <th>Saldo Final Real-Caja</th>
                 <td>S/.{{ number_format($saldoFinalReal, 2) }}</td>
             </tr>

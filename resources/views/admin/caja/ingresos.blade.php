@@ -54,7 +54,7 @@
 
                             <div class="form-group">
                                 <label for="monto">Monto del Ingreso</label>
-                                <input type="number" name="monto" id="monto" class="form-control" required>
+                                <input type="text" name="monto" id="monto" class="form-control" required>
                             </div>
 
                             <div class="form-group">
