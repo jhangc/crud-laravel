@@ -52,7 +52,7 @@
 
                             <div class="form-group">
                                 <label for="monto_gasto">Monto del Gasto</label>
-                                <input type="number" name="monto_gasto" id="monto_gasto" class="form-control" required>
+                                <input type="text" name="monto_gasto" id="monto_gasto" class="form-control" required>
                             </div>
 
                             <div class="form-group">
