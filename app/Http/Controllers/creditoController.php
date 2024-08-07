@@ -1525,7 +1525,7 @@ class creditoController extends Controller
                     break;
                 case 'mensual':
                 default:
-                    $fechaCuota->addDays(30);
+                    $fechaCuota->addMonth();;
                     break;
             }
 
