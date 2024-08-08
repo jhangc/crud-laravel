@@ -220,7 +220,7 @@ class CreditosGrupalesExport implements FromCollection, WithHeadings, WithMappin
             $credito->id,
             $credito->fecha_desembolso,
             $credito->fecha_fin,
-            $ultimaCuotaPagada ? $ultimaCuotaPagada->cronograma_id : 'No hay cuotas',
+            $fechaVencimientoProximaCuota,
             $credito->tiempo,
             $credito->recurrencia,
             $credito->periodo_gracia_dias,
