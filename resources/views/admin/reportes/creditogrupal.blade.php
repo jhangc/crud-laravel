@@ -130,12 +130,12 @@
                             ->orderBy('fecha')
                             ->first();
 
-                        
+                        dd($proximaCuota);
 
 
                         $fechaVencimientoProximaCuota = $proximaCuota ? $proximaCuota->fecha : 'No hay próxima cuota';
 
-                        //dd($fechaVencimientoProximaCuota);
+                        
                     } else {
                         $primeraCuota = $credito->cronograma()
                             ->where('cliente_id', null) // Filtro para cuotas generales
@@ -149,9 +149,7 @@
                     // Calcular los días de atraso o los días restantes
                     $diasAtraso = 0;
                         if ($fechaVencimientoProximaCuota) {
-                            $fechaVencimientoProximaCuotaFormatted = \Carbon\Carbon::parse(
-                                $fechaVencimientoProximaCuota,
-                            )->format('Y-m-d');
+                            $fechaVencimientoProximaCuotaFormatted = \Carbon\Carbon::parse($fechaVencimientoProximaCuota,)->format('Y-m-d');
                                 $fechaActualFormatted = $now->format('Y-m-d');
 
                             if ($fechaVencimientoProximaCuotaFormatted < $fechaActualFormatted) {
