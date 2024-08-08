@@ -129,7 +129,13 @@
                             ->where('id', '>', $ultimaCuotaPagada->cronograma_id)
                             ->orderBy('fecha')
                             ->first();
+
+                        
+
+
                         $fechaVencimientoProximaCuota = $proximaCuota ? $proximaCuota->fecha : 'No hay próxima cuota';
+
+                        //dd($fechaVencimientoProximaCuota);
                     } else {
                         $primeraCuota = $credito->cronograma()
                             ->where('cliente_id', null) // Filtro para cuotas generales
@@ -138,24 +144,26 @@
                         $fechaVencimientoProximaCuota = $primeraCuota ? $primeraCuota->fecha : 'No hay cuotas';
                     }
 
+
+
                     // Calcular los días de atraso o los días restantes
                     $diasAtraso = 0;
-                                if ($fechaVencimientoProximaCuota) {
-                                    $fechaVencimientoProximaCuotaFormatted = \Carbon\Carbon::parse(
-                                        $fechaVencimientoProximaCuota,
-                                    )->format('Y-m-d');
-                                    $fechaActualFormatted = $now->format('Y-m-d');
+                        if ($fechaVencimientoProximaCuota) {
+                            $fechaVencimientoProximaCuotaFormatted = \Carbon\Carbon::parse(
+                                $fechaVencimientoProximaCuota,
+                            )->format('Y-m-d');
+                                $fechaActualFormatted = $now->format('Y-m-d');
 
-                                    if ($fechaVencimientoProximaCuotaFormatted < $fechaActualFormatted) {
-                                        $diasAtraso = \Carbon\Carbon::parse($fechaActualFormatted)->diffInDays(
-                                            $fechaVencimientoProximaCuotaFormatted,
-                                        );
-                                    } else {
-                                        $diasAtraso = -\Carbon\Carbon::parse($fechaActualFormatted)->diffInDays(
-                                            $fechaVencimientoProximaCuotaFormatted,
-                                        );
-                                    }
-                                }
+                            if ($fechaVencimientoProximaCuotaFormatted < $fechaActualFormatted) {
+                                $diasAtraso = \Carbon\Carbon::parse($fechaActualFormatted)->diffInDays(
+                                    $fechaVencimientoProximaCuotaFormatted,
+                                );
+                            } else {
+                                $diasAtraso = -\Carbon\Carbon::parse($fechaActualFormatted)->diffInDays(
+                                $fechaVencimientoProximaCuotaFormatted,
+                            );
+                            }
+                        }
 
                     // Calcular riesgo individual
                     $riesgoIndividual = 'normal';
