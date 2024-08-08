@@ -71,8 +71,16 @@
             </div>
             <div class="content">
                 <p><span class="label">Fecha:</span> <span class="value">{{ $item['ingreso']->created_at->format('d/m/Y H:i:s') }}</span></p>
-                <p><span class="label">DNI:</span> <span class="value">{{ $item['cliente']->documento_identidad ?? '------' }}</span></p>
-                <p><span class="label">Nombres:</span> <span class="value">{{ $item['cliente']->nombre ?? 'Cuota General' }}</span></p>
+                <p>
+                <p>
+                    <span class="label">
+                        {{ isset($item['cliente']->documento_identidad) ? 'DNI' : 'GRUPO' }}:
+                    </span>
+                    <span class="value">
+                        {{ isset($item['cliente']->documento_identidad) ? $item['cliente']->documento_identidad : $item['prestamo']->nombre_prestamo }}
+                    </span>
+                </p>
+                <p><span class="label"> {{ isset($item['cliente']->documento_identidad) ? 'Nombres' : 'Cuota' }}:</span> <span class="value">{{ $item['cliente']->nombre ?? 'Cuota General' }}</span></p>
                 <p><span class="label">N° de Cuota:</span> <span class="value">{{ $item['ingreso']->numero_cuota }}</span></p>
                 <p><span class="label">Monto  de Pago:</span> <span class="value">S/.{{ number_format($item['ingreso']->monto_total_pago_final, 2) }}</span></p>
                 <p><span class="label">Días de Mora:</span> <span class="value">{{ $item['ingreso']->dias_mora }}</span></p>
