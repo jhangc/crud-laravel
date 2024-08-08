@@ -126,7 +126,7 @@
                                                             ->where('cliente_id', null)
                                                             ->first();
 
-                    dd($ultimaCuotaPagada);
+                    //dd($ultimaCuotaPagada);
 
 
                     if ($ultimaCuotaPagada) {
