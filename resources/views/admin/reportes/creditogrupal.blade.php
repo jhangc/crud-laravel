@@ -123,6 +123,8 @@
 
                     // Obtener la fecha de vencimiento de la próxima cuota
                     $ultimaCuotaPagada = $credito->ingresos()->latest('fecha_pago')->first();
+
+                    dd($ultimaCuotaPagada);
                     if ($ultimaCuotaPagada) {
                         $proximaCuota = $credito->cronograma()
                             ->where('cliente_id', null) // Filtro para cuotas generales
@@ -130,7 +132,7 @@
                             ->orderBy('fecha')
                             ->first();
 
-                        dd($proximaCuota);
+                        
 
 
                         $fechaVencimientoProximaCuota = $proximaCuota ? $proximaCuota->fecha : 'No hay próxima cuota';
