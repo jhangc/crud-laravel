@@ -213,7 +213,7 @@ class creditoController extends Controller
 
                     $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
                     $rotacion_inventario = $total_inventario != 0 ? round(($totalCompras / $total_inventario), 2) : 0;
-                    $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
+                    $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : $activo_corriente;
                     $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo) * 100, 2) : 0;
                     $capital_trabajo = $activo_corriente - $deudas->sum('saldo_capital');
 
