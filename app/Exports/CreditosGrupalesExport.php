@@ -150,7 +150,10 @@ class CreditosGrupalesExport implements FromCollection, WithHeadings, WithMappin
         $ultimoPago = $credito->ingresos()->latest('fecha_pago')->first();
         $fechaUltimoPago = $ultimoPago ? $ultimoPago->fecha_pago : 'No hay pagos';
 
-        $ultimaCuotaPagada = $credito->ingresos()->latest('fecha_pago')->first();
+        $ultimaCuotaPagada = $credito->ingresos()->latest('fecha_pago') 
+                                                            ->where('cliente_id', null)
+                                                            ->first();
+
         if ($ultimaCuotaPagada) {
             $proximaCuota = $credito->cronograma()
                 ->where('cliente_id', null)
@@ -220,7 +223,7 @@ class CreditosGrupalesExport implements FromCollection, WithHeadings, WithMappin
             $credito->id,
             $credito->fecha_desembolso,
             $credito->fecha_fin,
-            $ultimaCuotaPagada ? $ultimaCuotaPagada->cronograma_id : 'No hay cuotas',
+            $fechaVencimientoProximaCuota,
             $credito->tiempo,
             $credito->recurrencia,
             $credito->periodo_gracia_dias,
