@@ -1039,6 +1039,9 @@ class creditoController extends Controller
                     $diasMora = 0;
                     $montoMoraTotal = 0;
                     $ingreso_ids = [];
+                    $fecha_pago = null; // Variable para almacenar la fecha de pago
+                    $dias_mora_general = 0;
+                    $monto_mora_general = 0;
     
                     foreach ($cuotasRelacionadas as $cuotaRelacionada) {
                         $ingresoRelacionado = Ingreso::where('prestamo_id', $id)
@@ -1062,6 +1065,9 @@ class creditoController extends Controller
                             $pagadas++;
                             $montoPagado += $cuotaRelacionada->monto;
                             $ingreso_ids[] = $ingresoRelacionado->id; // Almacenar IDs de ingresos
+                            $fecha_pago = $ingresoRelacionado->fecha_pago;
+                            $dias_mora_general = $ingresoRelacionado->dias_mora;
+                            $monto_mora_general = $ingresoRelacionado->monto_mora;
                         }
                     }
                     if ($estadoGeneral == 'pagado') {
@@ -1071,6 +1077,9 @@ class creditoController extends Controller
                             ->first();
                         if ($ingresoGeneral) {
                             $ingreso_ids[] = $ingresoGeneral->id;
+                            $fecha_pago = $ingresoGeneral->fecha_pago;
+                            $dias_mora_general = $ingresoGeneral->dias_mora;
+                            $monto_mora_general = $ingresoGeneral->monto_mora;
                         }
                     }
     
@@ -1089,13 +1098,16 @@ class creditoController extends Controller
                     $cuotaGeneral->monto_mora = $montoMoraTotal;
                     $cuotaGeneral->monto_total_pago_final = round($cuotaGeneral->monto + $montoMoraTotal, 2);
                     $cuotaGeneral->ingreso_ids = $ingreso_ids; // Añadir IDs de ingresos
+                    $cuotaGeneral->fecha_pago = $fecha_pago; // Asignar fecha de pago a la cuota general
+                    $cuotaGeneral->dias_mora = $dias_mora_general; // Asignar días de mora del ingreso
+                    $cuotaGeneral->monto_mora = $monto_mora_general; // Asignar monto de mora del ingreso
                     $cuotasGenerales[] = $cuotaGeneral;
                 }
             }
         }
     
         return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasGenerales', 'cuotasPorCliente'));
-    }       
+    }          
 
     public function pagocuota(Request $request)
     {
