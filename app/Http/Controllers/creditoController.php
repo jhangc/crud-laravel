@@ -1026,7 +1026,7 @@ class creditoController extends Controller
                     $fecha_vencimiento = Carbon::parse($cuotaGeneral->fecha);
                     $cuotasRelacionadas = Cronograma::where('id_prestamo', $id)
                         ->where('fecha', $cuotaGeneral->fecha)
-                         ->whereNotNull('cliente_id')
+                        ->whereNotNull('cliente_id')
                         ->get();
     
                     $estadoGeneral = 'pagado';
@@ -1036,6 +1036,8 @@ class creditoController extends Controller
                     $montoPagado = 0;
                     $montoPendiente = 0;
                     $montoVencido = 0;
+                    $diasMora = 0;
+                    $montoMoraTotal = 0;
                     $ingreso_ids = [];
     
                     foreach ($cuotasRelacionadas as $cuotaRelacionada) {
@@ -1049,6 +1051,8 @@ class creditoController extends Controller
                                 $estadoGeneral = 'vencida';
                                 $vencidas++;
                                 $montoVencido += $cuotaRelacionada->monto;
+                                $diasMora = max($diasMora, now()->diffInDays($fecha_vencimiento)); // Usar el máximo de días de mora
+                                $montoMoraTotal += round(($cuotaRelacionada->monto * 0.3 / 1000) * $diasMora * 5, 2);
                             } else {
                                 $estadoGeneral = 'pendiente';
                                 $pendientes++;
@@ -1059,15 +1063,14 @@ class creditoController extends Controller
                             $montoPagado += $cuotaRelacionada->monto;
                             $ingreso_ids[] = $ingresoRelacionado->id; // Almacenar IDs de ingresos
                         }
-                        
                     }
-                    if($estadoGeneral=='pagado'){
+                    if ($estadoGeneral == 'pagado') {
                         $ingresoGeneral = Ingreso::where('prestamo_id', $id)
-                        ->where('numero_cuota', $cuotaGeneral->numero)
-                        ->whereNull('cliente_id')
-                        ->first();
-                       if($ingresoGeneral){
-                        $ingreso_ids[] = $ingresoGeneral->id;
+                            ->where('numero_cuota', $cuotaGeneral->numero)
+                            ->whereNull('cliente_id')
+                            ->first();
+                        if ($ingresoGeneral) {
+                            $ingreso_ids[] = $ingresoGeneral->id;
                         }
                     }
     
@@ -1082,6 +1085,9 @@ class creditoController extends Controller
                     $cuotaGeneral->monto_pagado = $montoPagado;
                     $cuotaGeneral->monto_pendiente = $montoPendiente;
                     $cuotaGeneral->monto_vencido = $montoVencido;
+                    $cuotaGeneral->dias_mora = $diasMora;
+                    $cuotaGeneral->monto_mora = $montoMoraTotal;
+                    $cuotaGeneral->monto_total_pago_final = round($cuotaGeneral->monto + $montoMoraTotal, 2);
                     $cuotaGeneral->ingreso_ids = $ingreso_ids; // Añadir IDs de ingresos
                     $cuotasGenerales[] = $cuotaGeneral;
                 }
@@ -1089,7 +1095,7 @@ class creditoController extends Controller
         }
     
         return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasGenerales', 'cuotasPorCliente'));
-    }    
+    }       
 
     public function pagocuota(Request $request)
     {
