@@ -1095,17 +1095,16 @@ class creditoController extends Controller
                     $cuotaGeneral->monto_pendiente = $montoPendiente;
                     $cuotaGeneral->monto_vencido = $montoVencido;
                     $cuotaGeneral->dias_mora = $diasMora;
-                    $cuotaGeneral->monto_mora = $montoMoraTotal;
-                    $cuotaGeneral->monto_total_pago_final = round($cuotaGeneral->monto + $montoMoraTotal, 2);
-                    $cuotaGeneral->ingreso_ids = $ingreso_ids; // Añadir IDs de ingresos
-                    $cuotaGeneral->fecha_pago = $fecha_pago; // Asignar fecha de pago a la cuota general
-                    $cuotaGeneral->dias_mora = $dias_mora_general; // Asignar días de mora del ingreso
-                    $cuotaGeneral->monto_mora = $monto_mora_general; // Asignar monto de mora del ingreso
+                    $cuotaGeneral->ingreso_ids = $ingreso_ids; 
+                    $cuotaGeneral->fecha_pago = $fecha_pago; 
+                    $cuotaGeneral->dias_mora = $dias_mora_general;
+                    $cuotaGeneral->monto_mora = $monto_mora_general;
+                    $cuotaGeneral->monto_total_pago_final = $monto_mora_general + $cuotaGeneral->monto; 
                     $cuotasGenerales[] = $cuotaGeneral;
                 }
             }
         }
-    
+        //  dd($cuotasGenerales);
         return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasGenerales', 'cuotasPorCliente'));
     }          
 
