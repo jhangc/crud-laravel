@@ -337,7 +337,7 @@ class creditoController extends Controller
                         }
 
                         $rentabilidad_ventas = $totalVentas != 0 ? round(($saldo_disponible_negocio / $totalVentas) * 100, 2) : 0;
-                        $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
+                        $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : $activo_corriente;
                         $roe = $patrimonioneto != 0 ? round(($saldo_disponible_negocio / $patrimonioneto) * 100, 2) : 0;
                         $solvencia = $patrimonioneto != 0 ? round(($pasivo / $patrimonioneto), 2) : 0;
                         $roa = $totalactivo != 0 ? round(($saldo_disponible_negocio / $totalactivo) * 100, 2) : 0;
@@ -419,7 +419,7 @@ class creditoController extends Controller
                             $margenventas = 0;
                         }
 
-                        $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
+                        $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : $activo_corriente;
 
                         $solvencia = $patrimonioneto != 0 ? round(($pasivo / $patrimonioneto), 2) : 0;
 
@@ -524,7 +524,7 @@ class creditoController extends Controller
 
                         $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
                         $rotacion_inventario = $total_inventario != 0 ? round(($totalCompras / $total_inventario), 2) : 0;
-                        $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
+                        $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : $activo_corriente;
                         $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo) * 100, 2) : 0;
                         $capital_trabajo = $activo_corriente - $deudas->sum('saldo_capital');
 
@@ -705,7 +705,7 @@ class creditoController extends Controller
 
                         $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
                         $rotacion_inventario = $total_inventario != 0 ? round(($totalCompras / $total_inventario), 2) : 0;
-                        $liquidez = $pasivo != 0 ? round(($activo_corriente / $pasivo), 2) : 0;
+                        $liquidez = $pasivo!= 0 ? round(($activo_corriente / $pasivo), 2) : $activo_corriente;
                         $roa = $activo != 0 ? round(($saldo_disponible_negocio / $activo) * 100, 2) : 0;
                         $capital_trabajo = $activo_corriente - $deudas->sum('saldo_capital');
 
