@@ -193,9 +193,9 @@ Route::post('/admin/boveda/{id}/movimientos', [BovedaController::class, 'agregar
 Route::get('/admin/boveda/{id}/movimientos/{movimientoId}/edit', [BovedaController::class, 'editarMovimiento'])->name('boveda.movimientos.edit')->middleware('auth');
 Route::post('/admin/boveda/{id}/movimientos/{movimientoId}', [BovedaController::class, 'actualizarMovimiento'])->name('boveda.movimientos.update')->middleware('auth');
 Route::delete('/admin/boveda/{id}/movimientos/{movimientoId}', [BovedaController::class, 'eliminarMovimiento'])->name('boveda.movimientos.destroy')->middleware('auth');
-
-
-
+//Pagos
+Route::post('/admin/credito/verpagototal', [App\Http\Controllers\creditoController::class, 'verpagototalindividual'])->name('credito.verpagototalindividual')->middleware('auth');
+Route::post('/admin/credito/verpagototalgrupal', [App\Http\Controllers\creditoController::class, 'verpagototalgrupal'])->name('credito.verpagototalgrupal')->middleware('auth');
 
 
 
