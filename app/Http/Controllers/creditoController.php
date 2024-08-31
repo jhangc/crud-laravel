@@ -1446,6 +1446,158 @@ class creditoController extends Controller
         }
     }
 
+    public function confirmarPagoIndividual(Request $request)
+{
+    $user = auth()->user();
+
+    // Obtener la última transacción de caja abierta
+    $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
+        ->whereNull('hora_cierre')
+        ->orderBy('created_at', 'desc')
+        ->first();
+
+    if (!$ultimaTransaccion) {
+        return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
+    }
+
+    $prestamo_id = $request->prestamo_id;
+    $numero_cuota = $request->numero_cuota;
+
+    // Obtener la cuota actual y las restantes
+    $cuotas = Cronograma::where('id_prestamo', $prestamo_id)
+        ->where('numero', '>=', $numero_cuota)
+        ->whereNotNull('cliente_id')
+        ->get();
+
+    $ingreso_ids = [];
+
+    DB::beginTransaction();
+    try {
+        foreach ($cuotas as $cuota) {
+            // Verificar si la cuota ya tiene un ingreso asociado
+            $ingresoExistente = Ingreso::where('prestamo_id', $prestamo_id)
+                ->where('cronograma_id', $cuota->id)
+                ->first();
+
+            if (!$ingresoExistente) {
+                $dias_mora = 0;
+                $monto_mora = 0;
+                $porcentaje_mora = 0.3; // 0.3% de mora por día por cada mil soles
+
+                // Calcular mora si está vencida
+                if (Carbon::now()->greaterThan(Carbon::parse($cuota->fecha))) {
+                    $dias_mora = Carbon::now()->diffInDays(Carbon::parse($cuota->fecha));
+                    $monto_mora = round(($cuota->monto * $porcentaje_mora / 1000) * $dias_mora * 5, 2);
+                }
+
+                // Registrar el ingreso
+                $ingreso = Ingreso::create([
+                    'transaccion_id' => $ultimaTransaccion->id,
+                    'prestamo_id' => $cuota->id_prestamo,
+                    'cliente_id' => $cuota->cliente_id,
+                    'cronograma_id' => $cuota->id,
+                    'numero_cuota' => $cuota->numero,
+                    'monto' => round($cuota->monto + $monto_mora, 2),
+                    'monto_mora' => $monto_mora,
+                    'dias_mora' => $dias_mora,
+                    'porcentaje_mora' => $porcentaje_mora,
+                    'fecha_pago' => now()->toDateString(),
+                    'hora_pago' => now()->toTimeString(),
+                    'sucursal_id' => $user->sucursal_id,
+                    'monto_total_pago_final' => round($cuota->monto + $monto_mora, 2),
+                ]);
+                $ingreso_ids[] = $ingreso->id;
+                $ultimaTransaccion->cantidad_ingresos += $ingreso->monto;
+            }
+        }
+
+        $ultimaTransaccion->save(); // Guardar la transacción con la suma actualizada
+
+        DB::commit();
+
+        return response()->json(['success' => 'Pago individual realizado con éxito', 'ingreso_ids' => $ingreso_ids]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['error' => 'Error al realizar el pago individual: ' . $e->getMessage()], 500);
+    }
+}
+
+public function confirmarPagoGrupal(Request $request)
+{
+    $user = auth()->user();
+
+    // Obtener la última transacción de caja abierta
+    $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
+        ->whereNull('hora_cierre')
+        ->orderBy('created_at', 'desc')
+        ->first();
+
+    if (!$ultimaTransaccion) {
+        return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
+    }
+
+    $prestamo_id = $request->prestamo_id;
+    $numero_cuota = $request->numero_cuota;
+
+    // Obtener la cuota actual y las restantes
+    $cuotas = Cronograma::where('id_prestamo', $prestamo_id)
+        ->where('numero', '>=', $numero_cuota)
+        ->whereNull('cliente_id')
+        ->get();
+
+    $ingreso_ids = [];
+
+    DB::beginTransaction();
+    try {
+        foreach ($cuotas as $cuota) {
+            // Verificar si la cuota ya tiene un ingreso asociado
+            $ingresoExistente = Ingreso::where('prestamo_id', $prestamo_id)
+                ->where('cronograma_id', $cuota->id)
+                ->first();
+
+            if (!$ingresoExistente) {
+                $dias_mora = 0;
+                $monto_mora = 0;
+                $porcentaje_mora = 0.3; // 0.3% de mora por día por cada mil soles
+
+                // Calcular mora si está vencida
+                if (Carbon::now()->greaterThan(Carbon::parse($cuota->fecha))) {
+                    $dias_mora = Carbon::now()->diffInDays(Carbon::parse($cuota->fecha));
+                    $monto_mora = round(($cuota->monto * $porcentaje_mora / 1000) * $dias_mora * 5, 2);
+                }
+
+                // Registrar el ingreso
+                $ingreso = Ingreso::create([
+                    'transaccion_id' => $ultimaTransaccion->id,
+                    'prestamo_id' => $cuota->id_prestamo,
+                    'cliente_id' => $cuota->cliente_id,
+                    'cronograma_id' => $cuota->id,
+                    'numero_cuota' => $cuota->numero,
+                    'monto' => round($cuota->monto + $monto_mora, 2),
+                    'monto_mora' => $monto_mora,
+                    'dias_mora' => $dias_mora,
+                    'porcentaje_mora' => $porcentaje_mora,
+                    'fecha_pago' => now()->toDateString(),
+                    'hora_pago' => now()->toTimeString(),
+                    'sucursal_id' => $user->sucursal_id,
+                    'monto_total_pago_final' => round($cuota->monto + $monto_mora, 2),
+                ]);
+                $ingreso_ids[] = $ingreso->id;
+                $ultimaTransaccion->cantidad_ingresos += $ingreso->monto;
+            }
+        }
+
+        $ultimaTransaccion->save(); // Guardar la transacción con la suma actualizada
+
+        DB::commit();
+
+        return response()->json(['success' => 'Pago grupal realizado con éxito', 'ingreso_ids' => $ingreso_ids]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['error' => 'Error al realizar el pago grupal: ' . $e->getMessage()], 500);
+    }
+}
+
 
     public function viewpagares()
     {

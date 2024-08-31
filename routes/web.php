@@ -196,6 +196,8 @@ Route::delete('/admin/boveda/{id}/movimientos/{movimientoId}', [BovedaController
 //Pagos
 Route::post('/admin/credito/verpagototal', [App\Http\Controllers\creditoController::class, 'verpagototalindividual'])->name('credito.verpagototalindividual')->middleware('auth');
 Route::post('/admin/credito/verpagototalgrupal', [App\Http\Controllers\creditoController::class, 'verpagototalgrupal'])->name('credito.verpagototalgrupal')->middleware('auth');
+Route::post('/credito/confirmar-pago-individual', [App\Http\Controllers\creditoController::class, 'confirmarPagoIndividual'])->name('credito.confirmarPagoIndividual')->middleware('auth');
+Route::post('/credito/confirmar-pago-grupal', [App\Http\Controllers\creditoController::class, 'confirmarPagoGrupal'])->name('credito.confirmarPagoGrupal')->middleware('auth');
 
 
 

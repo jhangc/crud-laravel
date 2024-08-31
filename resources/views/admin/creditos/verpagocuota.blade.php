@@ -258,6 +258,7 @@
         });
     }
     function pagarTodogrupal(prestamo_id, fecha, numero_cuota) {
+        console.log(prestamo_id, fecha, numero_cuota);
         $.ajax({
             url: '{{ route('credito.verpagototalgrupal')}}',
             method: 'POST',
@@ -287,12 +288,9 @@
                 $('#totalPagarTodo').text(`S/. ${totalPagar.toFixed(2)}`);
 
                 // Añadir botón de pagar
-                var botonPagar = `<button class="btn btn-warning" onclick="confirmarpagarTodogrupal(event, prestamo_id, fecha, numero_cuota)">Pagar Todo</button>
+                var botonPagar = `<button class="btn btn-warning" onclick="confirmarpagarTodogrupal(event,'${prestamo_id}','${fecha}','${numero_cuota}')">Pagar Todo</button>
                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>`;
                 $('#pagarTodoModal .modal-footer').html(botonPagar);
-
-                // Mostrar el modal correctamente
-                $('#pagarTodoModal').modal('show');
             },
             error: function(err) {
                 Swal.fire({
@@ -334,7 +332,7 @@
                 $('#totalPagarTodo').text(`S/. ${totalPagar.toFixed(2)}`);
 
                 // Añadir botón de pagar
-                var botonPagar = `<button class="btn btn-warning" onclick="confirmarpagarTodoindividual(event, prestamo_id, fecha, numero_cuota, cliente_id)">Pagar Todo</button>
+                var botonPagar = `<button class="btn btn-warning" onclick="confirmarpagarTodoindividual(event,'${prestamo_id}','${fecha}','${numero_cuota}')">Pagar Todo</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>`;
                 $('#pagarTodoModal .modal-footer').html(botonPagar);
             },
@@ -347,6 +345,88 @@
             }
         });
     }
+    function confirmarpagarTodoindividual(event, prestamo_id, fecha, numero_cuota) {
+        Swal.fire({
+            title: '¿Confirmar Pago?',
+            text: "Está a punto de confirmar el pago de la cuota individual.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '{{ route('credito.confirmarPagoIndividual') }}',  // Ruta al método de pago individual
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        prestamo_id: prestamo_id,
+                        fecha: fecha,
+                        numero_cuota: numero_cuota
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            text: response.success,
+                            icon: 'success'
+                        }).then(() => {
+                            window.open('/admin/generar-ticket-pago/' + response.ingreso_id, '_blank');
+                            location.reload();
+                        });
+                    },
+                    error: function(response) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: response.responseJSON.error,
+                            icon: 'error'
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function confirmarpagarTodogrupal(event, prestamo_id, fecha, numero_cuota) {
+        Swal.fire({
+            title: '¿Confirmar Pago Grupal?',
+            text: "Está a punto de confirmar el pago de todas las cuotas vencidas del grupo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, confirmar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '{{ route('credito.confirmarPagoGrupal') }}',  // Ruta al método de pago grupal
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        prestamo_id: prestamo_id,
+                        fecha: fecha,
+                        numero_cuota: numero_cuota
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            text: response.success,
+                            icon: 'success'
+                        }).then(() => {
+                            window.open('/admin/generar-ticket-pagogrupal/' + response.ingreso_ids.join('-'), '_blank');
+                            location.reload();
+                        });
+                    },
+                    error: function(response) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: response.responseJSON.error,
+                            icon: 'error'
+                        });
+                    }
+                });
+            }
+        });
+    }
+
 
 </script>
 @endsection
