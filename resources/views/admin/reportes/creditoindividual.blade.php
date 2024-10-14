@@ -159,7 +159,7 @@
                                     }
                                 } else {
                                     // Manejar el caso donde no hay próxima cuota o no hay cuotas
-                                    $diasAtraso = $fechaVencimientoProximaCuota; // Asigna el texto 'No hay próxima cuota' o 'No hay cuotas'
+                                    $diasAtraso = 0; // Asigna el texto 'No hay próxima cuota' o 'No hay cuotas'
                                 }
 
                                 // Calcular riesgo individual
