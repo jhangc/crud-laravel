@@ -46,7 +46,7 @@
                             <th>Periodo de gracia</th>
                             <th>Fecha de último pago</th>
                             <!-- <th>Fecha de última refinanciación</th>
-                                <th>Fecha de última reprogramación</th> -->
+                            <th>Fecha de última reprogramación</th> -->
                             <th>N° Cuotas pagadas</th>
                             <th>N° Cuotas pendientes</th>
                             <th>Capital cancelado</th>
@@ -156,9 +156,6 @@
                                             $fechaVencimientoProximaCuotaFormatted,
                                         );
                                     }
-                                } else {
-                                    // Manejar el caso donde no hay próxima cuota
-                                    $diasAtraso = 'No hay próxima cuota'; // Puedes cambiar esto según tus necesidades
                                 }
 
                                 // Calcular riesgo individual
@@ -206,7 +203,7 @@
                                 <td>{{ $credito->periodo_gracia_dias }}</td>
                                 <td>{{ $fechaUltimoPago }}</td>
                                 <!-- <td>Fecha de última refinanciación</td>
-                                <td>Fecha de última reprogramación</td> -->
+                            <td>Fecha de última reprogramación</td> -->
                                 <td>{{ $cuotasPagadas }}</td>
                                 <td>{{ $cuotasPendientes }}</td>
                                 <td>{{ $capitalCancelado }}</td>
