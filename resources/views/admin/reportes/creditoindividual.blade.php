@@ -46,7 +46,7 @@
                             <th>Periodo de gracia</th>
                             <th>Fecha de último pago</th>
                             <!-- <th>Fecha de última refinanciación</th>
-                                    <th>Fecha de última reprogramación</th> -->
+                                <th>Fecha de última reprogramación</th> -->
                             <th>N° Cuotas pagadas</th>
                             <th>N° Cuotas pendientes</th>
                             <th>Capital cancelado</th>
@@ -141,8 +141,7 @@
 
                                 // Calcular los días de atraso o los días restantes
                                 $diasAtraso = 0;
-                                if ($fechaVencimientoProximaCuota && !is_string($fechaVencimientoProximaCuota)) {
-                                    // Valida que no sea un texto
+                                if ($fechaVencimientoProximaCuota) {
                                     $fechaVencimientoProximaCuotaFormatted = \Carbon\Carbon::parse(
                                         $fechaVencimientoProximaCuota,
                                     )->format('Y-m-d');
@@ -158,8 +157,8 @@
                                         );
                                     }
                                 } else {
-                                    // Manejar el caso donde no hay próxima cuota o no hay cuotas
-                                    $diasAtraso = 0; // Asigna el texto 'No hay próxima cuota' o 'No hay cuotas'
+                                    // Manejar el caso donde no hay próxima cuota
+                                    $diasAtraso = 'No hay próxima cuota'; // Puedes cambiar esto según tus necesidades
                                 }
 
                                 // Calcular riesgo individual
@@ -207,7 +206,7 @@
                                 <td>{{ $credito->periodo_gracia_dias }}</td>
                                 <td>{{ $fechaUltimoPago }}</td>
                                 <!-- <td>Fecha de última refinanciación</td>
-                                    <td>Fecha de última reprogramación</td> -->
+                                <td>Fecha de última reprogramación</td> -->
                                 <td>{{ $cuotasPagadas }}</td>
                                 <td>{{ $cuotasPendientes }}</td>
                                 <td>{{ $capitalCancelado }}</td>
