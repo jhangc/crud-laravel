@@ -141,7 +141,7 @@
 
                                 // Calcular los días de atraso o los días restantes
                                 $diasAtraso = 0;
-                                if ($fechaVencimientoProximaCuota) {
+                                if ($fechaVencimientoProximaCuota!='No hay próxima cuota' && $fechaVencimientoProximaCuota!='No hay cuotas' ) {
                                     $fechaVencimientoProximaCuotaFormatted = \Carbon\Carbon::parse(
                                         $fechaVencimientoProximaCuota,
                                     )->format('Y-m-d');
@@ -156,6 +156,8 @@
                                             $fechaVencimientoProximaCuotaFormatted,
                                         );
                                     }
+                                } else {
+                                    $diasAtraso = 0;
                                 }
 
                                 // Calcular riesgo individual
