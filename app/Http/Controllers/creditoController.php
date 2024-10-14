@@ -977,6 +977,10 @@ class creditoController extends Controller
         $cuotasGenerales = [];
         $cuotasPorCliente = [];
     
+        // Variables de control para la última cuota en créditos grupales e individuales
+        $controlUltimaGeneral = 0;
+        $controlUltimaIndividual = 0;
+    
         // Obtener todas las cuotas para calcular el estado de las generales
         $todasLasCuotas = Cronograma::where('id_prestamo', $id)->get();
     
@@ -1008,12 +1012,20 @@ class creditoController extends Controller
                     $cuota->porcentaje_mora = 0.3; // 0.3% por día de mora por cada mil soles
                     $cuota->monto_mora = round(($cuota->monto * $cuota->porcentaje_mora / 1000) * $cuota->dias_mora * 5, 2);
                     $cuota->monto_total_pago_final = round($cuota->monto + $cuota->monto_mora, 2);
+                    if($controlUltimaIndividual == 0) {
+                        $cuota->ultima = 1;
+                        $controlUltimaIndividual = 1;
+                    }
                 } else {
                     $cuota->estado = 'pendiente';
                     $cuota->dias_mora = 0;
                     $cuota->monto_mora = 0;
                     $cuota->porcentaje_mora = 0;
                     $cuota->monto_total_pago_final = round($cuota->monto, 2);
+                    if($controlUltimaIndividual == 0) {
+                        $cuota->ultima = 1;
+                        $controlUltimaIndividual = 1;
+                    }
                 }
             }
     
@@ -1028,7 +1040,7 @@ class creditoController extends Controller
                         ->where('fecha', $cuotaGeneral->fecha)
                         ->whereNotNull('cliente_id')
                         ->get();
-    
+        
                     $estadoGeneral = 'pagado';
                     $pagadas = 0;
                     $pendientes = 0;
@@ -1039,23 +1051,28 @@ class creditoController extends Controller
                     $diasMora = 0;
                     $montoMoraTotal = 0;
                     $ingreso_ids = [];
-                    $fecha_pago = null; // Variable para almacenar la fecha de pago
+                    $fecha_pago = null;
                     $dias_mora_general = 0;
                     $monto_mora_general = 0;
-    
+        
                     foreach ($cuotasRelacionadas as $cuotaRelacionada) {
                         $ingresoRelacionado = Ingreso::where('prestamo_id', $id)
                             ->where('numero_cuota', $cuotaRelacionada->numero)
                             ->where('cliente_id', $cuotaRelacionada->cliente_id)
                             ->first();
-    
+        
                         if (!$ingresoRelacionado) {
                             if (now()->greaterThan($fecha_vencimiento)) {
                                 $estadoGeneral = 'vencida';
                                 $vencidas++;
                                 $montoVencido += $cuotaRelacionada->monto;
-                                $diasMora = max($diasMora, now()->diffInDays($fecha_vencimiento)); // Usar el máximo de días de mora
-                                $montoMoraTotal += round(($cuotaRelacionada->monto * 0.3 / 1000) * $diasMora * 5, 2);
+        
+                                // Cálculo del monto de mora por cada cuota relacionada
+                                $diasMoraRelacionada = now()->diffInDays($fecha_vencimiento);
+                                $montoMoraRelacionada = round(($cuotaRelacionada->monto * 0.3 / 1000) * $diasMoraRelacionada * 5, 2);
+        
+                                $diasMora = max($diasMora, $diasMoraRelacionada); // Usar el máximo de días de mora
+                                $montoMoraTotal += $montoMoraRelacionada;
                             } else {
                                 $estadoGeneral = 'pendiente';
                                 $pendientes++;
@@ -1064,12 +1081,13 @@ class creditoController extends Controller
                         } else {
                             $pagadas++;
                             $montoPagado += $cuotaRelacionada->monto;
-                            $ingreso_ids[] = $ingresoRelacionado->id; // Almacenar IDs de ingresos
+                            $ingreso_ids[] = $ingresoRelacionado->id;
                             $fecha_pago = $ingresoRelacionado->fecha_pago;
                             $dias_mora_general = $ingresoRelacionado->dias_mora;
                             $monto_mora_general = $ingresoRelacionado->monto_mora;
                         }
                     }
+        
                     if ($estadoGeneral == 'pagado') {
                         $ingresoGeneral = Ingreso::where('prestamo_id', $id)
                             ->where('numero_cuota', $cuotaGeneral->numero)
@@ -1082,11 +1100,12 @@ class creditoController extends Controller
                             $monto_mora_general = $ingresoGeneral->monto_mora;
                         }
                     }
-    
+        
                     if ($pagadas > 0 && ($pendientes > 0 || $vencidas > 0)) {
                         $estadoGeneral = 'parcial';
                     }
-    
+        
+                    // Asignar los valores calculados a la cuota general
                     $cuotaGeneral->estado = $estadoGeneral;
                     $cuotaGeneral->pagadas = $pagadas;
                     $cuotaGeneral->pendientes = $pendientes;
@@ -1094,20 +1113,222 @@ class creditoController extends Controller
                     $cuotaGeneral->monto_pagado = $montoPagado;
                     $cuotaGeneral->monto_pendiente = $montoPendiente;
                     $cuotaGeneral->monto_vencido = $montoVencido;
-                    $cuotaGeneral->dias_mora = $diasMora;
-                    $cuotaGeneral->ingreso_ids = $ingreso_ids; 
-                    $cuotaGeneral->fecha_pago = $fecha_pago; 
-                    $cuotaGeneral->dias_mora = $dias_mora_general;
-                    $cuotaGeneral->monto_mora = $monto_mora_general;
-                    $cuotaGeneral->monto_total_pago_final = $monto_mora_general + $cuotaGeneral->monto; 
+                    $cuotaGeneral->dias_mora = $diasMora; // Usar el máximo de días de mora calculado
+                    $cuotaGeneral->ingreso_ids = $ingreso_ids;
+                    $cuotaGeneral->fecha_pago = $fecha_pago;
+                    $cuotaGeneral->monto_mora = $montoMoraTotal; // Monto de mora total calculado
+                    $cuotaGeneral->monto_total_pago_final = $montoMoraTotal + $cuotaGeneral->monto;
+        
+                    // Marcar la última cuota
+                    if ($controlUltimaGeneral == 0 && $estadoGeneral != 'pagado') {
+                        $cuotaGeneral->ultima = 1;
+                        $controlUltimaGeneral = 1;
+                    }
+        
                     $cuotasGenerales[] = $cuotaGeneral;
                 }
             }
         }
-        //  dd($cuotasGenerales);
+        
+    
         return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasGenerales', 'cuotasPorCliente'));
-    }          
+    }
+    
 
+    public function verpagototalindividual(Request $request)
+    {
+        $prestamo_id = $request->prestamo_id;
+        $fecha_cuota = Carbon::parse($request->fecha);
+        $numero_cuota = $request->numero_cuota;
+       
+        // Buscar la cuota actual
+        $cuotaActual = Cronograma::where('id_prestamo', $prestamo_id)
+            ->where('fecha', $fecha_cuota)
+            ->whereNotNull('cliente_id')
+            ->where('numero', $numero_cuota)
+            // Filtrar por cliente
+            ->first();
+
+        if (!$cuotaActual) {
+            return response()->json(['error' => 'No se encontró la cuota actual'], 404);
+        }
+
+        $detalleCuotas = [];
+        $totalMora = 0;
+        $totalPagar = 0;
+
+        // Calcular mora y total a pagar para la cuota actual
+        $diasMora = 0;
+        $montoMora = 0;
+
+        if (now()->greaterThan($fecha_cuota)) {
+            $diasMora = now()->diffInDays($fecha_cuota);
+            $montoMora = round(($cuotaActual->monto * 0.3 / 1000) * $diasMora * 5, 2);
+        }
+
+        $totalCuotaActual = $cuotaActual->monto + $montoMora;
+
+        $detalleCuotas[] = [
+            'numero' => $cuotaActual->numero,
+            'monto' => $cuotaActual->monto,
+            'dias_mora' => $diasMora,
+            'monto_mora' => $montoMora,
+            'total_pagar' => $totalCuotaActual,
+            'fecha' => $cuotaActual->fecha
+        ];
+
+        $totalMora += $montoMora;
+        $totalPagar += $totalCuotaActual;
+
+        // Obtener todas las cuotas restantes a partir de la cuota actual
+        $cuotasRestantes = Cronograma::where('id_prestamo', $prestamo_id)
+            ->where('numero', '>', $numero_cuota)
+            ->whereNotNull('cliente_id') // Filtrar por cliente
+            ->get();
+
+        foreach ($cuotasRestantes as $cuota) {
+            $montoMoraRestante = 0;
+            $diasMoraRestante = 0;
+
+            if (now()->greaterThan(Carbon::parse($cuota->fecha))) {
+                $diasMoraRestante = now()->diffInDays(Carbon::parse($cuota->fecha));
+                $montoMoraRestante = round(($cuota->monto * 0.3 / 1000) * $diasMoraRestante * 5, 2);
+            }
+            if (now()->greaterThan(Carbon::parse($cuota->fecha))) {
+            $totalCuotaRestante = $cuota->monto + $montoMoraRestante;
+
+            $detalleCuotas[] = [
+                'numero' => $cuota->numero,
+                'monto' => $cuota->monto,
+                'dias_mora' => $diasMoraRestante,
+                'monto_mora' => $montoMoraRestante,
+                'total_pagar' => $totalCuotaRestante,
+                'fecha' => $cuota->fecha
+            ];
+
+            $totalMora += $montoMoraRestante;
+            $totalPagar += $totalCuotaRestante;
+           }else{
+            $totalCuotaRestante = $cuota->amortizacion + $montoMoraRestante;
+
+            $detalleCuotas[] = [
+                'numero' => $cuota->numero,
+                'monto' => $cuota->amortizacion,
+                'dias_mora' => $diasMoraRestante,
+                'monto_mora' => $montoMoraRestante,
+                'total_pagar' => $totalCuotaRestante,
+                'fecha' => $cuota->fecha
+            ];
+
+            $totalMora += $montoMoraRestante;
+            $totalPagar += $totalCuotaRestante;
+
+           }
+        }
+
+        // Devolver los datos al usuario
+        return response()->json([
+            'detalle_cuotas' => $detalleCuotas,
+            'total_pagar' => $totalPagar
+        ]);
+    }
+
+    public function verpagototalgrupal(Request $request)
+    {
+        $prestamo_id = $request->prestamo_id;
+        $fecha_cuota = Carbon::parse($request->fecha);
+        $numero_cuota = $request->numero_cuota;
+    
+        // Buscar la cuota actual
+        $cuotaActual = Cronograma::where('id_prestamo', $prestamo_id)
+            ->where('fecha', $fecha_cuota)
+            ->where('numero', $numero_cuota)
+            ->whereNull('cliente_id')
+            ->first();
+    
+        if (!$cuotaActual) {
+            return response()->json(['error' => 'No se encontró la cuota actual'], 404);
+        }
+    
+        $detalleCuotas = [];
+        $totalMora = 0;
+        $totalPagar = 0;
+    
+        // Calcular mora y total a pagar para la cuota actual
+        $diasMora = 0;
+        $montoMora = 0;
+    
+        if (now()->greaterThan($fecha_cuota)) {
+            $diasMora = now()->diffInDays($fecha_cuota);
+            $montoMora = round(($cuotaActual->monto * 0.3 / 1000) * $diasMora * 5, 2);
+        }
+    
+        $totalCuotaActual = $cuotaActual->monto + $montoMora;
+    
+        $detalleCuotas[] = [
+            'numero' => $cuotaActual->numero,
+            'monto' => $cuotaActual->monto,
+            'dias_mora' => $diasMora,
+            'monto_mora' => $montoMora,
+            'total_pagar' => $totalCuotaActual,
+            'fecha' => $cuotaActual->fecha
+        ];
+    
+        $totalMora += $montoMora;
+        $totalPagar += $totalCuotaActual;
+    
+        // Obtener todas las cuotas restantes a partir de la cuota actual
+        $cuotasRestantes = Cronograma::where('id_prestamo', $prestamo_id)
+            ->where('numero', '>', $numero_cuota)
+            ->whereNull('cliente_id')
+            ->get();
+    
+        foreach ($cuotasRestantes as $cuota) {
+            $montoMoraRestante = 0;
+            $diasMoraRestante = 0;
+    
+            if (now()->greaterThan(Carbon::parse($cuota->fecha))) {
+                $diasMoraRestante = now()->diffInDays(Carbon::parse($cuota->fecha));
+                $montoMoraRestante = round(($cuota->monto * 0.3 / 1000) * $diasMoraRestante * 5, 2);
+            }
+            if (now()->greaterThan(Carbon::parse($cuota->fecha))) {
+                $totalCuotaRestante = $cuota->monto + $montoMoraRestante;
+    
+                $detalleCuotas[] = [
+                    'numero' => $cuota->numero,
+                    'monto' => $cuota->monto,
+                    'dias_mora' => $diasMoraRestante,
+                    'monto_mora' => $montoMoraRestante,
+                    'total_pagar' => $totalCuotaRestante,
+                    'fecha' => $cuota->fecha
+                ];
+        
+                $totalMora += $montoMoraRestante;
+                $totalPagar += $totalCuotaRestante;   
+            }else{
+            $totalCuotaRestante = $cuota->amortizacion + $montoMoraRestante;
+    
+            $detalleCuotas[] = [
+                'numero' => $cuota->numero,
+                'monto' => $cuota->amortizacion,
+                'dias_mora' => $diasMoraRestante,
+                'monto_mora' => $montoMoraRestante,
+                'total_pagar' => $totalCuotaRestante,
+                'fecha' => $cuota->fecha
+            ];
+    
+            $totalMora += $montoMoraRestante;
+            $totalPagar += $totalCuotaRestante;
+        }
+        }
+    
+        // Devolver los datos al usuario
+        return response()->json([
+            'detalle_cuotas' => $detalleCuotas,
+            'total_pagar' => $totalPagar
+        ]);
+    }
+    
     public function pagocuota(Request $request)
     {
         $user = auth()->user();
@@ -1224,6 +1445,158 @@ class creditoController extends Controller
             return response()->json(['error' => 'Error al realizar el pago grupal: ' . $e->getMessage()], 500);
         }
     }
+
+    public function confirmarPagoIndividual(Request $request)
+{
+    $user = auth()->user();
+
+    // Obtener la última transacción de caja abierta
+    $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
+        ->whereNull('hora_cierre')
+        ->orderBy('created_at', 'desc')
+        ->first();
+
+    if (!$ultimaTransaccion) {
+        return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
+    }
+
+    $prestamo_id = $request->prestamo_id;
+    $numero_cuota = $request->numero_cuota;
+
+    // Obtener la cuota actual y las restantes
+    $cuotas = Cronograma::where('id_prestamo', $prestamo_id)
+        ->where('numero', '>=', $numero_cuota)
+        ->whereNotNull('cliente_id')
+        ->get();
+
+    $ingreso_ids = [];
+
+    DB::beginTransaction();
+    try {
+        foreach ($cuotas as $cuota) {
+            // Verificar si la cuota ya tiene un ingreso asociado
+            $ingresoExistente = Ingreso::where('prestamo_id', $prestamo_id)
+                ->where('cronograma_id', $cuota->id)
+                ->first();
+
+            if (!$ingresoExistente) {
+                $dias_mora = 0;
+                $monto_mora = 0;
+                $porcentaje_mora = 0.3; // 0.3% de mora por día por cada mil soles
+
+                // Calcular mora si está vencida
+                if (Carbon::now()->greaterThan(Carbon::parse($cuota->fecha))) {
+                    $dias_mora = Carbon::now()->diffInDays(Carbon::parse($cuota->fecha));
+                    $monto_mora = round(($cuota->monto * $porcentaje_mora / 1000) * $dias_mora * 5, 2);
+                }
+
+                // Registrar el ingreso
+                $ingreso = Ingreso::create([
+                    'transaccion_id' => $ultimaTransaccion->id,
+                    'prestamo_id' => $cuota->id_prestamo,
+                    'cliente_id' => $cuota->cliente_id,
+                    'cronograma_id' => $cuota->id,
+                    'numero_cuota' => $cuota->numero,
+                    'monto' => round($cuota->monto + $monto_mora, 2),
+                    'monto_mora' => $monto_mora,
+                    'dias_mora' => $dias_mora,
+                    'porcentaje_mora' => $porcentaje_mora,
+                    'fecha_pago' => now()->toDateString(),
+                    'hora_pago' => now()->toTimeString(),
+                    'sucursal_id' => $user->sucursal_id,
+                    'monto_total_pago_final' => round($cuota->monto + $monto_mora, 2),
+                ]);
+                $ingreso_ids[] = $ingreso->id;
+                $ultimaTransaccion->cantidad_ingresos += $ingreso->monto;
+            }
+        }
+
+        $ultimaTransaccion->save(); // Guardar la transacción con la suma actualizada
+
+        DB::commit();
+
+        return response()->json(['success' => 'Pago individual realizado con éxito', 'ingreso_ids' => $ingreso_ids]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['error' => 'Error al realizar el pago individual: ' . $e->getMessage()], 500);
+    }
+}
+
+public function confirmarPagoGrupal(Request $request)
+{
+    $user = auth()->user();
+
+    // Obtener la última transacción de caja abierta
+    $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
+        ->whereNull('hora_cierre')
+        ->orderBy('created_at', 'desc')
+        ->first();
+
+    if (!$ultimaTransaccion) {
+        return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
+    }
+
+    $prestamo_id = $request->prestamo_id;
+    $numero_cuota = $request->numero_cuota;
+
+    // Obtener la cuota actual y las restantes
+    $cuotas = Cronograma::where('id_prestamo', $prestamo_id)
+        ->where('numero', '>=', $numero_cuota)
+        ->whereNull('cliente_id')
+        ->get();
+
+    $ingreso_ids = [];
+
+    DB::beginTransaction();
+    try {
+        foreach ($cuotas as $cuota) {
+            // Verificar si la cuota ya tiene un ingreso asociado
+            $ingresoExistente = Ingreso::where('prestamo_id', $prestamo_id)
+                ->where('cronograma_id', $cuota->id)
+                ->first();
+
+            if (!$ingresoExistente) {
+                $dias_mora = 0;
+                $monto_mora = 0;
+                $porcentaje_mora = 0.3; // 0.3% de mora por día por cada mil soles
+
+                // Calcular mora si está vencida
+                if (Carbon::now()->greaterThan(Carbon::parse($cuota->fecha))) {
+                    $dias_mora = Carbon::now()->diffInDays(Carbon::parse($cuota->fecha));
+                    $monto_mora = round(($cuota->monto * $porcentaje_mora / 1000) * $dias_mora * 5, 2);
+                }
+
+                // Registrar el ingreso
+                $ingreso = Ingreso::create([
+                    'transaccion_id' => $ultimaTransaccion->id,
+                    'prestamo_id' => $cuota->id_prestamo,
+                    'cliente_id' => $cuota->cliente_id,
+                    'cronograma_id' => $cuota->id,
+                    'numero_cuota' => $cuota->numero,
+                    'monto' => round($cuota->monto + $monto_mora, 2),
+                    'monto_mora' => $monto_mora,
+                    'dias_mora' => $dias_mora,
+                    'porcentaje_mora' => $porcentaje_mora,
+                    'fecha_pago' => now()->toDateString(),
+                    'hora_pago' => now()->toTimeString(),
+                    'sucursal_id' => $user->sucursal_id,
+                    'monto_total_pago_final' => round($cuota->monto + $monto_mora, 2),
+                ]);
+                $ingreso_ids[] = $ingreso->id;
+                $ultimaTransaccion->cantidad_ingresos += $ingreso->monto;
+            }
+        }
+
+        $ultimaTransaccion->save(); // Guardar la transacción con la suma actualizada
+
+        DB::commit();
+
+        return response()->json(['success' => 'Pago grupal realizado con éxito', 'ingreso_ids' => $ingreso_ids]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['error' => 'Error al realizar el pago grupal: ' . $e->getMessage()], 500);
+    }
+}
 
 
     public function viewpagares()
