@@ -140,9 +140,11 @@ class creditoController extends Controller
         $margenmanual = \App\Models\MargenVenta::where('giro_economico', $descripcion)->first();
 
         $cliente = $prestamo->clientes->first();
-        $responsable = $prestamo->user->first();
 
-        // $listaclientes = $prestamo->clientes->get();
+        $prestamo = credito::find($id);
+        $responsable = $prestamo->user;
+
+
 
         $tipo = $prestamo->tipo;
 

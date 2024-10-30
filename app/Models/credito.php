@@ -60,6 +60,7 @@ class Credito extends Model
         return $this->belongsTo(User::class, 'user_id','id'); // Relación con el usuario que creó el préstamo
     }
 
+
     public function cronograma()
     {
         return $this->hasMany(Cronograma::class, 'id_prestamo', 'id');
