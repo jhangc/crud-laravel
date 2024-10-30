@@ -140,7 +140,7 @@ class creditoController extends Controller
         $margenmanual = \App\Models\MargenVenta::where('giro_economico', $descripcion)->first();
 
         $cliente = $prestamo->clientes->first();
-        $responsable = auth()->user();
+        $responsable = $prestamo->user->first();
 
         // $listaclientes = $prestamo->clientes->get();
 
@@ -910,7 +910,7 @@ class creditoController extends Controller
         $prestamo = credito::find($id);
         $cuotas = Cronograma::where('id_prestamo', $id)->first();
         $cliente = $prestamo->clientes->first();
-        $responsable = auth()->user();
+        $responsable = $prestamo->user->first();
         $tipo = $prestamo->tipo;
         $totalprestamo = $prestamo->monto_total;
         $cuotaprestamo = $cuotas->monto;
