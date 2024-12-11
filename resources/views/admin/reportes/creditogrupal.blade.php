@@ -4,7 +4,18 @@
     <div class="row">
         <h1>Reporte de Total de Clientes</h1>
     </div>
+    <style>
+            .btn-success {
+                background-color: #28a745 !important; /* Verde intenso */
+                border-color: #28a745 !important; /* Borde del mismo color */
+                font-weight: bold; /* Texto en negrita */
+            }
 
+            .btn-success:hover {
+                background-color: #218838 !important; /* Verde más oscuro al pasar el mouse */
+                border-color: #1e7e34 !important; /* Ajuste del borde */
+            }
+    </style>
     <div class="col-md-12">
         <div class="card card-outline">
             <div class="card-header">
@@ -16,12 +27,12 @@
                                     class="bi bi-search"></i> Buscar</button>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <!-- <div class="col-md-6">
                         <div class="card-tools float-right">
                             <a href="{{ url('/admin/reportes/credito/exportarcreditosgrupal') }}" class="btn btn-success"><i
                                     class="bi bi-file-earmark-excel"></i> Exportar a Excel</a>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -319,6 +330,18 @@
                             "language": spanish,
                             "autoWidth": true,
                             "pageLength": 10,
+                            dom: 'Bfrtip', // Agregar botones
+                            buttons: [
+                                {
+                                    extend: 'excelHtml5',
+                                    text: '<i class="bi bi-file-earmark-excel"></i> Exportar a Excel',
+                                    className: 'btn btn-success text-white', // Estilo mejorado
+                                    title: 'Reporte GRUPAL',
+                                    exportOptions: {
+                                        columns: ':visible'
+                                    }
+                                }
+                            ]
                         });
 
                         $('#btn-buscar-cliente').on('click', function() {
