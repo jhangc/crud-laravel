@@ -10,6 +10,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\IngresoExtraController;
 use App\Http\Controllers\BovedaController;
+use App\Http\Controllers\CuentasController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -199,5 +200,11 @@ Route::post('/admin/credito/verpagototalgrupal', [App\Http\Controllers\creditoCo
 Route::post('/credito/confirmar-pago-individual', [App\Http\Controllers\creditoController::class, 'confirmarPagoIndividual'])->name('credito.confirmarPagoIndividual')->middleware('auth');
 Route::post('/credito/confirmar-pago-grupal', [App\Http\Controllers\creditoController::class, 'confirmarPagoGrupal'])->name('credito.confirmarPagoGrupal')->middleware('auth');
 
+//contabilidad
+Route::get('/admin/cuentas', [CuentasController::class, 'index'])->name('cuentas.index')->middleware('auth');
+Route::post('/cuentas', [CuentasController::class, 'store'])->name('cuentas.store')->middleware('auth');
+Route::get('/cuentas/{id}/edit', [CuentasController::class, 'edit'])->name('cuentas.edit')->middleware('auth');
+Route::put('/cuentas/{id}', [CuentasController::class, 'update'])->name('cuentas.update')->middleware('auth');
+Route::delete('/cuentas/{id}', [CuentasController::class, 'destroy'])->name('cuentas.destroy')->middleware('auth');
 
 

@@ -379,6 +379,50 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </ul>
                             </li>
                         @endrole
+                        @role('Administrador')
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active">
+                                    <i class="nav-icon fas"><i class="bi bi-buildings"></i></i>
+                                    <p>
+                                        Contabilidad
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/cuentas') }}" class="nav-link active">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Cuentas</p>
+                                        </a>
+                                        <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Plan Cuentas</p>
+                                        </a>
+                                        <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Compras</p>
+                                        </a>
+                                        <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Ventas</p>
+                                        </a>
+                                        <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Libro Diario</p>
+                                        </a>
+                                        <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Libro Mayor</p>
+                                        </a>
+                                        <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Balance</p>
+                                        </a>
+
+                                    </li>
+                                </ul>
+                            </li>
+                        @endrole
 
                         @can('usuarios.index')
                             <li class="nav-item">
