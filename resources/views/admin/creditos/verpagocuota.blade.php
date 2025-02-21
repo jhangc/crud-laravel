@@ -46,7 +46,7 @@
                         @if ($cuota->estado == 'pagado')
                         <span class="badge badge-success">Pagado</span>
                         @elseif ($cuota->estado == 'vencida')
-                        <span class="badge badge-danger">Vencida</span>
+                        <span class="badge badge-danger">{{$cuota->dias_mora >1?'vencida':'VENCE-HOY'}}</span>
                         @elseif ($cuota->estado == 'pendiente')
                         <span class="badge badge-warning">Pendiente</span>
                         @else
@@ -108,7 +108,7 @@
                     @if ($cuota->estado == 'pagado')
                     <span class="badge badge-success">Pagado</span>
                     @elseif ($cuota->estado == 'vencida')
-                    <span class="badge badge-danger">Vencida</span>
+                    <span class="badge badge-danger">{{$cuota->dias_mora >1?'vencida':'VENCE-HOY'}}</span>
                     @else
                     <span class="badge badge-warning">Pendiente</span>
                     @endif
@@ -370,7 +370,7 @@
                             text: response.success,
                             icon: 'success'
                         }).then(() => {
-                            window.open('/admin/generar-ticket-pago/' + response.ingreso_id, '_blank');
+                            window.open('/admin/generar-ticket-pago/' + response.ingreso_ids.join('-'), '_blank');
                             location.reload();
                         });
                     },
