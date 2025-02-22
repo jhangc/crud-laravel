@@ -62,7 +62,7 @@ class ReporteController extends Controller
         ];
 
         // Pasar los datos a la vista
-        return view('reporte.intereses', compact('reporte', 'totalesMeses'));
+        return view('intereses', compact('reporte', 'totalesMeses'));
     }
     public function viewreportecreditoindividual()
     {
