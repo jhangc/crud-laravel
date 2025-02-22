@@ -16,17 +16,19 @@ class ReporteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function viewreporteinteresesmensual()
+    // app/Http/Controllers/ReporteController.php
+
+    public function viewreporteinteresesmensual(Request $request)
     {
-        $año = 2025;
+        // Si no se envía 'fecha', usamos la fecha actual.
+        $fecha = $request->input('fecha', date('Y-m-d'));
+        $año = \Carbon\Carbon::parse($fecha)->year;
 
         $reporte = DB::table('cronograma as c')
             ->join('prestamos as p', 'c.id_prestamo', '=', 'p.id')
-            // Para créditos individuales se une la tabla de clientes; en créditos grupales c.cliente_id es nulo.
             ->leftJoin('clientes as cl', 'c.cliente_id', '=', 'cl.id')
             ->select(
                 'c.id_prestamo',
-                // Si el crédito es grupal se muestra el nombre del préstamo; de lo contrario se muestra el nombre del cliente.
                 DB::raw("CASE WHEN p.producto = 'grupal' THEN p.nombre_prestamo ELSE cl.nombre END as nombre_credito"),
                 DB::raw("CASE WHEN p.producto = 'grupal' THEN 'grupal' ELSE 'individual' END as tipo_credito"),
                 DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 1 THEN c.interes ELSE 0 END) AS enero'),
@@ -45,30 +47,31 @@ class ReporteController extends Controller
             )
             ->whereYear('c.fecha', $año)
             ->where('p.estado', 'pagado')
-            // Eliminamos la condición whereNotNull('c.cliente_id') para que también se incluyan créditos grupales.
             ->groupBy('c.id_prestamo', DB::raw("CASE WHEN p.producto = 'grupal' THEN p.nombre_prestamo ELSE cl.nombre END"))
             ->orderBy('c.id_prestamo')
             ->get();
 
         // Calcular totales por mes
         $totalesMeses = [
-            'enero' => $reporte->sum('enero'),
-            'febrero' => $reporte->sum('febrero'),
-            'marzo' => $reporte->sum('marzo'),
-            'abril' => $reporte->sum('abril'),
-            'mayo' => $reporte->sum('mayo'),
-            'junio' => $reporte->sum('junio'),
-            'julio' => $reporte->sum('julio'),
-            'agosto' => $reporte->sum('agosto'),
-            'septiembre' => $reporte->sum('septiembre'),
-            'octubre' => $reporte->sum('octubre'),
-            'noviembre' => $reporte->sum('noviembre'),
-            'diciembre' => $reporte->sum('diciembre'),
+            'enero'       => $reporte->sum('enero'),
+            'febrero'     => $reporte->sum('febrero'),
+            'marzo'       => $reporte->sum('marzo'),
+            'abril'       => $reporte->sum('abril'),
+            'mayo'        => $reporte->sum('mayo'),
+            'junio'       => $reporte->sum('junio'),
+            'julio'       => $reporte->sum('julio'),
+            'agosto'      => $reporte->sum('agosto'),
+            'septiembre'  => $reporte->sum('septiembre'),
+            'octubre'     => $reporte->sum('octubre'),
+            'noviembre'   => $reporte->sum('noviembre'),
+            'diciembre'   => $reporte->sum('diciembre'),
             'total_interes' => $reporte->sum('total_interes')
         ];
 
-        return view('admin.reportes.interesmensual', compact('reporte', 'totalesMeses'));
+        // Devuelve la vista con las variables necesarias
+        return view('admin.reportes.interesmensual', compact('reporte', 'totalesMeses', 'fecha'));
     }
+
 
     public function viewreportecreditoindividual()
     {
