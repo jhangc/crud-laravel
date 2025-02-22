@@ -21,7 +21,7 @@ use App\Http\Controllers\CuentasController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
+Route::get('/reporte', [App\Http\Controllers\ReporteController::class, 'index'])->name('ReporteController.index');
 //Route::get('/', function () {
   //  return view('welcome');
 //});
