@@ -1,6 +1,18 @@
 @extends('layouts.admin')
 
 @section('content')
+<style>
+    .btn-success {
+        background-color: #28a745 !important; /* Verde intenso */
+        border-color: #28a745 !important; /* Borde del mismo color */
+        font-weight: bold; /* Texto en negrita */
+    }
+
+    .btn-success:hover {
+        background-color: #218838 !important; /* Verde más oscuro al pasar el mouse */
+        border-color: #1e7e34 !important; /* Ajuste del borde */
+    }
+</style>
     <div class="row">
         <h1>Reporte de Intereses - Año {{ \Carbon\Carbon::parse($fecha)->year }}</h1>
     </div>
@@ -66,7 +78,9 @@
                             </tr>
                         @endforeach
                         <tr class="table-info">
-                            <td colspan="3"><strong>Total</strong></td>
+                            <td><strong>Total</strong></td>
+                            <td></td>
+                            <td></td>
                             <td>{{ number_format($totalesMeses['enero'], 2) }}</td>
                             <td>{{ number_format($totalesMeses['febrero'], 2) }}</td>
                             <td>{{ number_format($totalesMeses['marzo'], 2) }}</td>
@@ -86,6 +100,58 @@
             </div>
         </div>
     </div>
+
+    <script>
+        $(document).ready(function() {
+            var spanish = {
+                "sProcessing": "Procesando...",
+                "sLengthMenu": "Mostrar _MENU_ registros",
+                "sZeroRecords": "No se encontraron resultados",
+                "sEmptyTable": "Ningún dato disponible en esta tabla",
+                "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                "sInfoPostFix": "",
+                "sSearch": "Buscar:",
+                "sUrl": "",
+                "sInfoThousands": ",",
+                "sLoadingRecords": "Cargando...",
+                "oPaginate": {
+                    "sFirst": "Primero",
+                    "sLast": "Último",
+                    "sNext": "Siguiente",
+                    "sPrevious": "Anterior"
+                },
+                "oAria": {
+                    "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                    "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                }
+            };
+
+            $('#reporte-table').DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "searching": true,
+                "ordering": false,
+                "info": true,
+                "language": spanish,
+                "autoWidth": true,
+                "pageLength": 50,
+                dom: 'Bfrtip', // Agregar botones
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="bi bi-file-earmark-excel"></i> Exportar a Excel',
+                        className: 'btn btn-success text-white', // Estilo mejorado
+                        title: 'Reporte INTERES MENSUAL', // Título
+                        exportOptions: {
+                            columns: ':visible'
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
 
 
 @endsection
