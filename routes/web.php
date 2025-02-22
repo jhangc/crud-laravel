@@ -21,7 +21,7 @@ use App\Http\Controllers\CuentasController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::get('/reporte', [App\Http\Controllers\ReporteController::class, 'index'])->name('ReporteController.index');
+
 //Route::get('/', function () {
   //  return view('welcome');
 //});
@@ -106,6 +106,7 @@ Route::get('/admin/cobranza/generarnotificacion', [App\Http\Controllers\creditoC
 
 Route::get('/admin/reportes/creditoindividual', [App\Http\Controllers\ReporteController::class, 'viewreportecreditoindividual'])->name('reporte.creditoindividual')->middleware('auth');
 Route::get('/admin/reportes/creditogrupal', [App\Http\Controllers\ReporteController::class, 'viewreportecreditogrupal'])->name('reporte.creditogrupal')->middleware('auth');
+Route::get('/admin/reportes/interesesmensual', [App\Http\Controllers\ReporteController::class, 'viewreporteinteresesmensual'])->name('ReporteController.interesesmensual')->middleware('auth');
 
 Route::get('/admin/reportes/prestamosactivos', [App\Http\Controllers\ReporteController::class, 'viewprestamosactivos'])->name('reporte.prestamosactivos')->middleware('auth');
 Route::get('/admin/reportes/prestamosvencidos', [App\Http\Controllers\ReporteController::class, 'viewprestamosvencidos'])->name('reporte.prestamosvencidos')->middleware('auth');

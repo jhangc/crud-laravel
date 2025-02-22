@@ -74,9 +74,10 @@
         <h1>CREDITO GRUPAL DEUDA VENCIDA</h1>
 
         <p><b>GRUPO:</b> {{ $prestamo->nombre_prestamo }}</p>
-        <p><b>Deuda Vencida: </b> S/ {{ $deudaVencida }}</p>
-        <p><b>Días de atraso: </b>{{ $diasDeAtraso }}</p>
+        <p><b>Deuda Vencida: </b> S/ {{ $total_monto_con_mora }}</p>
+        <p><b>Días de atraso: </b>{{ $dias_mora_primera }}</p>
         <p><b>FECHA:</b> {{ $formattedDate }}</p>
+        <p><b>CANTIDAD DE CUOTAS VENCIDAS:</b> {{ $cantidad_cuotas_vencidas }}</p>
 
         <p>Estimada Clienta:</p>
 
@@ -84,8 +85,8 @@
             {{ $formattedfechadesembolso }} usted y demás integrantes suscribieron un contrato mutuo, del crédito
             CredimujerPalmo, otorgado por Grupo Credipalmo, donde todas en calidad de titulares y avales solidarios, en
             el cual implica una obligación solidaria por parte del grupo de acuerdo con lo establecido en la cláusula
-            tercera del contrato del préstamo CredimujerPalmo, en la cual existe un atraso en el pago por el monto de
-            {{ $deudaVencida }} y que a la fecha cuenta con {{ $diasDeAtraso }} días de atraso.</p>
+            tercera del contrato del préstamo CredimujerPalmo, en la cual existe un atraso en el pago por el monto de S/.
+            {{ $total_monto_con_mora }} y que a la fecha cuenta con {{ $dias_mora_primera }} días de atraso.</p>
 
         <p>Le solicitamos que en conjunto con su grupo, puedan regularizar esta situación en el menor plazo posible, y
             así evitar que la cuota se incremente, por efecto de los intereses moratorios. Recordemos que el

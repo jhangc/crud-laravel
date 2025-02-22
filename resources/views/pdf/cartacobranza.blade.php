@@ -87,13 +87,16 @@
             <b>PROVINCIA:</b> {{ $cliente->distrito->provincia->pro_nombre }}
             <b>DEPARTAMENTO:</b> {{ $cliente->distrito->provincia->departamento->dep_nombre }}
         </p>
-        <p><b>DEUDA VENCIDA (*) </b> S/ {{ $deudaVencida }}</p>
-        <p><b>DIAS DE ATRASO:</b> {{ $diasDeAtraso }}</p>
+        <p><b>DEUDA VENCIDA (*) </b> S/ {{ $total_monto_con_mora }}</p>
+        <p><b>DIAS DE ATRASO:</b> {{ $dias_mora_primera }}</p>
+        <p><b>CANTIDAD DE CUOTAS VENCIDAS:</b> {{ $cantidad_cuotas_vencidas }}</p>
+
+
 
         <p>De nuestra consideración:</p>
         <p>Por intermedio de la presente tenemos a bien dirigirnos a usted y a la vez recordarle que el día
             {{ $formattedfechadesembolso }} usted suscribió un pagaré en su calidad de titular del crédito a favor de
-            nuestra representada, el mismo que a la fecha cuenta con {{ $diasDeAtraso }} días de atraso por lo que le
+            nuestra representada, el mismo que a la fecha cuenta con {{ $dias_mora_primera }} días de atraso por lo que le
             solicitamos acercarse a nuestra oficina para que realice el pago de la deuda vencida. Se ejerce este derecho
             con base en el inciso primero del artículo 12 del Código Civil.</p>
 

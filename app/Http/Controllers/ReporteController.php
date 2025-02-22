@@ -16,7 +16,7 @@ class ReporteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function viewreporteinteresesmensual()
     {
         $año = 2025;
 
@@ -64,7 +64,7 @@ class ReporteController extends Controller
     ];
 
         // Pasar los datos a la vista
-        return view('intereses', compact('reporte', 'totalesMeses'));
+        return view('admin.reportes.interesmensual', compact('reporte', 'totalesMeses'));
     }
     public function viewreportecreditoindividual()
     {

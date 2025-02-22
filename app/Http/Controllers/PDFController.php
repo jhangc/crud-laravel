@@ -358,33 +358,55 @@ class PdfController extends Controller
         $credito_cliente = CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
         $responsable = $prestamo->user;
 
-        // Usa Carbon para obtener la fecha actual
+        // Fecha actual
         $date = Carbon::now();
 
         $fecha_desembolso = Carbon::parse($prestamo->fecha_desembolso);
         $formattedfechadesembolso = $fecha_desembolso->translatedFormat('d \d\e F \d\e\l Y');
-        // Formatea la fecha con la configuración regional establecida
         $formattedDate = $date->translatedFormat('d \d\e F \d\e\l Y');
 
-
         $tasaInteres = $prestamo->tasa;
-
         $tasadiaria = number_format((pow(1 + ($tasaInteres / 100), 1 / 360) - 1) * 100, 2);
 
-        // Convertir monto a letras
+        // Convertir el monto a letras
         $formatter = new NumeroALetras();
         $montoEnLetras = $formatter->toMoney($prestamo->monto, 2, 'soles', 'centimos');
 
-        // Generar o obtener el correlativo
+        // Obtener o generar el correlativo
         $correlativo = CorrelativoPagare::generateCorrelativo($id);
 
-        // Obtener la deuda vencida y los días de atraso
-        $cuotaPendiente = $cuotas->filter(function ($cuota) {
+        // Filtrar todas las cuotas vencidas: fecha anterior a hoy y sin ingresos registrados
+        $cuotasVencidas = $cuotas->filter(function ($cuota) {
             return $cuota->fecha < Carbon::now()->toDateString() && $cuota->ingresos->isEmpty();
-        })->first();
+        });
 
-        $diasDeAtraso = $cuotaPendiente ? Carbon::now()->diffInDays(Carbon::parse($cuotaPendiente->fecha)) : 0;
-        $deudaVencida = $cuotaPendiente ? $cuotaPendiente->monto : 0;
+        // Cantidad de cuotas vencidas
+        $cantidad_cuotas_vencidas = $cuotasVencidas->count();
+
+        // Calcular la cantidad de días de mora desde la primera cuota vencida hasta hoy
+        if ($cantidad_cuotas_vencidas > 0) {
+            $primerVencimiento = $cuotasVencidas->sortBy('fecha')->first()->fecha;
+            $dias_mora_primera = Carbon::now()->diffInDays(Carbon::parse($primerVencimiento));
+        } else {
+            $dias_mora_primera = 0;
+        }
+
+        // Calcular la mora y el monto total por cada cuota vencida de forma individual
+        $porcentaje_mora = 0.3; // 0.3% por día de mora por cada mil soles
+        $total_mora = 0;
+        $total_monto_con_mora = 0;
+
+        foreach ($cuotasVencidas as $cuota) {
+            // Días de atraso para la cuota individual
+            $diasAtraso = Carbon::now()->diffInDays(Carbon::parse($cuota->fecha));
+            // Calcular la mora individual
+            $mora_individual = round($cuota->monto * ($porcentaje_mora / 1000) * $diasAtraso, 2);
+            // Monto de la cuota sumándole su mora
+            $monto_con_mora = $cuota->monto + $mora_individual;
+            // Acumular los totales
+            $total_mora += $mora_individual;
+            $total_monto_con_mora += $monto_con_mora;
+        }
 
         $data = compact(
             'prestamo',
@@ -395,15 +417,19 @@ class PdfController extends Controller
             'montoEnLetras',
             'tasadiaria',
             'correlativo',
-            'diasDeAtraso',
-            'deudaVencida',
-            'formattedfechadesembolso'
+            'cantidad_cuotas_vencidas',
+            'total_mora',
+            'total_monto_con_mora',
+            'formattedfechadesembolso',
+            'dias_mora_primera'
         );
 
         // Generar y retornar el PDF
         $pdf = PDF::loadView('pdf.cartacobranza', $data)->setPaper('a4');
         return $pdf->stream('carta-cobranza.pdf');
     }
+
+
 
 
 
@@ -417,7 +443,7 @@ class PdfController extends Controller
             return response()->json(['error' => 'Crédito no encontrado'], 404);
         }
 
-        // Obtener las cuotas generales del crédito grupal (donde id_cliente es null)
+        // Obtener las cuotas generales del crédito grupal (donde cliente_id es null)
         $cuotas = Cronograma::where('id_prestamo', $id)
             ->whereNull('cliente_id')
             ->get();
@@ -425,16 +451,13 @@ class PdfController extends Controller
         $credito_cliente = CreditoCliente::where('prestamo_id', $id)->with('clientes')->first();
         $responsable = $prestamo->user;
 
-        // Usa Carbon para obtener la fecha actual
+        // Fecha actual y formateo de fechas
         $date = Carbon::now();
-
         $fecha_desembolso = Carbon::parse($prestamo->fecha_desembolso);
         $formattedfechadesembolso = $fecha_desembolso->translatedFormat('d \d\e F \d\e\l Y');
-        // Formatea la fecha con la configuración regional establecida
         $formattedDate = $date->translatedFormat('d \d\e F \d\e\l Y');
 
         $tasaInteres = $prestamo->tasa;
-
         $tasadiaria = number_format((pow(1 + ($tasaInteres / 100), 1 / 360) - 1) * 100, 2);
 
         // Convertir monto a letras
@@ -444,13 +467,34 @@ class PdfController extends Controller
         // Generar o obtener el correlativo
         $correlativo = CorrelativoPagare::generateCorrelativo($id);
 
-        // Obtener la deuda vencida y los días de atraso
-        $cuotaPendiente = $cuotas->filter(function ($cuota) {
+        // Filtrar todas las cuotas vencidas: fecha anterior a hoy y sin ingresos registrados
+        $cuotasVencidas = $cuotas->filter(function ($cuota) {
             return $cuota->fecha < Carbon::now()->toDateString() && $cuota->ingresos->isEmpty();
-        })->first();
+        });
 
-        $diasDeAtraso = $cuotaPendiente ? Carbon::now()->diffInDays(Carbon::parse($cuotaPendiente->fecha)) : 0;
-        $deudaVencida = $cuotaPendiente ? $cuotaPendiente->monto : 0;
+        // Cantidad de cuotas vencidas
+        $cantidad_cuotas_vencidas = $cuotasVencidas->count();
+
+        // Calcular la cantidad de días de mora desde la primera cuota vencida hasta hoy
+        if ($cantidad_cuotas_vencidas > 0) {
+            $primerVencimiento = $cuotasVencidas->sortBy('fecha')->first()->fecha;
+            $dias_mora_primera = Carbon::now()->diffInDays(Carbon::parse($primerVencimiento));
+        } else {
+            $dias_mora_primera = 0;
+        }
+
+        // Calcular la mora y el monto total de cada cuota vencida de forma individual
+        $porcentaje_mora = 0.3; // 0.3% por día de mora por cada mil soles
+        $total_mora = 0;
+        $total_monto_con_mora = 0;
+
+        foreach ($cuotasVencidas as $cuota) {
+            $diasAtraso = Carbon::now()->diffInDays(Carbon::parse($cuota->fecha));
+            $mora_individual = round($cuota->monto * ($porcentaje_mora / 1000) * $diasAtraso, 2);
+            $monto_con_mora = $cuota->monto + $mora_individual;
+            $total_mora += $mora_individual;
+            $total_monto_con_mora += $monto_con_mora;
+        }
 
         $data = compact(
             'prestamo',
@@ -461,15 +505,18 @@ class PdfController extends Controller
             'montoEnLetras',
             'tasadiaria',
             'correlativo',
-            'diasDeAtraso',
-            'deudaVencida',
-            'formattedfechadesembolso'
+            'cantidad_cuotas_vencidas',
+            'total_mora',
+            'total_monto_con_mora',
+            'formattedfechadesembolso',
+            'dias_mora_primera'
         );
 
         // Generar y retornar el PDF
         $pdf = PDF::loadView('pdf.cartacobranzagrupal', $data)->setPaper('a4');
         return $pdf->stream('carta-cobranza.pdf');
     }
+
 
     public function generatePDF(Request $request, $id)
     {
@@ -554,10 +601,10 @@ class PdfController extends Controller
                 $proporcion_ventas = $proyecciones->sum('proporcion_ventas');
                 // Cálculos
                 $utilidadBruta = $totalVentas - $totalCompras;
-                $totalGastosOperativos = $gastosOperativos->sum(fn ($gasto) => $gasto->precio_unitario * $gasto->cantidad);
+                $totalGastosOperativos = $gastosOperativos->sum(fn($gasto) => $gasto->precio_unitario * $gasto->cantidad);
                 $total_venta_credito = (($prestamo->porcentaje_credito) * $totalVentas) / 100;
 
-                $total_inventario = $inventario->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
+                $total_inventario = $inventario->sum(fn($item) => $item->precio_unitario * $item->cantidad);
 
                 $activo_corriente = $activos->saldo_en_caja_bancos + $activos->cuentas_por_cobrar + $activos->adelanto_a_proveedores + $total_inventario;
                 $activofijo = $garantias->sum('valor_mercado');
@@ -567,7 +614,7 @@ class PdfController extends Controller
 
                 $utilidadOperativa = $utilidadBruta - $totalGastosOperativos;
                 $saldo_disponible_negocio = $utilidadOperativa - $totalcuotadeuda;
-                $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
+                $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                 $saldo_final = $saldo_disponible_negocio - $totalgastosfamiliares;
 
                 $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
@@ -656,7 +703,7 @@ class PdfController extends Controller
                 if ($prestamo->producto == "microempresa") {
                     $totalVentas = round((($ventasdiarias->sum('promedio')) * $factormes), 2);
 
-                    $totalGastosOperativos = round(($gastosOperativos->sum(fn ($gasto) => $gasto->precio_unitario * $gasto->cantidad)), 2);
+                    $totalGastosOperativos = round(($gastosOperativos->sum(fn($gasto) => $gasto->precio_unitario * $gasto->cantidad)), 2);
                     $totalCompras = $totalGastosOperativos;
 
                     $margensoles = $totalVentas - $totalCompras;
@@ -671,7 +718,7 @@ class PdfController extends Controller
                     if ($inventario->isEmpty()) {
                         $totalinventario = 0;
                     } else {
-                        $totalinventario = round(($inventario->sum(fn ($inven) => $inven->precio_unitario * $inven->cantidad)), 2);
+                        $totalinventario = round(($inventario->sum(fn($inven) => $inven->precio_unitario * $inven->cantidad)), 2);
                     }
 
                     $activo_corriente = $saldo_en_caja_bancos + $cuenta_cobrar + $adelanto_proveedores + $totalinventario;
@@ -684,7 +731,7 @@ class PdfController extends Controller
                     $pasivo = $totaldeudas;
                     $patrimonioneto = $totalactivo - $pasivo;
 
-                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
+                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                     $totalgastosfinancieros = round(($deudas->sum('saldo_capital')), 2);
 
                     $saldo_disponible_negocio = $margensoles - $totalcuotadeuda;
@@ -751,7 +798,7 @@ class PdfController extends Controller
                 } else {
                     $totalVentas = round(($boletas->sum('total_boleta')));
 
-                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
+                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                     $totalCompras = $totalgastosfamiliares;
                     //utilidad bruta
                     $margensoles = $totalVentas - $totalCompras;
@@ -858,13 +905,13 @@ class PdfController extends Controller
                     $proporcion_ventas = $proyecciones->sum('proporcion_ventas');
                     // Cálculos
                     $utilidadBruta = $totalVentas - $totalCompras;
-                    $totalGastosOperativos = $gastosOperativos->sum(fn ($gasto) => $gasto->precio_unitario * $gasto->cantidad);
+                    $totalGastosOperativos = $gastosOperativos->sum(fn($gasto) => $gasto->precio_unitario * $gasto->cantidad);
                     $total_venta_credito = (($prestamo->porcentaje_credito) * $totalVentas) / 100;
 
-                    $totalinventarioterminado = $inventarioterminado->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
-                    $totalinventarioproceso = $inventarioproceso->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
+                    $totalinventarioterminado = $inventarioterminado->sum(fn($item) => $item->precio_unitario * $item->cantidad);
+                    $totalinventarioproceso = $inventarioproceso->sum(fn($item) => $item->precio_unitario * $item->cantidad);
 
-                    $totalinventariomateriales = $inventariomateriales !== null ? $inventariomateriales->sum(fn ($item) => $item->precio_unitario * $item->cantidad) : 0;
+                    $totalinventariomateriales = $inventariomateriales !== null ? $inventariomateriales->sum(fn($item) => $item->precio_unitario * $item->cantidad) : 0;
 
                     $total_inventario = $totalinventarioterminado + $totalinventarioproceso + $totalinventariomateriales;
 
@@ -883,7 +930,7 @@ class PdfController extends Controller
 
                     $utilidadOperativa = $utilidadBruta - $totalGastosOperativos;
                     $saldo_disponible_negocio = $utilidadOperativa - $totalcuotadeuda;
-                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
+                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                     $saldo_final = $saldo_disponible_negocio - $totalgastosfamiliares;
 
                     $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
@@ -973,7 +1020,7 @@ class PdfController extends Controller
                         }
                     }
 
-                    $cantidad_cultivo = $cicloproductivo*$productos_agricolas->cantidad_cultivar*$productos_agricolas->rendimiento_unidad_siembra;
+                    $cantidad_cultivo = $cicloproductivo * $productos_agricolas->cantidad_cultivar * $productos_agricolas->rendimiento_unidad_siembra;
 
                     //$totalVentas = round((($ventasdiarias->sum('promedio')) * $factormes), 2);
 
@@ -983,11 +1030,11 @@ class PdfController extends Controller
 
                     // Recorrer las proyecciones para calcular el monto total de ventas y la relación de compra-venta promedio ponderada
                     foreach ($tipo_producto  as $producto) {
-                        $montoVenta = $cantidad_cultivo*$producto->precio* ($producto->porcentaje / 100);
+                        $montoVenta = $cantidad_cultivo * $producto->precio * ($producto->porcentaje / 100);
                         $totalVentas += $montoVenta;
                     }
 
-                    $totalCompras=0;
+                    $totalCompras = 0;
                     foreach ($gastosOperativos as $gastoOperativo) {
                         $gasto = $gastoOperativo->precio_unitario * $gastoOperativo->cantidad;
                         $totalCompras += $gasto;
@@ -1008,11 +1055,11 @@ class PdfController extends Controller
                     $utilidadBruta = $totalVentas - $totalCompras;
                     $totalGastosOperativos = $totalCompras;
 
-                     
-                    $totalinventarioterminado = $inventarioterminado->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
-                    $totalinventarioproceso = $inventarioproceso->sum(fn ($item) => $item->precio_unitario * $item->cantidad);
 
-                    $totalinventariomateriales = $inventariomateriales !== null ? $inventariomateriales->sum(fn ($item) => $item->precio_unitario * $item->cantidad) : 0;
+                    $totalinventarioterminado = $inventarioterminado->sum(fn($item) => $item->precio_unitario * $item->cantidad);
+                    $totalinventarioproceso = $inventarioproceso->sum(fn($item) => $item->precio_unitario * $item->cantidad);
+
+                    $totalinventariomateriales = $inventariomateriales !== null ? $inventariomateriales->sum(fn($item) => $item->precio_unitario * $item->cantidad) : 0;
 
                     $total_inventario = $totalinventarioterminado + $totalinventarioproceso + $totalinventariomateriales;
 
@@ -1031,7 +1078,7 @@ class PdfController extends Controller
 
                     $utilidadOperativa = $utilidadBruta - $totalGastosOperativos;
                     $saldo_disponible_negocio = $utilidadOperativa - $totalcuotadeuda;
-                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn ($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
+                    $totalgastosfamiliares = round(($gastosfamiliares->sum(fn($gastos) => $gastos->precio_unitario * $gastos->cantidad)), 2);
                     $saldo_final = $saldo_disponible_negocio - $totalgastosfamiliares;
 
                     $rentabilidad_ventas = $totalVentas != 0 ? round((($saldo_disponible_negocio / $totalVentas) * 100), 2) : 0;
@@ -1191,8 +1238,8 @@ class PdfController extends Controller
 
         // Verificar si la caja tiene una transacción abierta o cerrada hoy
         $ultimaTransaccion = $caja->transacciones()
-        // ->whereDate('created_at', $today)
-        ->latest()->first();
+            // ->whereDate('created_at', $today)
+            ->latest()->first();
 
         if (!$ultimaTransaccion) {
             return redirect()->back()->with('error', 'No hay transacciones abiertas para esta caja en el día de hoy.');
@@ -1256,13 +1303,13 @@ class PdfController extends Controller
             $saldoEfectivo = array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
-    
+
             $saldoEfectivo += array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
-    
+
             $saldoDepositos = $datosCierre['depositos'];
-            $saldoFinalReal=$saldoDepositos+$saldoEfectivo;
+            $saldoFinalReal = $saldoDepositos + $saldoEfectivo;
 
             // Calcular el saldo final esperado
             $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') + $ingresosExtras->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto');
@@ -1387,8 +1434,9 @@ class PdfController extends Controller
         return $pdf->stream('detalle-cliente.pdf');
     }
 
-    public function generarTicketDePagogrupal($array){
-            $idsArray = explode('-', $array);
+    public function generarTicketDePagogrupal($array)
+    {
+        $idsArray = explode('-', $array);
 
         $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->get();
 
