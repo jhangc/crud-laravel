@@ -1,8 +1,9 @@
-
+<!-- resources/views/reporte/intereses.blade.php -->
 <table border="1">
     <thead>
         <tr>
-            <th>Crédito</th>
+            <th>ID Préstamo</th>
+            <th>Nombre del Préstamo</th>
             <th>Enero</th>
             <th>Febrero</th>
             <th>Marzo</th>
@@ -22,6 +23,7 @@
         @foreach ($reporte as $fila)
             <tr>
                 <td>{{ $fila->id_prestamo }}</td>
+                <td>{{ $fila->nombre_prestamo }}</td>
                 <td>{{ $fila->enero }}</td>
                 <td>{{ $fila->febrero }}</td>
                 <td>{{ $fila->marzo }}</td>
@@ -38,7 +40,7 @@
             </tr>
         @endforeach
         <tr>
-            <td><strong>Total</strong></td>
+            <td colspan="2"><strong>Total</strong></td>
             <td>{{ $totalesMeses['enero'] }}</td>
             <td>{{ $totalesMeses['febrero'] }}</td>
             <td>{{ $totalesMeses['marzo'] }}</td>
