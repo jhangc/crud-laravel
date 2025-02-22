@@ -41,8 +41,8 @@ class ReporteController extends Controller
         )
         ->whereNotNull('c.cliente_id')
         ->whereYear('c.fecha', $año)
-        ->where('p.estado', 'activo')  // Filtro para préstamos activos
-        ->groupBy('c.id_prestamo', 'p.nombre_prestamo')
+        ->where('p.estado', 'pagado')  // Filtro para préstamos activos
+        ->groupBy('c.id_prestamo')
         ->orderBy('c.id_prestamo')
         ->get();
 
