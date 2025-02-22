@@ -21,51 +21,55 @@ class ReporteController extends Controller
         $año = 2025;
 
         $reporte = DB::table('cronograma as c')
-        ->join('prestamos as p', 'c.id_prestamo', '=', 'p.id')
-        ->select(
-            'c.id_prestamo',
-            'p.nombre_prestamo',
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 1 THEN c.interes ELSE 0 END) AS enero'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 2 THEN c.interes ELSE 0 END) AS febrero'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 3 THEN c.interes ELSE 0 END) AS marzo'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 4 THEN c.interes ELSE 0 END) AS abril'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 5 THEN c.interes ELSE 0 END) AS mayo'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 6 THEN c.interes ELSE 0 END) AS junio'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 7 THEN c.interes ELSE 0 END) AS julio'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 8 THEN c.interes ELSE 0 END) AS agosto'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 9 THEN c.interes ELSE 0 END) AS septiembre'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 10 THEN c.interes ELSE 0 END) AS octubre'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 11 THEN c.interes ELSE 0 END) AS noviembre'),
-            DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 12 THEN c.interes ELSE 0 END) AS diciembre'),
-            DB::raw('SUM(c.interes) AS total_interes')
-        )
-        ->whereNotNull('c.cliente_id')
-        ->whereYear('c.fecha', $año)
-        ->where('p.estado', 'pagado')  // Filtro para préstamos activos
-        ->groupBy('c.id_prestamo', 'p.nombre_prestamo')
-        ->orderBy('c.id_prestamo')
-        ->get();
+            ->join('prestamos as p', 'c.id_prestamo', '=', 'p.id')
+            // Para créditos individuales se une la tabla de clientes; en créditos grupales c.cliente_id es nulo.
+            ->leftJoin('clientes as cl', 'c.cliente_id', '=', 'cl.id')
+            ->select(
+                'c.id_prestamo',
+                // Si el crédito es grupal se muestra el nombre del préstamo; de lo contrario se muestra el nombre del cliente.
+                DB::raw("CASE WHEN p.producto = 'grupal' THEN p.nombre_prestamo ELSE cl.nombre END as nombre_credito"),
+                DB::raw("CASE WHEN p.producto = 'grupal' THEN 'grupal' ELSE 'individual' END as tipo_credito"),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 1 THEN c.interes ELSE 0 END) AS enero'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 2 THEN c.interes ELSE 0 END) AS febrero'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 3 THEN c.interes ELSE 0 END) AS marzo'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 4 THEN c.interes ELSE 0 END) AS abril'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 5 THEN c.interes ELSE 0 END) AS mayo'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 6 THEN c.interes ELSE 0 END) AS junio'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 7 THEN c.interes ELSE 0 END) AS julio'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 8 THEN c.interes ELSE 0 END) AS agosto'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 9 THEN c.interes ELSE 0 END) AS septiembre'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 10 THEN c.interes ELSE 0 END) AS octubre'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 11 THEN c.interes ELSE 0 END) AS noviembre'),
+                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 12 THEN c.interes ELSE 0 END) AS diciembre'),
+                DB::raw('SUM(c.interes) AS total_interes')
+            )
+            ->whereYear('c.fecha', $año)
+            ->where('p.estado', 'pagado')
+            // Eliminamos la condición whereNotNull('c.cliente_id') para que también se incluyan créditos grupales.
+            ->groupBy('c.id_prestamo', DB::raw("CASE WHEN p.producto = 'grupal' THEN p.nombre_prestamo ELSE cl.nombre END"))
+            ->orderBy('c.id_prestamo')
+            ->get();
 
-    // Calcular totales por mes
-    $totalesMeses = [
-        'enero' => $reporte->sum('enero'),
-        'febrero' => $reporte->sum('febrero'),
-        'marzo' => $reporte->sum('marzo'),
-        'abril' => $reporte->sum('abril'),
-        'mayo' => $reporte->sum('mayo'),
-        'junio' => $reporte->sum('junio'),
-        'julio' => $reporte->sum('julio'),
-        'agosto' => $reporte->sum('agosto'),
-        'septiembre' => $reporte->sum('septiembre'),
-        'octubre' => $reporte->sum('octubre'),
-        'noviembre' => $reporte->sum('noviembre'),
-        'diciembre' => $reporte->sum('diciembre'),
-        'total_interes' => $reporte->sum('total_interes')
-    ];
+        // Calcular totales por mes
+        $totalesMeses = [
+            'enero' => $reporte->sum('enero'),
+            'febrero' => $reporte->sum('febrero'),
+            'marzo' => $reporte->sum('marzo'),
+            'abril' => $reporte->sum('abril'),
+            'mayo' => $reporte->sum('mayo'),
+            'junio' => $reporte->sum('junio'),
+            'julio' => $reporte->sum('julio'),
+            'agosto' => $reporte->sum('agosto'),
+            'septiembre' => $reporte->sum('septiembre'),
+            'octubre' => $reporte->sum('octubre'),
+            'noviembre' => $reporte->sum('noviembre'),
+            'diciembre' => $reporte->sum('diciembre'),
+            'total_interes' => $reporte->sum('total_interes')
+        ];
 
-        // Pasar los datos a la vista
         return view('admin.reportes.interesmensual', compact('reporte', 'totalesMeses'));
     }
+
     public function viewreportecreditoindividual()
     {
         // Obtener el usuario autenticado
@@ -130,9 +134,9 @@ class ReporteController extends Controller
                 'clientes',
                 'creditoClientes.clientes',
                 'user.sucursal',
-                'cronograma' => function($query) {
-                        $query->whereNull('cliente_id'); // Filtro para cuotas generales
-                    },
+                'cronograma' => function ($query) {
+                    $query->whereNull('cliente_id'); // Filtro para cuotas generales
+                },
                 'garantia',
                 'correlativos' => function ($query) {
                     $query->whereNull('id_cliente');
@@ -149,9 +153,9 @@ class ReporteController extends Controller
                 'clientes',
                 'creditoClientes.clientes',
                 'user.sucursal',
-                'cronograma' => function($query) {
-                        $query->whereNull('cliente_id'); // Filtro para cuotas generales
-                    },
+                'cronograma' => function ($query) {
+                    $query->whereNull('cliente_id'); // Filtro para cuotas generales
+                },
                 'correlativoPagare',
                 'garantia',
                 'correlativos' => function ($query) {
