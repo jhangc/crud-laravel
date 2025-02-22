@@ -33,7 +33,7 @@
 <body>
     <div class="container mt-4">
         <!-- Título del reporte -->
-        <h1 class="text-center mb-4 print-title">Reporte de Intereses - Año {{ $año }}</h1>
+        <h1 class="text-center mb-4 print-title">Reporte de Intereses - Año 2025</h1>
 
         <!-- Botón para imprimir -->
         <div class="text-end mb-3 no-print">
