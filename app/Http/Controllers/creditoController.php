@@ -1006,7 +1006,7 @@ class creditoController extends Controller
                     $cuota->dias_mora = $ingreso->dias_mora;
                     $cuota->monto_mora = $ingreso->monto_mora;
                     $cuota->porcentaje_mora = $ingreso->porcentaje_mora;
-                    $cuota->monto_total_pago_final = round($ingreso->monto + $ingreso->monto_mora, 2);
+                    $cuota->monto_total_pago_final = round($ingreso->monto, 2);
                     $cuota->ingreso_id = $ingreso->id;
                 } elseif (now()->greaterThan($fecha_vencimiento)) {
                     $cuota->estado = 'vencida';
