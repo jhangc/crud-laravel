@@ -208,4 +208,8 @@ Route::get('/cuentas/{id}/edit', [CuentasController::class, 'edit'])->name('cuen
 Route::put('/cuentas/{id}', [CuentasController::class, 'update'])->name('cuentas.update')->middleware('auth');
 Route::delete('/cuentas/{id}', [CuentasController::class, 'destroy'])->name('cuentas.destroy')->middleware('auth');
 
+Route::post('/calcular-cuota-pendiente', [App\Http\Controllers\creditoController::class, 'calcularCuotaPendiente'])->name('calcular.cuota.pendiente')->middleware('auth');
+Route::post('/generarcronogram/temp/', [App\Http\Controllers\creditoController::class, 'generarNuevoCronograma'])->name('generar.nuevo.cronograma');
+Route::post('/generarcronogram/final', [App\Http\Controllers\creditoController::class, 'amortizarCapital'])->name('amortizar.capital')->middleware('auth');
+Route::get('/vernuevocronograma/{id}', [PDFController::class, 'generarNuevoCronogramaPDF'])->name('generar.pdf.nuevo cronograma');
 

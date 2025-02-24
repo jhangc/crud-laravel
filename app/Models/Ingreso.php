@@ -24,6 +24,8 @@ class Ingreso extends Model
         'porcentaje_mora',     // Nuevo campo
         'monto_total_pago_final', // Nuevo campo
         'sucursal_id',
+        'interes_pago_capital',
+        'pago_capital',
     ];
 
     public function transaccion()

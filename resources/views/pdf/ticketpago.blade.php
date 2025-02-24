@@ -72,16 +72,41 @@
             <p><span class="label">DNI:</span> <span class="value">{{ $cliente->documento_identidad }}</span></p>
             <p><span class="label">Nombres:</span> <span class="value">{{ $cliente->nombre }}</span></p>
             <p><span class="label">N° de Cuota:</span> <span class="value">{{ $ingreso->numero_cuota }}</span></p>
-            <p><span class="label">Monto  de Pago:</span> <span class="value">S/.{{ number_format($ingreso->monto_total_pago_final, 2) }}</span></p>
+            <p><span class="label">Monto de Pago:</span> <span class="value">S/.{{ number_format($ingreso->monto_total_pago_final, 2) }}</span></p>
             <p><span class="label">Días de Mora:</span> <span class="value">{{ $ingreso->dias_mora }}</span></p>
             <p><span class="label">Monto de Mora:</span> <span class="value">S/.{{ number_format($ingreso->monto_mora, 2) }}</span></p>
             <p><span class="label">Monto Total a Pagar:</span> <span class="value">S/.{{ number_format($ingreso->monto, 2) }}</span></p>
             <br>
-            <p><span class="label">Observaciones:</span></p>
-            <!-- <p><span class="label">Capital:</span> <span class="value">S/.{{ number_format($cronograma->capital, 2) }}</span></p> -->
-            <p><span class="label">Interés:</span> <span class="value">S/.{{ number_format($cronograma->interes, 2) }}</span></p>
-            <p><span class="label">Amortización:</span> <span class="value">S/.{{ number_format($cronograma->amortizacion, 2) }}</span></p>
-            <p><span class="label">Saldo de Deuda:</span> <span class="value">S/.{{ number_format($cronograma->saldo_deuda, 2) }}</span></p>
+            <p><span class="label">Observaciones:</span><span class="value">
+                    @if($cronograma->pago_capital == null)
+                    @else
+                    Pago Capital-{{ $cronograma->pago_capital == 1 ? 'Reducir cuota' : 'Reducir plazo' }}
+                    @endif
+                </span></p>
+                <br>
+            <p><span class="label">Interés:</span> <span class="value">S/.
+                    @if($cronograma->pago_capital == null)
+                    {{ number_format($cronograma->interes, 2) }}
+
+                    @else
+                    {{ number_format($cronograma->intereses_capital ?? 0, 2) }}
+
+                    @endif
+                </span></p>
+            <p><span class="label">Amortización:</span> <span class="value">S/.
+
+                    @if($cronograma->pago_capital == null)
+                    {{ number_format($cronograma->amortizacion ?? 0, 2) }}
+
+                    @else
+                    {{ number_format($cronograma->monto_capital ?? 0, 2) }}
+
+                    @endif
+                </span></p>
+            <p><span class="label">Saldo de Deuda:</span> <span class="value">S/.{{ $cronograma->pago_capital == null 
+                            ? number_format($cronograma->saldo_deuda, 2) 
+                            : number_format($cronograma->nuevo_saldo_deuda ?? 0, 2) 
+                        }}</span></p>
             <br>
 
             <p><span class="label">Fecha Venc. Siguiente Cuota:</span> <span class="label">{{ $fechaSiguienteCuota }}</span></p>

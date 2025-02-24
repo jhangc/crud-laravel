@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cronograma extends Model
 {
-    use HasFactory;
+    use HasFactory
+    , SoftDeletes
+    ;
     protected $table = 'cronograma'; // Nombre de la tabla en la base de datos
 
     protected $fillable = [
@@ -19,7 +22,11 @@ class Cronograma extends Model
         'capital',
         'interes',
         'amortizacion',
-        'saldo_deuda'
+        'saldo_deuda',
+        'monto_capital',
+        'intereses_capital',
+        'pago_capital',
+        'nuevo_saldo_deuda',
     ];
 
     protected $dates = [
