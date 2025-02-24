@@ -51,7 +51,7 @@
                     @if ($cuota->estado == 'pagado')
                     <span class="badge badge-success">Pagado</span>
                     @elseif ($cuota->estado == 'vencida')
-                    <span class="badge badge-danger">{{$cuota->dias_mora = 0?'VENCE-HOY':'vencida'}}</span>
+                    <span class="badge badge-danger">{{ $cuota->dias_mora == 0 ? 'VENCE-HOY' : 'vencida' }}</span>
                     @elseif ($cuota->estado == 'pendiente')
                     <span class="badge badge-warning">Pendiente</span>
                     @else
