@@ -1117,6 +1117,13 @@ class creditoController extends Controller
                             $diasMora = $ingresoGeneral->dias_mora;
                             $montoMoraTotal = $ingresoGeneral->monto_mora;
                         }
+                        // else{
+                        //     $ingresoGeneral = Ingreso::where('prestamo_id', $id)
+                        //     ->where('numero_cuota', $cuotaGeneral->numero)
+                        //     ->whereNull('cliente_id')
+                        //     ->first(); 
+
+                        // }
                         $puedeAmortizar ++;
                     }
                     if($vencidas>0){
