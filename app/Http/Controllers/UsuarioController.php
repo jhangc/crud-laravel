@@ -7,6 +7,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
+use App\Models\credito;
+use App\Models\cliente;
+use App\Models\CreditoCliente;
 
 class UsuarioController extends Controller
 {
@@ -135,4 +138,57 @@ class UsuarioController extends Controller
             ->with('mensaje', 'Se eliminó al usuario de la manera correcta')
             ->with('icono', 'success');
     }
+
+    public function actualizarCreditosTerminados()
+{
+    // Obtener todos los créditos que actualmente están en estado "pagado"
+    $creditos = credito::where('estado', 'pagado')->get();
+
+    foreach ($creditos as $credito) {
+        $allPaid = true;
+        
+        // Para créditos individuales: se consideran las cuotas que tengan cliente asignado
+        if ($credito->categoria != 'grupal') {
+            $cuotas = $credito->cronograma()->whereNotNull('cliente_id')->get();
+            foreach ($cuotas as $cuota) {
+                // Si para alguna cuota no existe un ingreso asociado, la cuota no está pagada
+                if (!\App\Models\Ingreso::where('cronograma_id', $cuota->id)->exists()) {
+                    $allPaid = false;
+                    break;
+                }
+            }
+        } else {
+            // Para créditos grupales: se deben verificar las cuotas generales (cliente_id null)
+            // y además las cuotas individuales de cada cliente
+            $cuotasGenerales = $credito->cronograma()->whereNull('cliente_id')->get();
+            foreach ($cuotasGenerales as $cuotaGeneral) {
+                if (!\App\Models\Ingreso::where('cronograma_id', $cuotaGeneral->id)->exists()) {
+                    $allPaid = false;
+                    break;
+                }
+            }
+            // Solo si las generales están pagadas, verificamos las individuales
+            if ($allPaid) {
+                foreach ($credito->creditoClientes as $cc) {
+                    $cuotasInd = $credito->cronograma()->where('cliente_id', $cc->cliente_id)->get();
+                    foreach ($cuotasInd as $cuotaInd) {
+                        if (!\App\Models\Ingreso::where('cronograma_id', $cuotaInd->id)->exists()) {
+                            $allPaid = false;
+                            break 2; // Salir de ambos bucles
+                        }
+                    }
+                }
+            }
+        }
+
+        // Si todas las cuotas de este crédito tienen un ingreso asociado, se actualiza el estado a "terminado"
+        if ($allPaid) {
+            $credito->estado = 'terminado';
+            $credito->save();
+        }
+    }
+
+    return response()->json(['success' => 'Estados de créditos actualizados correctamente.']);
+}
+
 }

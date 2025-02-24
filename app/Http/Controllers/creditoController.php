@@ -1117,13 +1117,25 @@ class creditoController extends Controller
                             $diasMora = $ingresoGeneral->dias_mora;
                             $montoMoraTotal = $ingresoGeneral->monto_mora;
                         }
-                        // else{
-                        //     $ingresoGeneral = Ingreso::where('prestamo_id', $id)
-                        //     ->where('numero_cuota', $cuotaGeneral->numero)
-                        //     ->whereNull('cliente_id')
-                        //     ->first(); 
-
-                        // }
+                        else{
+                            //si todas als relacionadas estan pagadas  si  no existe ingresod ela gneral si ,
+                           $newIngreso =new Ingreso();
+                           $newIngreso->transaccion_id=$ingresoRelacionado->transaccion_id;
+                           $newIngreso->cliente_id=null;
+                           $newIngreso->prestamo_id=$ingresoRelacionado->prestamo_id;
+                           $newIngreso->cronograma_id=$cuotaGeneral->id;
+                           $newIngreso->numero_cuota=$cuotaGeneral->numero;
+                           $newIngreso->monto_cuota=null;
+                           $newIngreso->fecha_pago=$ingresoRelacionado->fecha_pago;
+                           $newIngreso->hora_pago=$ingresoRelacionado->hora_pago;
+                           $newIngreso->monto=$cuotaGeneral->monto;
+                           $newIngreso->monto_mora=$montoMoraTotal;          // Nuevo campo
+                           $newIngreso->dias_mora= $diasMora;           // Nuevo campo
+                           $newIngreso->porcentaje_mora= $diasMora>0?0.3:0;   // Nuevo campo
+                           $newIngreso->monto_total_pago_final=$montoMoraTotal + $cuotaGeneral->monto; // Nuevo campo
+                           $newIngreso->sucursal_id=$ingresoRelacionado->sucursal_id;
+                           $newIngreso->save();
+                         }
                         $puedeAmortizar ++;
                     }
                     if($vencidas>0){
