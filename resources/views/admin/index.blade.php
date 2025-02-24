@@ -191,4 +191,22 @@
         </div>
     </div>
     @endrole
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        fetch('{{ route("creditos.actualizarTerminados") }}')
+            .then(response => {
+            if (!response.ok) {
+                throw new Error("Error en la respuesta");
+            }
+            return response.json();
+            })
+            .then(data => {
+            console.log("Respuesta:", data);
+            })
+            .catch(error => {
+            console.error('Error en la petición:', error);
+            });
+        });
+    </script>
+
 @endsection
