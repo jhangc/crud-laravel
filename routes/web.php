@@ -29,7 +29,7 @@ use App\Http\Controllers\CuentasController;
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
+Route::get('/admin/credito/estado', [App\Http\Controllers\UsuarioController::class, 'actualizarCreditosTerminados'])->name('creditos.actualizarTerminados');
 //Route::get('/', function () { return view('admin'); });
 
 Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('admin.index')->middleware('auth');
