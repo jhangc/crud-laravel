@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\credito;
+use App\Models\Cronograma;
 use App\Models\CreditoCliente;
 
 class ReporteController extends Controller
@@ -24,53 +25,74 @@ class ReporteController extends Controller
         $fecha = $request->input('fecha', date('Y-m-d'));
         $año = \Carbon\Carbon::parse($fecha)->year;
 
-        $reporte = DB::table('cronograma as c')
-            ->join('prestamos as p', 'c.id_prestamo', '=', 'p.id')
-            ->leftJoin('clientes as cl', 'c.cliente_id', '=', 'cl.id')
+        // Subconsulta: Agrupar registros de 'cronograma' por id_prestamo
+        $cronogramaSubquery = Cronograma::select(
+            'id_prestamo',
+            DB::raw('MIN(cliente_id) as cliente_id'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 1 THEN interes ELSE 0 END) AS enero'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 2 THEN interes ELSE 0 END) AS febrero'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 3 THEN interes ELSE 0 END) AS marzo'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 4 THEN interes ELSE 0 END) AS abril'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 5 THEN interes ELSE 0 END) AS mayo'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 6 THEN interes ELSE 0 END) AS junio'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 7 THEN interes ELSE 0 END) AS julio'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 8 THEN interes ELSE 0 END) AS agosto'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 9 THEN interes ELSE 0 END) AS septiembre'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 10 THEN interes ELSE 0 END) AS octubre'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 11 THEN interes ELSE 0 END) AS noviembre'),
+            DB::raw('SUM(CASE WHEN MONTH(fecha) = 12 THEN interes ELSE 0 END) AS diciembre'),
+            DB::raw('SUM(interes) AS total_interes')
+        )
+            ->whereYear('fecha', $año)
+            ->groupBy('id_prestamo');
+
+        // Consulta principal: Unir la subconsulta con 'prestamos' y 'clientes'
+        $reporte = credito::joinSub($cronogramaSubquery, 't', function ($join) {
+            $join->on('prestamos.id', '=', 't.id_prestamo');
+        })
+            ->leftJoin('clientes as cl', 't.cliente_id', '=', 'cl.id')
             ->select(
-                'c.id_prestamo',
-                DB::raw("CASE WHEN p.producto = 'grupal' THEN p.nombre_prestamo ELSE cl.nombre END as nombre_credito"),
-                DB::raw("CASE WHEN p.producto = 'grupal' THEN 'grupal' ELSE 'individual' END as tipo_credito"),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 1 THEN c.interes ELSE 0 END) AS enero'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 2 THEN c.interes ELSE 0 END) AS febrero'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 3 THEN c.interes ELSE 0 END) AS marzo'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 4 THEN c.interes ELSE 0 END) AS abril'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 5 THEN c.interes ELSE 0 END) AS mayo'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 6 THEN c.interes ELSE 0 END) AS junio'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 7 THEN c.interes ELSE 0 END) AS julio'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 8 THEN c.interes ELSE 0 END) AS agosto'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 9 THEN c.interes ELSE 0 END) AS septiembre'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 10 THEN c.interes ELSE 0 END) AS octubre'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 11 THEN c.interes ELSE 0 END) AS noviembre'),
-                DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 12 THEN c.interes ELSE 0 END) AS diciembre'),
-                DB::raw('SUM(c.interes) AS total_interes')
+                't.id_prestamo',
+                DB::raw("CASE WHEN prestamos.producto = 'grupal' THEN prestamos.nombre_prestamo ELSE cl.nombre END as nombre_credito"),
+                DB::raw("CASE WHEN prestamos.producto = 'grupal' THEN 'grupal' ELSE 'individual' END as tipo_credito"),
+                't.enero',
+                't.febrero',
+                't.marzo',
+                't.abril',
+                't.mayo',
+                't.junio',
+                't.julio',
+                't.agosto',
+                't.septiembre',
+                't.octubre',
+                't.noviembre',
+                't.diciembre',
+                't.total_interes'
             )
-            ->whereYear('c.fecha', $año)
-            ->where('p.estado', 'pagado')
-            ->groupBy('c.id_prestamo', DB::raw("CASE WHEN p.producto = 'grupal' THEN p.nombre_prestamo ELSE cl.nombre END"))
-            ->orderBy('c.id_prestamo')
+            ->where('prestamos.estado', 'pagado')
+            ->orderBy('t.id_prestamo', 'asc')
             ->get();
 
         // Calcular totales por mes
         $totalesMeses = [
-            'enero'       => $reporte->sum('enero'),
-            'febrero'     => $reporte->sum('febrero'),
-            'marzo'       => $reporte->sum('marzo'),
-            'abril'       => $reporte->sum('abril'),
-            'mayo'        => $reporte->sum('mayo'),
-            'junio'       => $reporte->sum('junio'),
-            'julio'       => $reporte->sum('julio'),
-            'agosto'      => $reporte->sum('agosto'),
-            'septiembre'  => $reporte->sum('septiembre'),
-            'octubre'     => $reporte->sum('octubre'),
-            'noviembre'   => $reporte->sum('noviembre'),
-            'diciembre'   => $reporte->sum('diciembre'),
+            'enero'         => $reporte->sum('enero'),
+            'febrero'       => $reporte->sum('febrero'),
+            'marzo'         => $reporte->sum('marzo'),
+            'abril'         => $reporte->sum('abril'),
+            'mayo'          => $reporte->sum('mayo'),
+            'junio'         => $reporte->sum('junio'),
+            'julio'         => $reporte->sum('julio'),
+            'agosto'        => $reporte->sum('agosto'),
+            'septiembre'    => $reporte->sum('septiembre'),
+            'octubre'       => $reporte->sum('octubre'),
+            'noviembre'     => $reporte->sum('noviembre'),
+            'diciembre'     => $reporte->sum('diciembre'),
             'total_interes' => $reporte->sum('total_interes')
         ];
 
-        // Devuelve la vista con las variables necesarias
         return view('admin.reportes.interesmensual', compact('reporte', 'totalesMeses', 'fecha'));
     }
+
 
 
     public function viewreportecreditoindividual()
