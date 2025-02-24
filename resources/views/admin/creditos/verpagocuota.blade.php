@@ -13,7 +13,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <h1 class="mb-0">Cuotas del Crédito #{{ $credito->id }}</h1>
         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#amortizarCapitalModal" onclick="calcularcuotapendiente()">
-            Amortizar Capital
+            Pago Capital
         </button>
     </div>
     @if ($credito->categoria == 'grupal')
@@ -40,9 +40,7 @@
         <tbody>
             @foreach ($cuotasGenerales as $cuota)
             <tr>
-                @php
-                 dd($cuota);
-                @endphp
+                
                 <td>{{ $cuota->numero }}</td>
                 <td>{{ number_format($cuota->monto, 2) }}</td>
                 <td>{{ $cuota->fecha }}</td>
