@@ -29,8 +29,8 @@ class ReporteController extends Controller
             ->leftJoin('clientes as cl', 'c.cliente_id', '=', 'cl.id')
             ->select(
                 'c.id_prestamo',
-                DB::raw("CASE WHEN p.producto = 'grupal' THEN p.nombre_prestamo ELSE cl.nombre END as nombre_credito"),
-                DB::raw("CASE WHEN p.producto = 'grupal' THEN 'grupal' ELSE 'individual' END as tipo_credito"),
+                DB::raw("CASE WHEN ANY_VALUE(p.producto) = 'grupal' THEN ANY_VALUE(p.nombre_prestamo) ELSE ANY_VALUE(cl.nombre) END as nombre_credito"),
+                DB::raw("CASE WHEN ANY_VALUE(p.producto) = 'grupal' THEN 'grupal' ELSE 'individual' END as tipo_credito"),
                 DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 1 THEN c.interes ELSE 0 END) AS enero'),
                 DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 2 THEN c.interes ELSE 0 END) AS febrero'),
                 DB::raw('SUM(CASE WHEN MONTH(c.fecha) = 3 THEN c.interes ELSE 0 END) AS marzo'),
@@ -47,9 +47,10 @@ class ReporteController extends Controller
             )
             ->whereYear('c.fecha', $año)
             ->where('p.estado', 'pagado')
-            ->groupBy('c.id_prestamo', DB::raw("CASE WHEN p.producto = 'grupal' THEN p.nombre_prestamo ELSE cl.nombre END"))
+            ->groupBy('c.id_prestamo')
             ->orderBy('c.id_prestamo')
             ->get();
+
 
         // Calcular totales por mes
         $totalesMeses = [
