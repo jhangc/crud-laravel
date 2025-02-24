@@ -40,6 +40,9 @@
         <tbody>
             @foreach ($cuotasGenerales as $cuota)
             <tr>
+                @php
+                 dd($cuota);
+                @endphp
                 <td>{{ $cuota->numero }}</td>
                 <td>{{ number_format($cuota->monto, 2) }}</td>
                 <td>{{ $cuota->fecha }}</td>
