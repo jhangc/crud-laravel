@@ -11,8 +11,7 @@
         <!-- Sidebar user panel (optional) -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
             <div class="image">
-                <img src="{{ asset('dist/img/user2-160x160.jpg') }}" class="img-circle elevation-2"
-                    alt="User Image">
+                <img src="{{ asset('dist/img/user2-160x160.jpg') }}" class="img-circle elevation-2" alt="User Image">
             </div>
             <div class="info">
                 <a href="#" class="d-block">{{ Auth::user()->name }}</a>
@@ -105,14 +104,14 @@
                                     <p>Lista de clientes</p>
                                 </a>
                                 <!-- <a href="{{ url('/admin/clientes/evaluar') }}" class="nav-link active">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Evaluar al cliente</p>
-                                        </a>
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Evaluar al cliente</p>
+                                            </a>
 
-                                        <a href="{{ url('/admin/clientes/ratios') }}" class="nav-link active">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Ratios FInancieros</p>
-                                        </a> -->
+                                            <a href="{{ url('/admin/clientes/ratios') }}" class="nav-link active">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Ratios FInancieros</p>
+                                            </a> -->
                             </li>
                         </ul>
                     </li>
@@ -122,12 +121,12 @@
                     $sucursalId = Auth::user()->sucursal_id;
                     $usuarioId = Auth::user()->id;
                     $operacionesAbiertas = App\Models\InicioOperaciones::where('sucursal_id', $sucursalId)
-                                                                        ->where('permiso_abierto', true)
-                                                                        ->exists();
+                        ->where('permiso_abierto', true)
+                        ->exists();
                     $cajaAbierta = App\Models\CajaTransaccion::where('sucursal_id', $sucursalId)
-                                                        ->where('user_id', $usuarioId)
-                                                        ->whereNull('hora_cierre')
-                                                        ->exists();
+                        ->where('user_id', $usuarioId)
+                        ->whereNull('hora_cierre')
+                        ->exists();
                 @endphp
 
                 @role('Administrador|Cajera')
@@ -141,50 +140,50 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                 @if ($operacionesAbiertas)
-                                @if ($cajaAbierta) 
-                                <a href="{{ url('/admin/caja/pagarcredito') }}" class="nav-link active">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Desembolsar Crédito</p>
-                                </a>
-                                <a href="{{ url('/admin/caja/cobrar') }}" class="nav-link active">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Cobrar Crédito</p>
-                                </a>
-                                 @endif
-                                    @if (!$cajaAbierta) 
-                                <a href="{{ url('/admin/caja/habilitar') }}" class="nav-link active">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Habilitar caja</p>
-                                </a>
-                                 @endif
-                                    @if ($cajaAbierta) 
-                                <a href="{{ url('/admin/caja/arqueo') }}" class="nav-link active">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Arqueo de Caja</p>
-                                </a>
-                                 @endif
-                                    @if ($cajaAbierta) 
-                                <a href="{{ url('/admin/caja/pagares') }}" class="nav-link active">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Pagares</p>
-                                </a>
-                                @endif
-                                @if ($cajaAbierta) 
-                                <a href="{{ url('/admin/gastos') }}" class="nav-link active">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Gastos</p>
-                                </a>
-                                @endif
-                                @if ($cajaAbierta) 
-                                <a href="{{ url('/admin/ingresos-extras') }}" class="nav-link active">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Ingresos</p>
-                                </a>
-                                @endif
-                                @else 
+                                @if ($operacionesAbiertas)
+                                    @if ($cajaAbierta)
+                                        <a href="{{ url('/admin/caja/pagarcredito') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Desembolsar Crédito</p>
+                                        </a>
+                                        <a href="{{ url('/admin/caja/cobrar') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Cobrar Crédito</p>
+                                        </a>
+                                    @endif
+                                    @if (!$cajaAbierta)
+                                        <a href="{{ url('/admin/caja/habilitar') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Habilitar caja</p>
+                                        </a>
+                                    @endif
+                                    @if ($cajaAbierta)
+                                        <a href="{{ url('/admin/caja/arqueo') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Arqueo de Caja</p>
+                                        </a>
+                                    @endif
+                                    @if ($cajaAbierta)
+                                        <a href="{{ url('/admin/caja/pagares') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Pagares</p>
+                                        </a>
+                                    @endif
+                                    @if ($cajaAbierta)
+                                        <a href="{{ url('/admin/gastos') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Gastos</p>
+                                        </a>
+                                    @endif
+                                    @if ($cajaAbierta)
+                                        <a href="{{ url('/admin/ingresos-extras') }}" class="nav-link active">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Ingresos</p>
+                                        </a>
+                                    @endif
+                                @else
                                     <span class="nav-link text-warning">Operaciones no iniciadas</span>
-                                @endif 
+                                @endif
                             </li>
                         </ul>
                     </li>
@@ -206,8 +205,7 @@
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Carta de Cobranza</p>
                                 </a>
-                                <a href="{{ url('/admin/cobranza/generarnotificacion') }}"
-                                    class="nav-link active">
+                                <a href="{{ url('/admin/cobranza/generarnotificacion') }}" class="nav-link active">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Notificación</p>
                                 </a>
@@ -236,10 +234,10 @@
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>boveda</p>
                                 </a>
-                                {{--<a href="{{ url('/admin/boveda') }}" class="nav-link active">
+                                {{-- <a href="{{ url('/admin/boveda') }}" class="nav-link active">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Egresos</p>
-                                </a>--}}
+                                </a> --}}
 
                             </li>
                         </ul>
@@ -286,14 +284,17 @@
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Creditos Grupales</p>
                                 </a>
-                                <a href="{{ url('/admin/reportes/interesesmensual') }}" class="nav-link active">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Total de interes Mensual</p>
-                                </a>
+                                @role('Administrador')
+                                    <a href="{{ url('/admin/reportes/interesesmensual') }}" class="nav-link active">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Total de interes Mensual</p>
+                                    </a>
+                                @endrole
                             </li>
                         </ul>
                     </li>
                 @endrole
+
                 @role('Administrador')
                     <li class="nav-item">
                         <a href="#" class="nav-link active">
@@ -306,12 +307,12 @@
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a href="{{ url('/admin/cuentas') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Cuentas</p>
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Cuentas</p>
                                 </a>
                                 <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Plan Cuentas</p>
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Plan Cuentas</p>
                                 </a>
                                 <a href="{{ url('/admin/transacciones/ingresos') }}" class="nav-link active">
                                     <i class="far fa-circle nav-icon"></i>
