@@ -392,7 +392,7 @@ class PdfController extends Controller
         }
 
         // Calcular la mora y el monto total por cada cuota vencida de forma individual
-        $porcentaje_mora = 0.8; // 0.3% por día de mora por cada mil soles
+        $porcentaje_mora = 1.5; // 0.3% por día de mora por cada mil soles
         $total_mora = 0;
         $total_monto_con_mora = 0;
 
@@ -484,7 +484,7 @@ class PdfController extends Controller
         }
 
         // Calcular la mora y el monto total de cada cuota vencida de forma individual
-        $porcentaje_mora = 0.8; // 0.3% por día de mora por cada mil soles
+        $porcentaje_mora = 1.5; // 0.3% por día de mora por cada mil soles
         $total_mora = 0;
         $total_monto_con_mora = 0;
 
