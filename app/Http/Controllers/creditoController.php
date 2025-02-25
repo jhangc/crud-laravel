@@ -1015,7 +1015,7 @@ class creditoController extends Controller
                 } elseif (now()->greaterThan($fecha_vencimiento)) {
                     $cuota->estado = 'vencida';
                     $cuota->dias_mora = now()->diffInDays($fecha_vencimiento);
-                    $cuota->porcentaje_mora = 0.3; // 0.3% por día de mora por cada mil soles
+                    $cuota->porcentaje_mora = 0.8; // 0.3% por día de mora por cada mil soles
                     $cuota->monto_mora = round(($cuota->monto * $cuota->porcentaje_mora / 1000) * $cuota->dias_mora
                         // * 5
                         ,
@@ -1084,7 +1084,7 @@ class creditoController extends Controller
 
                                 // Cálculo del monto de mora por cada cuota relacionada
                                 $diasMoraRelacionada = now()->diffInDays($fecha_vencimiento);
-                                $montoMoraRelacionada = round(($cuotaRelacionada->monto * 0.3 / 1000) * $diasMoraRelacionada
+                                $montoMoraRelacionada = round(($cuotaRelacionada->monto * 0.8 / 1000) * $diasMoraRelacionada
                                     // * 5
                                     ,
                                     2
@@ -1203,7 +1203,7 @@ class creditoController extends Controller
 
         if (now()->greaterThan($fecha_cuota)) {
             $diasMora = now()->diffInDays($fecha_cuota);
-            $montoMora = round(($cuotaActual->monto * 0.3 / 1000) * $diasMora
+            $montoMora = round(($cuotaActual->monto * 0.8 / 1000) * $diasMora
                 // * 5
                 ,
                 2
@@ -1236,7 +1236,7 @@ class creditoController extends Controller
 
             if (now()->greaterThan(Carbon::parse($cuota->fecha))) {
                 $diasMoraRestante = now()->diffInDays(Carbon::parse($cuota->fecha));
-                $montoMoraRestante = round(($cuota->monto * 0.3 / 1000) * $diasMoraRestante
+                $montoMoraRestante = round(($cuota->monto * 0.8 / 1000) * $diasMoraRestante
                     // * 5
                     ,
                     2
@@ -1307,7 +1307,7 @@ class creditoController extends Controller
 
         if (now()->greaterThan($fecha_cuota)) {
             $diasMora = now()->diffInDays($fecha_cuota);
-            $montoMora = round(($cuotaActual->monto * 0.3 / 1000) * $diasMora
+            $montoMora = round(($cuotaActual->monto * 0.8 / 1000) * $diasMora
                 // * 5
                 ,
                 2
@@ -1340,7 +1340,7 @@ class creditoController extends Controller
 
             if (now()->greaterThan(Carbon::parse($cuota->fecha))) {
                 $diasMoraRestante = now()->diffInDays(Carbon::parse($cuota->fecha));
-                $montoMoraRestante = round(($cuota->monto * 0.3 / 1000) * $diasMoraRestante
+                $montoMoraRestante = round(($cuota->monto * 0.8 / 1000) * $diasMoraRestante
                     // * 5
                     ,
                     2
@@ -1459,7 +1459,7 @@ class creditoController extends Controller
                 if (!$ingresoExistente) {
                     $dias_mora = 0;
                     $monto_mora = 0;
-                    $porcentaje_mora = 0.3; // Asumiendo 0.3% de mora por día por cada mil soles
+                    $porcentaje_mora = 0.8; // Asumiendo 0.3% de mora por día por cada mil soles
 
                     // Calcular mora si está vencida
                     if (Carbon::now()->greaterThan(Carbon::parse($cuota->fecha))) {
@@ -1542,7 +1542,7 @@ class creditoController extends Controller
                 if (!$ingresoExistente) {
                     $dias_mora = 0;
                     $monto_mora = 0;
-                    $porcentaje_mora = 0.3; // 0.3% de mora por día por cada mil soles
+                    $porcentaje_mora = 0.8; // 0.3% de mora por día por cada mil soles
 
                     // Determinar si la cuota está vencida
                     $fecha_cuota = Carbon::parse($cuota->fecha);
@@ -1636,7 +1636,7 @@ class creditoController extends Controller
                 if (!$ingresoExistente) {
                     $dias_mora = 0;
                     $monto_mora = 0;
-                    $porcentaje_mora = 0.3; // 0.3% de mora por día por cada mil soles
+                    $porcentaje_mora = 0.8; // 0.3% de mora por día por cada mil soles
 
                     // Determinar si la cuota está vencida
                     $fecha_cuota = Carbon::parse($cuota->fecha);
