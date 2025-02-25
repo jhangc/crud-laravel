@@ -196,6 +196,7 @@
                         Debes haber pagado al menos 2 cuotas para realizar una amortización al capital.
                 </div>
                 @else
+                <div id='detalleCuotaPendiente'>
                 <form id="amortizarCapitalForm">
                     @csrf
                     <input type="hidden" name="prestamo_id" value="{{ $credito->id }}">
@@ -247,6 +248,7 @@
                     <div id="nuevoCronograma" class="mb-3"></div>
                     <button type="button" class="btn btn-primary" id="btnAmortizar" disabled onclick="confirmarpagoCapital()" >Amortizar Capital</button>
                 </form>
+                </div>
                 @endif
             </div>
         </div>
@@ -527,10 +529,19 @@
             },
             success: function(response) {
                 if (response.cuota) {
-                    $('#numero_cuota').val(response.cuota.numero);
-                    $('#intereses_a_pagar').val(response.intereses);
-                    $('#capital_pendiente').val(response.amortizacion_faltante);
-                    $('#total_a_pagar_posible').val(response.monto_total);
+                    if (response.puedeamortizar == 0) {
+                        $('#detalleCuotaPendiente').html(`
+                            <div class="alert alert-warning">
+                             La cuota número ${response.cuota.numero} está próxima a vencer el ${response.cuota.fecha}.<br>
+                             Por favor, pague la cuota para poder realizar un Pago a Capital.
+                            </div>
+                        `);
+                        } else {
+                            $('#numero_cuota').val(response.cuota.numero);
+                            $('#intereses_a_pagar').val(response.intereses);
+                            $('#capital_pendiente').val(response.amortizacion_faltante);
+                            $('#total_a_pagar_posible').val(response.monto_total);
+                        }
                 } else {
                     $('#detalleCuotaPendiente').html(`
                 <div class="alert alert-success">
@@ -593,7 +604,7 @@
             error: function(response) {
                 Swal.fire({
                     title: 'Error',
-                    text: 'No se pudo generar el nuevo cronograma.',
+                    text: response.responseJSON.error,
                     icon: 'error'
                 });
             }

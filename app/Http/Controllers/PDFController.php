@@ -1478,7 +1478,7 @@ class PdfController extends Controller
 
 
 
-    public function generarNuevoCronogramaPDF($id)
+    public function generarNuevoCronogramaPDF1($id)
     {
         $prestamo = Credito::find($id);
         if (!$prestamo) {
@@ -1545,6 +1545,94 @@ class PdfController extends Controller
             'sucursal',
             'correlativosGenerales',
             'correlativosIntegrantes'
+        );
+    
+        $pdf = PDF::loadView('pdf.cronogramagrupalnuevo', $data)->setPaper('a4', 'landscape');
+        return $pdf->stream('cronograma.pdf');
+        // return view('pdf.cronogramagrupalnuevo', $data);
+    }
+    
+    public function generarNuevoCronogramaPDF($id)
+    {
+        $prestamo = Credito::find($id);
+        if (!$prestamo) {
+            abort(404, "Crédito no encontrado.");
+        }
+
+        $categoria_c = $prestamo->categoria;
+    
+        $query = Cronograma::where('id_prestamo', $id);
+                if ($categoria_c != 'grupal') {
+                    $query->whereNotNull('cliente_id');
+                } else {
+                    $query->whereNull('cliente_id');
+                }
+        $ultimoPagoCapital = $query->whereNotNull('pago_capital')
+                           ->orderBy('numero', 'desc')
+                            ->first();
+
+        $numero_c=$ultimoPagoCapital->numero;
+
+
+        $cuotas = Cronograma::where('id_prestamo', $id)
+                            ->orderBy('numero', 'asc')
+                            ->get();
+            
+                // Para créditos grupales, obtener también los registros de CreditoCliente
+        $credito_cliente = null;
+                
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
+    
+        $responsable = \App\Models\User::find($prestamo->user_id);
+        $sucursal = \App\Models\Sucursal::first(); // O filtra por la sucursal del crédito
+    
+        // Se calculan totales generales (por ejemplo, suma de intereses, capital, etc.)
+        // Para el cronograma general (cliente_id null)
+        $totalInteresGrupal = $cuotas->whereNull('cliente_id')->sum('interes');
+        $totalAmortizacionGrupal = $cuotas->whereNull('cliente_id')->sum('amortizacion');
+        $totalMontoGrupal = $cuotas->whereNull('cliente_id')->sum('monto');
+    
+        // Para créditos individuales (o para cada cliente en créditos grupales)
+        $totalInteresesIndividuales = [];
+        $totalAmortizacionIndividuales = [];
+        $totalMontoIndividuales = [];
+        if ($prestamo->categoria != 'grupal') {
+            // Para individual, se suman todos los registros
+            $clienteId = $prestamo->clientes()->first()->id;
+            $totalInteresesIndividuales[$clienteId] = $cuotas->where('cliente_id', $clienteId)->sum('interes');
+            $totalAmortizacionIndividuales[$clienteId] = $cuotas->where('cliente_id', $clienteId)->sum('amortizacion');
+            $totalMontoIndividuales[$clienteId] = $cuotas->where('cliente_id', $clienteId)->sum('monto');
+        } else {
+            foreach ($prestamo->clientes as $cliente) {
+                $totalInteresesIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('interes');
+                $totalAmortizacionIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('amortizacion');
+                $totalMontoIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('monto');
+            }
+        }
+    
+        $correlativosGenerales = \App\Models\CorrelativoCredito::where('id_prestamo', $id)
+            ->whereNull('id_cliente')
+            ->first();
+    
+        $correlativosIntegrantes = \App\Models\CorrelativoCredito::where('id_prestamo', $id)
+            ->whereNotNull('id_cliente')
+            ->get();
+    
+        $data = compact(
+            'prestamo',
+            'responsable',
+            'cuotas',
+            'credito_cliente',
+            'totalInteresGrupal',
+            'totalInteresesIndividuales',
+            'totalAmortizacionIndividuales',
+            'totalMontoIndividuales',
+            'totalAmortizacionGrupal',
+            'totalMontoGrupal',
+            'sucursal',
+            'correlativosGenerales',
+            'correlativosIntegrantes',
+            'numero_c'
         );
     
         $pdf = PDF::loadView('pdf.cronogramagrupalnuevo', $data)->setPaper('a4', 'landscape');

@@ -60,9 +60,6 @@
 <body>
     @if($prestamo->categoria == 'grupal')
     <h2>Cronograma de Créditos Nuevo</h2>
-    @php 
-     $c_p=$cuotas->whereNull('cliente_id')->where('numero',$numero_c)->first();
-    @endphp
     <table style="border: none !important; width: 100%; margin-bottom:0px">
         <tr>
             <td><b>Agencia:</b></td>
@@ -78,11 +75,11 @@
             <td><b>Moneda:</b></td>
             <td>Soles</td>
             <td><b>Desembolso (S/.):</b></td>
-            <td>{{ number_format(round($c_p->nuevo_saldo_deuda, 2), 2, '.', ',') }}</td>
+            <td>{{ number_format(round($prestamo->monto_total, 2), 2, '.', ',') }}</td>
         </tr>
         <tr>
             <td><b>Fecha de Desembolso:</b></td>
-            <td>{{ $c_p->updated_at->format('d-m-yyy') }}</td>
+            <td>{{ $prestamo->fecha_desembolso }}</td>
             <td><b>Tasa (%):</b></td>
             <td>{{ $prestamo->tasa }}</td>
             <td><b>Periodo:</b></td>
@@ -116,7 +113,10 @@
                 <th>Capital</th>
                 <th>Interés</th>
                 <th>Amortización</th>
-                
+                <th>Monto Capital Abonado</th>
+                <th>Intereses Capital</th>
+                <th>Tipo de Pago</th>
+                <th>Nuevo Saldo</th>
                 <th>Total de Cuota (S/.)</th>
 
             </tr>
@@ -127,9 +127,9 @@
             $totalCuotaGeneral = 0;
         @endphp
         <tbody>
-            @foreach ($cuotas->whereNull('cliente_id')->where('numero','>',$numero_c) as $cuota)
+            @foreach ($cuotas->whereNull('cliente_id') as $cuota)
             <tr>
-                <td>{{ $cuota->numero-$numero_c }}</td>
+                <td>{{ $cuota->numero }}</td>
                 <td>{{ $cuota->fecha }}</td>
                 <td>{{ $cuota->detalle ?? 'Cuota' }}</td>
                 <td>
@@ -156,6 +156,16 @@
                         @php $totalAmortizacionGeneral += ($cuota->monto_capital ?? 0); @endphp
                     @endif
                 </td>
+                <td>{{ number_format($cuota->monto_capital ?? 0, 2) }}</td>
+                <td>{{ number_format($cuota->intereses_capital ?? 0, 2) }}</td>
+                <td>
+                    @if(isset($cuota->pago_capital))
+                        {{ $cuota->pago_capital == 1 ? 'Reducir cuota' : 'Reducir plazo' }}
+                    @else
+                        -
+                    @endif
+                </td>
+                <td>{{ number_format($cuota->nuevo_saldo_deuda ?? 0, 2) }}</td>
                 <td>
                     @if($cuota->pago_capital == null)
                         {{ number_format($cuota->monto, 2) }}
@@ -174,6 +184,10 @@
                 <td style="text-align:right;"><b>Total</b></td>
                 <td>{{ number_format($totalInteresGeneral, 2) }}</td>
                 <td>{{ number_format($totalAmortizacionGeneral, 2) }}</td>
+                <td><!-- Si necesitas sumar monto_capital general (ya se suma en la columna anterior) --></td>
+                <td><!-- Suma de intereses_capital general si lo requieres --></td>
+                <td></td>
+                <td></td>
                 <td>{{ number_format($totalCuotaGeneral, 2) }}</td>
             </tr>
         </tfoot>
@@ -191,11 +205,6 @@
         Individual
         @endif
         de: {{ $cliente->nombre }}</h3>
-
-        @php 
-        $c_p_c=$cuotas->where('cliente_id', $cliente->id)->where('numero',$numero_c)->first();
-        @endphp
-
     <table style="border: none !important; width: 100%; margin-bottom:0px">
         <tr>
             <td><b>Agencia:</b></td>
@@ -211,11 +220,15 @@
             <td><b>Moneda:</b></td>
             <td>Soles</td>
             <td><b>Desembolso (S/.):</b></td>
-            <td>{{ number_format(round($c_p_c->nuevo_saldo_deuda, 2), 2, '.', ',') }}</td>
+            @foreach ($credito_cliente as $cc)
+            @if ($cc->cliente_id == $cliente->id)
+            <td>{{ number_format(round($cc->monto_indivual, 2), 2, '.', ',') }}</td>
+            @endif
+            @endforeach
         </tr>
         <tr>
             <td><b>Fecha de Desembolso:</b></td>
-            <td>{{  $c_p_c->updated_at->format('d-m-Y') }}</td>
+            <td>{{ $prestamo->fecha_desembolso }}</td>
             <td><b>Tasa (%):</b></td>
             <td>{{ $prestamo->tasa }}</td>
             <td><b>Periodo:</b></td>
@@ -248,7 +261,10 @@
                 <th>Capital</th>
                 <th>Interés</th>
                 <th>Amortización</th>
-                
+                <th>Monto Capital Abonado</th>
+                <th>Intereses Capital</th>
+                <th>Tipo de Pago</th>
+                <th>Nuevo Saldo</th>
                 <th>Total de Cuota (S/.)</th>
             </tr>
         </thead>
@@ -258,9 +274,9 @@
             $totalCuotaInd = 0;
         @endphp
         <tbody>
-            @foreach ($cuotas->where('cliente_id', $cliente->id)->where('numero','>',$numero_c) as $cuota)
+            @foreach ($cuotas->where('cliente_id', $cliente->id) as $cuota)
                 <tr>
-                    <td>{{ $cuota->numero-$numero_c}}</td>
+                    <td>{{ $cuota->numero }}</td>
                     <td>{{ $cuota->fecha }}</td>
                     <td>{{ $cuota->detalle ?? 'Cuota' }}</td>
                     <td>
@@ -287,7 +303,16 @@
                             @php $totalAmortizacionInd += ($cuota->monto_capital ?? 0); @endphp
                         @endif
                     </td>
-                   
+                    <td>{{ number_format($cuota->monto_capital ?? 0, 2) }}</td>
+                    <td>{{ number_format($cuota->intereses_capital ?? 0, 2) }}</td>
+                    <td>
+                        @if(isset($cuota->pago_capital))
+                            {{ $cuota->pago_capital == 1 ? 'Reducir cuota' : 'Reducir plazo' }}
+                        @else
+                            -
+                        @endif
+                    </td>
+                    <td>{{ number_format($cuota->nuevo_saldo_deuda ?? 0, 2) }}</td>
                     <td>
                         @if($cuota->pago_capital == null)
                             {{ number_format($cuota->monto, 2) }}
@@ -306,7 +331,10 @@
                 <td style="text-align:right;"><b>Total</b></td>
                 <td>{{ number_format($totalInteresInd, 2) }}</td>
                 <td>{{ number_format($totalAmortizacionInd, 2) }}</td>
-               
+                <td><!-- Suma de monto_capital individual, si se requiere --></td>
+                <td><!-- Suma de intereses_capital individual, si se requiere --></td>
+                <td></td>
+                <td></td>
                 <td>{{ number_format($totalCuotaInd, 2) }}</td>
             </tr>
         </tfoot>

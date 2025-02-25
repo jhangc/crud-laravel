@@ -1721,7 +1721,7 @@ class creditoController extends Controller
         } else {
             $query2->whereNull('cliente_id');
         }
-        $query2->where('fecha', '>=', $ultimo_cronograma_pagado->fecha)
+        $query2->where('numero', '>', $ultimo_cronograma_pagado->numero)
             ->whereNotIn('id', function($query) {
                 $query->select('cronograma_id')->from('ingresos');
             });
@@ -1776,6 +1776,16 @@ class creditoController extends Controller
             ->get();
         $amortizacionFaltante = $cronogramasPendientes->sum('amortizacion');
 
+        $proximaCuota = $cronogramasPendientes->firstWhere('numero', $ultimo_cronograma_pagado->numero + 1);
+
+        $fechaProxima = Carbon::parse($proximaCuota->fecha);
+        if ($proximaCuota) {
+            $fechaProxima = Carbon::parse($proximaCuota->fecha);
+            $puedeamortizar = $fechaProxima->diffInDays(now()) < 8 ? 0 : 1;
+        } else {
+            $puedeamortizar = 0;
+        }
+
         return [
             'cuota'                 => $cuotaPendiente,
             'intereses'             => round($intereses, 2),
@@ -1783,6 +1793,8 @@ class creditoController extends Controller
             'monto_total'           => round($amortizacionFaltante + $intereses, 2),
             'dias_transcurridos'=>$diasTranscurridos,
             'dias_periodo'=>$diasPeriodo,
+            'puedeamortizar'=>$puedeamortizar,
+            'dias_fal'=>$fechaProxima->diffInDays(now())
         ];
     }
     public function generarNuevoCronograma(Request $request) {
