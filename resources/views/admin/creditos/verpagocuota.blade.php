@@ -461,7 +461,7 @@
                             text: response.success,
                             icon: 'success'
                         }).then(() => {
-                            window.open('/admin/generar-ticket-pagogrupal/' + response.ingreso_ids.join('-'), '_blank');
+                            window.open('/admin/generar-ticket-pagototal-individual/' + response.ingreso_ids.join('-'), '_blank');
                             location.reload();
                         });
                     },

@@ -212,4 +212,5 @@ Route::post('/calcular-cuota-pendiente', [App\Http\Controllers\creditoController
 Route::post('/generarcronogram/temp/', [App\Http\Controllers\creditoController::class, 'generarNuevoCronograma'])->name('generar.nuevo.cronograma');
 Route::post('/generarcronogram/final', [App\Http\Controllers\creditoController::class, 'amortizarCapital'])->name('amortizar.capital')->middleware('auth');
 Route::get('/vernuevocronograma/{id}', [PDFController::class, 'generarNuevoCronogramaPDF'])->name('generar.pdf.nuevo cronograma');
+Route::get('/admin/generar-ticket-pagototal-individual/{array}', [PDFController::class, 'Pagototalindividual'])->name('generar.pdf.Pagototalindividual');
 

@@ -1639,5 +1639,34 @@ class PdfController extends Controller
         return $pdf->stream('cronograma.pdf');
         // return view('pdf.cronogramagrupalnuevo', $data);
     }
+    public function Pagototalindividual($array) {
+        $idsArray = explode('-', $array);
+        $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->orderBy('id', 'asc')->get();
     
+        if ($ingresos->isEmpty()) {
+            return response()->json(['error' => 'Pagos no encontrados.'], 404);
+        }
+        $ingreso = $ingresos->first();
+        $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
+        $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
+        $total_pago = $ingresos->sum('monto');
+        $total_mora = $ingresos->sum('monto_mora');
+        $total_final_pago = $ingresos->sum('monto_total_pago_final');
+        $total_intereses = 0;
+    
+        foreach ($ingresos as $ingreso) {
+            $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
+            if ($cronograma) {
+                $total_intereses += $cronograma->interes;
+            }
+        }
+        $pdf = Pdf::loadView('pdf.ticketpagototalindividual', compact( 'prestamo'      ,
+        'cliente'           ,
+        'ingreso'         , 
+        'total_pago'        ,
+        'total_mora'        ,
+        'total_final_pago'  ,
+        'total_intereses'   ))->setPaper([0, 0, 200, 400]);
+        return $pdf->stream('tickets.pdf');
+    }
 }
