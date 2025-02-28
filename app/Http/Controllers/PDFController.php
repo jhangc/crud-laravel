@@ -1641,12 +1641,13 @@ class PdfController extends Controller
     }
     public function Pagototalindividual($array) {
         $idsArray = explode('-', $array);
-        $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->orderBy('id', 'asc')->get();
+        $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->orderBy('numero_cuota', 'asc')->get();
     
         if ($ingresos->isEmpty()) {
             return response()->json(['error' => 'Pagos no encontrados.'], 404);
         }
         $ingreso = $ingresos->first();
+        // dd($ingreso);
         $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
         $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
         $total_pago = $ingresos->sum('monto');
@@ -1654,18 +1655,18 @@ class PdfController extends Controller
         $total_final_pago = $ingresos->sum('monto_total_pago_final');
         $total_intereses = 0;
     
-        foreach ($ingresos as $ingreso) {
-            $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
-            if ($cronograma) {
-                $total_intereses += $cronograma->interes;
+        foreach ($ingresos as $ingreso1) {
+            $cronograma1 = \App\Models\Cronograma::find($ingreso1->cronograma_id);
+            if ($cronograma1->fecha<$ingreso->fecha_pago) {
+                $total_intereses += $cronograma1->interes;
             }
         }
         $pdf = Pdf::loadView('pdf.ticketpagototalindividual', compact( 'prestamo'      ,
-        'cliente'           ,
-        'ingreso'         , 
-        'total_pago'        ,
-        'total_mora'        ,
-        'total_final_pago'  ,
+        'cliente',
+        'ingreso', 
+        'total_pago',
+        'total_mora',
+        'total_final_pago',
         'total_intereses'   ))->setPaper([0, 0, 200, 400]);
         return $pdf->stream('tickets.pdf');
     }
