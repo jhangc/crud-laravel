@@ -1552,7 +1552,7 @@ class PdfController extends Controller
         // return view('pdf.cronogramagrupalnuevo', $data);
     }
     
-    public function generarNuevoCronogramaPDF($id)
+    public function generarNuevoCronogramaPDF ($id)
     {
         $prestamo = credito::find($id);
         if (!$prestamo) {
@@ -1639,7 +1639,7 @@ class PdfController extends Controller
         return $pdf->stream('cronograma.pdf');
         // return view('pdf.cronogramagrupalnuevo', $data);
     }
-    public function Pagototalindividual($array) {
+    public function Pagototalindividual($array)  {
         $idsArray = explode('-', $array);
         $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->orderBy('numero_cuota', 'asc')->get();
     
