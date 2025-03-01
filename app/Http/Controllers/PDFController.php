@@ -1554,7 +1554,7 @@ class PdfController extends Controller
     
     public function generarNuevoCronogramaPDF($id)
     {
-        $prestamo = Credito::find($id);
+        $prestamo = credito::find($id);
         if (!$prestamo) {
             abort(404, "Crédito no encontrado.");
         }
@@ -1649,7 +1649,7 @@ class PdfController extends Controller
         $ingreso = $ingresos->first();
         // dd($ingreso);
         $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
-        $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
+        $cliente = \App\Models\cliente::find($ingreso->cliente_id);
         $total_pago = $ingresos->sum('monto');
         $total_mora = $ingresos->sum('monto_mora');
         $total_final_pago = $ingresos->sum('monto_total_pago_final');
