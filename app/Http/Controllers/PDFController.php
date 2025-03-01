@@ -1648,7 +1648,7 @@ class PdfController extends Controller
         }
         $ingreso = $ingresos->first();
         // dd($ingreso);
-        $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
+        $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
         $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
         $total_pago = $ingresos->sum('monto');
         $total_mora = $ingresos->sum('monto_mora');
