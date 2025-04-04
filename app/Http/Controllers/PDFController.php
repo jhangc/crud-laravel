@@ -1227,7 +1227,7 @@ class PdfController extends Controller
             ->first();
         $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
 
-        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota'))
+        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota','siguienteCuota'))
             ->setPaper([0, 0, 200, 400]); // Ajustar el tamaño del papel si es necesario
         return $pdf->stream('ticket.pdf');
     }
@@ -1456,6 +1456,7 @@ class PdfController extends Controller
             // Obtener la siguiente cuota
             $siguienteCuota = \App\Models\Cronograma::where('id_prestamo', $ingreso->prestamo_id)
                 ->where('numero', '>', $ingreso->numero_cuota)
+                ->where('cliente_id', '=', $ingreso->cliente_id)
                 ->orderBy('numero', 'asc')
                 ->first();
             $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
@@ -1465,11 +1466,12 @@ class PdfController extends Controller
                 'cliente' => $cliente,
                 'ingreso' => $ingreso,
                 'cronograma' => $cronograma,
-                'fechaSiguienteCuota' => $fechaSiguienteCuota
+                'fechaSiguienteCuota' => $fechaSiguienteCuota,
+                'siguienteCuota'=>$siguienteCuota
             ];
         }
 
-        // dd($data);
+        //  dd($data);
 
         $pdf = Pdf::loadView('pdf.ticketpagogrupal', compact('data'))->setPaper([0, 0, 200, 400]);
         return $pdf->stream('tickets.pdf');

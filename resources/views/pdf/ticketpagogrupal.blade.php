@@ -118,9 +118,9 @@
                             : number_format($item['cronograma']->nuevo_saldo_deuda ?? 0, 2) 
                         }}</span></p> -->
 
-                        <p><span class="label">Monto Sig. Cuota :</span> <span class="value">S/.{{ $item['cronograma']->pago_capital == null 
-                            ? number_format($item['cronograma']->monto, 2) 
-                            : number_format($item['cronograma']->monto ?? 0, 2) 
+                        <p><span class="label">Monto sig.Cuota:</span> <span class="value">S/.{{ $item['fechaSiguienteCuota'] !='N/A'?(
+                             number_format($item['siguienteCuota']->monto, 2) 
+                            ):'0.00';
                         }}</span></p>
 
 
