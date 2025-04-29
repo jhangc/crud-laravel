@@ -295,7 +295,7 @@
                     </li>
                 @endrole
 
-                @role('Administrador')
+                <!-- @role('Administrador')
                     <li class="nav-item">
                         <a href="#" class="nav-link active">
                             <i class="nav-icon fas"><i class="bi bi-buildings"></i></i>
@@ -338,7 +338,7 @@
                             </li>
                         </ul>
                     </li>
-                @endrole
+                @endrole -->
 
                 @can('usuarios.index')
                     <li class="nav-item">
