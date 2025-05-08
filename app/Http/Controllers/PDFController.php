@@ -1403,7 +1403,7 @@ class PdfController extends Controller
                 'hora_deposito'   => Carbon::parse($cts->fecha_deposito)->format('H:i:s'),
                 'monto'           => $cts->monto,
                 'numero_cuenta'   => $cts->ctsUsuario->numero_cuenta,
-                'usuario'         => $cts->ctsUsuario->user->namename,
+                'usuario'         => $cts->ctsUsuario->user->name,
             ];
         });
 
@@ -1419,7 +1419,7 @@ class PdfController extends Controller
         $saldoFinalReal += $datosCierre['depositos'];
 
         // Calcular el saldo final esperado
-        $saldoFinalEsperado = $transaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto') + $ingresosExtras->sum('monto');
+        $saldoFinalEsperado = $transaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $pago_cts->sum('monto') - $gastos->sum('monto_gasto') + $ingresosExtras->sum('monto');
 
         $desajuste = $saldoFinalEsperado - $saldoFinalReal;
 

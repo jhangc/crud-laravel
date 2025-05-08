@@ -194,6 +194,32 @@
     </table>
     <h3>Total de Gastos: S/. {{ number_format($totalGastos, 2) }}</h3>
 
+    <h2>Pago CTS</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Hora de Depósito</th>
+                <th>Monto</th>
+                <th>Número de Cuenta</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $totalCts = 0; @endphp
+            @foreach ($ctsConDetalles as $cts)
+                <tr>
+                    <td>{{ $cts['hora_deposito'] }}</td>
+                    <td>S/. {{ number_format(floatval($cts['monto']), 2) }}</td>
+                    <td>{{ $cts['numero_cuenta'] }}</td>
+                    <td>{{ $cts['usuario'] }}</td>
+                </tr>
+                @php $totalCts += floatval($cts['monto']); @endphp
+            @endforeach
+        </tbody>
+    </table>
+    <h3>Total Pago CTS: S/. {{ number_format($totalCts, 2) }}</h3>
+
+
 
     <br><br><br><br>
     <table style="border-collapse: collapse; width: 100%;">
