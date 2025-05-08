@@ -32,6 +32,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link href="https://cdn.datatables.net/1.11.3/css/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
 
+    <!-- Buttons styling para Bootstrap 4 -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap4.min.css">
 
     <link rel="icon" href="{{ asset('dist/img/fdfds.ico') }}" type="image/x-icon">
 
@@ -88,7 +90,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
         <!-- Main Sidebar Container -->
         @include('partials.asside')
-        
+
 
         <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
@@ -141,6 +143,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap4.min.js"></script>
+
+
+    <!-- Responsive extension JS -->
+    {{-- <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap4.min.js"></script> --}}
 
 
 </body>

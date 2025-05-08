@@ -19,8 +19,7 @@ use App\Models\Ingreso;
 use App\Models\Gasto;
 use App\Models\IngresoExtra;
 use App\Models\CorrelativoCredito;
-
-
+use App\Models\DepositoCts;
 
 class creditoController extends Controller
 {
@@ -829,8 +828,13 @@ class creditoController extends Controller
 
         $gastos = Gasto::where('caja_transaccion_id', $cajaAbierta->id)->sum('monto_gasto');
         $ingresosExtras = IngresoExtra::where('caja_transaccion_id', $cajaAbierta->id)->sum('monto');
+        $pago_cts = DepositoCts::where('caja_transaccion_id', $cajaAbierta->id)
+            ->where('estado', 1)               // Solo movimientos pagados
+            ->where('tipo_transaccion', 2)     // Solo retiros (egresos)
+            ->sum('monto');
 
-        return view('admin.caja.arqueo', compact('cajaAbierta', 'ingresos', 'egresos', 'montoApertura', 'gastos', 'ingresosExtras'));
+
+        return view('admin.caja.arqueo', compact('cajaAbierta', 'ingresos', 'egresos', 'montoApertura', 'gastos', 'ingresosExtras', 'pago_cts'));
     }
 
 
@@ -1052,7 +1056,7 @@ class creditoController extends Controller
                     $fecha_vencimiento = Carbon::parse($cuotaGeneral->fecha);
                     $cuotasRelacionadas = Cronograma::where('id_prestamo', $id)
                         ->where('fecha', $cuotaGeneral->fecha)
-                        ->where('numero',$cuotaGeneral->numero)
+                        ->where('numero', $cuotaGeneral->numero)
                         ->whereNotNull('cliente_id')
                         ->get();
 
@@ -1116,29 +1120,28 @@ class creditoController extends Controller
                             $fecha_pago = $ingresoGeneral->fecha_pago;
                             $diasMora = $ingresoGeneral->dias_mora;
                             $montoMoraTotal = $ingresoGeneral->monto_mora;
-                        }
-                        else{
+                        } else {
                             //si todas als relacionadas estan pagadas  si  no existe ingresod ela gneral si ,
-                           $newIngreso =new Ingreso();
-                           $newIngreso->transaccion_id=$ingresoRelacionado->transaccion_id;
-                           $newIngreso->cliente_id=null;
-                           $newIngreso->prestamo_id=$ingresoRelacionado->prestamo_id;
-                           $newIngreso->cronograma_id=$cuotaGeneral->id;
-                           $newIngreso->numero_cuota=$cuotaGeneral->numero;
-                           $newIngreso->monto_cuota=null;
-                           $newIngreso->fecha_pago=$ingresoRelacionado->fecha_pago;
-                           $newIngreso->hora_pago=$ingresoRelacionado->hora_pago;
-                           $newIngreso->monto=$cuotaGeneral->monto;
-                           $newIngreso->monto_mora=$montoMoraTotal;          // Nuevo campo
-                           $newIngreso->dias_mora= $diasMora;           // Nuevo campo
-                           $newIngreso->porcentaje_mora= $diasMora>0?1.5:0;   // Nuevo campo
-                           $newIngreso->monto_total_pago_final=$montoMoraTotal + $cuotaGeneral->monto; // Nuevo campo
-                           $newIngreso->sucursal_id=$ingresoRelacionado->sucursal_id;
-                           $newIngreso->save();
-                         }
-                        $puedeAmortizar ++;
+                            $newIngreso = new Ingreso();
+                            $newIngreso->transaccion_id = $ingresoRelacionado->transaccion_id;
+                            $newIngreso->cliente_id = null;
+                            $newIngreso->prestamo_id = $ingresoRelacionado->prestamo_id;
+                            $newIngreso->cronograma_id = $cuotaGeneral->id;
+                            $newIngreso->numero_cuota = $cuotaGeneral->numero;
+                            $newIngreso->monto_cuota = null;
+                            $newIngreso->fecha_pago = $ingresoRelacionado->fecha_pago;
+                            $newIngreso->hora_pago = $ingresoRelacionado->hora_pago;
+                            $newIngreso->monto = $cuotaGeneral->monto;
+                            $newIngreso->monto_mora = $montoMoraTotal;          // Nuevo campo
+                            $newIngreso->dias_mora = $diasMora;           // Nuevo campo
+                            $newIngreso->porcentaje_mora = $diasMora > 0 ? 1.5 : 0;   // Nuevo campo
+                            $newIngreso->monto_total_pago_final = $montoMoraTotal + $cuotaGeneral->monto; // Nuevo campo
+                            $newIngreso->sucursal_id = $ingresoRelacionado->sucursal_id;
+                            $newIngreso->save();
+                        }
+                        $puedeAmortizar++;
                     }
-                    if($vencidas>0){
+                    if ($vencidas > 0) {
                         $cuotasVencidas++;
                     }
 
@@ -1170,7 +1173,7 @@ class creditoController extends Controller
                 }
             }
         }
-    
+
         return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasGenerales', 'cuotasPorCliente', 'puedeAmortizar', 'cuotasVencidas'));
     }
 
@@ -1722,7 +1725,7 @@ class creditoController extends Controller
             $query2->whereNull('cliente_id');
         }
         $query2->where('numero', '>', $ultimo_cronograma_pagado->numero)
-            ->whereNotIn('id', function($query) {
+            ->whereNotIn('id', function ($query) {
                 $query->select('cronograma_id')->from('ingresos');
             });
         $cuotaPendiente = $query2->orderBy('numero', 'asc')->first();
@@ -1732,9 +1735,9 @@ class creditoController extends Controller
         }
 
         $fechaUltimaCuota = Carbon::parse($ultimo_cronograma_pagado->fecha);
-        $diasTranscurridos = $fechaUltimaCuota->isPast() 
-                            ? $fechaUltimaCuota->diffInDays(now()) 
-                             : 0;
+        $diasTranscurridos = $fechaUltimaCuota->isPast()
+            ? $fechaUltimaCuota->diffInDays(now())
+            : 0;
 
         switch ($frecuencia) {
             case 'catorcenal':
@@ -1747,7 +1750,7 @@ class creditoController extends Controller
                 $diasPeriodo = 28;
                 break;
             case 'semestral':
-                $diasPeriodo = 182; 
+                $diasPeriodo = 182;
                 break;
             case 'anual':
                 $diasPeriodo = 365;
@@ -1763,13 +1766,13 @@ class creditoController extends Controller
         $intereses = $tasaInteresDiaria * $diasTranscurridos;
 
         $cronogramasPendientes = Cronograma::where('id_prestamo', $prestamo_id)
-            ->when($categoria_c != 'grupal', function($query) {
+            ->when($categoria_c != 'grupal', function ($query) {
                 $query->whereNotNull('cliente_id');
-            }, function($query) {
+            }, function ($query) {
                 $query->whereNull('cliente_id');
             })
             ->where('fecha', '>=', $cuotaPendiente->fecha)
-            ->whereNotIn('id', function($query) {
+            ->whereNotIn('id', function ($query) {
                 $query->select('cronograma_id')->from('ingresos');
             })
             ->orderBy('fecha', 'asc')
@@ -1791,33 +1794,34 @@ class creditoController extends Controller
             'intereses'             => round($intereses, 2),
             'amortizacion_faltante' => round($amortizacionFaltante, 2),
             'monto_total'           => round($amortizacionFaltante + $intereses, 2),
-            'dias_transcurridos'=>$diasTranscurridos,
-            'dias_periodo'=>$diasPeriodo,
-            'puedeamortizar'=>$puedeamortizar,
-            'dias_fal'=>$fechaProxima->diffInDays(now())
+            'dias_transcurridos' => $diasTranscurridos,
+            'dias_periodo' => $diasPeriodo,
+            'puedeamortizar' => $puedeamortizar,
+            'dias_fal' => $fechaProxima->diffInDays(now())
         ];
     }
-    public function generarNuevoCronograma(Request $request) {
+    public function generarNuevoCronograma(Request $request)
+    {
         $prestamo_id = $request->prestamo_id;
         $credito = Credito::find($prestamo_id);
-        
+
         if (!$credito) {
             return response()->json(['error' => 'Crédito no encontrado.'], 404);
         }
-        
+
         // Datos enviados desde el formulario
         $opcion = $request->opcion; // 'reducir_cuota' o 'reducir_plazo'
-        $numero_cuota = $request->numero_cuota;    
+        $numero_cuota = $request->numero_cuota;
         $intereses_a_pagar = $request->intereses_a_pagar;
         $capital_pendiente = $request->capital_pendiente;
         $total_a_pagar_posible = $request->total_a_pagar_posible;
         $monto_pago_capital = $request->monto_pago_capital;
-        
+
         $categoria_c = $credito->categoria;
-        
+
         // Nuevo principal es el total pendiente menos lo que se va a abonar a capital
         $nuevoPrincipal = $total_a_pagar_posible - $monto_pago_capital;
-        
+
         // Contar la cantidad de cuotas pendientes a partir de la cuota actual (excluyendo la ya pagada)
         $pendingQuery = Cronograma::where('id_prestamo', $prestamo_id)
             ->where('numero', '>', $numero_cuota);
@@ -1827,16 +1831,16 @@ class creditoController extends Controller
             $pendingQuery->whereNull('cliente_id');
         }
         $remainingPeriods = $pendingQuery->count();
-        
+
         if ($remainingPeriods <= 0) {
             return response()->json(['error' => 'No quedan cuotas pendientes.'], 400);
         }
-        
+
         // Determinar la frecuencia y calcular la tasa periódica
         // Se asume que en el crédito se guarda la recurrencia en $credito->recurrencia
         $frecuencia = $credito->recurrencia;
         $tea = $credito->tasa; // Tasa anual (en %)
-        
+
         // Definir número de periodos por año y el intervalo en días para calcular la fecha
         $intervalDays = 30; // valor por defecto (mensual)
         switch ($frecuencia) {
@@ -1866,27 +1870,26 @@ class creditoController extends Controller
                 $intervalDays = 30;
                 break;
         }
-        $i = pow(1 + $tea/100, 1/$nPeriodsPerYear) - 1;
+        $i = pow(1 + $tea / 100, 1 / $nPeriodsPerYear) - 1;
         $tasaDiaria = pow(1 + ($tea / 100), 1 / 360) - 1;
         $cuotas = [];
-        $periodoGraciaDias =$credito->periodo_gracia_dias??0;
+        $periodoGraciaDias = $credito->periodo_gracia_dias ?? 0;
         $fechaInicio = Carbon::now()->addDays($periodoGraciaDias);
 
         $interesesPeriodoGracia = $nuevoPrincipal * $tasaDiaria * $periodoGraciaDias;
         $interesesMensualesPorGracia = $interesesPeriodoGracia / $remainingPeriods;
-        
+
         if ($opcion == 'reducir_cuota') {
             $n = $remainingPeriods;
-            $cuota = ($nuevoPrincipal * $i * pow(1+$i, $n)) / (pow(1+$i, $n) - 1);
+            $cuota = ($nuevoPrincipal * $i * pow(1 + $i, $n)) / (pow(1 + $i, $n) - 1);
             if ($credito->producto == 'grupal') {
                 $cuota_real = $cuota + 0.021 * $cuota;
-            }else if($periodoGraciaDias>0){
+            } else if ($periodoGraciaDias > 0) {
                 $cuota_real = $cuota + $interesesMensualesPorGracia + 0.011 * $cuota;
-            }
-             else {
+            } else {
                 $cuota_real = $cuota;
             }
-            
+
             $saldo = $nuevoPrincipal;
             for ($j = 0; $j < $n; $j++) {
                 $interesPeriodo = $saldo * $i;
@@ -1896,7 +1899,7 @@ class creditoController extends Controller
                     $cuota_real = $amortizacion + $interesPeriodo;
                 }
                 $saldo -= $amortizacion;
-                
+
                 $cuotas[] = [
                     // La numeración se ajusta: si la cuota actual pagada es $numero_cuota, la primera pendiente es $numero_cuota + 1
                     'numero_cuota' => $numero_cuota + $j + 1,
@@ -1907,7 +1910,7 @@ class creditoController extends Controller
                     'fecha_pago'   => $fechaInicio->copy()->addDays(($intervalDays *  ($j + 1)))->format('Y-m-d')
                 ];
             }
-        } 
+        }
         if ($opcion == 'reducir_plazo') {
             // Se mantiene la cuota fija de la primera cuota pendiente y se recalcula el número de periodos necesarios
             $query = Cronograma::where('id_prestamo', $prestamo_id)
@@ -1924,7 +1927,7 @@ class creditoController extends Controller
             }
 
             $cuotaFija = $firstPending->monto;
-          
+
             if ($cuotaFija * $i >= $nuevoPrincipal) {
                 $n = 1;
             } else {
@@ -1950,7 +1953,7 @@ class creditoController extends Controller
                 ];
             }
         }
-        
+
         return response()->json([
             'cuotas' => $cuotas,
             'nuevo_principal' => round($nuevoPrincipal, 2)
@@ -1991,7 +1994,7 @@ class creditoController extends Controller
             'transaccion_id'           => $ultimaTransaccion->id,
             'prestamo_id'              => $prestamo_id,
             'cliente_id'               => ($categoria_c == 'grupal') ? null : $credito->clientes()->first()->id,
-            'cronograma_id'            => null, 
+            'cronograma_id'            => null,
             'numero_cuota'             => $numero_cuota,
             'monto'                    => $monto_pago_capital, // monto total pagado (intereses + capital)
             'monto_mora'               => 0,
@@ -2001,26 +2004,26 @@ class creditoController extends Controller
             'hora_pago'                => Carbon::now()->toTimeString(),
             'sucursal_id'              => $user->sucursal_id,
             'monto_total_pago_final'   => $monto_pago_capital,
-            'interes_pago_capital'       =>$intereses_a_pagar,
-            'pago_capital'             =>$opcion == 'reducir_cuota'?1:2,
-            
+            'interes_pago_capital'       => $intereses_a_pagar,
+            'pago_capital'             => $opcion == 'reducir_cuota' ? 1 : 2,
+
         ]);
 
         $cronograma = \App\Models\Cronograma::where('id_prestamo', $prestamo_id)
-                            ->where('numero', $numero_cuota)
-                            ->where('cliente_id', $ingresoGeneral->cliente_id)
-                            ->first();
+            ->where('numero', $numero_cuota)
+            ->where('cliente_id', $ingresoGeneral->cliente_id)
+            ->first();
 
-        $cronograma->monto_capital =$monto_pago_capital- $intereses_a_pagar;
-        $cronograma->intereses_capital=$intereses_a_pagar;
-        $cronograma->pago_capital=$opcion == 'reducir_cuota'?1:2;
-        $cronograma->nuevo_saldo_deuda=$nuevoPrincipal;
+        $cronograma->monto_capital = $monto_pago_capital - $intereses_a_pagar;
+        $cronograma->intereses_capital = $intereses_a_pagar;
+        $cronograma->pago_capital = $opcion == 'reducir_cuota' ? 1 : 2;
+        $cronograma->nuevo_saldo_deuda = $nuevoPrincipal;
         $cronograma->save();
-        $ingresoGeneral->cronograma_id=$cronograma->id;
+        $ingresoGeneral->cronograma_id = $cronograma->id;
         $ingresoGeneral->save();
 
         if ($categoria_c == 'grupal') {
-            
+
             $totalIndividual = $credito->creditoClientes()->sum('monto_indivual');
             foreach ($credito->creditoClientes as $cc) {
                 $proporcion = ($totalIndividual > 0) ? $cc->monto_indivual / $totalIndividual : 0;
@@ -2028,7 +2031,7 @@ class creditoController extends Controller
                 $capital_individual = round($monto_pago_capital * $proporcion, 2);
                 $total_individual = $interes_individual + $capital_individual;
 
-                $ingresoindividual=\App\Models\Ingreso::create([
+                $ingresoindividual = \App\Models\Ingreso::create([
                     'transaccion_id'           => $ultimaTransaccion->id,
                     'prestamo_id'              => $prestamo_id,
                     'cliente_id'               => $cc->cliente_id,
@@ -2043,39 +2046,49 @@ class creditoController extends Controller
                     'sucursal_id'              => $user->sucursal_id,
                     'monto_total_pago_final'   => $total_individual,
 
-                    'interes_pago_capital'       =>$interes_individual,
-                     'pago_capital'             =>$opcion == 'reducir_cuota'?1:2,
+                    'interes_pago_capital'       => $interes_individual,
+                    'pago_capital'             => $opcion == 'reducir_cuota' ? 1 : 2,
                 ]);
 
                 $cronograma = \App\Models\Cronograma::where('id_prestamo', $prestamo_id)
-                            ->where('numero', $numero_cuota)
-                            ->where('cliente_id', $cc->cliente_id)
-                            ->first();
-                
-                $cronograma->monto_capital =  $capital_individual-$interes_individual;
-                $cronograma->intereses_capital=$interes_individual;
-                $cronograma->pago_capital=$opcion == 'reducir_cuota'?1:2;
-                $cronograma->nuevo_saldo_deuda=($cronograma->saldo_deuda+$cronograma->amortizacion)-$cronograma->monto_capital;
+                    ->where('numero', $numero_cuota)
+                    ->where('cliente_id', $cc->cliente_id)
+                    ->first();
+
+                $cronograma->monto_capital =  $capital_individual - $interes_individual;
+                $cronograma->intereses_capital = $interes_individual;
+                $cronograma->pago_capital = $opcion == 'reducir_cuota' ? 1 : 2;
+                $cronograma->nuevo_saldo_deuda = ($cronograma->saldo_deuda + $cronograma->amortizacion) - $cronograma->monto_capital;
                 $cronograma->save();
-                
-                $ingresoindividual->cronograma_id=$cronograma->id;
+
+                $ingresoindividual->cronograma_id = $cronograma->id;
                 $ingresoindividual->save();
             }
         }
         $resultado = $this->generarNuevoCronogramaInterno(
-            $prestamo_id, $opcion, $numero_cuota,
-            $intereses_a_pagar, $capital_pendiente,
-            $total_a_pagar_posible, $monto_pago_capital
+            $prestamo_id,
+            $opcion,
+            $numero_cuota,
+            $intereses_a_pagar,
+            $capital_pendiente,
+            $total_a_pagar_posible,
+            $monto_pago_capital
         );
 
         return response()->json([
             'success' => 'Amortización al capital realizada con éxito.',
-            'cronograma' => $resultado??''
+            'cronograma' => $resultado ?? ''
         ]);
     }
-    protected function generarNuevoCronogramaInterno($prestamo_id, $opcion, $numero_cuota,
-                                         $intereses_a_pagar, $capital_pendiente, $total_a_pagar_posible, $monto_pago_capital)
-    {
+    protected function generarNuevoCronogramaInterno(
+        $prestamo_id,
+        $opcion,
+        $numero_cuota,
+        $intereses_a_pagar,
+        $capital_pendiente,
+        $total_a_pagar_posible,
+        $monto_pago_capital
+    ) {
         $credito = Credito::find($prestamo_id);
         $categoria_c = $credito->categoria;
         $frecuencia = $credito->recurrencia;
@@ -2086,7 +2099,7 @@ class creditoController extends Controller
 
         // Cuotas pendientes a partir de la cuota actual (excluyendo la cuota pagada)
         $pendingQuery = \App\Models\Cronograma::where('id_prestamo', $prestamo_id)
-                        ->where('numero', '>', $numero_cuota);
+            ->where('numero', '>', $numero_cuota);
         if ($categoria_c != 'grupal') {
             $pendingQuery->whereNotNull('cliente_id');
         } else {
@@ -2127,10 +2140,10 @@ class creditoController extends Controller
                 $intervalDays = 30;
                 break;
         }
-        $i = pow(1 + $tea/100, 1/$nPeriodsPerYear) - 1;
+        $i = pow(1 + $tea / 100, 1 / $nPeriodsPerYear) - 1;
         $tasaDiaria = pow(1 + ($tea / 100), 1 / 360) - 1;
         $cuotas = [];
-        $periodoGraciaDias =$credito->periodo_gracia_dias??0;
+        $periodoGraciaDias = $credito->periodo_gracia_dias ?? 0;
         $fechaInicio = Carbon::now()->addDays($periodoGraciaDias);
 
         $interesesPeriodoGracia = $nuevoPrincipal * $tasaDiaria * $periodoGraciaDias;
@@ -2139,14 +2152,12 @@ class creditoController extends Controller
 
         if ($opcion == 'reducir_cuota') {
             $n = $remainingPeriods;
-            $cuota = ($nuevoPrincipal * $i * pow(1+$i, $n)) / (pow(1+$i, $n) - 1);
+            $cuota = ($nuevoPrincipal * $i * pow(1 + $i, $n)) / (pow(1 + $i, $n) - 1);
             if ($credito->producto == 'grupal') {
                 $cuota_real = $cuota + 0.021 * $cuota;
-            }
-            else if($periodoGraciaDias>0){
+            } else if ($periodoGraciaDias > 0) {
                 $cuota_real = $cuota + $interesesMensualesPorGracia + 0.011 * $cuota;
-            }
-             else {
+            } else {
                 $cuota_real = $cuota;
             }
             $saldo = $nuevoPrincipal;
@@ -2169,7 +2180,7 @@ class creditoController extends Controller
             }
         } else if ($opcion == 'reducir_plazo') {
             $query = \App\Models\Cronograma::where('id_prestamo', $prestamo_id)
-                        ->where('numero', '>=', $numero_cuota);
+                ->where('numero', '>=', $numero_cuota);
             if ($categoria_c != 'grupal') {
                 $query->whereNotNull('cliente_id');
             } else {
@@ -2271,7 +2282,7 @@ class creditoController extends Controller
                 }
             }
         }
-        
+
         return [
             'success' => 'Nuevo cronograma generado y almacenado correctamente.',
             'cuotas' => $cuotas,

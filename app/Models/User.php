@@ -20,6 +20,9 @@ class User extends Authenticatable
         'sucursal_id', 
         'telefono', // Agregado
         'estado', // Agregado
+        'dni',               // nuevo
+        'numero_cuenta',     // nuevo
+        'fecha_nacimiento',  // nuevo
     ];
 
     protected $hidden = [
@@ -40,5 +43,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function ctsUsuario()
+    {
+        return $this->hasOne(CtsUsuario::class, 'user_id');
+    }
 }
 

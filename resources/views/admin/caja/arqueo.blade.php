@@ -92,6 +92,9 @@
                             <input type="text" class="form-control bg-info text-white" id="total_ingresos_extras" value="Ingresos Extras: S/. {{ $ingresosExtras ?? 0 }}" readonly>
                         </div>
                         <div class="col-md-4 mb-2">
+                            <input type="text" class="form-control bg-success text-white" id="total_pago_cts" value="Pago CTS: S/. {{ $pago_cts ?? 0 }}" readonly>
+                        </div>
+                        <div class="col-md-4 mb-2">
                             <input type="text" class="form-control bg-info text-white" id="total_depositos_display" value="Depósitos: S/. 0.00" readonly>
                         </div>
                         <div class="col-md-4 mb-2">
@@ -131,7 +134,8 @@
         var egresos = parseFloat('{{ $egresos ?? 0 }}');
         var gastos = parseFloat('{{ $gastos ?? 0 }}');
         var ingresosExtras = parseFloat('{{ $ingresosExtras ?? 0 }}');
-        var saldoFinal = montoApertura + ingresos - egresos - gastos + ingresosExtras;
+        var pago_cts = parseFloat('{{ $pago_cts ?? 0 }}');
+        var saldoFinal = montoApertura + ingresos - egresos - gastos - pago_cts + ingresosExtras;
         
         document.getElementById('saldo_final').value = 'S/. ' + saldoFinal.toFixed(2);
     }

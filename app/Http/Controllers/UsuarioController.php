@@ -10,6 +10,8 @@ use Spatie\Permission\Models\Role;
 use App\Models\credito;
 use App\Models\cliente;
 use App\Models\CreditoCliente;
+use App\Models\CtsUsuario;
+use Illuminate\Support\Facades\DB;
 
 class UsuarioController extends Controller
 {
@@ -42,33 +44,70 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|max:100',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
-            'direccion' => 'nullable|max:255',  // Asegúrate de validar como email y que sea único en la tabla de usuarios
-            'role' => 'required|exists:roles,id',  // Asegúrate de que el ID del rol exista en la tabla de roles
-            'telefono' => 'required|numeric',
+            'name'              => 'required|max:100',
+            'email'             => 'required|email|unique:users,email',
+            'password'          => 'required|min:6|confirmed',
+            'telefono'          => 'required|numeric',
+            'dni'               => 'required|digits:8',
+            'direccion'         => 'nullable|max:255',
+            'fecha_nacimiento'  => 'required|date|before:today',
+            'role'              => 'required|exists:roles,id',
         ]);
 
-        $usuario = new User();
-        $usuario->name = $request->name;
-        $usuario->email = $request->email;
-        $usuario->password = Hash::make($request['password']);
-        $usuario->direccion = $request->direccion;  // Guarda la dirección
-        $usuario->telefono = $request->telefono;
-        $usuario->estado = 1;
+        // 1) Creamos el usuario
+        $usuario = User::create([
+            'name'              => $request->name,
+            'email'             => $request->email,
+            'password'          => Hash::make($request->password),
+            'telefono'          => $request->telefono,
+            'dni'               => $request->dni,
+            'direccion'         => $request->direccion,
+            'fecha_nacimiento'  => $request->fecha_nacimiento,
+            'estado'            => 1,
+        ]);
+
+        // 2) Generamos la cuenta CTS y la guardamos en su tabla
+        $cts = CtsUsuario::create([
+            'user_id'                => $usuario->id,
+            'numero_cuenta'          => $this->generateUniqueAccountNumber($request->dni),
+            'saldo_disponible'       => 0,
+            'fecha_ultimo_deposito'  => null,
+        ]);
+
+        // 3) Asignamos el id de esa cuenta al usuario
+        $usuario->id_cuenta = $cts->id;
         $usuario->save();
 
-        // Asignar rol por ID
-        $role = Role::findById($request->role);
-        if ($role) {
+        // 4) Asignamos el rol
+        if ($role = Role::findById($request->role)) {
             $usuario->assignRole($role->name);
         }
-
 
         return redirect()->route('usuarios.index')
             ->with('mensaje', 'Se registró al usuario de manera correcta')
             ->with('icono', 'success');
+    }
+
+    private function generateAccountNumber(string $dni): string
+    {
+        $last = DB::table('cts_usuarios')
+            ->whereNotNull('numero_cuenta')
+            ->max(DB::raw('CAST(SUBSTR(numero_cuenta,1,4) AS UNSIGNED)'));
+
+        $next   = ($last ?: 1000) + 1;
+        $prefix = str_pad($next, 4, '0', STR_PAD_LEFT);
+        $suffix = str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+
+        return $prefix . $dni . $suffix;
+    }
+
+    private function generateUniqueAccountNumber(string $dni): string
+    {
+        do {
+            $acct = $this->generateAccountNumber($dni);
+        } while (CtsUsuario::where('numero_cuenta',$acct)->exists());
+
+        return $acct;
     }
 
 
@@ -102,28 +141,70 @@ class UsuarioController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required|max:100',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'password' => 'nullable|confirmed',
-            'telefono' => 'required|numeric',
+            'name'              => 'required|max:100',
+            'email'             => 'required|email|unique:users,email,' . $id,
+            'password'          => 'nullable|confirmed',
+            'telefono'          => 'required|numeric',
+            'dni'               => 'required|digits:8|unique:users,dni,' . $id,
+            'direccion'         => 'nullable|max:255',
+            'fecha_nacimiento'  => 'required|date|before:today',
+            'role'              => 'required|exists:roles,id',
         ]);
-    
-        $usuario = User::find($id);
-        $usuario->name = $request->name;
-        $usuario->email = $request->email;
+
+        $usuario = User::findOrFail($id);
+        $oldDni  = $usuario->dni;
+
+        // Campos básicos
+        $usuario->fill([
+            'name'             => $request->name,
+            'email'            => $request->email,
+            'telefono'         => $request->telefono,
+            'direccion'        => $request->direccion,
+            'fecha_nacimiento' => $request->fecha_nacimiento,
+            'estado'           => 1,
+        ]);
+
         if ($request->filled('password')) {
             $usuario->password = Hash::make($request->password);
         }
-        $usuario->telefono = $request->telefono;
-        $usuario->direccion = $request->direccion;
-        $usuario->estado = 1;
+
+        // Si cambió el DNI, actualizamos tanto user->dni como el numero_cuenta en cts_usuarios
+        if (is_null($oldDni) || $oldDni !== $request->dni) {
+            // 1) Actualiza el DNI en el usuario
+            $usuario->dni = $request->dni;
+        
+            // 2) Obtiene la cuenta CTS existente (puede ser null)
+            $cts = $usuario->ctsUsuario;
+        
+            if ($cts) {
+                // 3a) Si existe, sólo regeneramos el número
+                $cts->numero_cuenta = $this->generateUniqueAccountNumber($request->dni);
+                $cts->save();
+            } else {
+                // 3b) Si no existe, la creamos y asignamos al usuario
+                $cts = CtsUsuario::create([
+                    'user_id'               => $usuario->id,
+                    'numero_cuenta'         => $this->generateUniqueAccountNumber($request->dni),
+                    'saldo_disponible'      => 0,
+                    'fecha_ultimo_deposito' => null,
+                ]);
+                $usuario->id_cuenta = $cts->id;
+            }
+        }
+
         $usuario->save();
-    
+
+        // Sincronizamos el rol
+        if ($role = Role::findById($request->role)) {
+            $usuario->syncRoles($role->name);
+        }
+
         return redirect()->route('usuarios.index')
-            ->with('mensaje', 'Se actualizó al usuario de la manera correcta')
+            ->with('mensaje', 'Se actualizó al usuario correctamente')
             ->with('icono', 'success');
     }
-    
+
+
 
     /**
      * Remove the specified resource from storage.
@@ -146,7 +227,7 @@ class UsuarioController extends Controller
 
         foreach ($creditos as $credito) {
             $allPaid = true;
-            
+
             // Para créditos individuales: se consideran las cuotas que tengan cliente asignado
             if ($credito->categoria != 'grupal') {
                 $cuotas = $credito->cronograma()->whereNotNull('cliente_id')->get();
@@ -190,5 +271,4 @@ class UsuarioController extends Controller
 
         return response()->json(['success' => 'Estados de créditos actualizados correctamente.']);
     }
-
 }

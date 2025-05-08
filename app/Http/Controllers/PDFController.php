@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CajaTransaccion;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -13,7 +14,8 @@ use App\Models\CreditoCliente;
 use App\Models\Cronograma;
 use App\Models\cliente;
 use App\Models\CorrelativoCredito;
-
+use App\Models\DepositoCts;
+use App\Models\Egreso;
 
 class PdfController extends Controller
 {
@@ -1167,8 +1169,8 @@ class PdfController extends Controller
     }
     public function generateticket($id)
     {
-        $prestamo = \App\Models\credito::find($id);
-        $creditos = \App\Models\CreditoCliente::where('prestamo_id', $id)->get();
+        $prestamo = credito::find($id);
+        $creditos = CreditoCliente::where('prestamo_id', $id)->get();
 
         // Obtener el usuario autenticado
         $user = auth()->user();
@@ -1177,7 +1179,7 @@ class PdfController extends Controller
         $sucursal_id = $user->sucursal_id;
 
         // Obtener la última transacción de caja abierta por el asesor (usuario actual)
-        $ultimaTransaccion = \App\Models\CajaTransaccion::where('user_id', $user->id)
+        $ultimaTransaccion = CajaTransaccion::where('user_id', $user->id)
             ->whereNull('hora_cierre')
             ->orderBy('created_at', 'desc')
             ->first();
@@ -1186,7 +1188,7 @@ class PdfController extends Controller
         $montoTotalGrupo = $creditos->sum('monto_indivual');
 
         // Crear el egreso
-        $egreso = \App\Models\Egreso::create([
+        $egreso = Egreso::create([
             'transaccion_id' => $ultimaTransaccion->id,
             'prestamo_id' => $prestamo->id,
             'fecha_egreso' => now()->toDateString(),
@@ -1227,7 +1229,7 @@ class PdfController extends Controller
             ->first();
         $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
 
-        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota','siguienteCuota'))
+        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota', 'siguienteCuota'))
             ->setPaper([0, 0, 200, 400]); // Ajustar el tamaño del papel si es necesario
         return $pdf->stream('ticket.pdf');
     }
@@ -1342,7 +1344,7 @@ class PdfController extends Controller
 
     public function generarArqueoPDF($id)
     {
-        $transaccion = \App\Models\CajaTransaccion::findOrFail($id);
+        $transaccion = CajaTransaccion::findOrFail($id);
 
         if (!$transaccion) {
             return redirect()->back()->with('error', 'Transacción no encontrada.');
@@ -1356,6 +1358,11 @@ class PdfController extends Controller
             ->get();
         $gastos = \App\Models\Gasto::where('caja_transaccion_id', $transaccion->id)->with('user')->get();
         $ingresosExtras = \App\Models\IngresoExtra::where('caja_transaccion_id', $transaccion->id)->with('user')->get();
+
+        $pago_cts = DepositoCts::where('caja_transaccion_id', $transaccion->id)
+            ->where('estado', 1)               // Solo movimientos pagados
+            ->where('tipo_transaccion', 2)
+            ->get();
 
         $datosCierre = json_decode($transaccion->json_cierre, true);
 
@@ -1391,6 +1398,15 @@ class PdfController extends Controller
             ];
         });
 
+        $ctsConDetalles = $pago_cts->map(function ($cts) {
+            return [
+                'hora_deposito'   => Carbon::parse($cts->fecha_deposito)->format('H:i:s'),
+                'monto'           => $cts->monto,
+                'numero_cuenta'   => $cts->ctsUsuario->numero_cuenta,
+                'usuario'         => $cts->ctsUsuario->user->namename,
+            ];
+        });
+
         // Calcular el saldo final real
         $saldoFinalReal = array_sum(array_map(function ($cantidad, $valor) {
             return $cantidad * $valor;
@@ -1414,7 +1430,7 @@ class PdfController extends Controller
 
         $usuario = $transaccion->user;
 
-        $data = compact('transaccion', 'ingresos', 'egresosConClientes', 'gastosConDetalles', 'ingresosExtrasConDetalles', 'saldoFinalReal', 'saldoFinalEsperado', 'desajuste', 'datosCierre', 'usuario');
+        $data = compact('transaccion', 'ingresos', 'egresosConClientes', 'gastosConDetalles', 'ctsConDetalles', 'ingresosExtrasConDetalles', 'saldoFinalReal', 'saldoFinalEsperado', 'desajuste', 'datosCierre', 'usuario');
 
         $pdf = Pdf::loadView('pdf.arqueo', $data);
 
@@ -1467,7 +1483,7 @@ class PdfController extends Controller
                 'ingreso' => $ingreso,
                 'cronograma' => $cronograma,
                 'fechaSiguienteCuota' => $fechaSiguienteCuota,
-                'siguienteCuota'=>$siguienteCuota
+                'siguienteCuota' => $siguienteCuota
             ];
         }
 
@@ -1486,27 +1502,27 @@ class PdfController extends Controller
         if (!$prestamo) {
             abort(404, "Crédito no encontrado.");
         }
-    
+
         // Obtener todos los registros del cronograma ordenados por número
         $cuotas = Cronograma::where('id_prestamo', $id)
-                    ->orderBy('numero', 'asc')
-                    ->get();
-    
+            ->orderBy('numero', 'asc')
+            ->get();
+
         // Para créditos grupales, obtener también los registros de CreditoCliente
         $credito_cliente = null;
-        
+
         $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
-        
-    
+
+
         $responsable = \App\Models\User::find($prestamo->user_id);
         $sucursal = \App\Models\Sucursal::first(); // O filtra por la sucursal del crédito
-    
+
         // Se calculan totales generales (por ejemplo, suma de intereses, capital, etc.)
         // Para el cronograma general (cliente_id null)
         $totalInteresGrupal = $cuotas->whereNull('cliente_id')->sum('interes');
         $totalAmortizacionGrupal = $cuotas->whereNull('cliente_id')->sum('amortizacion');
         $totalMontoGrupal = $cuotas->whereNull('cliente_id')->sum('monto');
-    
+
         // Para créditos individuales (o para cada cliente en créditos grupales)
         $totalInteresesIndividuales = [];
         $totalAmortizacionIndividuales = [];
@@ -1524,15 +1540,15 @@ class PdfController extends Controller
                 $totalMontoIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('monto');
             }
         }
-    
+
         $correlativosGenerales = \App\Models\CorrelativoCredito::where('id_prestamo', $id)
             ->whereNull('id_cliente')
             ->first();
-    
+
         $correlativosIntegrantes = \App\Models\CorrelativoCredito::where('id_prestamo', $id)
             ->whereNotNull('id_cliente')
             ->get();
-    
+
         $data = compact(
             'prestamo',
             'responsable',
@@ -1548,13 +1564,13 @@ class PdfController extends Controller
             'correlativosGenerales',
             'correlativosIntegrantes'
         );
-    
+
         $pdf = PDF::loadView('pdf.cronogramagrupalnuevo', $data)->setPaper('a4', 'landscape');
         return $pdf->stream('cronograma.pdf');
         // return view('pdf.cronogramagrupalnuevo', $data);
     }
-    
-    public function generarNuevoCronogramaPDF ($id)
+
+    public function generarNuevoCronogramaPDF($id)
     {
         $prestamo = credito::find($id);
         if (!$prestamo) {
@@ -1562,38 +1578,38 @@ class PdfController extends Controller
         }
 
         $categoria_c = $prestamo->categoria;
-    
-        $query = Cronograma::where('id_prestamo', $id);
-                if ($categoria_c != 'grupal') {
-                    $query->whereNotNull('cliente_id');
-                } else {
-                    $query->whereNull('cliente_id');
-                }
-        $ultimoPagoCapital = $query->whereNotNull('pago_capital')
-                           ->orderBy('numero', 'desc')
-                            ->first();
 
-        $numero_c=$ultimoPagoCapital->numero;
+        $query = Cronograma::where('id_prestamo', $id);
+        if ($categoria_c != 'grupal') {
+            $query->whereNotNull('cliente_id');
+        } else {
+            $query->whereNull('cliente_id');
+        }
+        $ultimoPagoCapital = $query->whereNotNull('pago_capital')
+            ->orderBy('numero', 'desc')
+            ->first();
+
+        $numero_c = $ultimoPagoCapital->numero;
 
 
         $cuotas = Cronograma::where('id_prestamo', $id)
-                            ->orderBy('numero', 'asc')
-                            ->get();
-            
-                // Para créditos grupales, obtener también los registros de CreditoCliente
+            ->orderBy('numero', 'asc')
+            ->get();
+
+        // Para créditos grupales, obtener también los registros de CreditoCliente
         $credito_cliente = null;
-                
+
         $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
-    
+
         $responsable = \App\Models\User::find($prestamo->user_id);
         $sucursal = \App\Models\Sucursal::first(); // O filtra por la sucursal del crédito
-    
+
         // Se calculan totales generales (por ejemplo, suma de intereses, capital, etc.)
         // Para el cronograma general (cliente_id null)
         $totalInteresGrupal = $cuotas->whereNull('cliente_id')->sum('interes');
         $totalAmortizacionGrupal = $cuotas->whereNull('cliente_id')->sum('amortizacion');
         $totalMontoGrupal = $cuotas->whereNull('cliente_id')->sum('monto');
-    
+
         // Para créditos individuales (o para cada cliente en créditos grupales)
         $totalInteresesIndividuales = [];
         $totalAmortizacionIndividuales = [];
@@ -1611,15 +1627,15 @@ class PdfController extends Controller
                 $totalMontoIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('monto');
             }
         }
-    
+
         $correlativosGenerales = \App\Models\CorrelativoCredito::where('id_prestamo', $id)
             ->whereNull('id_cliente')
             ->first();
-    
+
         $correlativosIntegrantes = \App\Models\CorrelativoCredito::where('id_prestamo', $id)
             ->whereNotNull('id_cliente')
             ->get();
-    
+
         $data = compact(
             'prestamo',
             'responsable',
@@ -1636,15 +1652,16 @@ class PdfController extends Controller
             'correlativosIntegrantes',
             'numero_c'
         );
-    
+
         $pdf = PDF::loadView('pdf.cronogramagrupalnuevo', $data)->setPaper('a4', 'landscape');
         return $pdf->stream('cronograma.pdf');
         // return view('pdf.cronogramagrupalnuevo', $data);
     }
-    public function Pagototalindividual($array)  {
+    public function Pagototalindividual($array)
+    {
         $idsArray = explode('-', $array);
         $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->orderBy('numero_cuota', 'asc')->get();
-    
+
         if ($ingresos->isEmpty()) {
             return response()->json(['error' => 'Pagos no encontrados.'], 404);
         }
@@ -1656,20 +1673,22 @@ class PdfController extends Controller
         $total_mora = $ingresos->sum('monto_mora');
         $total_final_pago = $ingresos->sum('monto_total_pago_final');
         $total_intereses = 0;
-    
+
         foreach ($ingresos as $ingreso1) {
             $cronograma1 = \App\Models\Cronograma::find($ingreso1->cronograma_id);
-            if ($cronograma1->fecha<$ingreso->fecha_pago) {
+            if ($cronograma1->fecha < $ingreso->fecha_pago) {
                 $total_intereses += $cronograma1->interes;
             }
         }
-        $pdf = Pdf::loadView('pdf.ticketpagototalindividual', compact( 'prestamo'      ,
-        'cliente',
-        'ingreso', 
-        'total_pago',
-        'total_mora',
-        'total_final_pago',
-        'total_intereses'   ))->setPaper([0, 0, 200, 400]);
+        $pdf = Pdf::loadView('pdf.ticketpagototalindividual', compact(
+            'prestamo',
+            'cliente',
+            'ingreso',
+            'total_pago',
+            'total_mora',
+            'total_final_pago',
+            'total_intereses'
+        ))->setPaper([0, 0, 200, 400]);
         return $pdf->stream('tickets.pdf');
     }
 }

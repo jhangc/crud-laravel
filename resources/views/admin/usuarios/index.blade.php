@@ -32,8 +32,12 @@
                                     <center>Cargo</center>
                                 </th>
                                 <th>
+                                    <center>Número Cuenta</center>
+                                </th>
+                                <th>
                                     <center>Teléfono</center>
                                 </th>
+
                                 <th>
                                     <center>Dirección</center>
                                 </th>
@@ -63,6 +67,10 @@
                                             @endforeach
                                         @endif
                                     </td>
+                                    <td>
+                                        {{ optional($usuario->ctsUsuario)->numero_cuenta ?? 'Sin cuenta CTS' }}
+                                    </td>
+                                    
                                     <td>{{ $usuario->telefono }}</td>
                                     <td>{{ $usuario->direccion }}</td>
                                     
