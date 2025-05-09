@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CajaTransaccion;
 use App\Models\CtsUsuario;
 use App\Models\DepositoCts;
+use App\Models\InicioDesembolso;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -37,9 +38,12 @@ class DepositoCtsController extends Controller
             ->orderBy('fecha_deposito', 'desc')
             ->get();
 
+        $tienePermisoAbierto = InicioDesembolso::where('permiso_abierto', 1)
+            ->exists();
+
 
         // 3) Retorna la vista con ambos conjuntos de datos
-        return view('admin.caja.pagar_cts_efectivo', compact('depositos'));
+        return view('admin.caja.pagar_cts_efectivo', compact('depositos','tienePermisoAbierto'));
     }
 
 
@@ -194,6 +198,20 @@ class DepositoCtsController extends Controller
         $desembolso->save();
 
         $pdf = Pdf::loadView('pdf.ticket_cts', compact('desembolso', 'montoTotal'))
+            ->setPaper([0, 0, 205, 800]);
+
+        return $pdf->stream('ticket.pdf');
+    }
+
+
+    public function ticket($id)
+    {
+        $deposito = DepositoCts::find($id);
+
+        $montoTotal = $deposito->monto;
+
+
+        $pdf = Pdf::loadView('pdf.ticketdeposito', compact('deposito', 'montoTotal'))
             ->setPaper([0, 0, 205, 800]);
 
         return $pdf->stream('ticket.pdf');

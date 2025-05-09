@@ -11,6 +11,7 @@
             font-size: 12px;
         }
 
+
         .header {
             text-align: center;
             margin-bottom: 20px;
@@ -53,10 +54,10 @@
             <h2>Grupo Credipalmo</h2>
         </div>
         <div class="content">
-            <p><strong>Asunto:</strong> Retiro CTS</p>
+            <p><strong>Asunto:</strong> Desembolso a cuenta CTS</p>
             <p><strong>Fecha:</strong> {{ now()->format('d/m/Y H:i:s') }}</p>
-            <p><strong>DNI:</strong> {{ $desembolso->ctsUsuario->user->dni}}</p>
-            <p><strong>Nombres:</strong> {{ $desembolso->ctsUsuario->user->name }}</p>
+            <p><strong>DNI:</strong> {{ $deposito->ctsUsuario->user->dni}}</p>
+            <p><strong>Nombres:</strong> {{ $deposito->ctsUsuario->user->name }}</p>
             <p><strong>Monto:</strong> S/.{{ number_format($montoTotal, 2) }}</p>
         </div>
         <div class="signature">

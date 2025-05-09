@@ -31,13 +31,22 @@
                         <div class="card-header bg-secondary text-white"
                             style="display: flex; justify-content: space-between;">
                             <h3 class="mb-0">Movimientos CTS</h3>
-                            <button id="btnSolicitarRetiro" type="button" class="btn btn-warning btn-sm"
-                                data-toggle="modal" data-target="#modalRetiro">
-                                Solicitar retiro
-                            </button>
+                            @if ($tienePermisoAbierto)
+                                {{-- Botón real: dispara el modal --}}
+                                <button id="btnSolicitarRetiro" type="button" class="btn btn-warning btn-sm"
+                                    data-toggle="modal" data-target="#modalRetiro">
+                                    Solicitar retiro
+                                </button>
+                            @else
+                                {{-- Botón “falso”: sólo muestra alerta --}}
+                                <button type="button" class="btn btn-warning btn-sm"
+                                    onclick="Swal.fire('Error','No hay autorización para solicitar retiro','error')">
+                                    Solicitar retiro
+                                </button>
+                            @endif
 
                         </div>
-                        <div class="card-body p-0">
+                        <div class="card-body">
                             <div class="table-responsive">
                                 <table id="tablaMovimientos" class="table table-hover mb-0 nowrap" style="width:100%">
                                     <thead class="thead-light">
@@ -61,7 +70,13 @@
                                                     @endif
                                                 </td>
                                                 <td>S/ {{ number_format($deposito->monto, 2) }}</td>
-                                                <td>{{ $deposito->realizadoPor->name }}</td>
+                                                @if ($deposito->realizadoPor)
+                                                    <td>{{ $deposito->realizadoPor->name }}</td>
+                                                @else
+                                                    <td>—</td>
+                                                @endif
+
+
                                                 <td>
                                                     @if ($deposito->estado === 1)
                                                         <span class="badge badge-primary">Pagado</span>
@@ -124,15 +139,10 @@
                 pageLength: 10,
                 searching: false,
                 info: true,
+                ordering: false,
                 lengthChange: false,
                 responsive: true // Activa ajuste en móvil,
             });
-        });
-
-        // Abrir modal de retiro
-        $('#btnSolicitarRetiro').on('click', function() {
-            $('#montoRetiro').val('');
-            $('#modalRetiro').modal('show');
         });
 
         $('#btnGuardarRetiro').on('click', function() {
@@ -147,7 +157,7 @@
                 return;
             }
             $.ajax({
-                url: '{{ url("admin/cts/solicitud-pago") }}',
+                url: '{{ url('admin/cts/solicitud-pago') }}',
                 method: 'POST',
                 data: {
                     cts_usuario_id: {{ $cuenta->id }},

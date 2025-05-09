@@ -109,6 +109,21 @@
                 </a>
             </div>
         </div>
+
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-dark">
+                <div class="inner">
+                    <h3>S/. {{ number_format($balanceGeneralcts, 2) }}</h3>
+                    <p>Saldo CTS para Pagar</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <a href="#" class="small-box-footer">
+                    Más información <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
     </div>
     @endrole
 

@@ -35,11 +35,20 @@
                                                     @if ($deposito->estado === 1)
                                                         <span class="badge badge-primary">Pagado</span>
                                                     @else
-                                                        <button onclick="depositar('{{ $deposito->id }}')" type="button"
-                                                            class="btn bg-warning">Pagar</button>
+                                                        @if ($tienePermisoAbierto)
+                                                            {{-- Usuario tiene permiso abierto: dejamos que pague --}}
+                                                            <button onclick="depositar('{{ $deposito->id }}')"
+                                                                type="button" class="btn bg-warning">Pagar</button>
+                                                        @else
+                                                            {{-- No hay permiso abierto: mostramos alerta --}}
+                                                            <button type="button" class="btn bg-warning"
+                                                                onclick="Swal.fire('Error','No hay autorización para pagar','error')">
+                                                                Pagar
+                                                            </button>
+                                                        @endif
                                                     @endif
                                                 </td>
-                                                
+
                                             </tr>
                                         @endforeach
                                     </tbody>

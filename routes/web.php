@@ -18,8 +18,10 @@ use App\Http\Controllers\CuentasController;
 use App\Http\Controllers\DepositoCtsController;
 use App\Http\Controllers\ExcelController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InicioDesembolsoController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\UpdateController;
+use App\Models\InicioDesembolso;
 
 /*
 |--------------------------------------------------------------------------
@@ -112,11 +114,17 @@ Route::get('/admin/depositos-cts', [DepositoCtsController::class, 'index'])->nam
 Route::post('/admin/depositos-cts', [DepositoCtsController::class, 'store'])->name('depositos-cts.store')->middleware('auth');
 Route::get('/admin/depositos-cts/{id}/edit', [DepositoCtsController::class, 'edit'])->name('depositos-cts.edit')->middleware('auth');
 Route::delete('/admin/depositos-cts/{id}', [DepositoCtsController::class, 'destroy'])->name('depositos-cts.destroy')->middleware('auth');
+Route::get('/admin/cts/depositoticket/{id}', [DepositoCtsController::class, 'ticket'])->name('depositos-cts.ticket')->middleware('auth');
+
 
 Route::get('/admin/cts/ver-saldo', [CtsUsuarioController::class, 'index'])->name('cuenta-cts.index')->middleware('auth');
 Route::post('/admin/cts/solicitud-pago', [DepositoCtsController::class, 'storeSolicitud'])->name('solicitud-cts.store')->middleware('auth');
 Route::get('/admin/desembolso-cts', [DepositoCtsController::class, 'desembolsar'])->name('desembolso-cts.index')->middleware('auth');
 Route::get('/admin/cts/pagar-desembolso/{id}', [DepositoCtsController::class, 'pagarDesembolso'])->name('desembolso-cts.pagar')->middleware('auth');
+
+Route::get('/admin/cts/permisos', [InicioDesembolsoController::class, 'index'])->name('permiso-cts.index')->middleware('auth');
+Route::post('/admin/cts/guardarpermiso', [InicioDesembolsoController::class, 'store'])->name('permiso-cts.store')->middleware('auth');
+Route::get('/admin/cts/cerrarpermiso/{id}', [InicioDesembolsoController::class, 'cerrar'])->name('permiso-cts.cerrar')->middleware('auth');
 
 
 Route::get('/admin/cobranza/cargarcompromiso', [creditoController::class, 'viewcargarcompromiso'])->name('cobranza.cargarcompromiso')->middleware('auth');

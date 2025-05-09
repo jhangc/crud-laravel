@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CtsUsuario;
 use App\Models\DepositoCts;
+use App\Models\InicioDesembolso;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,10 +27,11 @@ class CtsUsuarioController extends Controller
             ->where('cts_usuario_id', $cuenta->id)
             ->orderBy('fecha_deposito', 'desc')
             ->get();
-        
+        $tienePermisoAbierto = InicioDesembolso::where('permiso_abierto', 1)
+            ->exists();
 
         // 3) Retorna la vista con ambos conjuntos
-        return view('admin.cts.saldo', compact('depositos', 'cuenta'));
+        return view('admin.cts.saldo', compact('depositos', 'cuenta', 'tienePermisoAbierto'));
     }
 
 

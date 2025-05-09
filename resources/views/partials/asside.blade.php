@@ -390,10 +390,10 @@
                         {{-- Asignar saldo – sólo Administrador --}}
                         @role('Administrador')
                             <li class="nav-item">
-                                <a href="{{ url('/admin/cts/asignar-saldo') }}"
+                                <a href="{{ url('/admin/cts/permisos') }}"
                                     class="nav-link {{ request()->is('admin/cts/asignar-saldo') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Asignar saldo</p>
+                                    <p>Permisos CTS</p>
                                 </a>
                             </li>
                         @endrole

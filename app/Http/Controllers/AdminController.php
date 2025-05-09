@@ -19,6 +19,7 @@ use App\Models\IngresoExtra;
 use App\Models\Boveda;
 use App\Models\MovimientoBoveda;
 use App\Models\CajaTransaccion;
+use App\Models\DepositoCts;
 
 class AdminController extends Controller
 {
@@ -70,21 +71,21 @@ class AdminController extends Controller
         $ultimaTransaccion = CajaTransaccion::where('sucursal_id', $sucursalId)
             ->orderBy('created_at', 'desc')
             ->first();
-    
+
         $ultimaCajaTransacciones = null;
         $ultimaCajaSaldo = null;
         $nombreCaja = null;
-    
+
         if ($ultimaTransaccion) {
             $caja = $ultimaTransaccion->caja;
             $nombreCaja = $caja->nombre;
-    
+
             $ingresosCaja = Ingreso::where('transaccion_id', $ultimaTransaccion->id)->sum('monto');
             $egresosCaja = Egreso::where('transaccion_id', $ultimaTransaccion->id)->sum('monto');
             $ingresosExtrasCaja = IngresoExtra::where('caja_transaccion_id', $ultimaTransaccion->id)->sum('monto');
             $gastosCaja = Gasto::where('caja_transaccion_id', $ultimaTransaccion->id)->sum('monto_gasto');
             $ultimaCajaSaldo = $ultimaTransaccion->monto_apertura + $ingresosCaja + $ingresosExtrasCaja - $egresosCaja - $gastosCaja;
-    
+
             $ultimaCajaTransacciones = [
                 'ingresos' => $ingresosCaja ?? 0,
                 'ingresos_extras' => $ingresosExtrasCaja ?? 0,
@@ -93,21 +94,31 @@ class AdminController extends Controller
                 'saldo' => $ultimaCajaSaldo ?? 0,
             ];
         }
-    
+
         // Obtener la última bóveda de la sucursal del usuario
         $ultimaBoveda = Boveda::where('sucursal_id', $sucursalId)
             ->orderBy('created_at', 'desc')
             ->first();
-    
+
         $ultimaBovedaSaldo = null;
-    
+
         if ($ultimaBoveda) {
             $movimientosBoveda = MovimientoBoveda::where('boveda_id', $ultimaBoveda->id)->get();
             $totalIngresosBoveda = $movimientosBoveda->where('tipo', 'ingreso')->sum('monto');
             $totalEgresosBoveda = $movimientosBoveda->where('tipo', 'egreso')->sum('monto');
             $ultimaBovedaSaldo = $ultimaBoveda->monto_inicio + $totalIngresosBoveda - $totalEgresosBoveda;
         }
-    
+
+        $totalIngresos = DepositoCts::where('tipo_transaccion', 1)
+            ->sum('monto');
+
+        // 2) Suma de todos los egresos CTS ya pagados (tipo_transaccion = 2, estado = 1)
+        $totalEgresosPagados = DepositoCts::where('tipo_transaccion', 2)
+            ->where('estado', 1)
+            ->sum('monto');
+
+        // 3) Balance neto
+        $balanceGeneral = $totalIngresos - $totalEgresosPagados;
         return view('admin.index', [
             'usuarios' => $usuarios,
             'creditosPagadosCount' => $creditosPagadosCount,
@@ -117,9 +128,10 @@ class AdminController extends Controller
             'ultimaCajaTransacciones' => $ultimaCajaTransacciones,
             'ultimaBovedaSaldo' => $ultimaBovedaSaldo,
             'nombreCaja' => $nombreCaja,
+            'balanceGeneralcts' => $balanceGeneral,
         ]);
     }
-    
+
 
 
     public function aprobar(Request $request)
@@ -188,46 +200,43 @@ class AdminController extends Controller
         $cajas = Caja::where('sucursal_id', $sucursalId)->get();
         return view('admin.creditos.ingresosday', compact('cajas'));
     }
-    public function egresosday(Request $request)
-    {
-
-    }
+    public function egresosday(Request $request) {}
 
 
     public function obtenerTransaccionesCaja($id)
     {
         $caja = Caja::findOrFail($id);
         $today = Carbon::today();
-    
+
         // Verificar si la caja tiene una transacción abierta o cerrada hoy
         $ultimaTransaccion = $caja->transacciones()
-        // ->whereDate('created_at', $today)
-        ->orderBy('created_at', 'desc')->first();
+            // ->whereDate('created_at', $today)
+            ->orderBy('created_at', 'desc')->first();
         if (!$ultimaTransaccion) {
             return response()->json([
                 'success' => false,
                 'message' => 'No hay transacciones abiertas para esta caja en el día de hoy.'
             ]);
         }
-    
+
         $cajaCerrada = $ultimaTransaccion->hora_cierre ? true : false;
         $ingresos = Ingreso::where('transaccion_id', $ultimaTransaccion->id)
             ->with('cliente', 'transaccion.user') // Incluir relaciones
             ->whereNotNull('cliente_id')
             ->get();
-    
+
         $egresos = Egreso::where('transaccion_id', $ultimaTransaccion->id)
             ->with(['prestamo.clientes', 'transaccion.user']) // Incluir relaciones
             ->get();
-    
+
         $gastos = Gasto::where('caja_transaccion_id', $ultimaTransaccion->id)
             ->with('user') // Incluir relación con el usuario
             ->get();
-    
+
         $ingresosExtras = IngresoExtra::where('caja_transaccion_id', $ultimaTransaccion->id)
             ->with('user') // Incluir relación con el usuario
             ->get();
-    
+
         // Preparar datos de egresos con clientes
         $egresosConClientes = $egresos->map(function ($egreso) {
             return [
@@ -237,7 +246,7 @@ class AdminController extends Controller
                 'usuario' => $egreso->transaccion->user->name
             ];
         });
-    
+
         // Preparar datos de gastos
         $gastosConDetalles = $gastos->map(function ($gasto) {
             return [
@@ -247,7 +256,7 @@ class AdminController extends Controller
                 'usuario' => $gasto->user->name
             ];
         });
-    
+
         // Preparar datos de ingresos extras
         $ingresosExtrasConDetalles = $ingresosExtras->map(function ($ingresoExtra) {
             return [
@@ -258,28 +267,28 @@ class AdminController extends Controller
                 'usuario' => $ingresoExtra->user->name
             ];
         });
-    
+
         $datosCierre = null;
         $desajuste = null;
         if ($cajaCerrada) {
             $datosCierre = json_decode($ultimaTransaccion->json_cierre, true);
-    
+
             // Calcular el saldo final real
             $saldoEfectivo = array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['billetes'], array_keys($datosCierre['billetes'])));
-    
+
             $saldoEfectivo += array_sum(array_map(function ($cantidad, $valor) {
                 return $cantidad * $valor;
             }, $datosCierre['monedas'], array_keys($datosCierre['monedas'])));
-    
+
             $saldoDepositos = $datosCierre['depositos'];
-            $saldoFinalReal=$saldoDepositos+$saldoEfectivo;
+            $saldoFinalReal = $saldoDepositos + $saldoEfectivo;
             // Calcular el saldo final esperado
             $saldoFinalEsperado = $ultimaTransaccion->monto_apertura + $ingresos->sum('monto') - $egresos->sum('monto') - $gastos->sum('monto_gasto') + $ingresosExtras->sum('monto');
-    
+
             $desajuste =  $saldoFinalReal - $saldoFinalEsperado;
-    
+
             // Formatear valores a dos decimales
             $saldoFinalReal = number_format($saldoFinalReal, 2);
             $saldoFinalEsperado = number_format($saldoFinalEsperado, 2);
@@ -299,34 +308,34 @@ class AdminController extends Controller
             'saldoFinalReal' => $saldoFinalReal ?? 0,
             'saldoFinalEsperado' => $saldoFinalEsperado ?? 0,
             'desajuste' => $desajuste ?? 0,
-            'saldoEfectivo'=>$saldoEfectivo??0,
-            'saldoDepositos'=>$saldoDepositos??0,
+            'saldoEfectivo' => $saldoEfectivo ?? 0,
+            'saldoDepositos' => $saldoDepositos ?? 0,
         ]);
     }
-    public function resetCaja($id){
+    public function resetCaja($id)
+    {
         $caja = Caja::findOrFail($id);
         $today = Carbon::today();
-    
+
         // Verificar si la caja tiene una transacción abierta o cerrada hoy
         $ultimaTransaccion = $caja->transacciones()
-        // ->whereDate('created_at', $today)
-        ->orderBy('created_at', 'desc')->first();
+            // ->whereDate('created_at', $today)
+            ->orderBy('created_at', 'desc')->first();
         if (!$ultimaTransaccion) {
             return response()->json([
                 'success' => false,
                 'message' => 'No hay transacciones abiertas para esta caja en el día de hoy.'
             ]);
         }
-        $ultimaTransaccion->hora_cierre=null;
-        $ultimaTransaccion->fecha_cierre=null;
-        $ultimaTransaccion->monto_cierre=null;
-        $ultimaTransaccion->json_cierre=null;
+        $ultimaTransaccion->hora_cierre = null;
+        $ultimaTransaccion->fecha_cierre = null;
+        $ultimaTransaccion->monto_cierre = null;
+        $ultimaTransaccion->json_cierre = null;
         $ultimaTransaccion->save();
-        
+
         return response()->json([
             'success' => true,
-             'message' => 'Caja ,para volver a Llenar Arqueo , Indique a Cajera que vuelva  a recargar la Pagina.'
+            'message' => 'Caja ,para volver a Llenar Arqueo , Indique a Cajera que vuelva  a recargar la Pagina.'
         ]);
-
     }
 }

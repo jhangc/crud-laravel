@@ -37,12 +37,13 @@
                                                 <td>{{ $deposito->ctsUsuario->user->name }}</td>
                                                 <td>{{ $deposito->ctsUsuario->numero_cuenta }}</td>
                                                 <td>{{ $deposito->monto }}</td>
-                                                <td>{{ $deposito->realizadoPor->name }}</td>
+                                                <td>{{ optional($deposito->realizadoPor)->name }}</td>
+
                                                 <td>
                                                     <button onclick="editar('{{ $deposito->id }}')" type="button"
                                                         class="btn bg-warning">Editar</button>
-                                                    <button onclick="eliminar('{{ $deposito->id }}')" type="button"
-                                                        class="btn bg-danger">Eliminar</button>
+                                                    <button onclick="generarticket('{{ $deposito->id }}')" type="button"
+                                                        class="btn bg-danger">Imprimir Ticket</button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -164,6 +165,22 @@
                 error: () => Swal.fire('Error', 'No se pudo guardar', 'error')
             });
         });
+
+        function generarticket(depositoId) {
+            // Construye la URL que genera y streamea el PDF
+            const url = `{{ url('admin/cts/depositoticket') }}/${depositoId}`;
+
+            // Abre el comprobante en una nueva pestaña
+            window.open(url, '_blank');
+
+            // Muestra confirmación
+            Swal.fire({
+                icon: 'success',
+                title: '¡Ticket generado!',
+                text: 'El comprobante se ha abierto en una nueva pestaña.'
+            });
+        }
+
 
         function cancelar() {
             document.getElementById('registrar').style.display = 'none';
