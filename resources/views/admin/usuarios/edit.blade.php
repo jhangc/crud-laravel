@@ -77,7 +77,7 @@
                                 <div class="form-group">
                                     <label for="fecha_nacimiento">Fecha de Nacimiento</label>
                                     <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control"
-                                        value="{{ $usuario->fecha_nacimiento }}" required>
+                                        value="{{ $usuario->fecha_nacimiento }}">
                                     @error('fecha_nacimiento')
                                         <small style="color: red">{{ $message }}</small>
                                     @enderror
