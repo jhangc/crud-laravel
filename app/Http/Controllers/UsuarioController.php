@@ -50,7 +50,6 @@ class UsuarioController extends Controller
             'telefono'          => 'required|numeric',
             'dni'               => 'required|digits:8',
             'direccion'         => 'nullable|max:255',
-            'fecha_nacimiento'  => 'required|date|before:today',
             'role'              => 'required|exists:roles,id',
         ]);
 
@@ -147,7 +146,6 @@ class UsuarioController extends Controller
             'telefono'          => 'required|numeric',
             'dni'               => 'required|digits:8|unique:users,dni,' . $id,
             'direccion'         => 'nullable|max:255',
-            'fecha_nacimiento'  => 'required|date|before:today',
             'role'              => 'required|exists:roles,id',
         ]);
 
