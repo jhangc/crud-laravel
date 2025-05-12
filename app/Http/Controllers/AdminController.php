@@ -117,7 +117,6 @@ class AdminController extends Controller
             ->where('estado', 1)
             ->sum('monto');
 
-            //pruebas
         // 3) Balance neto
         $balanceGeneral = $totalIngresos - $totalEgresosPagados;
         return view('admin.index', [
