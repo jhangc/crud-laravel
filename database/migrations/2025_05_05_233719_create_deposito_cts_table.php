@@ -12,7 +12,7 @@ class CreateDepositoCtsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('cts_usuario_id');       // referencia a cts_usuarios
             $table->decimal('monto', 15, 2);                    // monto depositado (permanece en caja)
-            $table->timestamps('fecha_deposito');                     // fecha del depósito
+            $table->timestamp('fecha_deposito')->nullable();                      // fecha del depósito
             $table->unsignedBigInteger('realizado_por')->nullable();      // quién registró
             $table->unsignedBigInteger('caja_transaccion_id')->nullable(); // enlace a transacción de caja
             $table->timestamps();
