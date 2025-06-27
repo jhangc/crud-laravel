@@ -1,14 +1,14 @@
 @extends('layouts.admin')
 
-@section('title', 'Desembolso CTS')
-@section('page-title', 'Desembolso CTS')
+@section('title', 'Abono CTS')
+@section('page-title', 'Abono CTS')
 
 @section('content')
     <div class="content">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-12">
-                    <h3 class="m-0">Desembolso CTS</h3>
+                    <h3 class="m-0">Abono CTS</h3>
                 </div>
                 <div class="col-lg-3">
                     <button onclick="agregar()" type="button" class="btn bg-info mt-2 mb-2">

@@ -20,6 +20,7 @@ use App\Http\Controllers\ExcelController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InicioDesembolsoController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\ReprogramacionController;
 use App\Http\Controllers\UpdateController;
 use App\Models\InicioDesembolso;
 
@@ -35,7 +36,7 @@ use App\Models\InicioDesembolso;
 */
 
 //Route::get('/', function () {
-  //  return view('welcome');
+//  return view('welcome');
 //});
 
 Auth::routes();
@@ -50,7 +51,7 @@ Route::get('/admin/credito/rechazar', [AdminController::class, 'rechazar'])->nam
 Route::get('/admin/credito/guardar', [AdminController::class, 'guardar'])->name('admin.guardar')->middleware('auth');
 Route::get('/admin/credito/observar', [AdminController::class, 'observar'])->name('admin.observar')->middleware('auth');
 
-Route::get('/admin/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index')->middleware('auth','can:usuarios.index');
+Route::get('/admin/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index')->middleware('auth', 'can:usuarios.index');
 Route::get('/admin/usuarios/create', [UsuarioController::class, 'create'])->name('usuarios.create')->middleware('auth');
 Route::post('/admin/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store')->middleware('auth');
 Route::get('/admin/usuarios/{id}', [UsuarioController::class, 'show'])->name('usuarios.show')->middleware('auth');
@@ -242,3 +243,10 @@ Route::post('/generarcronogram/final', [creditoController::class, 'amortizarCapi
 Route::get('/vernuevocronograma/{id}', [PDFController::class, 'generarNuevoCronogramaPDF'])->name('generar.pdf.nuevo cronograma');
 Route::get('/admin/generar-ticket-pagototal-individual/{array}', [PDFController::class, 'Pagototalindividual'])->name('generar.pdf.Pagototalindividual');
 
+//Reprogramacion de credito
+Route::post('/solicitar/reprogramacion', [creditoController::class, 'solicitarReprogramacion'])->name('solicitar.reprogramacion')->middleware('auth');
+Route::post('/reprogramaciones/store', [ReprogramacionController::class, 'reprogramacionStore'])->name('reprogramacion.store')->middleware('auth');
+Route::get('/admin/creditos/aprobarreprogramados', [ReprogramacionController::class, 'viewreprogramacion'])->name('reprogramacion.index')->middleware('auth');
+Route::post('/reprogramaciones/process', [ReprogramacionController::class, 'process'])->name('reprogramacion.process')->middleware('auth');
+Route::post('/generarcronogramreprogramado', [creditoController::class, 'generarreprogramacion'])->name('reprogramacion.exitosa')->middleware('auth');
+Route::get('/vernuevocronogramareprogramado/{id}', [PDFController::class, 'generarNuevoCronogramaReprogramadoPDF'])->name('generar.pdf.nuevo cronograma');

@@ -20,6 +20,7 @@ use App\Models\Gasto;
 use App\Models\IngresoExtra;
 use App\Models\CorrelativoCredito;
 use App\Models\DepositoCts;
+use App\Models\Reprogramacion;
 
 class creditoController extends Controller
 {
@@ -979,7 +980,9 @@ class creditoController extends Controller
     {
         $credito = Credito::find($id);
         $clientesCredito = CreditoCliente::where('prestamo_id', $id)->with('clientes')->get();
-
+        $reprogramacion = Reprogramacion::where('credito_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->first();
         $cuotasGenerales = [];
         $cuotasPorCliente = [];
 
@@ -1174,7 +1177,7 @@ class creditoController extends Controller
             }
         }
 
-        return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasGenerales', 'cuotasPorCliente', 'puedeAmortizar', 'cuotasVencidas'));
+        return view('admin.creditos.verpagocuota', compact('credito', 'clientesCredito', 'cuotasGenerales', 'cuotasPorCliente', 'puedeAmortizar', 'cuotasVencidas', 'reprogramacion'));
     }
 
 
@@ -1688,6 +1691,50 @@ class creditoController extends Controller
         }
     }
 
+
+
+    public function solicitarReprogramacion(Request $request)
+    {
+        $prestamoId = $request->prestamo_id;
+        $hoy        = now()->toDateString();
+        $credito    = Credito::findOrFail($prestamoId);
+
+        // Base de la consulta: cuotas futuras o vencidas sin pagar
+        $baseQuery = Cronograma::where('id_prestamo', $prestamoId)
+            ->whereNotIn('id', function ($q) {
+                $q->select('cronograma_id')->from('ingresos');
+            });
+
+        // Filtrar según tipo de crédito
+        if ($credito->categoria === 'grupal') {
+            // Sólo la parte “general” (cliente_id IS NULL)
+            $baseQuery->whereNull('cliente_id');
+        } else {
+            // Crédito individual: las cuotas con cliente_id definido
+            $baseQuery->whereNotNull('cliente_id');
+        }
+
+        // Cuotas pendientes (>= hoy)
+        $pendientes = (clone $baseQuery)
+            ->where('fecha', '>=', $hoy)
+            ->get();
+
+        // Cuotas en mora (< hoy)
+        $vencidas = (clone $baseQuery)
+            ->where('fecha', '<', $hoy)
+            ->count();
+
+        return response()->json([
+            'cuotas_restantes'  => $pendientes->count(),
+            'intereses_totales' => round($pendientes->sum('interes'), 2),
+            'capital_pendiente' => round($pendientes->sum('amortizacion'), 2),
+            'periodo_pago'      => $credito->recurrencia,
+            'tasa_interes'      => $credito->tasa,
+            'cuotas_vencidas'   => $vencidas,
+        ]);
+    }
+
+
     public function calcularCuotaPendiente(Request $request)
     {
         $prestamo_id = $request->prestamo_id;
@@ -1697,6 +1744,9 @@ class creditoController extends Controller
         }
         return response()->json($detalles);
     }
+
+
+
     public function calcularCuotaPendienteEIntereses($prestamo_id)
     {
         // Obtener el crédito y su frecuencia
@@ -2289,6 +2339,177 @@ class creditoController extends Controller
             'nuevo_principal' => round($nuevoPrincipal, 2)
         ];
     }
+
+    public function generarreprogramacion(Request $request)
+    {
+        $repId       = $request->reprogramacionId;
+        $rep         = Reprogramacion::findOrFail($repId);
+        $credito     = Credito::findOrFail($rep->credito_id);
+        $categoria   = $credito->categoria;
+        $frecuencia  = $credito->recurrencia;
+        $tea         = $rep->tasa_interes;
+
+        // 1) Identificar primera cuota no pagada
+        $primera = Cronograma::where('id_prestamo', $credito->id)
+            ->whereNotIn('id', function ($q) {
+                $q->select('cronograma_id')->from('ingresos');
+            })
+            ->orderBy('numero')
+            ->first();
+        $startNum = $primera->numero;
+
+        // 2) Calcular nuevo principal
+        $nuevoPrincipal = $rep->interes_restante + $rep->capital_restante;
+
+
+        // 3) Contar cuántas cuotas quedan
+        // $pending = Cronograma::where('id_prestamo', $credito->id)
+        //     ->where('numero', '>=', $startNum);
+
+        // if ($categoria !== 'grupal') {
+        //     $pending->whereNotNull('cliente_id');
+        // } else {
+        //     $pending->whereNull('cliente_id');
+        // }
+        // $n = $pending->count() ?: 1;
+        $n = $rep->nuevo_numero_cuotas;
+
+        // 4) Determinar i e intervalDays según recurrencia
+        switch ($frecuencia) {
+            case 'catorcenal':
+                $nPerYear = 26;
+                $intervalDays = 14;
+                break;
+            case 'quincenal':
+                $nPerYear = 24;
+                $intervalDays = 15;
+                break;
+            case 'veinteochenal':
+                $nPerYear = 12;
+                $intervalDays = 28;
+                break;
+            case 'semestral':
+                $nPerYear = 2;
+                $intervalDays = 182;
+                break;
+            case 'anual':
+                $nPerYear = 1;
+                $intervalDays = 365;
+                break;
+            case 'mensual':
+            default:
+                $nPerYear = 12;
+                $intervalDays = 30;
+                break;
+        }
+
+        $i            = pow(1 + $tea / 100, 1 / $nPerYear) - 1;
+        $fechaInicio  = Carbon::parse($rep->fecha_reprogramar);
+
+        // 5) Borrar cuotas pendientes
+        Cronograma::where('id_prestamo', $credito->id)
+            ->where('numero', '>=', $startNum)
+            ->delete();
+
+        // 6) Generar arreglo de cuotas usando tu lógica original
+        // 6) Generar cuotas usando calcularCuota()
+        $interesesMensualesPorGracia = 0; // como no quieres gracia
+        $tipoProducto                = $credito->producto; // 'grupal' o 'individual'
+
+        // Llamada única a tu función de amortización “francesa”
+        $raw = $this->calcularCuota(
+            $nuevoPrincipal,
+            $tea,
+            $n,
+            $frecuencia,
+            $interesesMensualesPorGracia,
+            $tipoProducto
+        );
+
+        // Ajustar números de cuota y fechas
+        $cuotas = [];
+        foreach ($raw as $idx => $c) {
+            $cuotas[] = [
+                'numero_cuota' => $startNum + $idx,
+                'cuota'        => $c['cuota'],
+                'capital'      => $c['amortizacion'],
+                'interes'      => $c['interes'],
+                'saldo_deuda'  => $c['saldo_deuda'],
+                'fecha_pago'   => Carbon::parse($rep->fecha_reprogramar)
+                    ->addDays($intervalDays * $idx)
+                    ->toDateString(),
+            ];
+        }
+
+        // 7) Insertar nuevas cuotas
+        if ($categoria !== 'grupal') {
+            $cliente = $credito->clientes()->first();
+            foreach ($cuotas as $c) {
+                Cronograma::create([
+                    'id_prestamo'  => $credito->id,
+                    'cliente_id'   => $cliente ? $cliente->id : null,
+                    'numero'       => $c['numero_cuota'],
+                    'fecha'        => $c['fecha_pago'],
+                    'monto'        => $c['cuota'],
+                    'capital'      => $c['capital'],
+                    'interes'      => $c['interes'],
+                    'amortizacion' => $c['capital'],
+                    'saldo_deuda'  => $c['saldo_deuda'],
+                ]);
+            }
+        } else {
+            // Cronograma general
+            foreach ($cuotas as $c) {
+                Cronograma::create([
+                    'id_prestamo'  => $credito->id,
+                    'cliente_id'   => null,
+                    'numero'       => $c['numero_cuota'],
+                    'fecha'        => $c['fecha_pago'],
+                    'monto'        => $c['cuota'],
+                    'capital'      => $c['capital'],
+                    'interes'      => $c['interes'],
+                    'amortizacion' => $c['capital'],
+                    'saldo_deuda'  => $c['saldo_deuda'],
+                ]);
+            }
+            // Desglose por cliente
+            $totalInd = $credito->creditoClientes()->sum('monto_indivual');
+            foreach ($credito->creditoClientes as $cc) {
+                $prop = $totalInd > 0 ? $cc->monto_indivual / $totalInd : 0;
+                foreach ($cuotas as $c) {
+                    Cronograma::create([
+                        'id_prestamo'  => $credito->id,
+                        'cliente_id'   => $cc->cliente_id,
+                        'numero'       => $c['numero_cuota'],
+                        'fecha'        => $c['fecha_pago'],
+                        'monto'        => round($c['cuota'] * $prop, 2),
+                        'capital'      => round($c['capital'] * $prop, 2),
+                        'interes'      => round($c['interes'] * $prop, 2),
+                        'amortizacion' => round($c['capital'] * $prop, 2),
+                        'saldo_deuda'  => round($c['saldo_deuda'] * $prop, 2),
+                    ]);
+                }
+            }
+        }
+
+        // 8) Actualizar reprogramación
+        $rep->estado = 'generado';
+        $rep->save();
+
+
+        return response()->json([
+            'success'         => 'Cronograma reprogramado correctamente.',
+            'prestamo_id'     => $credito->id,
+        ]);
+    }
+
+
+
+
+
+
+
+
 
     public function viewpagares()
     {

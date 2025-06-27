@@ -16,6 +16,9 @@ use App\Models\cliente;
 use App\Models\CorrelativoCredito;
 use App\Models\DepositoCts;
 use App\Models\Egreso;
+use App\Models\Reprogramacion;
+use App\Models\Sucursal;
+use App\Models\User;
 
 class PdfController extends Controller
 {
@@ -1657,6 +1660,125 @@ class PdfController extends Controller
         return $pdf->stream('cronograma.pdf');
         // return view('pdf.cronogramagrupalnuevo', $data);
     }
+
+
+    public function generarNuevoCronogramaReprogramadoPDF($id)
+    {
+        $prestamo = credito::find($id);
+        if (!$prestamo) {
+            abort(404, "Crédito no encontrado.");
+        }
+
+        $reprogramacion = Reprogramacion::where('credito_id', $id)->first();
+
+        $monto_desembolso = $reprogramacion->capital_restante + $reprogramacion->interes_restante;
+        $fecha_desembolso = $reprogramacion->updated_at;
+
+        
+
+        $categoria_c = $prestamo->categoria;
+
+        $query = Cronograma::where('id_prestamo', $prestamo->id);
+        if ($categoria_c != 'grupal') {
+            $query->whereNotNull('cliente_id');
+        } else {
+            $query->whereNull('cliente_id');
+        }
+
+        $primera = $query->whereNotIn('id', function ($q) {
+            $q->select('cronograma_id')->from('ingresos');
+        })
+            ->orderBy('numero')
+            ->first();
+
+
+        $numero_c = $primera->numero;
+
+
+        $cuotas = Cronograma::where('id_prestamo', $id)
+            ->where('numero', '>=', $numero_c)
+            ->orderBy('numero')
+            ->get();
+
+
+        // Para créditos grupales, obtener también los registros de CreditoCliente
+        $credito_cliente = null;
+
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
+
+        $totalInd = $prestamo->creditoClientes()->sum('monto_indivual');
+
+        $desembolsoProporcional = [];
+        foreach ($credito_cliente as $cc) {
+            $prop = $totalInd > 0
+                ? $cc->monto_indivual / $totalInd
+                : 0;
+            $desembolsoProporcional[$cc->cliente_id] = round($monto_desembolso * $prop, 2);
+        }
+
+        $responsable = User::find($prestamo->user_id);
+        $sucursal = Sucursal::first(); // O filtra por la sucursal del crédito
+
+        // Se calculan totales generales (por ejemplo, suma de intereses, capital, etc.)
+        // Para el cronograma general (cliente_id null)
+        $totalInteresGrupal = $cuotas->whereNull('cliente_id')->sum('interes');
+        $totalAmortizacionGrupal = $cuotas->whereNull('cliente_id')->sum('amortizacion');
+        $totalMontoGrupal = $cuotas->whereNull('cliente_id')->sum('monto');
+
+        // Para créditos individuales (o para cada cliente en créditos grupales)
+        $totalInteresesIndividuales = [];
+        $totalAmortizacionIndividuales = [];
+        $totalMontoIndividuales = [];
+        if ($prestamo->categoria != 'grupal') {
+            // Para individual, se suman todos los registros
+            $clienteId = $prestamo->clientes()->first()->id;
+            $totalInteresesIndividuales[$clienteId] = $cuotas->where('cliente_id', $clienteId)->sum('interes');
+            $totalAmortizacionIndividuales[$clienteId] = $cuotas->where('cliente_id', $clienteId)->sum('amortizacion');
+            $totalMontoIndividuales[$clienteId] = $cuotas->where('cliente_id', $clienteId)->sum('monto');
+        } else {
+            foreach ($prestamo->clientes as $cliente) {
+                $totalInteresesIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('interes');
+                $totalAmortizacionIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('amortizacion');
+                $totalMontoIndividuales[$cliente->id] = $cuotas->where('cliente_id', $cliente->id)->sum('monto');
+            }
+        }
+
+        $correlativosGenerales = CorrelativoCredito::where('id_prestamo', $id)
+            ->whereNull('id_cliente')
+            ->first();
+
+        $correlativosIntegrantes = CorrelativoCredito::where('id_prestamo', $id)
+            ->whereNotNull('id_cliente')
+            ->get();
+
+        $data = compact(
+            'fecha_desembolso',
+            'monto_desembolso',
+            'desembolsoProporcional',
+            'prestamo',
+            'responsable',
+            'cuotas',
+            'credito_cliente',
+            'totalInteresGrupal',
+            'totalInteresesIndividuales',
+            'totalAmortizacionIndividuales',
+            'totalMontoIndividuales',
+            'totalAmortizacionGrupal',
+            'totalMontoGrupal',
+            'sucursal',
+            'correlativosGenerales',
+            'correlativosIntegrantes',
+            'numero_c'
+        );
+
+        $pdf = PDF::loadView('pdf.cronogramagrupalreprogramacion', $data)->setPaper('a4', 'landscape');
+        return $pdf->stream('cronograma.pdf');
+        // return view('pdf.cronogramagrupalnuevo', $data);
+    }
+
+
+
+
     public function Pagototalindividual($array)
     {
         $idsArray = explode('-', $array);

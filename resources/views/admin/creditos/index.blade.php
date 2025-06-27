@@ -46,7 +46,7 @@
                                 <th>Tipo de credito</th>
                                 <th>Producto</th>
                                 <!-- <th>SubProducto</th>
-                                    <th>Destino de credito</th> -->
+                                                <th>Destino de credito</th> -->
                                 {{-- <th>Intervalo</th>
                                 <th>Tasa (%)</th>
                                 <th>Tiempo</th> --}}
@@ -81,44 +81,69 @@
                                     <td>{{ $credito->monto_total }}</td>
                                     <td>
                                         @if ($credito->estado == 'pendiente')
-                                            <span style="background-color: yellow; padding: 3px 10px; border-radius: 5px;">Pendiente</span>
+                                            <span
+                                                style="background-color: yellow; padding: 3px 10px; border-radius: 5px;">Pendiente</span>
                                         @elseif($credito->estado == 'revisado')
-                                            <span style="background-color: orange; padding: 3px 10px; border-radius: 5px;">Revisado</span>
+                                            <span
+                                                style="background-color: orange; padding: 3px 10px; border-radius: 5px;">Revisado</span>
                                         @elseif($credito->estado == 'rechazado')
-                                            <span style="background-color: red; padding: 3px 10px; border-radius: 5px;">Rechazado</span>
+                                            <span
+                                                style="background-color: red; padding: 3px 10px; border-radius: 5px;">Rechazado</span>
                                         @elseif($credito->estado == 'aprobado')
-                                            <span style="background-color: green; padding: 3px 10px; border-radius: 5px;">Aprobado</span>
+                                            <span
+                                                style="background-color: green; padding: 3px 10px; border-radius: 5px;">Aprobado</span>
                                         @elseif($credito->estado == 'rechazado por sistema')
-                                            <span style="background-color: SkyBlue; padding: 3px 10px; border-radius: 5px;">Rechazado por sistema</span>
+                                            <span
+                                                style="background-color: SkyBlue; padding: 3px 10px; border-radius: 5px;">Rechazado
+                                                por sistema</span>
                                         @elseif($credito->estado == 'observado')
-                                            <span style="background-color: purple; padding: 3px 10px; border-radius: 5px; color: white;">Observado</span>
+                                            <span
+                                                style="background-color: purple; padding: 3px 10px; border-radius: 5px; color: white;">Observado</span>
                                         @elseif($credito->estado == 'pagado')
-                                            <span style="background-color: blue; padding: 3px 10px; border-radius: 5px; color: white;">Activo</span>
+                                            <span
+                                                style="background-color: blue; padding: 3px 10px; border-radius: 5px; color: white;">Activo</span>
                                         @elseif($credito->estado == 'terminado')
-                                            <span style="background-color: grey; padding: 3px 10px; border-radius: 5px; color: white;">Terminado</span>
+                                            <span
+                                                style="background-color: grey; padding: 3px 10px; border-radius: 5px; color: white;">Terminado</span>
                                         @elseif($credito->estado == 'mora')
-                                            <span style="background-color: darkred; padding: 3px 10px; border-radius: 5px; color: white;">Mora</span>
+                                            <span
+                                                style="background-color: darkred; padding: 3px 10px; border-radius: 5px; color: white;">Mora</span>
                                         @endif
                                     </td>
                                     <td style="display: flex; align-items: center; justify-content:center;">
-                                        @if($credito->estado != 'rechazado')
-                                        <a href="#" class="btn btn-primary mr-2" data-toggle="modal" data-target="#cuotasModal"
-                                            onclick="loadCuotas('{{ route('credito.cuotas', $credito->id) }}')">
-                                            <i class="bi bi-calendar"></i>
-                                        </a>
+                                        @if ($credito->estado != 'rechazado')
+                                            <a href="#" class="btn btn-primary mr-2" data-toggle="modal"
+                                                data-target="#cuotasModal"
+                                                onclick="loadCuotas('{{ route('credito.cuotas', $credito->id) }}')">
+                                                <i class="bi bi-calendar"></i>
+                                            </a>
+                                        @endif
+                                        @if ($credito->estado == 'pagado')
+                                            <a href="{{ route('creditos.verpagocuota', ['id' => $credito->id]) }}"
+                                                class="btn btn-primary mr-2" title="Ver Pago de Cuotas">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </a>
                                         @endif
                                         <a href="{{ route('creditos.proyecciones', ['id' => $credito->id]) }}"
-                                            class="btn btn-secondary mr-2"><i class="bi bi-bar-chart"></i></a>
-                                        @if($credito->estado != 'rechazado' && $credito->estado != 'revisado' && $credito->estado != 'pagado' && $credito->estado != 'cancelado')
+                                            class="btn btn-secondary mr-2" title="Ver proyecciones">
+                                            <i class="bi bi-bar-chart"></i>
+                                        </a>
+                                        @if (
+                                            $credito->estado != 'rechazado' &&
+                                                $credito->estado != 'revisado' &&
+                                                $credito->estado != 'pagado' &&
+                                                $credito->estado != 'cancelado')
                                             <a href="{{ route('creditos.edit', $credito->id) }}" type="button"
                                                 class="btn btn-success mr-2"><i class="bi bi-pencil"></i></a>
                                         @endif
+
                                         <form action="{{ route('creditos.destroy', $credito->id) }}"
                                             onclick="preguntar(event, '{{ $id }}')" method="post"
                                             id="miFormulario{{ $id }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i></button>
+                                            <button type="submit" class="btn btn-danger"><i
+                                                    class="bi bi-trash"></i></button>
                                         </form>
                                     </td>
                                 </tr>
@@ -151,7 +176,6 @@
     </div>
 
     <script>
-
         $(document).ready(function() {
             var spanish = {
                 "sProcessing": "Procesando...",

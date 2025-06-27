@@ -51,6 +51,15 @@
                                     <p>Aprobación</p>
                                 </a>
                             </li>
+
+                            <li class="nav-item">
+                                <a href="{{ url('/admin/creditos/aprobarreprogramados') }}"
+                                    class="nav-link {{ request()->is('admin/creditos/aprobarreprogramados') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Reprogramados</p>
+                                </a>
+                            </li>
+
                             <li class="nav-item">
                                 <a href="{{ url('/inicio-operaciones') }}"
                                     class="nav-link {{ request()->is('inicio-operaciones') ? 'active' : '' }}">
@@ -206,7 +215,7 @@
                                         <a href="{{ url('admin/depositos-cts') }}"
                                             class="nav-link {{ request()->is('admin/depositos-cts') ? 'active' : '' }}">
                                             <i class="far fa-circle nav-icon"></i>
-                                            <p>Pago CTS</p>
+                                            <p>Abono CTS</p>
                                         </a>
                                     </li>
                                     <li class="nav-item">
