@@ -186,7 +186,7 @@ Route::get('/admin/reportes/credito/exportarcreditosgrupal', [ExcelController::c
 Route::get('/admin/creditos/vercuotaspago/{id}', [creditoController::class, 'verpagocuota'])->name('creditos.verpagocuota')->middleware('auth');
 Route::post('/admin/creditos/pagocuota', [creditoController::class, 'pagocuota'])->name('creditos.pagocuota')->middleware('auth');
 Route::post('/admin/creditos/pagocuotagrupal', [creditoController::class, 'pagoGrupal'])->name('creditos.pagogrupal')->middleware('auth');
-Route::get('/admin/generar-ticket-pago/{id}', [PDFController::class, 'generarTicketDePago'])->name('generar.ticket.pago');
+Route::get('/admin/generar-ticket-pago/{id}/{diferencia}', [PDFController::class, 'generarTicketDePago'])->name('generar.ticket.pago');
 Route::get('/admin/generar-ticket-pagogrupal/{array}', [PDFController::class, 'generarTicketDePagogrupal'])->name('generar.ticket.pagogrupal');
 
 Route::get('/storage/foto/{filename}', [FileController::class, 'getFoto'])->name('getFoto');

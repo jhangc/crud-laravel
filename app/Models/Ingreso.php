@@ -21,6 +21,7 @@ class Ingreso extends Model
         'monto',
         'monto_mora',          // Nuevo campo
         'dias_mora',           // Nuevo campo
+        'diferencia', 
         'porcentaje_mora',     // Nuevo campo
         'monto_total_pago_final', // Nuevo campo
         'sucursal_id',

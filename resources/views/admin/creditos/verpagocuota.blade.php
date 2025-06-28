@@ -179,8 +179,13 @@
                                 @if ($cuota->estado == 'pagado')
                                     {{ $cuota->fecha_pago }}
                                     <div class="d-flex flex-wrap">
-                                        <a href="{{ route('generar.ticket.pago', ['id' => $cuota->ingreso_id]) }}"
-                                            target="_blank" class="btn btn-info">Ver Ticket</a>
+                                        <a href="{{ route('generar.ticket.pago', [
+                                            'id' => $cuota->ingreso_id,
+                                            'diferencia' => $cuota->diferencia,
+                                        ]) }}"
+                                            target="_blank" class="btn btn-info">
+                                            Ver Ticket
+                                        </a>
                                         @if ($cuota->pago_capital != null)
                                             <a href="{{ url('/vernuevocronograma/' . $credito->id) }}" target="_blank"
                                                 class="btn btn-warning mb-2">Ver Nuevo Cronograma</a>
@@ -193,6 +198,7 @@
                                             TODO</button>
                                     @endif
                                     <button class="btn btn-{{ $cuota->estado == 'vencida' ? 'warning' : 'primary' }}"
+                                        data-toggle="modal" data-target="#modalPagarCuota"
                                         onclick="pagarCuota({{ $credito->id }}, {{ $clienteCredito->cliente_id }}, {{ $cuota->id }}, {{ $cuota->numero }}, {{ $cuota->monto_total_pago_final }}, {{ $cuota->monto }}, {{ $cuota->dias_mora }}, {{ $cuota->porcentaje_mora }})">Pagar</button>
                                 @else
                                     {{ $cuota->fecha_pago }}
@@ -402,59 +408,157 @@
             </div>
         </div>
 
+        <!-- Modal de Pago de Cuota -->
+        <!-- --- 1. Modal actualizado: -->
+        <div class="modal fade" id="modalPagarCuota" tabindex="-1" role="dialog"
+            aria-labelledby="modalPagarCuotaLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <form id="formPagarCuota">
+                    @csrf
+                    <!-- Hidden inputs para todas las variables -->
+                    <input type="hidden" id="mpc_prestamo_id">
+                    <input type="hidden" id="mpc_cliente_id">
+                    <input type="hidden" id="mpc_cronograma_id">
+                    <input type="hidden" id="mpc_numero_cuota">
+                    <input type="hidden" id="mpc_monto_total_hidden">
+                    <input type="hidden" id="mpc_monto_base_hidden">
+                    <input type="hidden" id="mpc_dias_mora_hidden">
+                    <input type="hidden" id="mpc_porcentaje_mora_hidden">
+
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalPagarCuotaLabel">
+                                Pagar Cuota #<span id="mpc_numero_cuota_text"></span>
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>Monto Total a Pagar</label>
+                                <!-- solo para mostrar, no se envía directamente -->
+                                <input type="text" class="form-control" id="mpc_monto_total_display" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Monto a Abonar</label>
+                                <input type="number" step="0.01" class="form-control" name="monto_pagado"
+                                    id="mpc_monto_pagado" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                Confirmar Pago
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        function pagarCuota(prestamo_id, cliente_id, cronograma_id, numero_cuota, monto_total_pago_final, monto, dias_mora,
-            porcentaje_mora) {
-            Swal.fire({
-                title: '¿Está seguro?',
-                text: `Está a punto de pagar la cuota #${numero_cuota} por un monto de S/. ${monto_total_pago_final.toFixed(2)}.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, pagar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: '{{ route('creditos.pagocuota') }}',
-                        method: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            prestamo_id: prestamo_id,
-                            cliente_id: cliente_id,
-                            cronograma_id: cronograma_id,
-                            numero_cuota: numero_cuota,
-                            monto: monto_total_pago_final,
-                            monto_mora: (monto_total_pago_final - monto).toFixed(2),
-                            dias_mora: dias_mora,
-                            porcentaje_mora: porcentaje_mora
-                        },
-                        success: function(response) {
-                            Swal.fire({
-                                title: '¡Éxito!',
-                                text: response.success,
-                                icon: 'success'
-                            }).then(() => {
-                                window.open('/admin/generar-ticket-pago/' + response.ingreso_id,
-                                    '_blank');
-                                location.reload();
-                            });
-                        },
-                        error: function(response) {
-                            Swal.fire({
-                                title: 'Error',
-                                text: response.responseJSON.error,
-                                icon: 'error'
-                            });
-                        }
+        // --- 2. pagarCuota: rellena todos los campos y muestra el modal (sin SweetAlert)
+        function pagarCuota(prestamo_id, cliente_id, cronograma_id,
+            numero_cuota, monto_total_pago_final,
+            monto_base, dias_mora, porcentaje_mora) {
+            // asignar a los hidden inputs
+            $('#mpc_prestamo_id').val(prestamo_id);
+            $('#mpc_cliente_id').val(cliente_id);
+            $('#mpc_cronograma_id').val(cronograma_id);
+            $('#mpc_numero_cuota').val(numero_cuota);
+            $('#mpc_numero_cuota_text').text(numero_cuota);
+
+            // monto total (display + hidden)
+            $('#mpc_monto_total_display').val(monto_total_pago_final.toFixed(2));
+            $('#mpc_monto_total_hidden').val(monto_total_pago_final.toFixed(2));
+
+            // monto base para el cálculo de mora
+            $('#mpc_monto_base_hidden').val(monto_base.toFixed(2));
+
+            // días y porcentaje de mora
+            $('#mpc_dias_mora_hidden').val(dias_mora);
+            $('#mpc_porcentaje_mora_hidden').val(porcentaje_mora);
+
+            // limpiar el campo de abono
+            $('#mpc_monto_pagado').val('');
+
+        }
+
+        // --- 3. Envío por AJAX con los mismos datos que antes
+        $('#formPagarCuota').on('submit', function(e) {
+            e.preventDefault();
+
+            // leer valores
+            const prestamo_id = $('#mpc_prestamo_id').val();
+            const cliente_id = $('#mpc_cliente_id').val();
+            const cronograma_id = $('#mpc_cronograma_id').val();
+            const numero_cuota = $('#mpc_numero_cuota').val();
+
+            const monto_total = parseFloat($('#mpc_monto_total_hidden').val());
+            const monto_base = parseFloat($('#mpc_monto_base_hidden').val());
+            const dias_mora = $('#mpc_dias_mora_hidden').val();
+            const porcentaje_mora = $('#mpc_porcentaje_mora_hidden').val();
+
+            // mismo cálculo de mora que antes
+            const monto_mora = (monto_total - monto_base).toFixed(2);
+
+            const mpc_monto_pagado = parseFloat($('#mpc_monto_pagado').val());
+
+            // ——— Validación front —
+            if (mpc_monto_pagado < monto_total) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Monto insuficiente',
+                    text: `El monto ingresado (S/. ${mpc_monto_pagado.toFixed(2)}) no puede ser menor al total a pagar (S/. ${monto_total.toFixed(2)}).`
+                });
+                return; // salimos y no hacemos la petición
+            }
+
+
+            $.ajax({
+                url: '{{ route('creditos.pagocuota') }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    prestamo_id: prestamo_id,
+                    cliente_id: cliente_id,
+                    cronograma_id: cronograma_id,
+                    numero_cuota: numero_cuota,
+                    monto: monto_total,
+                    monto_mora: monto_mora,
+                    dias_mora: dias_mora,
+                    porcentaje_mora: porcentaje_mora,
+                    mpc_monto_pagado: mpc_monto_pagado
+                },
+                success: function(response) {
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: response.success,
+                        icon: 'success'
+                    }).then(() => {
+                        window.open(
+                            `/admin/generar-ticket-pago/${response.ingreso_id}/${response.diferencia}`,
+                            '_blank'
+                        );
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: xhr.responseJSON?.error || 'Hubo un problema',
+                        icon: 'error'
                     });
                 }
             });
-        }
+        });
 
         function pagarCuotaGeneral(prestamo_id, fecha) {
             Swal.fire({

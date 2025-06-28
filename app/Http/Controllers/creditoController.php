@@ -1018,6 +1018,7 @@ class creditoController extends Controller
                     $cuota->porcentaje_mora = $ingreso->porcentaje_mora;
                     $cuota->monto_total_pago_final = round($ingreso->monto, 2);
                     $cuota->ingreso_id = $ingreso->id;
+                    $cuota->diferencia = $ingreso->diferencia;
                     $puedeAmortizar++;
                 } elseif (now()->greaterThan($fecha_vencimiento)) {
                     $cuota->estado = 'vencida';
@@ -1405,6 +1406,23 @@ class creditoController extends Controller
             return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
         }
 
+        $montoPagado  = $request->mpc_monto_pagado;
+        $montoTotal   = $request->monto;
+        $diferencia   = 0;
+
+        
+
+        // Si paga más, la diferencia se reserva
+        if ($montoPagado > $montoTotal) {
+            $diferencia = round($montoPagado - $montoTotal, 2);
+            $montoAplicado = $montoTotal;
+        } else {
+            // igual o menor, aplicamos lo que pagó
+            $montoAplicado = $montoPagado;
+        }
+
+        
+
         // Register the income
         $ingreso = Ingreso::create([
             'transaccion_id' => $ultimaTransaccion->id,
@@ -1412,21 +1430,52 @@ class creditoController extends Controller
             'cliente_id' => $request->cliente_id,
             'cronograma_id' => $request->cronograma_id,
             'numero_cuota' => $request->numero_cuota,
-            'monto' => $request->monto, // Monto cuota
+            'monto' => $montoAplicado, // Monto cuota
             'monto_mora' => $request->monto_mora,
             'dias_mora' => $request->dias_mora,
+            'diferencia' => $diferencia,
             'porcentaje_mora' => $request->porcentaje_mora,
             'fecha_pago' => now()->toDateString(),
             'hora_pago' => now()->toTimeString(),
             'sucursal_id' => $user->sucursal_id,
-            'monto_total_pago_final' => round($request->monto - $request->monto_mora, 2), // Monto total a pagar (incluyendo mora)
+            'monto_total_pago_final' => round($montoAplicado - $request->monto_mora, 2), // Monto total a pagar (incluyendo mora)
         ]);
 
         // Update the total income in the cash transaction
-        $ultimaTransaccion->cantidad_ingresos = $ultimaTransaccion->cantidad_ingresos + $request->monto;
+        $ultimaTransaccion->cantidad_ingresos += $montoAplicado;
         $ultimaTransaccion->save();
 
-        return response()->json(['success' => 'Cuota pagada con éxito', 'ingreso_id' => $ingreso->id]);
+        // 6. Si hay sobra, ajustar la siguiente cuota
+        $nextInfo = null;
+        if ($diferencia > 0) {
+            $nextCuota = \App\Models\Cronograma::where('id_prestamo', $request->prestamo_id)
+                ->where('numero', '>', $request->numero_cuota)
+                ->orderBy('numero')
+                ->first();
+
+            if ($nextCuota) {
+                // Restamos la diferencia al monto total de esa siguiente cuota
+                $nextCuota->monto = round($nextCuota->monto - $diferencia, 2);
+                $nextCuota->save();
+
+                $nextInfo = [
+                    'cronograma_id'            => $nextCuota->id,
+                    'nuevo_monto_total'        => $nextCuota->monto,
+                ];
+            }
+        }
+
+        $response = [
+            'success'    => 'Cuota pagada con éxito',
+            'ingreso_id' => $ingreso->id,
+            'diferencia' => $diferencia,
+        ];
+
+        if ($nextInfo) {
+            $response['siguiente_cuota'] = $nextInfo;
+        }
+
+        return response()->json($response);
     }
     public function pagoGrupal(Request $request)
     {

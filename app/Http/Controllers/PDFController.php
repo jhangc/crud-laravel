@@ -1213,7 +1213,7 @@ class PdfController extends Controller
 
         return $pdf->stream('ticket.pdf');
     }
-    public function generarTicketDePago($id)
+    public function generarTicketDePago($id, $diferencia)
     {
         $ingreso = \App\Models\Ingreso::find($id);
 
@@ -1232,7 +1232,7 @@ class PdfController extends Controller
             ->first();
         $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
 
-        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota', 'siguienteCuota'))
+        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota', 'siguienteCuota', 'diferencia'))
             ->setPaper([0, 0, 200, 400]); // Ajustar el tamaño del papel si es necesario
         return $pdf->stream('ticket.pdf');
     }
