@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Credito;
+use App\Models\credito;
 use App\Models\Cronograma;
 use App\Models\Reprogramacion;
 use Carbon\Carbon;
@@ -39,7 +39,7 @@ class ReprogramacionController extends Controller
 
         $creditoId  = $request->credito_id;
         $nPeriodos  = $request->cuotas_solicitadas;
-        $credito    = Credito::findOrFail($creditoId);
+        $credito    = credito::findOrFail($creditoId);
 
         // 2) Base de cuotas sin pagar
         $baseQuery = Cronograma::where('id_prestamo', $creditoId)
