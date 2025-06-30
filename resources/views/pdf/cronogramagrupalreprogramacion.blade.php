@@ -126,7 +126,7 @@
             <tbody>
                 @foreach ($cuotas->whereNull('cliente_id')->where('numero', '>=', $numero_c) as $cuota)
 <tr>
-                        <td>{{ $cuota->numero - $numero_c }}</td>
+                        <td>{{ $cuota->numero - $numero_c + 1 }}</td>
                         <td>{{ $cuota->fecha }}</td>
                         <td>{{ $cuota->detalle ?? 'Cuota' }}</td>
                         <td>
@@ -273,7 +273,7 @@ Crédito Individual
             <tbody>
                 @foreach ($cuotas->where('cliente_id', $cliente->id)->where('numero', '>=', $numero_c) as $cuota)
                     <tr>
-                        <td>{{ $cuota->numero - $numero_c }}</td>
+                        <td>{{ $cuota->numero - $numero_c + 1 }}</td>
                         <td>{{ $cuota->fecha }}</td>
                         <td>{{ $cuota->detalle ?? 'Cuota' }}</td>
                         <td>
