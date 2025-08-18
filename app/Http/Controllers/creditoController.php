@@ -81,6 +81,11 @@ class creditoController extends Controller
     {
         return view('admin.creditos.agricola');
     }
+    public function joya()
+    {
+        return view('admin.creditos.joya');
+    }
+
 
     public function getdescripciones(Request $request)
     {

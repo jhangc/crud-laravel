@@ -77,7 +77,7 @@ Route::get('/admin/creditos/produccion', [creditoController::class, 'produccion'
 Route::get('/admin/creditos/servicio', [creditoController::class, 'servicio'])->name('creditos.servicio')->middleware('auth');
 Route::get('/admin/creditos/grupal', [creditoController::class, 'grupal'])->name('creditos.grupal')->middleware('auth');
 Route::get('/admin/creditos/agricola', [creditoController::class, 'agricola'])->name('creditos.agricola')->middleware('auth');
-
+Route::get('/admin/creditos/joya', [creditoController::class, 'joya'])->name('creditos.joya')->middleware('auth');
 //traer descricpones
 Route::get('/admin/credito/descripcion', [creditoController::class, 'getdescripciones'])->name('creditos.getdescripciones')->middleware('auth');
 Route::get('/admin/cronograma/{id}/cuotas', [CronogramaController::class, 'vercuota'])->name('credito.cuotas')->middleware('auth');

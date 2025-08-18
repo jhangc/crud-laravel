@@ -11,14 +11,17 @@
         <div class="col-md-2 d-flex justify-content-center">
             <button type="button" class="btn btn-secondary" onclick="loadContent('servicio')">CREDITO SERVICIO</button>
         </div>
-        <div class="col-md-3 d-flex justify-content-center">
+        <div class="col-md-2 d-flex justify-content-center">
             <button type="button" class="btn btn-success" onclick="loadContent('produccion')">CREDITO PRODUCCIÓN EMPRESA</button>
         </div>
-        <div class="col-md-3 d-flex justify-content-center">
+        <div class="col-md-2 d-flex justify-content-center">
             <button type="button" class="btn btn-success" onclick="loadContent('agricola')">CREDITO PRODUCCIÓN AGRICOLA</button>
         </div>
         <div class="col-md-2 d-flex justify-content-center">
             <button type="button" class="btn btn-warning" onclick="loadContent('grupal')">CREDITO GRUPAL</button>
+        </div>
+        <div class="col-md-2 d-flex justify-content-center">
+            <button type="button" class="btn btn-info" onclick="loadContent('joya')">CREDIJOYA</button>
         </div>
     </div>
     <br>
