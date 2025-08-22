@@ -76,6 +76,12 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('preciosoro.index') }}" class="nav-link">
+                            <i class="nav-icon fas"><i class="bi bi-gem"></i></i>
+                            <p> Precios de Oro</p>
+                        </a>
+                    </li>
                 @endrole
 
 

@@ -36,6 +36,10 @@ class Credito extends Model
         'porcentaje_credito',
         'comentario_asesor',
         'comentario_administrador',
+        //CrediJoya
+        'tasacion_total','monto_max_80','monto_aprobado',
+        'itf_desembolso','neto_recibir','proximo_vencimiento',
+        'deuda_prev_modo','deuda_prev_monto',
     ];
 
     protected $dates = [
@@ -85,5 +89,23 @@ class Credito extends Model
     {
         return $this->hasMany(CorrelativoCredito::class, 'id_prestamo');
     }
+    //
+    //credijoya
+
+    public function joyas()
+    {
+        return $this->hasMany(\App\Models\CredijoyaJoya::class, 'prestamo_id', 'id');
+    }
+
+    // Scopes útiles
+    public function scopeCrediJoya($q)
+    {
+        return $q->where('subproducto', 'credijoya');
+    }
+    public function scopeActivos($q)
+    {
+        return $q->where('activo', 1);
+    }
+
 
 }

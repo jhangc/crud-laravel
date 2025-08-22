@@ -9,6 +9,8 @@ use App\Models\Distrito;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 class clienteController extends Controller
 {
@@ -395,16 +397,86 @@ class clienteController extends Controller
 
     public function buscarPorDocumento(Request $request)
     {
+        $request->validate([
+            'documento_identidad' => ['required','digits:8'],
+        ]);
+
         $dni = $request->input('documento_identidad');
+
+        // 1) BD primero (solo activos)
         $cliente = Cliente::where('documento_identidad', $dni)
-            ->where('activo', 1) // Agregar condición para buscar solo clientes activos
-            ->first(['nombre', 'telefono', 'email', 'direccion', 'direccion_laboral', 'profesion']);
+            ->where('activo', 1)
+            ->first(['nombre','telefono','email','direccion','direccion_laboral','profesion']);
 
         if ($cliente) {
-            return response()->json($cliente);
-        } else {
-            return response()->json(['error' => 'Cliente no encontrado'], 404);
+            // Devuelve en el formato que tu vista ya consume
+            return response()->json([
+                'nombre'             => $cliente->nombre ?? '',
+                'telefono'           => $cliente->telefono ?? '',
+                'email'              => $cliente->email ?? '',
+                'direccion'          => $cliente->direccion ?? '',
+                'direccion_laboral'  => $cliente->direccion_laboral ?? '',
+                'profesion'          => $cliente->profesion ?? '',
+            ],200);
         }
+
+        // 2) Si no está en BD, intente RENIEC (DeColecta)
+       /*  $base   = 'https://api.decolecta.com';
+        $token  = 'sk_9795.6RFNhNAXHqOWTaRyMsABG8iPxT1i9Fl3';
+        $verify =  false;
+        $timeout =  8;
+
+        $client = new Client([
+            'base_uri' => $base,
+            'verify'   => $verify,
+            'timeout'  => $timeout,
+        ]);
+
+        try {
+            $res = $client->request('GET', '/v1/reniec/dni', [
+                'http_errors' => false,
+                'headers' => [
+                    'Authorization' => 'Bearer '.$token,
+                    // Usa el referer que el proveedor indique; este mantiene compatibilidad
+                    'Referer'    => 'https://apis.net.pe/consulta-dni-api',
+                    'Accept'     => 'application/json',
+                    'User-Agent' => 'laravel/guzzle',
+                ],
+                'query' => ['numero' => $dni],
+            ]);
+
+            $status = $res->getStatusCode();
+            $json   = json_decode($res->getBody()->getContents(), true) ?: [];
+
+            if ($status !== 200) {
+                // No lo encontramos ni en BD ni en API
+                return response()->json(['error' => 'Cliente no encontrado'], 404);
+            }
+
+            // Mapea la respuesta de la API a tu formato UI
+            $nombres  = $json['nombres'] ?? '';
+            $apep     = $json['apellidoPaterno'] ?? ($json['apellido_paterno'] ?? '');
+            $apem     = $json['apellidoMaterno'] ?? ($json['apellido_materno'] ?? '');
+
+            // Formato "APEP APEM, NOMBRES" como usabas
+            $nombreUI = trim(
+                trim(($apep ? $apep.' ' : '').($apem ?? ''))
+                . ($nombres ? ', '.$nombres : '')
+            );
+
+            return response()->json([
+                'nombre'             => $nombreUI,
+                'telefono'           => '',   // la API DNI no trae teléfono
+                'email'              => '',   // ni email
+                'direccion'          => '',   // puedes enriquecer si tu plan trae dirección
+                'direccion_laboral'  => '',
+                'profesion'          => '',   // no disponible en consulta DNI estándar
+            ]); */
+
+       // } catch (GuzzleException $e) {
+            // Falla de red o excepción: compórtate igual que "no encontrado"
+            return response()->json(['error' => 'Cliente no encontrado'], 404);
+      //  }
     }
 
     public function agregarpordni(Request $request)

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\apisnetController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -11,12 +12,14 @@ use App\Http\Controllers\GastoController;
 use App\Http\Controllers\IngresoExtraController;
 use App\Http\Controllers\BovedaController;
 use App\Http\Controllers\clienteController;
+use App\Http\Controllers\CrediJoyaController;
 use App\Http\Controllers\creditoController;
 use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\CtsUsuarioController;
 use App\Http\Controllers\CuentasController;
 use App\Http\Controllers\DepositoCtsController;
 use App\Http\Controllers\ExcelController;
+use App\Http\Controllers\GoldPriceController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InicioDesembolsoController;
 use App\Http\Controllers\ReporteController;
@@ -250,3 +253,16 @@ Route::get('/admin/creditos/aprobarreprogramados', [ReprogramacionController::cl
 Route::post('/reprogramaciones/process', [ReprogramacionController::class, 'process'])->name('reprogramacion.process')->middleware('auth');
 Route::post('/generarcronogramreprogramado', [creditoController::class, 'generarreprogramacion'])->name('reprogramacion.exitosa')->middleware('auth');
 Route::get('/vernuevocronogramareprogramado/{id}', [PDFController::class, 'generarNuevoCronogramaReprogramadoPDF'])->name('generar.pdf.nuevo cronograma');
+// Vista CRUD
+Route::get('/admin/precios-oro', [GoldPriceController::class, 'index'])->name('preciosoro.index');
+// API CRUD
+Route::get('/admin/precios-oro/list',   [GoldPriceController::class, 'list'])->name('preciosoro.list');
+Route::post('/admin/precios-oro',       [GoldPriceController::class, 'store'])->name('preciosoro.store');
+Route::put('/admin/precios-oro/{goldPrice}',  [GoldPriceController::class, 'update'])->name('preciosoro.update');
+Route::delete('/admin/precios-oro/{goldPrice}', [GoldPriceController::class, 'destroy'])->name('preciosoro.destroy');
+// Endpoint para CrediJoya (autollenarPrecioOro)
+Route::get('/admin/credijoya/precio-oro', [GoldPriceController::class, 'vigente']);
+Route::get('/admin/credijoya/deuda-previa', [CrediJoyaController::class, 'deudaPrevia'])->name('credijoya.deuda_previa');
+Route::post('admin/credijoya/store',[CrediJoyaController::class, 'store']);
+//api
+Route::get('/testapi/{dni}', [apisnetController::class, 'index'])->name('test.api');
