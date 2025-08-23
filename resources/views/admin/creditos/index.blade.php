@@ -130,7 +130,7 @@
                                         </a>
                                         @if (
                                             $credito->estado != 'rechazado' &&
-                                                $credito->estado != 'revisado' &&
+                                                $credito->estado != 'aprobado' &&
                                                 $credito->estado != 'pagado' &&
                                                 $credito->estado != 'cancelado')
                                             <a href="{{ route('creditos.edit', $credito->id) }}" type="button"

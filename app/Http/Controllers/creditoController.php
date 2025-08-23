@@ -165,7 +165,7 @@ class creditoController extends Controller
 
         $estado = $prestamo->estado;
 
-        if ($prestamo->producto != "grupal") {
+        if ($prestamo->producto != "grupal"&& ($prestamo->categoria != 'credijoya')) {
             switch ($tipo) {
                 case 'comercio':
                     $totalVentas = round((($ventasdiarias->sum('promedio')) * $factormes), 2);
@@ -789,7 +789,43 @@ class creditoController extends Controller
                         ));
                     }
             }
-        } else {
+        }
+        else if ($prestamo && ($prestamo->categoria == 'credijoya')) {
+            $modulo  = $request->query('modulo'); // 'aprobar' o null
+            $cliente = $prestamo->clientes()->first();
+            $responsable = $prestamo->user;
+
+            $joyas = \App\Models\CredijoyaJoya::where('prestamo_id', $prestamo->id)->get();
+            $cronograma = \App\Models\Cronograma::where('id_prestamo', $prestamo->id)
+                ->orderBy('numero')->get();
+
+            // Resumen
+            $tasacionTotal = (float) ($prestamo->tasacion_total ?? $joyas->sum('valor_tasacion'));
+            $max80         = round($tasacionTotal * 0.80, 2);
+            $montoAprobado = (float) ($prestamo->monto_total ?? 0);
+            $tea           = (float) ($prestamo->tasa ?? 0);
+            $itf           = (float) ($prestamo->itf_desembolso ?? 0);
+            $deudaPrev     = (float) ($prestamo->deuda_prev_monto ?? 0);
+            $deudaPrevModo = (string) ($prestamo->deuda_prev_modo ?? '');
+            $descDeuda     = $deudaPrevModo === 'pagar_con_desembolso' ? $deudaPrev : 0;
+            $neto          = max($montoAprobado - $itf - $descDeuda, 0);
+
+            // Cuota “a evaluar”: 1ra cuota si existe
+            $cuotaEvaluar  = optional($cronograma->first())->monto ?? 0;
+
+            $comentarioasesor        = $prestamo->comentario_asesor;
+            $comentarioadministrador = $prestamo->comentario_administrador;
+            $estado                  = $prestamo->estado;
+
+            return view('admin.creditos.evaluacion_credijoya', compact(
+                'prestamo','cliente','responsable',
+                'joyas','cronograma',
+                'tasacionTotal','max80','montoAprobado','tea','itf','neto',
+                'cuotaEvaluar','comentarioasesor','comentarioadministrador',
+                'estado','modulo'
+            ));
+        }
+        else {
             $totalgarantia = $garantias->sum('valor_mercado');
 
             return view('admin.creditos.evaluaciongrupal', compact(
@@ -3274,11 +3310,28 @@ class creditoController extends Controller
      */
     public function edit($id)
     {
+        $credito = \App\Models\Credito::findOrFail($id);
 
-        $credito = credito::find($id);
-        $tipo = $credito->tipo;
-        $producto = $credito->producto;
-        $subproducto = $credito->subproducto;
+        // Si es CrediJoya -> ir a su vista de edición
+        if ($credito->producto === 'individual' && $credito->subproducto === 'credijoya' || $credito->categoria === 'credijoya') {
+            $cliente = optional($credito->clientes)->first(); // relación many-to-many
+            $joyas   = \App\Models\CredijoyaJoya::where('prestamo_id', $credito->id)
+                        ->get(['id','kilate as kilataje','precio_gramo','peso_bruto','peso_neto','piezas','descripcion','valor_tasacion','codigo']);
+
+            // totales de referencia (recalcular también en el front)
+            $tasacion_total = (float) $joyas->sum('valor_tasacion');
+            $monto_max_80   = round($tasacion_total * 0.80, 2);
+
+            return view('admin.creditos.editcredijoya', compact(
+                'id','credito','cliente','joyas','tasacion_total','monto_max_80'
+            ));
+        }
+
+        // Ramas existentes
+        $tipo       = $credito->tipo;
+        $producto   = $credito->producto;
+        $subproducto= $credito->subproducto;
+
         if ($tipo == 'comercio' && $producto != 'grupal') {
             return view('admin.creditos.editcomercio', compact('id'));
         }
@@ -3294,7 +3347,10 @@ class creditoController extends Controller
         if ($producto == 'grupal') {
             return view('admin.creditos.editgrupal', compact('id'));
         }
+
+        abort(404);
     }
+
 
 
 

@@ -264,5 +264,8 @@ Route::delete('/admin/precios-oro/{goldPrice}', [GoldPriceController::class, 'de
 Route::get('/admin/credijoya/precio-oro', [GoldPriceController::class, 'vigente']);
 Route::get('/admin/credijoya/deuda-previa', [CrediJoyaController::class, 'deudaPrevia'])->name('credijoya.deuda_previa');
 Route::post('admin/credijoya/store',[CrediJoyaController::class, 'store']);
+Route::post('/admin/credijoya/{id}/aprobar', [CrediJoyaController::class, 'aprobarCredijoya'])->name('credijoya.aprobar');
+Route::post('/admin/credijoya/{id}/rechazar', [CrediJoyaController::class, 'rechazarCredijoya'])->name('credijoya.rechazar');
+Route::post('/admin/credijoya/update/{id}', [CrediJoyaController::class, 'update'])->name('credijoya.update');
 //api
 Route::get('/testapi/{dni}', [apisnetController::class, 'index'])->name('test.api');

@@ -275,5 +275,141 @@ class CrediJoyaController extends Controller
         $total = $this->calcularDeudaPreviaSimple((int)$cliente->id);
         return response()->json(['ok' => true, 'total' => $total], 200);
     }
+    public function update(Request $r, int $id)
+    {
+        // En edición NO cambiamos el cliente; solo parámetros y joyas
+        $r->validate([
+            'tasa_tea'            => ['required', 'numeric', 'min:0'],
+            'fecha_desembolso'    => ['required', 'date'],
+            'proximo_vencimiento' => ['nullable', 'date'],
+
+            'tasacion_total'      => ['required', 'numeric', 'min:0'],
+            'monto_max_80'        => ['required', 'numeric', 'min:0'], // referencial del front
+            'monto_aprobado'      => ['required', 'numeric', 'min:0.01'],
+
+            'joyas'               => ['required', 'string'], // JSON del front (con id si existen)
+        ]);
+
+        $credito = Credito::findOrFail($id);
+
+        // ---- seguridad backend: 80% de tasación ----
+        $tasacionTotal = (float) $r->input('tasacion_total');
+        $max80_calc    = round($tasacionTotal * 0.80, 2);
+        $montoAprobado = (float) $r->input('monto_aprobado');
+
+        if ($montoAprobado > $max80_calc + 0.001) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'El monto aprobado no puede superar el 80% de la tasación.',
+                'max_80'  => $max80_calc
+            ], 422);
+        }
+
+        $fechaDesembolso = Carbon::parse($r->input('fecha_desembolso'));
+        $proxVenc        = $r->input('proximo_vencimiento')
+                            ? Carbon::parse($r->input('proximo_vencimiento'))->toDateString()
+                            : $fechaDesembolso->copy()->addDays(30)->toDateString();
+
+        $joyasFront = collect(json_decode($r->input('joyas'), true) ?: []);
+
+        if ($joyasFront->isEmpty()) {
+            return response()->json(['ok'=>false,'message'=>'Debe registrar al menos una joya.'],422);
+        }
+
+        DB::transaction(function () use (
+            $r, $credito, $joyasFront, $tasacionTotal, $max80_calc, $montoAprobado, $fechaDesembolso, $proxVenc
+        ) {
+            // 1) Actualizar cabecera del crédito
+            $credito->update([
+                'tasa'                => (float) $r->input('tasa_tea'),
+                'monto_total'         => $montoAprobado,
+                'tasacion_total'      => $tasacionTotal,
+                'monto_max_80'        => $max80_calc,
+
+                // en pre‑registro estos quedan en 0 / null (se manejarán en desembolso)
+                'itf_desembolso'      => 0,
+                'neto_recibir'        => 0,
+                'deuda_prev_modo'     => null,
+                'deuda_prev_monto'    => 0,
+
+                'fecha_desembolso'    => $fechaDesembolso->toDateString(),
+                'proximo_vencimiento' => $proxVenc,
+                'fecha_fin'           => $proxVenc,
+                // mantenemos estado/categoria/etc. tal cual
+            ]);
+
+            // 2) Regenerar cronograma (1 período) — simple y consistente con pre‑registro
+            Cronograma::where('id_prestamo', $credito->id)->delete();
+            $this->guardarCronograma(
+                $credito->id,
+                (int) $credito->id_cliente,
+                $montoAprobado,
+                (float) $r->input('tasa_tea'),
+                $fechaDesembolso->toDateString()
+            );
+
+            // 3) Upsert de JOYAS (actualiza/crea y borra las quitadas)
+            $idsKept = [];
+
+            foreach ($joyasFront as $j) {
+                $payload = [
+                    'kilate'         => (int)   ($j['kilataje'] ?? 0),
+                    'precio_gramo'   => (float) ($j['precio_gramo'] ?? 0),
+                    'peso_bruto'     => isset($j['peso_bruto']) ? (float) $j['peso_bruto'] : null,
+                    'peso_neto'      => (float) ($j['peso_neto'] ?? 0),
+                    'piezas'         => (int)   ($j['piezas'] ?? 1),
+                    'descripcion'    => $j['descripcion'] ?? null,
+                    'valor_tasacion' => (float) ($j['valor_tasacion'] ?? 0),
+                ];
+
+                if (!empty($j['id'])) {
+                    // actualizar existente (si pertenece al préstamo)
+                    $joya = CredijoyaJoya::where('prestamo_id', $credito->id)
+                            ->where('id', (int)$j['id'])
+                            ->first();
+
+                    if ($joya) {
+                        $joya->update($payload);
+                        $idsKept[] = $joya->id;
+                    }
+                } else {
+                    // crear nueva
+                    $joya = CredijoyaJoya::create(array_merge($payload, [
+                        'prestamo_id' => $credito->id,
+                        'devuelta'    => 0,
+                        'codigo'      => $this->generarCodigoJoyaUnico(),
+                    ]));
+                    $idsKept[] = $joya->id;
+                }
+            }
+
+            // eliminar joyas que fueron quitadas en el front
+            CredijoyaJoya::where('prestamo_id', $credito->id)
+                ->whereNotIn('id', $idsKept)
+                ->delete();
+        });
+
+        return response()->json([
+            'ok'      => true,
+            'message' => 'CrediJoya actualizado correctamente.',
+        ]);
+    }
+    //acciones
+    public function aprobarCredijoya(Request $r, $id) {
+        $r->validate(['comentario'=>'nullable|string|max:1000']);
+        $c = \App\Models\Credito::findOrFail($id);
+        $c->estado = 'aprobado';
+        $c->comentario_administrador = $r->input('comentario', '');
+        $c->save();
+        return back()->with('ok','Crédito CrediJoya aprobado.');
+    }
+    public function rechazarCredijoya(Request $r, $id) {
+        $r->validate(['comentario'=>'required|string|max:1000']);
+        $c = \App\Models\Credito::findOrFail($id);
+        $c->estado = 'rechazado';
+        $c->comentario_administrador = $r->input('comentario', '');
+        $c->save();
+        return back()->with('ok','Crédito CrediJoya rechazado.');
+    }
 
 }
