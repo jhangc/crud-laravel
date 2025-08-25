@@ -267,5 +267,12 @@ Route::post('admin/credijoya/store',[CrediJoyaController::class, 'store']);
 Route::post('/admin/credijoya/{id}/aprobar', [CrediJoyaController::class, 'aprobarCredijoya'])->name('credijoya.aprobar');
 Route::post('/admin/credijoya/{id}/rechazar', [CrediJoyaController::class, 'rechazarCredijoya'])->name('credijoya.rechazar');
 Route::post('/admin/credijoya/update/{id}', [CrediJoyaController::class, 'update'])->name('credijoya.update');
+
+Route::get('admin/caja/credijoya/{id}/pagar', [CrediJoyaController::class,'pagar'])->name('credijoya.desembolso');
+Route::get('admin/caja/credijoya/cuotas-pendientes', [CrediJoyaController::class,'cuotasPendientes'])->name('credijoya.cuotasPendientes'); // ?credito_id=XX
+Route::post('admin/caja/credijoya/{id}/desembolsar', [CrediJoyaController::class,'desembolsar'])->name('credijoya.desembolsar');
+
+Route::get('admin/credijoya/ticket-pagos/{prestamo}/{caja}/{ids}', [CrediJoyaController::class, 'ticketPagosAnterioresCJ'])->name('credijoya.ticketPagos');
+Route::get('admin/credijoya/ticket-desembolso/{prestamo}', [CrediJoyaController::class, 'ticketDesembolsoCJ'])->name('credijoya.ticketDesembolso');
 //api
 Route::get('/testapi/{dni}', [apisnetController::class, 'index'])->name('test.api');

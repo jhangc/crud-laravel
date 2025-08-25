@@ -60,9 +60,19 @@
                                         @endif
                                     </td>
                                     <td style="display: flex; align-items: center; justify-content:center;">
-                                        <a href="{{  route('caja.pagar', ['id' => $credito->id]) }}" class="btn btn-primary" style="margin-left:10px">Pagar</a>
-                                        
-                                    </td>
+                                    @if($credito->tipo === 'credijoya' || $credito->categoria === 'credijoya')
+                                        <a href="{{ route('credijoya.desembolso', ['id' => $credito->id]) }}" 
+                                        class="btn btn-warning" style="margin-left:10px">
+                                        Pagar
+                                        </a>
+                                    @else
+                                        <a href="{{ route('caja.pagar', ['id' => $credito->id]) }}" 
+                                        class="btn btn-primary" style="margin-left:10px">
+                                        Pagar
+                                        </a>
+                                    @endif
+                                </td>
+
                                 </tr>
                             @endforeach
                         </tbody>

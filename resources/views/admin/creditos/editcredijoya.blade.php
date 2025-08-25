@@ -151,14 +151,14 @@
                   <tfoot>
                     <tr>
                       <td colspan="6" class="text-right"><strong>Total tasación:</strong></td>
-                      <td><input type="text" id="total_tasacion_footer" class="form-control" value="{{ number_format($tasacion_total,2) }}" readonly></td>
+                      <td><input type="text" id="total_tasacion_footer" class="form-control" value="{{ number_format($tasacion_total,2,'.','') }}" readonly></td>
                       <td colspan="2"></td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
               <small class="text-muted">
-                Valor tasación ítem = peso neto × precio por gramo × piezas.
+                Valor tasación ítem = peso neto × precio por gramo.
               </small>
             </div>
           </div>
@@ -172,11 +172,11 @@
               <div class="row mb-2">
                 <div class="col-md-3">
                   <label class="mb-0">Tasación total</label>
-                  <input type="text" id="tasacion_total" class="form-control" value="{{ number_format($tasacion_total,2) }}" readonly>
+                  <input type="text" id="tasacion_total" class="form-control" value="{{ number_format($tasacion_total,2,'.','') }}" readonly>
                 </div>
                 <div class="col-md-3">
                   <label class="mb-0">Máx. 80% (referencial)</label>
-                  <input type="text" id="monto_max_80" class="form-control" value="{{ number_format($monto_max_80,2) }}" readonly>
+                  <input type="text" id="monto_max_80" class="form-control" value="{{ number_format($monto_max_80,2,'.','') }}" readonly>
                 </div>
                 <div class="col-md-3">
                   <div class="form-group mb-0">
@@ -235,11 +235,45 @@
 <script>
   // ===== Data inicial desde backend =====
   let joyas = @json($joyas);
-</script>
-<script>
- 
+  function normalizarJoyasBackend(arr){
+  if (!Array.isArray(arr)) return [];
+  return arr.map(j => {
+    // Toma la primera clave disponible entre posibles nombres
+    const precio_gramo = num(j.precio_gramo ?? j.precio ?? j.precio_oro);
+    const peso_neto    = num(j.peso_neto ?? j.peso ?? j.peso_total);
+    const peso_bruto   = num(j.peso_bruto ?? j.peso_bruto_total ?? j.bruto);
+    const piezas       = Math.max(parseInt(j.piezas ?? j.cantidad ?? 1), 1);
+    const kilataje     = j.kilataje ?? j.k ?? j.karats ?? '';
+    const descripcion  = j.descripcion ?? j.detalle ?? j.nombre ?? '';
+    const codigo       = j.codigo ?? j.cod ?? null;
 
+    // Valor tasación: peso neto total × precio por gramo (SIN multiplicar por piezas)
+    const valor_tasacion = num(j.valor_tasacion) || (peso_neto * precio_gramo);
 
+    return {
+      kilataje,
+      precio_gramo,
+      peso_bruto,
+      peso_neto,
+      piezas,
+      descripcion,
+      valor_tasacion: isNaN(valor_tasacion) ? 0 : valor_tasacion,
+      id: j.id ?? null,
+      codigo
+    };
+  });
+}
+// Init
+$(function(){
+  // Normaliza lo que vino del backend (no altera los inputs ya llenados por Blade)
+  joyas = normalizarJoyasBackend(joyas);
+
+  renderJoyas();
+  toggleParamState();
+
+  // Solo recalcula si HAY joyas válidas (ver guard en recomputarTotales)
+  recomputarTotales();
+});
   function toast(type, title, text) {
     return Swal.fire({ toast:true, position:'top-end', icon:type, title:title||'', text:text||'', showConfirmButton:false, timer:2200, timerProgressBar:true });
   }
@@ -252,8 +286,20 @@
 
   // ===== Recalculo maestro =====
   function recomputarTotales(){
-    const totalTasacion = joyas.reduce((s,j)=> s + (j.valor_tasacion || (j.peso_neto * j.precio_gramo * (j.piezas||1))), 0);
+    // Si no hay joyas, no sobreescribas lo que vino del backend
+    if (!Array.isArray(joyas) || joyas.length === 0) {
+      toggleParamState();
+      return;
+    }
+
+    const totalTasacion = joyas.reduce((s,j)=> {
+      const vt = j.valor_tasacion ?? (num(j.peso_neto) * num(j.precio_gramo));
+      return s + (isNaN(vt) ? 0 : vt);
+    }, 0);
+
     $('#tasacion_total').val(fmt(totalTasacion));
+    $('#total_tasacion_footer').val(fmt(totalTasacion));
+
     const max80 = totalTasacion * 0.80;
     $('#monto_max_80').val(fmt(max80));
 
@@ -268,6 +314,7 @@
       $('#monto_aprobado').removeClass('is-invalid');
     }
   }
+
 
   $('#monto_aprobado').on('input change', recomputarTotales);
 
@@ -289,26 +336,30 @@
     }
   }
 
-  function agregarJoya(){
-    const k = $('#kilataje').val();
-    const precio = num($('#precio_oro').val());
-    const bruto  = num($('#peso_bruto').val());
-    const neto   = num($('#peso_neto').val());
-    const piezas = Math.max(parseInt($('#piezas').val()||'1'),1);
-    const desc   = ($('#descripcion_joya').val()||'').trim();
+    function agregarJoya(){
+      const k = $('#kilataje').val();
+      const precio = num($('#precio_oro').val());
+      const bruto  = num($('#peso_bruto').val());
+      const neto   = num($('#peso_neto').val()); // este es el peso total ya medido
+      const piezas = Math.max(parseInt($('#piezas').val()||'1'),1);
+      const desc   = ($('#descripcion_joya').val()||'').trim();
 
-    if (!k || !precio || !neto) {
-      return Swal.fire({ icon:'warning', title:'Datos incompletos', text:'Kilataje, precio por gramo y peso neto son obligatorios.' });
-    }
-    const valor = neto * precio * piezas;
+      if (!k || !precio || !neto) {
+        return Swal.fire({ icon:'warning', title:'Datos incompletos', text:'Kilataje, precio por gramo y peso neto son obligatorios.' });
+      }
 
-    joyas.push({ kilataje:k, precio_gramo:precio, peso_bruto:bruto, peso_neto:neto, piezas, descripcion:desc, valor_tasacion:valor, id:null, codigo:null });
-    renderJoyas();
-    limpiarCamposJoya();
-    recomputarTotales();
-    toggleParamState();
+      const valor = neto * precio; // <<< SIN multiplicar por piezas
+
+      joyas.push({
+        kilataje:k, precio_gramo:precio, peso_bruto:bruto, peso_neto:neto,
+        piezas, descripcion:desc, valor_tasacion:valor, id:null, codigo:null
+      });
+
+      renderJoyas();
+      limpiarCamposJoya();
+      recomputarTotales();
+      toggleParamState();
   }
-
   function renderJoyas(){
     const tb = $('#joyas_body'); tb.empty();
     let total = 0;
@@ -337,14 +388,17 @@
   }
 
   function editarJoya(i,campo,valor){
-    if (!joyas[i]) return;
-    if (['peso_bruto','peso_neto','precio_gramo'].includes(campo)) valor = num(valor);
-    if (campo === 'piezas') valor = Math.max(parseInt(valor||'1'),1);
-    joyas[i][campo] = valor;
-    joyas[i].valor_tasacion = joyas[i].peso_neto * joyas[i].precio_gramo * (joyas[i].piezas||1);
-    renderJoyas();
-    recomputarTotales();
-  }
+  if (!joyas[i]) return;
+  if (['peso_bruto','peso_neto','precio_gramo'].includes(campo)) valor = num(valor);
+  if (campo === 'piezas') valor = Math.max(parseInt(valor||'1'),1);
+  joyas[i][campo] = valor;
+
+  // Recalcula valor_tasacion solo con peso neto total × precio por gramo
+  joyas[i].valor_tasacion = num(joyas[i].peso_neto) * num(joyas[i].precio_gramo);
+
+  renderJoyas();
+  recomputarTotales();
+}
   function eliminarJoya(i){ joyas.splice(i,1); renderJoyas(); recomputarTotales(); toggleParamState(); }
   function limpiarCamposJoya(){ $('#kilataje,#precio_oro,#peso_bruto,#peso_neto,#descripcion_joya').val(''); $('#piezas').val('1'); }
 
