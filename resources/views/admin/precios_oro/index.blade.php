@@ -167,7 +167,7 @@ jQuery(function ($) {
   });
 
   // —— Modal único (Crear/Editar) ——
-  function resetModal() {Z
+  function resetModal() {
     $('#formMode').val('create');
     $('#rowId').val('');
     $('#modalTitle').text('Nuevo precio');
