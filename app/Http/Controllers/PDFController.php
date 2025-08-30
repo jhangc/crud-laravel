@@ -270,8 +270,111 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.contratoindividual', $data)->setPaper('a4');
         return $pdf->stream('contratoindividual.pdf');
     }
+    public function generatecronogramaindividualC(Request $request, $id)
+    {
+        $prestamo = \App\Models\Credito::with(['clientes', 'joyas'])->findOrFail($id);
+        $cliente  = $prestamo->clientes->first();
+        $user     = auth()->user();
+        $sucursal = \App\Models\Sucursal::find($user->sucursal_id) ?? \App\Models\Sucursal::first();
 
+        // Tasas
+        $tea = (float) ($prestamo->tasa ?? 0);
+        $i_m = pow(1 + $tea/100, 1/12) - 1;   // tasa periódica mensual
+        $tna = $i_m * 12 * 100;               // TNA aproximada
+        $tcea = $tea;                         // si luego agregas cargos/seguros, recalculamos por TIR
 
+        // Plazo
+        $plazo_num = (int) ($prestamo->tiempo ?? 1);
+        $plazo_txt = ucfirst($prestamo->recurrencia ?? 'mensual');
+        $plazo_humano = ($plazo_txt === 'Mensual' && $plazo_num === 1) ? '1 mes' : ($plazo_num.' '.$plazo_txt);
+
+        // Totales de joyas
+        $piezas      = (int) $prestamo->joyas->sum('piezas');
+        $oroBruto    = round((float) $prestamo->joyas->sum(fn($j)=> (float)($j->peso_bruto ?? 0)), 2);
+        $oroNeto     = round((float) $prestamo->joyas->sum('peso_neto'), 2);
+        $valorTasac  = round((float) ($prestamo->tasacion_total ?? 0), 2);
+
+        // Comisiones/Servicios (ajusta a tus reglas reales)
+        $comisionEnvio         = 10.00;
+        $porcServicioCustodia  = 0.2682; // 26.82% EJEMPLO
+        $montoServicioCustodia = round($valorTasac * $porcServicioCustodia, 2);
+
+        // Cronograma (para mostrar en la hoja)
+        $cronograma = \App\Models\Cronograma::where('id_prestamo', $id)->orderBy('numero')->get();
+        $totInteres = round((float)$cronograma->sum('interes'), 2);
+        $totAmort   = round((float)$cronograma->sum('amortizacion'), 2);
+        $totCuota   = round((float)$cronograma->sum('monto'), 2);
+
+        $data = [
+
+            'sucursal'      => $sucursal,
+            'prestamo'      => $prestamo,
+            'cliente'       => $cliente,
+
+            'moneda'        => 'SOLES',
+            'fecha_desembolso' => (string) $prestamo->fecha_desembolso,
+            'fecha_venc'       => (string) ($prestamo->proximo_vencimiento ?? $prestamo->fecha_fin),
+            'nro_credito'      => $prestamo->id,
+            'monto_prestamo'   => round((float) $prestamo->monto_total, 2),
+
+            'tea' => round($tea, 2),
+            'tna' => round($tna, 2),
+            'tcea'=> round($tcea,2),
+            'tipo_tasa' => 'Efectiva Anual',
+            'plazo_humano' => $plazo_humano,
+
+            // comisiones/servicios
+            'comision_envio'     => $comisionEnvio,
+            'servicio_custodia'  => $montoServicioCustodia,
+            'porc_serv_custodia' => $porcServicioCustodia*100,
+
+            // joyas
+            'piezas'         => $piezas,
+            'oro_bruto'      => $oroBruto,
+            'oro_neto'       => $oroNeto,
+            'valor_tasacion' => $valorTasac,
+
+            // cronograma
+            'mostrar_cronograma' => true, // ponlo false si no quieres que aparezca
+            'cronograma'         => $cronograma,
+            'totInteres'         => $totInteres,
+            'totAmort'           => $totAmort,
+            'totCuota'           => $totCuota,
+
+            'asesor' => $user,
+        ];
+
+      /*   return view('pdf.hoja_resumen_credijoya', $data); */
+
+        $pdf = Pdf::loadView('pdf.hoja_resumen_credijoya', $data)
+                ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('hoja_resumen_credijoya_'.$prestamo->id.'.pdf');
+    }
+
+    public function generatecrontratoindividualC(Request $request, $id)
+    {
+        $prestamo = credito::find($id);
+        $cuotas = Cronograma::where('id_prestamo', $id)->get();
+        $credito_cliente = CreditoCliente::where('prestamo_id', $id)->with('clientes')->first(); // Obtener un solo cliente
+        //$responsable = auth()->user();
+        // Usa Carbon para obtener la fecha actual
+        $date = Carbon::now();
+
+        // Formatea la fecha con la configuración regional establecida
+        $formattedDate = $date->translatedFormat(' d \d\í\a\s \d\e\l \m\e\s \d\e F \d\e Y');
+
+        $data = compact(
+            'prestamo',
+            //'responsable',
+            'cuotas',
+            'credito_cliente',
+            'formattedDate'
+        );
+
+        $pdf = Pdf::loadView('pdf.contratojoya', $data)->setPaper('a4');
+        return $pdf->stream('contratojoya.pdf');
+    }
 
 
     public function generatecartillaPDF(Request $request, $id)

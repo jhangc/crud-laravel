@@ -18,6 +18,7 @@ use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\CtsUsuarioController;
 use App\Http\Controllers\CuentasController;
 use App\Http\Controllers\DepositoCtsController;
+use App\Http\Controllers\DevolucionController;
 use App\Http\Controllers\ExcelController;
 use App\Http\Controllers\GoldPriceController;
 use App\Http\Controllers\HomeController;
@@ -160,6 +161,9 @@ Route::get('/generar-cronogramagrupal/{id}', [PDFController::class, 'generatecro
 Route::get('/generar-contratogrupal/{id}', [PDFController::class, 'generatecontratogrupalPDF'])->name('generar-contrato-grupal');
 Route::get('/generar-contratoindividual/{id}', [PDFController::class, 'generatecrontratoindividualPDF'])->name('generar-contrato-individual');
 
+Route::get('/generar-cronogramacredijoya/{id}', [PDFController::class, 'generatecronogramaindividualC'])->name('generar-cronograma-credijoya');
+Route::get('/generar-contratocredijoya/{id}', [PDFController::class, 'generatecrontratoindividualC'])->name('generar-contrato-credijoya');
+
 Route::get('/generar-cartilla/{id}', [PDFController::class, 'generatecartillaPDF'])->name('generar-cartilla');
 Route::get('/generar-pagare/{id}', [PDFController::class, 'generatepagarePDF'])->name('generar-pagare');
 
@@ -252,27 +256,40 @@ Route::post('/reprogramaciones/store', [ReprogramacionController::class, 'reprog
 Route::get('/admin/creditos/aprobarreprogramados', [ReprogramacionController::class, 'viewreprogramacion'])->name('reprogramacion.index')->middleware('auth');
 Route::post('/reprogramaciones/process', [ReprogramacionController::class, 'process'])->name('reprogramacion.process')->middleware('auth');
 Route::post('/generarcronogramreprogramado', [creditoController::class, 'generarreprogramacion'])->name('reprogramacion.exitosa')->middleware('auth');
-Route::get('/vernuevocronogramareprogramado/{id}', [PDFController::class, 'generarNuevoCronogramaReprogramadoPDF'])->name('generar.pdf.nuevo cronograma');
+Route::get('/vernuevocronogramareprogramado/{id}', [PDFController::class, 'generarNuevoCronogramaReprogramadoPDF'])->name('generar.pdf.nuevo cronograma')->middleware('auth');
 // Vista CRUD
-Route::get('/admin/precios-oro', [GoldPriceController::class, 'index'])->name('preciosoro.index');
+Route::get('/admin/precios-oro', [GoldPriceController::class, 'index'])->name('preciosoro.index')->middleware('auth');
 // API CRUD
-Route::get('/admin/precios-oro/list',   [GoldPriceController::class, 'list'])->name('preciosoro.list');
-Route::post('/admin/precios-oro',       [GoldPriceController::class, 'store'])->name('preciosoro.store');
-Route::put('/admin/precios-oro/{goldPrice}',  [GoldPriceController::class, 'update'])->name('preciosoro.update');
-Route::delete('/admin/precios-oro/{goldPrice}', [GoldPriceController::class, 'destroy'])->name('preciosoro.destroy');
+Route::get('/admin/precios-oro/list',   [GoldPriceController::class, 'list'])->name('preciosoro.list')->middleware('auth');
+Route::post('/admin/precios-oro',       [GoldPriceController::class, 'store'])->name('preciosoro.store')->middleware('auth');
+Route::put('/admin/precios-oro/{goldPrice}',  [GoldPriceController::class, 'update'])->name('preciosoro.update')->middleware('auth');
+Route::delete('/admin/precios-oro/{goldPrice}', [GoldPriceController::class, 'destroy'])->name('preciosoro.destroy')->middleware('auth');
 // Endpoint para CrediJoya (autollenarPrecioOro)
-Route::get('/admin/credijoya/precio-oro', [GoldPriceController::class, 'vigente']);
-Route::get('/admin/credijoya/deuda-previa', [CrediJoyaController::class, 'deudaPrevia'])->name('credijoya.deuda_previa');
-Route::post('admin/credijoya/store',[CrediJoyaController::class, 'store']);
-Route::post('/admin/credijoya/{id}/aprobar', [CrediJoyaController::class, 'aprobarCredijoya'])->name('credijoya.aprobar');
-Route::post('/admin/credijoya/{id}/rechazar', [CrediJoyaController::class, 'rechazarCredijoya'])->name('credijoya.rechazar');
-Route::post('/admin/credijoya/update/{id}', [CrediJoyaController::class, 'update'])->name('credijoya.update');
+Route::get('/admin/credijoya/precio-oro', [GoldPriceController::class, 'vigente'])->middleware('auth');
+Route::get('/admin/credijoya/deuda-previa', [CrediJoyaController::class, 'deudaPrevia'])->name('credijoya.deuda_previa')->middleware('auth');
+Route::post('admin/credijoya/store',[CrediJoyaController::class, 'store'])->middleware('auth');
+Route::post('/admin/credijoya/{id}/aprobar', [CrediJoyaController::class, 'aprobarCredijoya'])->name('credijoya.aprobar')->middleware('auth');
+Route::post('/admin/credijoya/{id}/rechazar', [CrediJoyaController::class, 'rechazarCredijoya'])->name('credijoya.rechazar')->middleware('auth');
+Route::post('/admin/credijoya/update/{id}', [CrediJoyaController::class, 'update'])->name('credijoya.update')->middleware('auth');
 
-Route::get('admin/caja/credijoya/{id}/pagar', [CrediJoyaController::class,'pagar'])->name('credijoya.desembolso');
-Route::get('admin/caja/credijoya/cuotas-pendientes', [CrediJoyaController::class,'cuotasPendientes'])->name('credijoya.cuotasPendientes'); // ?credito_id=XX
-Route::post('admin/caja/credijoya/{id}/desembolsar', [CrediJoyaController::class,'desembolsar'])->name('credijoya.desembolsar');
+Route::get('admin/caja/credijoya/{id}/pagar', [CrediJoyaController::class,'pagar'])->name('credijoya.desembolso')->middleware('auth');
+Route::get('admin/caja/credijoya/cuotas-pendientes', [CrediJoyaController::class,'cuotasPendientes'])->name('credijoya.cuotasPendientes')->middleware('auth'); // ?credito_id=XX
+Route::post('admin/caja/credijoya/{id}/desembolsar', [CrediJoyaController::class,'desembolsar'])->name('credijoya.desembolsar')->middleware('auth');
 
-Route::get('admin/credijoya/ticket-pagos/{prestamo}/{caja}/{ids}', [CrediJoyaController::class, 'ticketPagosAnterioresCJ'])->name('credijoya.ticketPagos');
-Route::get('admin/credijoya/ticket-desembolso/{prestamo}', [CrediJoyaController::class, 'ticketDesembolsoCJ'])->name('credijoya.ticketDesembolso');
+Route::get('admin/credijoya/ticket-pagos/{prestamo}/{caja}/{ids}', [CrediJoyaController::class, 'ticketPagosAnterioresCJ'])->name('credijoya.ticketPagos')->middleware('auth');
+Route::get('admin/credijoya/ticket-desembolso/{prestamo}', [CrediJoyaController::class, 'ticketDesembolsoCJ'])->name('credijoya.ticketDesembolso')->middleware('auth');
+///
+Route::get('admin/credijoya/{credito}/pago', [CrediJoyaController::class, 'createPago'])->name('pagocredijoya.create')->middleware('auth');
+Route::post('admin/credijoya/{credito}/pago', [CrediJoyaController::class, 'storePago'])->name('pagocredijoya.store')->middleware('auth');
+Route::get('admin/credijoya/ticket-pago/{pago}', [CrediJoyaController::class, 'ticketPago'])->name('pagocredijoya.ticket')->middleware('auth');
+
+Route::get('admin/credijoya/devoluciones', [DevolucionController::class,'index'])->name('devoluciones.index')->middleware('auth');
+Route::get('admin/credijoya/devoluciones/list', [DevolucionController::class,'list'])->name('devoluciones.list')->middleware('auth');
+Route::get('admin/credijoya/devoluciones/calcular-custodia/{credito}', [DevolucionController::class,'calcularCustodia'])->name('devoluciones.calcular')->middleware('auth');
+Route::post('admin/credijoya/devoluciones/pagar-custodia/{credito}', [DevolucionController::class,'pagarCustodia'])->name('devoluciones.pagar')->middleware('auth');
+Route::post('admin/credijoya/devoluciones/devolver/{credito}', [DevolucionController::class,'devolver'])->name('devoluciones.devolver')->middleware('auth');
+// Tickets/PDF
+Route::get('admin/credijoya/devoluciones/ticket-custodia/{ingresoExtra}', [DevolucionController::class,'ticketCustodia'])->name('devoluciones.ticket.custodia')->middleware('auth');
+Route::get('admin/credijoya/devoluciones/hoja-devolucion/{credito}', [DevolucionController::class,'hojaDevolucion'])->name('devoluciones.hoja')->middleware('auth');
 //api
-Route::get('/testapi/{dni}', [apisnetController::class, 'index'])->name('test.api');
+Route::get('/testapi/{dni}', [apisnetController::class, 'index'])->name('test.api')->middleware('auth');

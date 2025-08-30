@@ -327,14 +327,12 @@
                 <div class="card-body">
                   <div class="d-flex flex-wrap gap-2 justify-content-center">
                     <button type="button" class="btn btn-outline-danger px-4" onclick="cronogramaindividualPDF()">
-                      <i class="fas fa-file-pdf mr-1"></i> Cronograma PDF
+                      <i class="fas fa-file-pdf mr-1"></i> Hoja Resumen
                     </button>
                     <button type="button" class="btn btn-outline-primary px-4" onclick="generarcontratoindividualPDF()">
                       <i class="fas fa-file-signature mr-1"></i> Contrato PDF
                     </button>
-                    <button type="button" class="btn btn-outline-primary px-4" onclick="generarpagarePDF()">
-                      <i class="fas fa-file-invoice-dollar mr-1"></i> Pagaré PDF
-                    </button>
+                    
                   </div>
                   <p class="text-center text-muted mb-0 mt-2">Se abrirán en una nueva pestaña.</p>
                 </div>
@@ -724,77 +722,59 @@
         const resp = await fetch(RUTA_DESEMBOLSAR, { method:'POST', body:data });
         const js   = await resp.json();
         if(!resp.ok || js.error){ throw new Error(js.error || js.message || 'No se pudo completar el desembolso'); }
+        Swal.fire({
+          icon: 'success',
+          title: 'Desembolso realizado',
+          html: `
+            <div class="text-left">
+              <div><b>Total cancelado:</b> S/ ${js.total_cancelar}</div>
+              <div><b>Neto a entregar:</b> <span class="text-success">S/ ${js.neto_entregar}</span></div>
+              <hr class="my-2">
+              <p class="mb-1">Pulsa <b>Ver enlaces</b> para abrir los tickets manualmente.</p>
+            </div>
+          `,
+          confirmButtonText: 'Ver enlaces',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          showCancelButton: false,
+          preConfirm: () => {
+            const base    = "{{ url('/admin/credijoya') }}";
+            const urlCaja = "{{ url('admin/caja/pagarcredito') }}";
 
-       // tras recibir js del fetch exitoso...
-Swal.fire({
-  icon: 'success',
-  title: 'Desembolso realizado',
-  html: `
-    <div class="text-left">
-      <div><b>Total cancelado:</b> S/ ${js.total_cancelar}</div>
-      <div><b>Neto a entregar:</b> <span class="text-success">S/ ${js.neto_entregar}</span></div>
-      <hr class="my-2">
-      <p class="mb-1">Pulsa <b>Abrir tickets</b> para abrirlos en nuevas pestañas.</p>
-    </div>
-  `,
-  confirmButtonText: 'Abrir tickets',
-  allowOutsideClick: false,
-  allowEscapeKey: false,
-  showCancelButton: false,
-  // Abrimos dentro de preConfirm para garantizar el gesto de usuario
-  preConfirm: () => {
-    const base    = "{{ url('/admin/credijoya') }}";
-    const urlCaja = "{{ url('admin/caja/pagarcredito') }}";
+            // Construir URLs de tickets
+            const urls = [];
+            if (Array.isArray(js.ingreso_ids) && js.ingreso_ids.length) {
+              const ids = js.ingreso_ids.join('-');
+              urls.push(`${base}/ticket-pagos/{{ $prestamo->id }}/${js.caja_id}/${ids}`);
+            }
+            urls.push(`${base}/ticket-desembolso/{{ $prestamo->id }}`);
 
-    // Construir URLs
-    const urls = [];
-    if (Array.isArray(js.ingreso_ids) && js.ingreso_ids.length) {
-      const ids = js.ingreso_ids.join('-');
-      urls.push(`${base}/ticket-pagos/{{ $prestamo->id }}/${js.caja_id}/${ids}`);
-    }
-    urls.push(`${base}/ticket-desembolso/{{ $prestamo->id }}`);
+            return { urls, urlCaja };
+          }
+        }).then(({ value }) => {
+          if (!value) return;
 
-    // Intentar abrir todas bajo el mismo gesto de clic
-    const results = urls.map(u => ({ url: u, win: window.open(u, '_blank', 'noopener') }));
-    const bloqueadas = results.filter(r => !r.win);
+          const { urls, urlCaja } = value;
 
-    // Si el navegador bloqueó alguna, devolvemos info para manejar después
-    if (bloqueadas.length) {
-      return { urls, bloqueadas: bloqueadas.map(b => b.url), urlCaja, ok: false };
-    } else {
-      return { urls, bloqueadas: [], urlCaja, ok: true };
-    }
-  }
-}).then(({ value }) => {
-  if (!value) return; // cancelado (no debería pasar porque no hay botón cancelar)
-
-  const { ok, bloqueadas, urlCaja } = value;
-
-  if (ok) {
-    // Todas abiertas correctamente → redirigimos luego de un pequeño delay
-    setTimeout(() => { window.location.href = urlCaja; }, 400);
-  } else {
-    // Hubo bloqueos → mostramos enlaces para clic manual y garantizar que no se pierda nada
-    Swal.fire({
-      icon: 'info',
-      title: 'Algunas pestañas fueron bloqueadas',
-      html: `
-        <p>Tu navegador bloqueó ${bloqueadas.length} ventana(s). Haz clic para abrirlas:</p>
-        <div class="text-left">
-          ${bloqueadas.map((u,i) => `<div><a href="${u}" target="_blank" rel="noopener">Abrir ticket ${i+1}</a></div>`).join('')}
-        </div>
-        <hr class="my-2">
-        <p>Cuando las abras, continúa con <b>Ir a caja</b>.</p>
-      `,
-      confirmButtonText: 'Ir a caja',
-      allowOutsideClick: false,
-      allowEscapeKey: false
-    }).then(() => {
-      window.location.href = urlCaja;
-    });
-  }
-});
-
+          // Segundo Swal con los enlaces para que el usuario los abra manualmente
+          Swal.fire({
+            icon: 'info',
+            title: 'Enlaces de tickets',
+            html: `
+              <p>Haz clic en los enlaces para abrir los tickets:</p>
+              <div class="text-left">
+                ${urls.map((u,i) => `<div><a href="${u}" target="_blank" rel="noopener">Abrir ticket ${i+1}</a></div>`).join('')}
+              </div>
+              <hr class="my-2">
+              <p>Cuando termines, pulsa <b>Ir a caja</b>.</p>
+            `,
+            confirmButtonText: 'Ir a caja',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+          }).then(() => {
+            window.location.href = urlCaja;
+          });
+        });
       }catch(e){
         console.error(e);
         Swal.fire({icon:'error', title:'Error', text:e.message});
@@ -802,19 +782,21 @@ Swal.fire({
     });
   });
 
-  // Botones PDF
-  window.cronogramaindividualPDF = function(){
+  window.cronogramaindividualPDF = function() {
     const id = '{{ $prestamo->id }}';
-    window.open("{{ url('/generar-cronogramaindividual') }}/" + id, '_blank');
+    window.open("{{ url('/generar-cronogramacredijoya') }}/" + id, '_blank');
   };
-  window.generarcontratoindividualPDF = function(){
-    const id = '{{ $prestamo->id }}';
-    window.open("{{ url('/generar-contratoindividual') }}/" + id, '_blank');
+
+  window.generarcontratoindividualPDF = function() {
+      const id = '{{ $prestamo->id }}';
+      window.open("{{ url('/generar-contratocredijoya') }}/" + id, '_blank');
   };
-  window.generarpagarePDF = function(){
-    const id = '{{ $prestamo->id }}';
-    window.open("{{ url('/generar-pagare') }}/" + id, '_blank');
-  };
+
+  window.generarpagarePDF = function() {
+      const id = '{{ $prestamo->id }}';
+      window.open("{{ url('/generar-pagare') }}/" + id, '_blank');
+};
+
 
   // arranque
   recompute();

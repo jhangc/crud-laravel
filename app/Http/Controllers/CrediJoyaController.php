@@ -15,6 +15,8 @@ use App\Models\Ingreso;
 use App\Models\CajaTransaccion;
 use App\Models\Egreso;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
+
 
 class CrediJoyaController extends Controller
 {
@@ -74,7 +76,7 @@ class CrediJoyaController extends Controller
 
         return DB::transaction(function () use ($r, $joyas, $clienteId, $montoAprobado, $tasacionTotal, $max80_calc, $fechaDesembolso, $proxVenc) {
 
-            // 1) Crear crédito (pre‑registro)
+            // 1) Crear crédito (pre-registro)
             $credito = Credito::create([
                 'user_id'              => auth()->id(),
                 'id_cliente'           => $clienteId,
@@ -92,7 +94,7 @@ class CrediJoyaController extends Controller
                 'tasacion_total'       => $tasacionTotal,
                 'monto_max_80'         => $max80_calc,
 
-                // campos que ahora NO se usan en pre‑registro (los dejamos en 0 / null)
+                // campos que ahora NO se usan en pre-registro (los dejamos en 0 / null)
                 'itf_desembolso'       => 0,
                 'neto_recibir'         => 0,
                 'deuda_prev_modo'      => null,
@@ -108,7 +110,7 @@ class CrediJoyaController extends Controller
                 'descripcion_negocio'  => 'CrediJoya',
                 'nombre_prestamo'      => 'CrediJoya',
                 'cantidad_integrantes' => 1,
-                'estado'               => 'revisado',   // pre‑registro
+                'estado'               => 'revisado',   // pre-registro
                 'categoria'            => 'credijoya',
                 'tiempo'               => 1,
                 'activo'               => 1,
@@ -150,10 +152,11 @@ class CrediJoyaController extends Controller
             return response()->json([
                 'ok'           => true,
                 'prestamo_id'  => $credito->id,
-                'message'      => 'CrediJoya pre‑registrado.',
+                'message'      => 'CrediJoya pre-registrado.',
             ]);
         });
     }
+
     private function generarCodigoJoyaUnico(): string
     {
         // Formato: yymmdd-xyz-1234
@@ -165,6 +168,7 @@ class CrediJoyaController extends Controller
 
         return $code;
     }
+
     private function guardarCronograma(int $creditoid, int $id_cliente, float $montoAprobado, float $tasa_tea, string $fecha_desembolso): void
     {
         $fecha_desembolso = Carbon::parse($fecha_desembolso);
@@ -180,7 +184,7 @@ class CrediJoyaController extends Controller
             $cron = new Cronograma();
             $cron->fecha        = $fechaCuota->toDateString();
             $cron->monto        = $c['cuota'];
-            $cron->numero       = $c['numero_cuota'];
+            $cron->numero       = $c['numero_cuota']; // aquí será 1
             $cron->capital      = $c['capital'];
             $cron->interes      = $c['interes'];
             $cron->amortizacion = $c['amortizacion'];
@@ -190,6 +194,7 @@ class CrediJoyaController extends Controller
             $cron->save();
         }
     }
+
     private function calcularCuota(float $monto, float $tea, int $periodos, string $frecuencia): array
     {
         // períodos/año
@@ -254,6 +259,7 @@ class CrediJoyaController extends Controller
 
         return $cuotas;
     }
+
     public function update(Request $r, int $id)
     {
         // En edición NO cambiamos el cliente; solo parámetros y joyas
@@ -312,7 +318,7 @@ class CrediJoyaController extends Controller
                 'tasacion_total'      => $tasacionTotal,
                 'monto_max_80'        => $max80_calc,
 
-                // en pre‑registro estos quedan en 0 / null (se manejarán en desembolso)
+                // en pre-registro estos quedan en 0 / null (se manejarán en desembolso)
                 'itf_desembolso'      => 0,
                 'neto_recibir'        => 0,
                 'deuda_prev_modo'     => null,
@@ -321,10 +327,9 @@ class CrediJoyaController extends Controller
                 'fecha_desembolso'    => $fechaDesembolso->toDateString(),
                 'proximo_vencimiento' => $proxVenc,
                 'fecha_fin'           => $proxVenc,
-                // mantenemos estado/categoria/etc. tal cual
             ]);
 
-            // 2) Regenerar cronograma (1 período) — simple y consistente con pre‑registro
+            // 2) Regenerar cronograma (1 período)
             Cronograma::where('id_prestamo', $credito->id)->delete();
             $this->guardarCronograma(
                 $credito->id,
@@ -380,6 +385,7 @@ class CrediJoyaController extends Controller
             'message' => 'CrediJoya actualizado correctamente.',
         ]);
     }
+
     public function aprobarCredijoya(Request $r, $id)
     {
         $r->validate(['comentario' => 'nullable|string|max:1000']);
@@ -389,6 +395,7 @@ class CrediJoyaController extends Controller
         $c->save();
         return back()->with('ok', 'Crédito CrediJoya aprobado.');
     }
+
     public function rechazarCredijoya(Request $r, $id)
     {
         $r->validate(['comentario' => 'required|string|max:1000']);
@@ -398,6 +405,7 @@ class CrediJoyaController extends Controller
         $c->save();
         return back()->with('ok', 'Crédito CrediJoya rechazado.');
     }
+
     public function pagar(Request $request, $id)
     {
         $prestamo     = credito::with(['clientes', 'user', 'joyas'])->findOrFail($id);
@@ -411,14 +419,13 @@ class CrediJoyaController extends Controller
             ->get();
 
         // === Deudas previas del mismo cliente (individual y credijoya), que sigan vigentes ===
-        // Importante: usamos categoria (no "tipo") y excluimos estados cerrados.
         $deudasPrevias = credito::with(['joyas'])
             ->where('id', '!=', $prestamo->id)
             ->whereHas('clientes', function ($q) use ($cliente) {
                 $q->where('clientes.id', $cliente->id);
             })
-            ->whereIn('categoria', ['individual', 'credijoya'])  // <- ajusta si tus categorías difieren
-            ->whereIn('estado', ['pagado', 'mora'])    // <- ajusta si tienes más estados de cierre
+            ->whereIn('categoria', ['individual', 'credijoya'])
+            ->whereIn('estado', ['pagado', 'mora'])
             ->get()
             ->map(function ($c) {
 
@@ -436,23 +443,20 @@ class CrediJoyaController extends Controller
                         ->first();
 
                     if ($ingreso) {
-                        // Pagada: no suma a deuda
                         continue;
                     }
 
-                    // Igual que en verpagocuota: 1.5 por mil por día de mora
+                    // 1.5 por mil por día de mora
                     $moraData = $this->calcularMoraPorDia((float)$cuota->monto, (string)$cuota->fecha);
                     $totalCuota = round(((float)$cuota->monto) + $moraData['mora'], 2);
 
                     $totalPendiente += $totalCuota;
                 }
 
-                // Saldo real (cuotas impagas + mora acumulada a hoy)
                 $c->saldo_pendiente = round($totalPendiente, 2);
 
                 return $c;
             })
-            // Solo mostrar créditos que de verdad tienen saldo por cancelar
             ->filter(function ($c) {
                 return $c->saldo_pendiente > 0.009;
             })
@@ -467,6 +471,7 @@ class CrediJoyaController extends Controller
             'deudasPrevias'
         ));
     }
+
     public function cuotasPendientes(Request $r)
     {
         $creditoId = (int) $r->query('credito_id');
@@ -522,7 +527,6 @@ class CrediJoyaController extends Controller
                 $calculo = 'VENCIDA: cuota + mora';
             } elseif ($insidePeriodo) {
                 if ($modo === 'total') {
-                    // TOTAL: #1 y #2 completas; si no, regla de 7 días
                     if (in_array((int)$c->numero, [1, 2], true)) {
                         $total = round($montoCuota, 2);
                         $interesAplicado = $interesProgramado;
@@ -535,32 +539,27 @@ class CrediJoyaController extends Controller
                         $calculo = $usaHoy ? 'TOTAL: amort + interés a hoy' : 'TOTAL: amort + interés programado';
                     }
                 } else {
-                    // PARCIAL: SIEMPRE cuota normal (orden forzado lo maneja el front)
                     $total = round($montoCuota, 2);
                     $interesAplicado = $interesProgramado;
                     $calculo = 'PARCIAL: cuota normal';
                 }
             } elseif ($futurePeriodo) {
                 if ($modo === 'total' && in_array((int)$c->numero, [1, 2], true)) {
-                    // TOTAL: #1 y #2 completas aunque aún no inicie
                     $total = round($montoCuota, 2);
                     $interesAplicado = $interesProgramado;
                     $calculo = '#1/#2 completas';
                 } else {
                     if ($modo === 'parcial') {
-                        // PARCIAL: desde ahora cuota normal (según lo que pediste)
                         $total = round($montoCuota, 2);
                         $interesAplicado = $interesProgramado;
                         $calculo = 'PARCIAL: cuota normal';
                     } else {
-                        // TOTAL resto: solo amortización
                         $total = round($amortizacion, 2);
                         $interesAplicado = 0.0;
                         $calculo = 'TOTAL: solo amortización';
                     }
                 }
             } else {
-                // Fallback
                 $total = round($amortizacion, 2);
                 $interesAplicado = 0.0;
                 $calculo = $modo === 'parcial' ? 'PARCIAL: cuota normal' : 'TOTAL: solo amortización';
@@ -572,7 +571,7 @@ class CrediJoyaController extends Controller
             if ($modo === 'parcial') {
                 $habilitada = $primeraHabilitable;
                 if ($habilitada) {
-                    $primeraHabilitable = false; // sólo la primera queda habilitada al inicio
+                    $primeraHabilitable = false;
                 } else {
                     $motivoBloqueo = 'Paga primero las cuotas anteriores';
                 }
@@ -585,8 +584,8 @@ class CrediJoyaController extends Controller
                 'monto'              => round($montoCuota, 2),
                 'amortizacion'       => round($amortizacion, 2),
                 'interes'            => round($interesProgramado, 2),
-                'interes_hoy'        => $interesHoyCalc,          // referencia
-                'interes_aplicado'   => $interesAplicado,         // lo que se cobra según reglas
+                'interes_hoy'        => $interesHoyCalc,
+                'interes_aplicado'   => $interesAplicado,
                 'dias_mora'          => $moraData['dias'],
                 'porcentaje'         => $moraData['porcentaje'],
                 'mora'               => $moraData['mora'],
@@ -689,7 +688,6 @@ class CrediJoyaController extends Controller
                 $totalEnviado = round((float)($q['total'] ?? 0), 2);
                 $totalOk      = round((float)$calc['total'], 2);
                 if ($totalEnviado < $totalOk) {
-                    // endurecemos mínimo
                     $totalEnviado = $totalOk;
                 }
 
@@ -722,7 +720,6 @@ class CrediJoyaController extends Controller
                     if (!$cr) continue;
 
                     $calc = $this->totalSegunReglas($cr, $deudasBD->get($cid), $modo);
-                    // reforzamos mínimo
                     $montoTotal = round(max((float)($q['total'] ?? 0), (float)$calc['total']), 2);
 
                     // evitar duplicado
@@ -763,8 +760,8 @@ class CrediJoyaController extends Controller
                     $cred->save();
 
                     foreach ($cred->joyas as $j) {
-                        $j->estado = 1;
-                       // $j->fecha_devolucion = now();
+                        $j->devuelta = 1;
+                        $j->fecha_pago = now();
                         $j->save();
                     }
                 }
@@ -856,13 +853,11 @@ class CrediJoyaController extends Controller
             if (in_array((int)$c->numero, [1, 2], true)) {
                 $total = round($montoCuota, 2);
             } else if ($insidePeriodo) {
-                // regla 7 días: si falta >7, interés a hoy; si ≤7, interés programado
                 $interesSegunRegla = ($diasHastaVencer > 7) ? $interesHoyCalc : $interesProgramado;
                 $total = round($amortizacion + $interesSegunRegla, 2);
             } else if ($futurePeriodo) {
                 $total = round($amortizacion, 2);
             } else {
-                // fallback
                 $total = round($amortizacion, 2);
             }
             return [
@@ -873,7 +868,7 @@ class CrediJoyaController extends Controller
             ];
         }
 
-        // PARCIAL: siempre cuota normal (amort + interés programado) en cualquier estado no vencido
+        // PARCIAL: siempre cuota normal (amort + interés programado)
         $total = round($montoCuota, 2);
         return [
             'total'           => $total,
@@ -889,6 +884,7 @@ class CrediJoyaController extends Controller
         $totalIngresos   = (float) Ingreso::where('prestamo_id', $creditoId)->sum('monto');
         return round(max($totalCronograma - $totalIngresos, 0), 2);
     }
+
     public function ticketDesembolsoCJ($prestamoId)
     {
         $prestamo = credito::with('clientes')->findOrFail($prestamoId);
@@ -898,15 +894,16 @@ class CrediJoyaController extends Controller
         $netoEntregado = (float) ($prestamo->neto_recibir  ?? 0);
         $Deuda         = max($montoPrestamo - $netoEntregado, 0);
 
-        // Tasa ITF (0.05% = 0.0005 por defecto; ajústala en config/env)
-        $itfRate   = (float) (config('finanzas.itf_rate', env('ITF_RATE', 0.0005)));
+        // Tasa ITF (0.05% = 0.00005 por defecto)
+        $itfRate   = (float) (config('finanzas.itf_rate', env('ITF_RATE', 0.00005)));
 
         // Aplica ITF solo si el neto a recibir supera S/ 1,000
-        $umbralITF = 1000.00; // cámbialo si lo necesitas
+        $umbralITF = 1000.00;
         $aplicaITF = $netoEntregado > $umbralITF;
 
-        // Base del ITF = neto a entregar (no el monto del préstamo)
+        // Base del ITF = neto a entregar
         $itf = $aplicaITF ? round($netoEntregado * $itfRate, 2) : 0.00;
+        $egreso = Egreso::where('prestamo_id', $prestamoId)->first();
 
         // Neto final a pagar en ventanilla
         $netoAPagar = max(round($netoEntregado - $itf, 2), 0);
@@ -918,65 +915,408 @@ class CrediJoyaController extends Controller
             'Deuda'          => round($Deuda, 2),
             'itfRate'        => $itfRate,
             'itf'            => $itf,
-            'aplicaITF'      => $aplicaITF,       // <- para la vista
+            'aplicaITF'      => $aplicaITF,
             'netoEntregado'  => round($netoEntregado, 2),
             'netoAPagar'     => $netoAPagar,
-        ])->setPaper([0, 0, 205, 500]);
+            'fechae'         => $egreso->fecha_egreso ?? now()->toDateString(),
+            'horae'          => $egreso->hora_egreso ?? now()->toTimeString(),
+        ])->setPaper([0, 0, 226.77, 300], 'portrait');
 
         return $pdf->stream('ticket_desembolso_credijoya.pdf');
     }
 
-
-
-
-    // 2) NUEVO: ticket de PAGOS de créditos anteriores (uno por cada Ingreso)
+    // ===== Tickets de pagos de créditos anteriores (uno por Ingreso)
     public function ticketPagosAnterioresCJ($prestamoId, $cajaId, $idsDash)
     {
         $user = auth()->user();
 
-        $ids = collect(explode('-', $idsDash))
-            ->filter(fn($v) => ctype_digit($v))
-            ->map('intval')
-            ->values()
-            ->all();
+        $ids = collect(explode('-', $idsDash))->values()->all();
 
-        // Trae todos los ingresos de esta transacción (los pagos realizados)
-        $ingresos = Ingreso::with(['cronograma','cliente'])
+        $ingresos = Ingreso::with(['cronograma', 'cliente'])
             ->whereIn('id', $ids)
             ->where('transaccion_id', $cajaId)
             ->orderBy('prestamo_id')->orderBy('numero_cuota')
             ->get();
 
-        // Armamos “tickets” individuales (uno por cuota pagada)
         $tickets = $ingresos->map(function (Ingreso $ing) {
             $prestamo    = credito::find($ing->prestamo_id);
             $cronograma  = Cronograma::find($ing->cronograma_id);
-
-            // Siguiente cuota
             $siguiente   = Cronograma::where('id_prestamo', $ing->prestamo_id)
-                            ->where('numero', '>', $ing->numero_cuota)
-                            ->orderBy('numero','asc')
-                            ->first();
+                ->where('numero', '>', $ing->numero_cuota)
+                ->orderBy('numero', 'asc')
+                ->first();
 
             return [
                 'prestamo'      => $prestamo,
-                'cliente'       => $ing->cliente,   // relación
+                'cliente'       => $ing->cliente,
                 'ingreso'       => $ing,
                 'cronograma'    => $cronograma,
                 'sig_cuota'     => $siguiente,
-                'fecha_sig'     => $siguiente? $siguiente->fecha : 'N/A',
+                'fecha_sig'     => $siguiente ? $siguiente->fecha : 'N/A',
             ];
         });
-
-        // Alto dinámico para rollo térmico: 420px por ticket aprox.
-        $alto = max(420, 420 * max(1, $tickets->count())) + 60;
 
         $pdf = Pdf::loadView('pdf.tickets_pagos_anteriores', [
             'tickets' => $tickets,
             'asesor'  => $user,
             'fecha'   => now()->format('d/m/Y H:i'),
-        ])->setPaper([0, 0, 205, $alto]); // 58mm aprox.
+        ])->setPaper([0, 0, 226.77, 350], 'portrait');
 
         return $pdf->stream('tickets_pagos_anteriores.pdf');
     }
+
+    // ===== Helpers =====
+    private function primeraCuotaNoPagada(int $prestamoId): ?Cronograma
+    {
+        $pagadas = Ingreso::where('prestamo_id', $prestamoId)
+            ->pluck('cronograma_id')
+            ->filter()
+            ->flip();
+
+        return Cronograma::where('id_prestamo', $prestamoId)
+            ->orderBy('numero')
+            ->get()
+            ->first(function ($c) use ($pagadas) {
+                return !isset($pagadas[$c->id]);
+            });
+    }
+
+    // === Vista de pago
+    public function createPago(Credito $credito)
+    {
+        // Cliente desde CreditoCliente (no ->cliente directo)
+        $cc = CreditoCliente::with('clientes')
+            ->where('prestamo_id', $credito->id)
+            ->first();
+        $clientes = $cc ? $cc->clientes : null;
+
+        // Cuota vigente
+        $cuotaVigente = $this->primeraCuotaNoPagada($credito->id);
+       
+        // Interés y mora del día
+        $interesHoy = 0.00;
+        $moraHoy = 0.00;
+        if ($cuotaVigente) {
+            $interesHoy = $this->interesDevengadoHastaHoy($cuotaVigente, $credito);
+            $moraData   = $this->calcularMoraPorDia((float)$cuotaVigente->monto, (string)$cuotaVigente->fecha);
+            $moraHoy    = $moraData['mora'];
+        }
+
+        $esMismoDia = \Carbon\Carbon::parse($credito->fecha_desembolso)->isSameDay(now());
+        $amortizacionHoy = $cuotaVigente ? round((float)$cuotaVigente->amortizacion, 2) : 0.00;
+
+        // Joyas del préstamo
+        $joyas = CredijoyaJoya::where('prestamo_id', $credito->id)->get();
+
+        return view('admin.credijoya.pago', [
+            'credito'         => $credito,
+            'clientes'        => $clientes,
+            'cuotaVigente'    => $cuotaVigente,
+            'interesHoy'      => round($interesHoy, 2),
+            'moraHoy'         => round($moraHoy, 2),
+            'joyas'           => $joyas,
+            'esMismoDia'      => $esMismoDia,
+            'amortizacionHoy' => $amortizacionHoy,
+        ]);
+    }
+    // === Procesar pago (AJAX)
+    public function storePago(Request $r, Credito $credito)
+    {
+        $trace = Str::uuid()->toString();
+
+        $r->validate([
+            'tipo_pago'  => 'required|in:total,interes,parcial',
+            'modo_pago'  => 'required|in:interes,cuota,totalhoy,adelanto',
+            'monto_pago' => 'required|numeric|min:0.01',
+        ]);
+
+        $monto = round((float) $r->input('monto_pago'), 2);
+        $tipo  = $r->input('tipo_pago');   // total|interes|parcial
+        $modo  = $r->input('modo_pago');   // interes|cuota|totalhoy|adelanto
+
+        $user = auth()->user();
+        $caja = CajaTransaccion::where('user_id', $user->id)
+            ->whereNull('hora_cierre')
+            ->latest()->first();
+
+        if (!$caja) {
+            
+            return response()->json(['ok'=>false,'error'=>'No hay una caja abierta para el usuario actual','trace_id'=>$trace], 400);
+        }
+
+        // Cliente
+        $cc = CreditoCliente::where('prestamo_id', $credito->id)->first();
+        if (!$cc) {
+          
+            return response()->json(['ok'=>false,'error'=>'No se encontró el cliente del crédito.','trace_id'=>$trace], 422);
+        }
+        $clienteId = (int)$cc->cliente_id;
+
+        // Cuota vigente
+        $cuota = $this->primeraCuotaNoPagada($credito->id);
+        if (!$cuota) {
+           
+            return response()->json(['ok'=>false,'error'=>'El crédito no tiene cuotas pendientes.','trace_id'=>$trace], 422);
+        }
+
+        // Mínimos hoy
+        $moraData = $this->calcularMoraPorDia((float)$cuota->monto, (string)$cuota->fecha);
+        $interHoy = round($this->interesDevengadoHastaHoy($cuota, $credito), 2);
+        $minimo   = round($interHoy + $moraData['mora'], 2);
+
+       ;
+
+        if ($tipo !== 'total' && $monto + 0.0001 < $minimo) {
+          
+            return response()->json(['ok'=>false,'error'=>'El pago mínimo es S/ '.number_format($minimo,2,'.',''), 'trace_id'=>$trace], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Desglose: Mora -> Interés -> Capital
+            $aplicaMora    = round(min($monto, $moraData['mora']), 2);
+            $restante      = round($monto - $aplicaMora, 2);
+            $aplicaInteres = round(min($restante, $interHoy), 2);
+            $restante      = round($restante - $aplicaInteres, 2);
+            $aplicaCapital = round(max($restante, 0), 2);
+
+            // Registrar ingreso (sin nuevo_id de momento)
+            $ing = Ingreso::create([
+                'transaccion_id'         => $caja->id,
+                'prestamo_id'            => $credito->id,
+                'cliente_id'             => $clienteId,
+                'cronograma_id'          => $cuota->id,
+                'numero_cuota'           => $cuota->numero,
+                'monto'                  => $monto,
+                'monto_mora'             => $aplicaMora,
+                'interes_pagado'         => $aplicaInteres,
+                'capital_pagado'         => $aplicaCapital,
+                'dias_mora'              => $moraData['dias'],
+                'porcentaje_mora'        => $moraData['porcentaje'],
+                'fecha_pago'             => now()->toDateString(),
+                'hora_pago'              => now()->toTimeString(),
+                'sucursal_id'            => $user->sucursal_id,
+                'monto_total_pago_final' => $monto,
+                'modo'                   => $modo,
+                'tipo'                   => $tipo,
+                'nuevo_id'               => null, // se llenará si hay renovación
+            ]);
+
+            // Actualiza caja
+            $caja->cantidad_ingresos = (float)($caja->cantidad_ingresos ?? 0) + $monto;
+            $caja->save();
+
+            // ¿Crédito se liquida completamente?
+            $saldoPendiente = $tipo === 'total' ? 0 : $this->recalcularSaldoCredito($credito->id);
+
+            if ($tipo === 'total' || $saldoPendiente <= 0.009) {
+                // Termina y libera joyas
+                $credito->estado    = 'terminado';
+                $credito->fecha_fin = now()->toDateString();
+                $credito->save();
+
+                foreach ($credito->joyas as $j) {
+                    $j->devuelta   = 1;
+                    $j->fecha_pago = now();
+                    $j->save();
+                }
+            } else {
+                // Renovación: crear NUEVO crédito y cerrar el actual
+                $capitalBase = round((float)$cuota->amortizacion - $aplicaCapital, 2);
+                if ($capitalBase <= 0) {
+                    $capitalBase = round((float)$cuota->amortizacion, 2);
+                }
+
+                // crea nuevo crédito y su primera cuota
+                [$nuevo, $nuevaCuota] = $this->crearCreditoRenovadoDesde($credito, $capitalBase, $clienteId, $user);
+
+                // marcar en el ingreso
+                $ing->nuevo_id = $nuevo?->id;
+                $ing->save();
+
+                // cerrar cuotas impagas del crédito viejo y marcar terminado
+                $this->eliminarCuotasImpagas($credito->id);
+                $credito->estado    = 'terminado';
+                $credito->fecha_fin = now()->toDateString();
+                $credito->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'ok'         => true,
+                'ticket_url' => route('pagocredijoya.ticket', $ing->id),
+                'trace_id'   => $trace,
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+           
+            return response()->json(['ok'=>false,'error'=>'No se pudo registrar el pago: '.$e->getMessage(), 'trace_id'=>$trace], 500);
+        }
+    }
+    // 3) Ticket de pago
+    public function ticketPago(Ingreso $pago)
+    {
+        // Crédito original del que salió el pago
+        $credito = credito::with('joyas','clientes')->findOrFail($pago->prestamo_id);
+
+        // Cliente
+        $cc = CreditoCliente::with('clientes')
+            ->where('prestamo_id', $credito->id)
+            ->first();
+
+        $clienteNombre = $cc?->clientes?->nombre
+            ??  '---';
+
+        // Si hubo renovación, traemos el nuevo
+        $nuevo = null;
+        $nuevaCuota = null;
+        if (!empty($pago->nuevo_id)) {
+            $nuevo = credito::find($pago->nuevo_id);
+            if ($nuevo) {
+                $nuevaCuota = Cronograma::where('id_prestamo', $nuevo->id)
+                    ->orderBy('numero', 'asc')->first();
+            }
+        }
+
+        // Desglose desde BD (sin sesión)
+        $interesPagado = isset($pago->interes_pagado) ? (float)$pago->interes_pagado : 0.0;
+        $capitalPagado = isset($pago->capital_pagado)
+            ? (float)$pago->capital_pagado
+            : max((float)$pago->monto_total_pago_final - (float)$pago->monto_mora - $interesPagado, 0);
+
+        $desglose = [
+            'modo'           => $pago->modo,                                  // interes|cuota|totalhoy|adelanto
+            'tipo'           => $pago->tipo ?? 'parcial',                     // total|interes|parcial
+            'monto'          => (float)$pago->monto_total_pago_final,
+            'mora_pagada'    => (float)$pago->monto_mora,
+            'interes_pagado' => $interesPagado,
+            'capital_pagado' => $capitalPagado,
+            'renovado'       => (bool)$pago->nuevo_id,
+            'nuevo_credito'  => $nuevo ? [
+                'id'          => $nuevo->id,
+                'vencimiento' => (string)$nuevo->proximo_vencimiento,
+                'deuda_prev'  => $nuevo->deuda_prev_modo ?? null,
+            ] : null,
+            'nueva_cuota'    => $nuevaCuota ? [
+                'numero'        => $nuevaCuota->numero,
+                'fecha'         => (string)$nuevaCuota->fecha,
+                'amortizacion'  => round((float)$nuevaCuota->amortizacion, 2),
+                'interes'       => round((float)$nuevaCuota->interes, 2),
+                'monto'         => round((float)$nuevaCuota->monto, 2),
+            ] : null,
+        ];
+
+        // Saldo del crédito original al momento de emitir ticket (puede ser 0 si terminó)
+        $saldo = method_exists($this, 'recalcularSaldoCredito')
+            ?( $pago->tipo=='total'?0: $this->recalcularSaldoCredito($credito->id))
+            : 0.0;
+
+        $fechaPago = $pago->fecha_pago ?? $pago->created_at;
+        $horaPago  = $pago->hora_pago  ?? optional($pago->created_at)->format('H:i:s');
+
+        // ancho en mm (58 o 80). Puedes pasarlo por query: ?w=80
+        $widthMm = (int) request()->get('w', 58);
+        if (!in_array($widthMm, [58, 80], true)) { $widthMm = 58; }
+
+        // Dompdf con papel térmico
+        $wPts = 200; // ajusta si usas 58/80mm a puntos
+        $hPts = 500;
+
+        $pdf = PDF::loadView('admin.credijoya.ticket-pago', [
+            'pago'          => $pago,
+            'credito'       => $credito,
+            'clienteNombre' => $clienteNombre,
+            'desglose'      => $desglose,
+            'saldo'         => $saldo,
+            'fechaPago'     => $fechaPago,
+            'horaPago'      => $horaPago,
+            'widthMm'       => $widthMm,
+            'joyas'         => $credito->joyas,
+        ])->setPaper([0,0,$wPts,$hPts], 'portrait');
+
+        return $pdf->stream('ticket_pago_'.$pago->id.'.pdf'); 
+    }
+
+
+    private function crearCreditoRenovadoDesde(Credito $anterior, float $capitalBase, int $clienteId, $user): array
+    {
+        $nuevo = new Credito();
+        $nuevo->id_cliente          = $clienteId;
+        $nuevo->monto_total         = round($capitalBase, 2);
+        $nuevo->tasa                = $anterior->tasa;
+        $nuevo->fecha_desembolso    = now()->toDateString();
+        $nuevo->proximo_vencimiento = now()->copy()->addMonth()->toDateString();
+        $nuevo->fecha_fin           = $nuevo->proximo_vencimiento;
+        $nuevo->estado              = 'pagado'; // o 'en_curso' según tu flujo
+        $nuevo->deuda_prev_modo     = $anterior->id;
+        $nuevo->user_id             = auth()->id();
+
+        // taxonomía
+        $nuevo->tipo         = 'servicio';
+        $nuevo->producto     = 'individual';
+        $nuevo->subproducto  = 'credijoya';
+        $nuevo->destino      = 'personal';
+        $nuevo->recurrencia  = 'mensual';
+
+        // montos/param
+        $nuevo->tasacion_total   = $anterior->tasacion_total;
+        $nuevo->monto_max_80     = $anterior->monto_max_80;
+        $nuevo->itf_desembolso   = 0;
+        $nuevo->neto_recibir     = $anterior->neto_recibir;
+        $nuevo->deuda_prev_monto = 0;
+
+        $nuevo->periodo_gracia_dias = 0;
+        $nuevo->fecha_registro      = now();
+
+        $nuevo->descripcion_negocio = 'CrediJoya';
+        $nuevo->nombre_prestamo     = 'CrediJoya';
+        $nuevo->cantidad_integrantes = 1;
+
+        $nuevo->categoria           = 'credijoya';
+        $nuevo->tiempo              = 1;
+        $nuevo->activo              = 1;
+        $nuevo->porcentaje_credito  = 0;
+
+        $nuevo->save();
+
+        $cc = new CreditoCliente();
+        $cc->prestamo_id=$nuevo->id;
+        $cc->cliente_id=$clienteId;
+        $cc->monto_indivual=round($capitalBase, 2);
+        $cc->save();
+
+        // mover joyas al nuevo crédito
+        foreach ($anterior->joyas as $j) {
+            $j->prestamo_id = $nuevo->id;
+            $j->devuelta    = 0;
+            $j->fecha_pago  = null;
+            $j->save();
+        }
+
+        // cronograma (1 periodo)
+        $this->guardarCronograma(
+            $nuevo->id,
+            (int) $nuevo->id_cliente,
+            $nuevo->monto_total,
+            (float) $nuevo->tasa,
+            $nuevo->fecha_desembolso
+        );
+
+        $nuevaCuota = Cronograma::where('id_prestamo', $nuevo->id)
+            ->orderBy('numero', 'asc')->first();
+
+        return [$nuevo, $nuevaCuota];
+    }
+
+    private function eliminarCuotasImpagas(int $creditoId): void
+    {
+        $pagadas = Ingreso::where('prestamo_id', $creditoId)->pluck('cronograma_id')->filter()->all();
+        Cronograma::where('id_prestamo', $creditoId)
+            ->when(!empty($pagadas), fn($q)=>$q->whereNotIn('id', $pagadas))
+            ->delete();
+    }
+
+   
 }

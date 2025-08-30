@@ -27,6 +27,14 @@ class Ingreso extends Model
         'sucursal_id',
         'interes_pago_capital',
         'pago_capital',
+
+        ///credijoya
+         'modo',   // <— NUEVO
+        'tipo',   // <— NUEVO
+        'nuevo_id',
+        'interes_pagado','capital_pagado',
+
+
     ];
 
     public function transaccion()

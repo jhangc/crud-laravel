@@ -68,7 +68,18 @@
                                         @endif
                                     </td>
                                     <td style="display: flex; align-items: center; justify-content:center;">
-                                        <a href="{{  route('creditos.verpagocuota', ['id' => $credito->id]) }}" class="btn btn-primary" style="margin-left:10px">Cobrar</a>
+                                        @if($credito->categoria == 'credijoya')
+                                            <a href="{{ route('pagocredijoya.create', $credito->id) }}" 
+                                            class="btn btn-warning" style="margin-left:10px">
+                                                Cobrar
+                                            </a>
+                                        @else
+                                            
+                                            <a href="{{ route('creditos.verpagocuota', ['id' => $credito->id]) }}" 
+                                            class="btn btn-primary" style="margin-left:10px">
+                                                Cobrar
+                                            </a>
+                                        @endif
                                         
                                     </td>
                                 </tr>

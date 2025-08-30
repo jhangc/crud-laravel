@@ -178,6 +178,13 @@
                                             <p>Cobrar Crédito</p>
                                         </a>
                                     </li>
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/credijoya/devoluciones') }}"
+                                            class="nav-link {{ request()->is('admin/credijoya/devoluciones') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Delvolver Joyas</p>
+                                        </a>
+                                    </li>
                                 @endif
                                 @if (!$cajaAbierta)
                                     <li class="nav-item">
