@@ -77,7 +77,7 @@ class CrediJoyaController extends Controller
         return DB::transaction(function () use ($r, $joyas, $clienteId, $montoAprobado, $tasacionTotal, $max80_calc, $fechaDesembolso, $proxVenc) {
 
             // 1) Crear crédito (pre-registro)
-            $credito = Credito::create([
+            $credito = credito::create([
                 'user_id'              => auth()->id(),
                 'id_cliente'           => $clienteId,
 
@@ -275,7 +275,7 @@ class CrediJoyaController extends Controller
             'joyas'               => ['required', 'string'], // JSON del front (con id si existen)
         ]);
 
-        $credito = Credito::findOrFail($id);
+        $credito = credito::findOrFail($id);
 
         // ---- seguridad backend: 80% de tasación ----
         $tasacionTotal = (float) $r->input('tasacion_total');
@@ -389,7 +389,7 @@ class CrediJoyaController extends Controller
     public function aprobarCredijoya(Request $r, $id)
     {
         $r->validate(['comentario' => 'nullable|string|max:1000']);
-        $c = \App\Models\Credito::findOrFail($id);
+        $c = credito::findOrFail($id);
         $c->estado = 'aprobado';
         $c->comentario_administrador = $r->input('comentario', '');
         $c->save();
@@ -399,7 +399,7 @@ class CrediJoyaController extends Controller
     public function rechazarCredijoya(Request $r, $id)
     {
         $r->validate(['comentario' => 'required|string|max:1000']);
-        $c = \App\Models\Credito::findOrFail($id);
+        $c = credito::findOrFail($id);
         $c->estado = 'rechazado';
         $c->comentario_administrador = $r->input('comentario', '');
         $c->save();
@@ -476,7 +476,7 @@ class CrediJoyaController extends Controller
     {
         $creditoId = (int) $r->query('credito_id');
         $modo      = $r->query('modo', 'parcial'); // 'parcial' | 'total'
-        $credito   = Credito::findOrFail($creditoId);
+        $credito   = credito::findOrFail($creditoId);
 
         // Cuotas ordenadas
         $cuotas = Cronograma::where('id_prestamo', $creditoId)
@@ -814,13 +814,13 @@ class CrediJoyaController extends Controller
     }
 
    
-    private function totalSegunReglas(\App\Models\Cronograma $c, \App\Models\Credito $credito, string $modo): array
+    private function totalSegunReglas(Cronograma $c, credito $credito, string $modo): array
     {
         $hoy = now();
         $vto = \Carbon\Carbon::parse($c->fecha);
 
         // periodo anterior (cuota previa) o desembolso
-        $prev = \App\Models\Cronograma::where('id_prestamo', $credito->id)
+        $prev = Cronograma::where('id_prestamo', $credito->id)
             ->where('numero', (int)$c->numero - 1)
             ->first();
         $inicioPeriodo = \Carbon\Carbon::parse($prev ? $prev->fecha : $credito->fecha_desembolso);
@@ -982,7 +982,7 @@ class CrediJoyaController extends Controller
     }
 
     // === Vista de pago
-    public function createPago(Credito $credito)
+    public function createPago(credito $credito)
     {
         // Cliente desde CreditoCliente (no ->cliente directo)
         $cc = CreditoCliente::with('clientes')
@@ -1020,7 +1020,7 @@ class CrediJoyaController extends Controller
         ]);
     }
     // === Procesar pago (AJAX)
-    public function storePago(Request $r, Credito $credito)
+    public function storePago(Request $r, credito $credito)
     {
         $trace = Str::uuid()->toString();
 
@@ -1240,9 +1240,9 @@ class CrediJoyaController extends Controller
     }
 
 
-    private function crearCreditoRenovadoDesde(Credito $anterior, float $capitalBase, int $clienteId, $user): array
+    private function crearCreditoRenovadoDesde(credito $anterior, float $capitalBase, int $clienteId, $user): array
     {
-        $nuevo = new Credito();
+        $nuevo = new credito();
         $nuevo->id_cliente          = $clienteId;
         $nuevo->monto_total         = round($capitalBase, 2);
         $nuevo->tasa                = $anterior->tasa;

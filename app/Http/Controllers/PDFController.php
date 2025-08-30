@@ -272,7 +272,7 @@ class PdfController extends Controller
     }
     public function generatecronogramaindividualC(Request $request, $id)
     {
-        $prestamo = \App\Models\credito::with(['clientes', 'joyas'])->findOrFail($id);
+        $prestamo = credito::with(['clientes', 'joyas'])->findOrFail($id);
         $cliente  = $prestamo->clientes->first();
         $user     = auth()->user();
         $sucursal = \App\Models\Sucursal::find($user->sucursal_id) ?? \App\Models\Sucursal::first();
