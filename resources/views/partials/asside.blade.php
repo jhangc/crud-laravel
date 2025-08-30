@@ -152,9 +152,9 @@
 
                 @role('Administrador|Cajera')
                     <li
-                        class="nav-item has-treeview {{ request()->is('admin/caja*') || request()->is('admin/gastos') || request()->is('admin/ingresos-extras') ? 'menu-open' : '' }}">
+                        class="nav-item has-treeview {{ request()->is('admin/caja*') || request()->is('admin/creditos') || request()->is('admin/gastos') || request()->is('admin/ingresos-extras') ||request()->is('admin/credijoya/devoluciones')? 'menu-open' : '' }}">
                         <a href="#"
-                            class="nav-link {{ request()->is('admin/caja*') || request()->is('admin/gastos') || request()->is('admin/ingresos-extras') ? 'active' : '' }}">
+                            class="nav-link {{ request()->is('admin/caja*') || request()->is('admin/creditos') || request()->is('admin/gastos') ||  request()->is('admin/ingresos-extras')|| request()->is('admin/credijoya/devoluciones') ? 'active' : '' }}">
                             <i class="nav-icon fas"><i class="bi bi-bank2"></i></i>
                             <p>
                                 Caja
@@ -164,6 +164,13 @@
                         <ul class="nav nav-treeview">
                             @if ($operacionesAbiertas)
                                 @if ($cajaAbierta)
+                                    <li class="nav-item">
+                                        <a href="{{ url('/admin/creditos') }}"
+                                            class="nav-link {{ request()->is('admin/creditos') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Listado de Creditos</p>
+                                        </a>
+                                    </li>
                                     <li class="nav-item">
                                         <a href="{{ url('/admin/caja/pagarcredito') }}"
                                             class="nav-link {{ request()->is('admin/caja/pagarcredito') ? 'active' : '' }}">
