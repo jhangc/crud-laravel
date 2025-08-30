@@ -424,7 +424,7 @@ class CrediJoyaController extends Controller
             ->whereHas('clientes', function ($q) use ($cliente) {
                 $q->where('clientes.id', $cliente->id);
             })
-            ->whereIn('categoria', ['individual', 'credijoya'])
+            ->whereIn('categoria','!=','grupal')
             ->whereIn('estado', ['pagado', 'mora'])
             ->get()
             ->map(function ($c) {
