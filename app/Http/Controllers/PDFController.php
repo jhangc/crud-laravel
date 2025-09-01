@@ -375,6 +375,14 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.contratojoya', $data)->setPaper('a4');
         return $pdf->stream('contratojoya.pdf');
     }
+     public function genrarInfoC(Request $request)
+    {
+        
+       
+        $pdf = Pdf::loadView('pdf.infojoya')->setPaper('A4', 'portrait');
+        return $pdf->stream('informacion_para_el_cliente.pdf');
+    }
+
 
 
     public function generatecartillaPDF(Request $request, $id)

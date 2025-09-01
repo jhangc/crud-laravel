@@ -332,6 +332,9 @@
                     <button type="button" class="btn btn-outline-primary px-4" onclick="generarcontratoindividualPDF()">
                       <i class="fas fa-file-signature mr-1"></i> Contrato PDF
                     </button>
+                    <button type="button" class="btn btn-outline-primary px-4" onclick="generarinfoPDF()">
+                      <i class="fas fa-file-signature mr-1"></i> Informacion para el Cliente
+                    </button>
                     
                   </div>
                   <p class="text-center text-muted mb-0 mt-2">Se abrirán en una nueva pestaña.</p>
@@ -793,9 +796,12 @@
   };
 
   window.generarpagarePDF = function() {
-      const id = '{{ $prestamo->id }}';
-      window.open("{{ url('/generar-pagare') }}/" + id, '_blank');
-};
+        const id = '{{ $prestamo->id }}';
+        window.open("{{ url('/generar-pagare') }}/" + id, '_blank');
+  };
+  window.generarinfoPDF= function() {
+        window.open("{{ url('/generar-info-joya') }}" , '_blank');
+  };
 
 
   // arranque

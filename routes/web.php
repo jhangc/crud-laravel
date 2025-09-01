@@ -163,6 +163,7 @@ Route::get('/generar-contratoindividual/{id}', [PDFController::class, 'generatec
 
 Route::get('/generar-cronogramacredijoya/{id}', [PDFController::class, 'generatecronogramaindividualC'])->name('generar-cronograma-credijoya');
 Route::get('/generar-contratocredijoya/{id}', [PDFController::class, 'generatecrontratoindividualC'])->name('generar-contrato-credijoya');
+Route::get('/generar-info-joya', [PDFController::class, 'genrarInfoC'])->name('generar-info-joya');
 
 Route::get('/generar-cartilla/{id}', [PDFController::class, 'generatecartillaPDF'])->name('generar-cartilla');
 Route::get('/generar-pagare/{id}', [PDFController::class, 'generatepagarePDF'])->name('generar-pagare');

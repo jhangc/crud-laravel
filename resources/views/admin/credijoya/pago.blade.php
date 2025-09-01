@@ -44,6 +44,10 @@
         <div class="label text-muted small">Estado</div>
         <span class="badge bg-{{ $credito->estado === 'terminado' ? 'success' : 'secondary' }}">{{ strtoupper($credito->estado ?? '---') }}</span>
       </div>
+      <div class="col-md-2">
+        <div class="label text-muted small">TEA vigente</div>
+        <div class="value fw-semibold">{{ number_format((float)($credito->tasa ?? 0),2,'.','') }}%</div>
+      </div>
     </div>
   </div>
 </div>
@@ -164,7 +168,7 @@
 
       {{-- Campos --}}
       <div class="row g-3 align-items-end">
-        <div class="col-md-6">
+        <div class="col-md-4">
           <label class="form-label"><b>Monto a pagar</b></label>
           <input
             type="text"
@@ -180,10 +184,26 @@
           <div class="form-text" id="ayudaMonto">Se calcula automáticamente.</div>
         </div>
 
-        <div class="col-md-6" id="boxAdelanto" style="display:none;">
+        <div class="col-md-4" id="boxAdelanto" style="display:none;">
           <label class="form-label"><b>Adelanto de capital (opcional)</b></label>
           <input type="text" inputmode="decimal" id="adelanto_capital" class="form-control" value="0,00" autocomplete="off">
           <div class="form-text">Suma al mínimo (interés + mora).</div>
+        </div>
+        <div class="col-md-4" id="boxTea" style="display:none;">
+          <label class="form-label"><b>Nueva tasa TEA (opcional)</b></label>
+        
+            <input
+              type="number"
+              inputmode="decimal"
+              autocomplete="off"
+              id="nueva_tasa_tea"
+              class="form-control"
+              placeholder="p.ej. 95.00">
+        
+       
+          <div class="form-text">
+           Para la  renovacion del crédito.
+          </div>
         </div>
 
         {{-- Hidden: modo, tipo y monto real --}}
@@ -214,6 +234,8 @@
   const $form       = $('#formPago');
   const URL_PAGO    = $form.data('url');
   const CSRF        = $form.find('input[name=_token]').val() || '{{ csrf_token() }}';
+  const $teaIn      = $('#nueva_tasa_tea');   // ya lo tienes
+  const $teaBox     = $('#boxTea'); 
 
   const hayCuota    = {{ $cuotaVigente ? 'true' : 'false' }};
   const esMismoDia  = {{ isset($esMismoDia) && $esMismoDia ? 'true' : 'false' }};
@@ -243,6 +265,7 @@
   const $msg        = $('#msg');
 
   function setMsg(text){ $msg.text(text || ''); }
+
 
   /* ---------------------------- HELPERS ---------------------------- */
   // Normaliza SIEMPRE a "####.##" (sin miles). Acepta entradas con coma, las convierte a punto.
@@ -291,6 +314,10 @@
     });
   }
   function setModo(modo){
+     function hideTea(){
+      $teaBox.hide();
+      $teaIn.val('');
+    }
     activarOpcion(modo);
     $modoHidden.val(modo);
 
@@ -299,8 +326,10 @@
       lockMonto(basePorModo('interes'), true);
       setAyuda('Paga interés + mora. Renueva 1 mes.', 'Monto bloqueado al mínimo.');
       setMsg('El pago mínimo es S/ ' + toMoney(minimoInter()));
+       $teaBox.show(); 
     } else if (modo==='cuota'){
       $tipoHidden.val('total'); $adelBox.hide();
+       hideTea(); 
       lockMonto(basePorModo('cuota'), true);
       setAyuda(
         (CUOTA.vencida===true)
@@ -311,6 +340,7 @@
       setMsg('');
     } else if (modo==='totalhoy'){
       $tipoHidden.val('total'); $adelBox.hide();
+       hideTea(); 
       lockMonto(basePorModo('totalhoy'), true);
       setAyuda(
         (CUOTA.vencida===true)
@@ -320,7 +350,8 @@
       );
       setMsg('');
     } else if (modo==='adelanto'){
-      $tipoHidden.val('parcial'); $adelBox.show();
+      $tipoHidden.val('parcial'); $adelBox.show(); 
+      $teaBox.show(); 
       lockMonto(basePorModo('adelanto'), false);
       setAyuda('Interés + mora + tu adelanto de capital (renueva 1 mes).', 'Puedes editar por encima del mínimo.');
       setMsg('El pago mínimo es S/ ' + toMoney(minimoInter()));
@@ -370,7 +401,16 @@
       const REDIR_URL = "{{ url('admin/caja/cobrar') }}"; // destino después de abrir el ticket
       try {
         const fd = new FormData($form[0]);
-
+        const teaNum = parseDotMoney($teaIn.val());
+        if ($teaBox.is(':visible')) {
+            if (!isNaN(teaNum) && teaNum > 0) {
+              fd.set('nueva_tasa_tea', $teaIn.val()); // "95.00"
+            } else {
+              fd.delete('nueva_tasa_tea');
+            }
+          } else {
+            fd.delete('nueva_tasa_tea');
+          }
         // ✅ 3) forzar claves y quitar el visible
         fd.set('monto_pago', $montoReal.val());
         fd.set('modo_pago',  $modoHidden.val());
@@ -430,14 +470,16 @@
 
   /* ------------------------------ INIT ------------------------------ */
   function init(){
-    if (esMismoDia){
-      setModo('totalhoy'); $tipoHidden.val('total');
-      lockMonto(Number(CUOTA.amort), true); // sólo capital
-    } else {
-      setModo('interes');
-    }
-    bindEvents();
+  if (esMismoDia){
+    setModo('totalhoy'); 
+    $tipoHidden.val('total');
+    lockMonto(Number(CUOTA.amort), true); // sólo capital
+    $teaBox.hide(); $teaIn.val('');       // <<< asegurar oculto
+  } else {
+    setModo('interes');
   }
+  bindEvents();
+}
 
   $(init); // GO
 })(window.jQuery);

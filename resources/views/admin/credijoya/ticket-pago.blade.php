@@ -111,7 +111,8 @@
     @php($nc = $desglose['nuevo_credito'])
     <hr>
     <div class="bold center">RENOVACIÓN GENERADA</div>
-    <div class="kv"><span class="lbl">Nuevo crédito</span><span class="val">#{{ $nc['id'] }}</span></div>
+    <div class="kv"><span class="lbl">Nuevo crédito:</span><span class="val">#{{ $nc['id'] }}</span></div>
+    <div class="kv"><span class="lbl">TEA:</span><span class="val">{{ $nc['tasa'] }}</span></div>
     <div class="kv"><span class="lbl">Origen</span><span class="val">#{{ $nc['deuda_prev'] ?? $credito->id }}</span></div>
     <div class="kv"><span class="lbl">Vencimiento</span><span class="val">{{ \Carbon\Carbon::parse($nc['vencimiento'])->format('d/m/Y') }}</span></div>
 

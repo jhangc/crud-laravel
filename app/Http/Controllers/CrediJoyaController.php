@@ -1028,6 +1028,7 @@ class CrediJoyaController extends Controller
             'tipo_pago'  => 'required|in:total,interes,parcial',
             'modo_pago'  => 'required|in:interes,cuota,totalhoy,adelanto',
             'monto_pago' => 'required|numeric|min:0.01',
+            'nueva_tasa_tea'  => 'nullable|numeric|min:1', // <<< NUEVO
         ]);
 
         $monto = round((float) $r->input('monto_pago'), 2);
@@ -1126,9 +1127,11 @@ class CrediJoyaController extends Controller
                 if ($capitalBase <= 0) {
                     $capitalBase = round((float)$cuota->amortizacion, 2);
                 }
+                $teaOverride = $r->filled('nueva_tasa_tea') ? (float)$r->input('nueva_tasa_tea') : null;
+                $teaAnterior = (float)$credito->tasa;
 
                 // crea nuevo crédito y su primera cuota
-                [$nuevo, $nuevaCuota] = $this->crearCreditoRenovadoDesde($credito, $capitalBase, $clienteId, $user);
+                [$nuevo, $nuevaCuota] = $this->crearCreditoRenovadoDesde($credito, $capitalBase, $clienteId, $user,$teaOverride,$teaAnterior );
 
                 // marcar en el ingreso
                 $ing->nuevo_id = $nuevo?->id;
@@ -1198,6 +1201,7 @@ class CrediJoyaController extends Controller
                 'id'          => $nuevo->id,
                 'vencimiento' => (string)$nuevo->proximo_vencimiento,
                 'deuda_prev'  => $nuevo->deuda_prev_modo ?? null,
+                'tasa'  => $nuevo->tasa ?? null,
             ] : null,
             'nueva_cuota'    => $nuevaCuota ? [
                 'numero'        => $nuevaCuota->numero,
@@ -1240,12 +1244,12 @@ class CrediJoyaController extends Controller
     }
 
 
-    private function crearCreditoRenovadoDesde(credito $anterior, float $capitalBase, int $clienteId, $user): array
+    private function crearCreditoRenovadoDesde(credito $anterior, float $capitalBase, int $clienteId, $user,$teaOverride,$teaAnterior): array
     {
         $nuevo = new credito();
         $nuevo->id_cliente          = $clienteId;
         $nuevo->monto_total         = round($capitalBase, 2);
-        $nuevo->tasa                = $anterior->tasa;
+        $nuevo->tasa                = $teaOverride?$teaOverride:$anterior->tasa;
         $nuevo->fecha_desembolso    = now()->toDateString();
         $nuevo->proximo_vencimiento = now()->copy()->addMonth()->toDateString();
         $nuevo->fecha_fin           = $nuevo->proximo_vencimiento;
