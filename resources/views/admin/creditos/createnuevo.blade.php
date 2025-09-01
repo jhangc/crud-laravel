@@ -6,7 +6,7 @@
     </div> --}}
     <div class="row">
         {{-- Botones visibles para Admin y Asesor (no CrediJoya) --}}
-        @hasanyrole('Administrador|Asesor de creditos')
+        @role('Administrador|Asesor de creditos')
             <div class="col-md-2 d-flex justify-content-center">
             <button type="button" class="btn btn-primary" onclick="loadContent('comercio')">CREDITO COMERCIO</button>
             </div>
@@ -22,14 +22,13 @@
             <div class="col-md-2 d-flex justify-content-center">
             <button type="button" class="btn btn-warning" onclick="loadContent('grupal')">CREDITO GRUPAL</button>
             </div>
-        @endhasanyrole
+        @endrole
 
-        {{-- CREDIJOYA: solo para Cajera --}}
-         @hasanyrole('Administrador|Asesor de creditos|| Cajera')
+        @role('Administrador|Asesor de creditos| Cajera')
             <div class="col-md-2 d-flex justify-content-center">
             <button type="button" class="btn btn-info" onclick="loadContent('joya')">CREDIJOYA</button>
             </div>
-        @endhasanyrole
+         @endrole
         </div>
 
     <br>
