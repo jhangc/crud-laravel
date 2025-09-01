@@ -24,7 +24,7 @@
             </div>
         @endrole
 
-        @role('Administrador|Asesor de creditos| Cajera')
+        @role('Administrador|Asesor de creditos|Cajera')
             <div class="col-md-2 d-flex justify-content-center">
             <button type="button" class="btn btn-info" onclick="loadContent('joya')">CREDIJOYA</button>
             </div>
