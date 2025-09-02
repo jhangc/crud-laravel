@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\credito;
+use App\Models\Credito;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;

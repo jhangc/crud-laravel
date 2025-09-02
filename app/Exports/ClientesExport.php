@@ -3,7 +3,7 @@
 namespace App\Exports;
 use Carbon\Carbon;
 
-use App\Models\credito;
+use App\Models\Credito;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -17,7 +17,7 @@ class ClientesExport implements FromCollection, WithHeadings, WithStyles, Should
      */
     public function collection()
     {
-        $creditos = credito::with([
+        $creditos = Credito::with([
             'clientes', 
             'creditoClientes.clientes', 
             'user.sucursal',

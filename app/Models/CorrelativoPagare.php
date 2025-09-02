@@ -21,7 +21,7 @@ class CorrelativoPagare extends Model
 
     public function credito()
     {
-        return $this->belongsTo(credito::class, 'id_prestamo');
+        return $this->belongsTo(Credito::class, 'id_prestamo');
     }
 
     public static function generateCorrelativo($id_prestamo)

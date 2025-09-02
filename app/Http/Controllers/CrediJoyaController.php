@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\cliente;
+use App\Models\Cliente;
 use App\Models\CredijoyaJoya;
-use App\Models\credito;
+use App\Models\Credito;
 use App\Models\CreditoCliente;
 use App\Models\Cronograma;
 use Carbon\Carbon;
@@ -49,7 +49,7 @@ class CrediJoyaController extends Controller
         }
 
         // Buscar cliente por DNI
-        $cliente = cliente::where('documento_identidad', $r->input('documento_identidad'))->first();
+        $cliente = Cliente::where('documento_identidad', $r->input('documento_identidad'))->first();
         if (!$cliente) {
             return response()->json(['ok' => false, 'message' => 'Cliente no registrado.'], 422);
         }
@@ -77,7 +77,7 @@ class CrediJoyaController extends Controller
         return DB::transaction(function () use ($r, $joyas, $clienteId, $montoAprobado, $tasacionTotal, $max80_calc, $fechaDesembolso, $proxVenc) {
 
             // 1) Crear crédito (pre-registro)
-            $credito = credito::create([
+            $credito = Credito::create([
                 'user_id'              => auth()->id(),
                 'id_cliente'           => $clienteId,
 
@@ -275,7 +275,7 @@ class CrediJoyaController extends Controller
             'joyas'               => ['required', 'string'], // JSON del front (con id si existen)
         ]);
 
-        $credito = credito::findOrFail($id);
+        $credito = Credito::findOrFail($id);
 
         // ---- seguridad backend: 80% de tasación ----
         $tasacionTotal = (float) $r->input('tasacion_total');
@@ -389,7 +389,7 @@ class CrediJoyaController extends Controller
     public function aprobarCredijoya(Request $r, $id)
     {
         $r->validate(['comentario' => 'nullable|string|max:1000']);
-        $c = credito::findOrFail($id);
+        $c = Credito::findOrFail($id);
         $c->estado = 'aprobado';
         $c->comentario_administrador = $r->input('comentario', '');
         $c->save();
@@ -399,7 +399,7 @@ class CrediJoyaController extends Controller
     public function rechazarCredijoya(Request $r, $id)
     {
         $r->validate(['comentario' => 'required|string|max:1000']);
-        $c = credito::findOrFail($id);
+        $c = Credito::findOrFail($id);
         $c->estado = 'rechazado';
         $c->comentario_administrador = $r->input('comentario', '');
         $c->save();
@@ -408,7 +408,7 @@ class CrediJoyaController extends Controller
 
     public function pagar(Request $request, $id)
     {
-        $prestamo     = credito::with(['clientes', 'user', 'joyas'])->findOrFail($id);
+        $prestamo     = Credito::with(['clientes', 'user', 'joyas'])->findOrFail($id);
         $cliente      = $prestamo->clientes->first();
         $responsable  = $prestamo->user;
         $estado       = $prestamo->estado;
@@ -419,7 +419,7 @@ class CrediJoyaController extends Controller
             ->get();
 
         // === Deudas previas del mismo cliente (individual y credijoya), que sigan vigentes ===
-        $deudasPrevias = credito::with(['joyas'])
+        $deudasPrevias = Credito::with(['joyas'])
             ->where('id', '!=', $prestamo->id)
             ->whereHas('clientes', function ($q) use ($cliente) {
                 $q->where('clientes.id', $cliente->id);
@@ -476,7 +476,7 @@ class CrediJoyaController extends Controller
     {
         $creditoId = (int) $r->query('credito_id');
         $modo      = $r->query('modo', 'parcial'); // 'parcial' | 'total'
-        $credito   = credito::findOrFail($creditoId);
+        $credito   = Credito::findOrFail($creditoId);
 
         // Cuotas ordenadas
         $cuotas = Cronograma::where('id_prestamo', $creditoId)
@@ -643,7 +643,7 @@ class CrediJoyaController extends Controller
             'modo'   => ['nullable', 'in:parcial,total'],
         ]);
 
-        $creditoActual = credito::with(['clientes', 'joyas'])->findOrFail($id);
+        $creditoActual = Credito::with(['clientes', 'joyas'])->findOrFail($id);
         $montoAprobado = (float) $creditoActual->monto_total;
         $gastos        = (float) ($r->gastos ?? 0);
         $modo          = $r->input('modo', 'parcial');
@@ -659,7 +659,7 @@ class CrediJoyaController extends Controller
 
         // Validación & suma previa (con mismas reglas que cuotasPendientes)
         $idsDeudas = collect($deudasReq)->pluck('credito_id')->map('intval')->all();
-        $deudasBD  = credito::whereIn('id', $idsDeudas)->with('joyas')->get()->keyBy('id');
+        $deudasBD  = Credito::whereIn('id', $idsDeudas)->with('joyas')->get()->keyBy('id');
 
         $totalCancelar = 0.0;
 
@@ -887,7 +887,7 @@ class CrediJoyaController extends Controller
 
     public function ticketDesembolsoCJ($prestamoId)
     {
-        $prestamo = credito::with('clientes')->findOrFail($prestamoId);
+        $prestamo = Credito::with('clientes')->findOrFail($prestamoId);
         $user     = auth()->user();
 
         $montoPrestamo = (float) ($prestamo->monto_total   ?? 0);
@@ -939,7 +939,7 @@ class CrediJoyaController extends Controller
             ->get();
 
         $tickets = $ingresos->map(function (Ingreso $ing) {
-            $prestamo    = credito::find($ing->prestamo_id);
+            $prestamo    = Credito::find($ing->prestamo_id);
             $cronograma  = Cronograma::find($ing->cronograma_id);
             $siguiente   = Cronograma::where('id_prestamo', $ing->prestamo_id)
                 ->where('numero', '>', $ing->numero_cuota)
@@ -1162,7 +1162,7 @@ class CrediJoyaController extends Controller
     public function ticketPago(Ingreso $pago)
     {
         // Crédito original del que salió el pago
-        $credito = credito::with('joyas','clientes')->findOrFail($pago->prestamo_id);
+        $credito = Credito::with('joyas','clientes')->findOrFail($pago->prestamo_id);
 
         // Cliente
         $cc = CreditoCliente::with('clientes')
@@ -1176,7 +1176,7 @@ class CrediJoyaController extends Controller
         $nuevo = null;
         $nuevaCuota = null;
         if (!empty($pago->nuevo_id)) {
-            $nuevo = credito::find($pago->nuevo_id);
+            $nuevo = Credito::find($pago->nuevo_id);
             if ($nuevo) {
                 $nuevaCuota = Cronograma::where('id_prestamo', $nuevo->id)
                     ->orderBy('numero', 'asc')->first();

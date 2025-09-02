@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\credito;
-use App\Models\cliente;
+use App\Models\Credito;
+use App\Models\Cliente;
 use App\Models\CreditoCliente;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -42,7 +42,7 @@ class UpdateController extends Controller
         DB::beginTransaction();
         try {
             // Actualización del préstamo
-            $prestamo = credito::findOrFail($id);
+            $prestamo = Credito::findOrFail($id);
             $prestamo->tipo = $request->tipo_credito;
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
@@ -336,7 +336,7 @@ class UpdateController extends Controller
 
     protected function updateClienteYcronograma($prestamo, $request)
     {
-        $cliente = cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
+        $cliente = Cliente::where('documento_identidad', $request->documento_identidad)->where('activo', 1)->first();
         if ($cliente) {
             CreditoCliente::where('prestamo_id', $prestamo->id)->delete();
             $credito_cliente = CreditoCliente::updateOrCreate(
@@ -510,7 +510,7 @@ class UpdateController extends Controller
         }
         DB::beginTransaction();
         try {
-            $prestamo = credito::findOrFail($id);
+            $prestamo = Credito::findOrFail($id);
             $prestamo->tipo = $request->tipo_credito;
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
@@ -585,7 +585,7 @@ class UpdateController extends Controller
         }
         DB::beginTransaction();
         try {
-            $prestamo = credito::findOrFail($id);
+            $prestamo = Credito::findOrFail($id);
             $prestamo->tipo = $request->tipo_credito;
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
@@ -688,7 +688,7 @@ class UpdateController extends Controller
 
         DB::beginTransaction();
         try {
-            $prestamo = credito::findOrFail($id);
+            $prestamo = Credito::findOrFail($id);
             $prestamo->tipo = $request->tipo_credito;
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;
@@ -764,7 +764,7 @@ class UpdateController extends Controller
 
         DB::beginTransaction();
         try {
-            $prestamo = credito::findOrFail($id);
+            $prestamo = Credito::findOrFail($id);
             $prestamo->tipo = $request->tipo_credito;
             $prestamo->producto = $request->tipo_producto;
             $prestamo->subproducto = $request->subproducto;

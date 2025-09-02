@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\cliente;
+use App\Models\Cliente;
 use App\Models\Departamento;
 use App\Models\Provincia;
 use App\Models\Distrito;
@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
-class clienteController extends Controller
+class ClienteController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -374,7 +374,7 @@ class clienteController extends Controller
     public function destroy(string $id)
     {
         // Buscar al cliente por su ID
-        $cliente = cliente::find($id);
+        $cliente = Cliente::find($id);
 
         if (!$cliente) {
             // Si el cliente no existe, redireccionar con un mensaje de error
@@ -482,7 +482,7 @@ class clienteController extends Controller
     public function agregarpordni(Request $request)
     {
         $dni = $request->input('documento_identidad');
-        $cliente = cliente::where('documento_identidad', $dni)->first(['nombre', 'documento_identidad', 'telefono', 'direccion', 'profesion']);
+        $cliente = Cliente::where('documento_identidad', $dni)->first(['nombre', 'documento_identidad', 'telefono', 'direccion', 'profesion']);
 
         if ($cliente) {
             return response()->json($cliente);

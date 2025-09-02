@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\credito;
+use App\Models\Credito;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -22,7 +22,7 @@ class CreditosGrupalesExport implements FromCollection, WithHeadings, WithMappin
         $roles = $user->roles->pluck('name');
 
         if ($roles->contains('Administrador')) {
-            $creditos = credito::with([
+            $creditos = Credito::with([
                 'clientes',
                 'creditoClientes.clientes',
                 'user.sucursal',
@@ -40,7 +40,7 @@ class CreditosGrupalesExport implements FromCollection, WithHeadings, WithMappin
             ->where('producto', 'grupal')
             ->get();
         } else {
-            $creditos = credito::with([
+            $creditos = Credito::with([
                 'clientes',
                 'creditoClientes.clientes',
                 'user.sucursal',

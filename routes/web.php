@@ -11,9 +11,9 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\IngresoExtraController;
 use App\Http\Controllers\BovedaController;
-use App\Http\Controllers\clienteController;
+use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CrediJoyaController;
-use App\Http\Controllers\creditoController;
+use App\Http\Controllers\CreditoController;
 use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\CtsUsuarioController;
 use App\Http\Controllers\CuentasController;
@@ -63,55 +63,55 @@ Route::get('/admin/usuarios/{id}/edit', [UsuarioController::class, 'edit'])->nam
 Route::put('/admin/usuarios/{id}', [UsuarioController::class, 'update'])->name('usuarios.update')->middleware('auth');
 Route::delete('/admin/usuarios/{id}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy')->middleware('auth');
 
-Route::get('/admin/creditos', [creditoController::class, 'index'])->name('creditos.index')->middleware('auth');
+Route::get('/admin/creditos', [CreditoController::class, 'index'])->name('creditos.index')->middleware('auth');
 
-Route::get('/admin/creditos/simulador', [creditoController::class, 'viewSimulador'])->name('creditos.simulador')->middleware('auth');
+Route::get('/admin/creditos/simulador', [CreditoController::class, 'viewSimulador'])->name('creditos.simulador')->middleware('auth');
 //ir al credito nuevo
-Route::get('/admin/creditos/createnuevo', [creditoController::class, 'createnuevo'])->name('creditos.createnuevo')->middleware('auth');
-Route::get('/admin/creditos/proyecciones/{id}', [creditoController::class, 'proyecciones'])->name('creditos.proyecciones')->middleware('auth');
-Route::post('/admin/creditos/store', [creditoController::class, 'store'])->name('creditos.store')->middleware('auth');
-Route::get('/admin/creditos/aprobar', [creditoController::class, 'viewaprobar'])->name('creditos.aprobar')->middleware('auth');
-Route::get('/admin/creditos/supervisar', [creditoController::class, 'viewsupervisar'])->name('creditos.supervisar')->middleware('auth');
-Route::get('/admin/creditos/{id}/edit', [creditoController::class, 'edit'])->name('creditos.edit')->middleware('auth');
-Route::put('/admin/creditos/{id}', [creditoController::class, 'update'])->name('creditos.update')->middleware('auth');
-Route::delete('/admin/creditos/{id}', [creditoController::class, 'destroy'])->name('creditos.destroy')->middleware('auth');
+Route::get('/admin/creditos/createnuevo', [CreditoController::class, 'createnuevo'])->name('creditos.createnuevo')->middleware('auth');
+Route::get('/admin/creditos/proyecciones/{id}', [CreditoController::class, 'proyecciones'])->name('creditos.proyecciones')->middleware('auth');
+Route::post('/admin/creditos/store', [CreditoController::class, 'store'])->name('creditos.store')->middleware('auth');
+Route::get('/admin/creditos/aprobar', [CreditoController::class, 'viewaprobar'])->name('creditos.aprobar')->middleware('auth');
+Route::get('/admin/creditos/supervisar', [CreditoController::class, 'viewsupervisar'])->name('creditos.supervisar')->middleware('auth');
+Route::get('/admin/creditos/{id}/edit', [CreditoController::class, 'edit'])->name('creditos.edit')->middleware('auth');
+Route::put('/admin/creditos/{id}', [CreditoController::class, 'update'])->name('creditos.update')->middleware('auth');
+Route::delete('/admin/creditos/{id}', [CreditoController::class, 'destroy'])->name('creditos.destroy')->middleware('auth');
 
-Route::get('/admin/creditos/comercio', [creditoController::class, 'comercio'])->name('creditos.comercio')->middleware('auth');
-Route::get('/admin/creditos/produccion', [creditoController::class, 'produccion'])->name('creditos.produccion')->middleware('auth');
-Route::get('/admin/creditos/servicio', [creditoController::class, 'servicio'])->name('creditos.servicio')->middleware('auth');
-Route::get('/admin/creditos/grupal', [creditoController::class, 'grupal'])->name('creditos.grupal')->middleware('auth');
-Route::get('/admin/creditos/agricola', [creditoController::class, 'agricola'])->name('creditos.agricola')->middleware('auth');
-Route::get('/admin/creditos/joya', [creditoController::class, 'joya'])->name('creditos.joya')->middleware('auth');
+Route::get('/admin/creditos/comercio', [CreditoController::class, 'comercio'])->name('creditos.comercio')->middleware('auth');
+Route::get('/admin/creditos/produccion', [CreditoController::class, 'produccion'])->name('creditos.produccion')->middleware('auth');
+Route::get('/admin/creditos/servicio', [CreditoController::class, 'servicio'])->name('creditos.servicio')->middleware('auth');
+Route::get('/admin/creditos/grupal', [CreditoController::class, 'grupal'])->name('creditos.grupal')->middleware('auth');
+Route::get('/admin/creditos/agricola', [CreditoController::class, 'agricola'])->name('creditos.agricola')->middleware('auth');
+Route::get('/admin/creditos/joya', [CreditoController::class, 'joya'])->name('creditos.joya')->middleware('auth');
 //traer descricpones
-Route::get('/admin/credito/descripcion', [creditoController::class, 'getdescripciones'])->name('creditos.getdescripciones')->middleware('auth');
+Route::get('/admin/credito/descripcion', [CreditoController::class, 'getdescripciones'])->name('creditos.getdescripciones')->middleware('auth');
 Route::get('/admin/cronograma/{id}/cuotas', [CronogramaController::class, 'vercuota'])->name('credito.cuotas')->middleware('auth');
-Route::get('/admin/creditoinfo/{id}/', [creditoController::class, 'show'])->name('credito.info')->middleware('auth');
+Route::get('/admin/creditoinfo/{id}/', [CreditoController::class, 'show'])->name('credito.info')->middleware('auth');
 
-Route::get('/admin/creditos/buscardni', [clienteController::class, 'buscarPorDocumento'])->name('creditos.buscardni')->middleware('auth');
-Route::get('/admin/creditos/agregardni', [clienteController::class, 'agregarpordni'])->name('creditos.agregardni')->middleware('auth');
+Route::get('/admin/creditos/buscardni', [ClienteController::class, 'buscarPorDocumento'])->name('creditos.buscardni')->middleware('auth');
+Route::get('/admin/creditos/agregardni', [ClienteController::class, 'agregarpordni'])->name('creditos.agregardni')->middleware('auth');
 // Route::get('/admin/usuarios/{id}', [UsuarioController::class, 'show'])->name('usuarios.show')->middleware('auth');
 
 
 
-Route::get('/admin/clientes', [clienteController::class, 'index'])->name('clientes.index')->middleware('auth');
-Route::get('/admin/clientes/create', [clienteController::class, 'create'])->name('clientes.create')->middleware('auth');
-Route::post('/admin/clientes', [clienteController::class, 'store'])->name('clientes.store')->middleware('auth');
-Route::get('/admin/clientes/{id}/edit', [clienteController::class, 'edit'])->name('clientes.edit')->middleware('auth');
-Route::put('/admin/clientes/{id}', [clienteController::class, 'update'])->name('clientes.update')->middleware('auth');
-Route::delete('/admin/clientes/{id}', [clienteController::class, 'destroy'])->name('clientes.destroy')->middleware('auth');
+Route::get('/admin/clientes', [ClienteController::class, 'index'])->name('clientes.index')->middleware('auth');
+Route::get('/admin/clientes/create', [ClienteController::class, 'create'])->name('clientes.create')->middleware('auth');
+Route::post('/admin/clientes', [ClienteController::class, 'store'])->name('clientes.store')->middleware('auth');
+Route::get('/admin/clientes/{id}/edit', [ClienteController::class, 'edit'])->name('clientes.edit')->middleware('auth');
+Route::put('/admin/clientes/{id}', [ClienteController::class, 'update'])->name('clientes.update')->middleware('auth');
+Route::delete('/admin/clientes/{id}', [ClienteController::class, 'destroy'])->name('clientes.destroy')->middleware('auth');
 
-Route::get('/admin/clientes/evaluar', [clienteController::class, 'viewevaluar'])->name('clientes.evaluar')->middleware('auth');
-Route::get('/admin/clientes/ratios', [clienteController::class, 'viewratios'])->name('clientes.ratios')->middleware('auth');
+Route::get('/admin/clientes/evaluar', [ClienteController::class, 'viewevaluar'])->name('clientes.evaluar')->middleware('auth');
+Route::get('/admin/clientes/ratios', [ClienteController::class, 'viewratios'])->name('clientes.ratios')->middleware('auth');
 
-Route::get('/admin/caja/arqueo', [creditoController::class, 'viewarqueo'])->name('caja.arqueo')->middleware('auth');
-Route::get('/admin/caja/habilitar', [creditoController::class, 'viewhabilitarcaja'])->name('caja.abrir1')->middleware('auth');
-Route::get('/admin/caja/pagarcredito', [creditoController::class, 'viewpagarcredito'])->name('caja.pagarcredito')->middleware('auth');
-Route::get('/admin/caja/pagares', [creditoController::class, 'viewpagares'])->name('caja.pagares')->middleware('auth');
-Route::get('/admin/caja/pagar/{id}', [creditoController::class, 'pagar'])->name('caja.pagar')->middleware('auth');
-Route::get('/admin/caja/cobrar', [creditoController::class, 'viewcobrar'])->name('caja.cobrar')->middleware('auth');
-Route::get('/admin/caja/ultima-transaccion/{caja}', [creditoController::class, 'ultimaTransaccion'])->name('caja.ultimaTransaccion')->middleware('auth');
-Route::post('/admin/caja/abrir', [creditoController::class, 'abrirCaja'])->name('caja.abrir')->middleware('auth');
-Route::post('/admin/caja/guardar-arqueo', [creditoController::class, 'guardarArqueo'])->name('caja.guardarArqueo')->middleware('auth');
+Route::get('/admin/caja/arqueo', [CreditoController::class, 'viewarqueo'])->name('caja.arqueo')->middleware('auth');
+Route::get('/admin/caja/habilitar', [CreditoController::class, 'viewhabilitarcaja'])->name('caja.abrir1')->middleware('auth');
+Route::get('/admin/caja/pagarcredito', [CreditoController::class, 'viewpagarcredito'])->name('caja.pagarcredito')->middleware('auth');
+Route::get('/admin/caja/pagares', [CreditoController::class, 'viewpagares'])->name('caja.pagares')->middleware('auth');
+Route::get('/admin/caja/pagar/{id}', [CreditoController::class, 'pagar'])->name('caja.pagar')->middleware('auth');
+Route::get('/admin/caja/cobrar', [CreditoController::class, 'viewcobrar'])->name('caja.cobrar')->middleware('auth');
+Route::get('/admin/caja/ultima-transaccion/{caja}', [CreditoController::class, 'ultimaTransaccion'])->name('caja.ultimaTransaccion')->middleware('auth');
+Route::post('/admin/caja/abrir', [CreditoController::class, 'abrirCaja'])->name('caja.abrir')->middleware('auth');
+Route::post('/admin/caja/guardar-arqueo', [CreditoController::class, 'guardarArqueo'])->name('caja.guardarArqueo')->middleware('auth');
 
 
 //CTS
@@ -132,10 +132,10 @@ Route::post('/admin/cts/guardarpermiso', [InicioDesembolsoController::class, 'st
 Route::get('/admin/cts/cerrarpermiso/{id}', [InicioDesembolsoController::class, 'cerrar'])->name('permiso-cts.cerrar')->middleware('auth');
 
 
-Route::get('/admin/cobranza/cargarcompromiso', [creditoController::class, 'viewcargarcompromiso'])->name('cobranza.cargarcompromiso')->middleware('auth');
-Route::get('/admin/cobranza/carta', [creditoController::class, 'viewcarta'])->name('cobranza.carta')->middleware('auth');
-Route::get('/admin/cobranza/generarcompromiso', [creditoController::class, 'viewgenerarcompromiso'])->name('cobranza.generarcompromiso')->middleware('auth');
-Route::get('/admin/cobranza/generarnotificacion', [creditoController::class, 'viewgenerarnotificacion'])->name('cobranza.generarnotificacion')->middleware('auth');
+Route::get('/admin/cobranza/cargarcompromiso', [CreditoController::class, 'viewcargarcompromiso'])->name('cobranza.cargarcompromiso')->middleware('auth');
+Route::get('/admin/cobranza/carta', [CreditoController::class, 'viewcarta'])->name('cobranza.carta')->middleware('auth');
+Route::get('/admin/cobranza/generarcompromiso', [CreditoController::class, 'viewgenerarcompromiso'])->name('cobranza.generarcompromiso')->middleware('auth');
+Route::get('/admin/cobranza/generarnotificacion', [CreditoController::class, 'viewgenerarnotificacion'])->name('cobranza.generarnotificacion')->middleware('auth');
 
 Route::get('/admin/reportes/creditoindividual', [ReporteController::class, 'viewreportecreditoindividual'])->name('reporte.creditoindividual')->middleware('auth');
 Route::get('/admin/reportes/creditogrupal', [ReporteController::class, 'viewreportecreditogrupal'])->name('reporte.creditogrupal')->middleware('auth');
@@ -144,8 +144,8 @@ Route::get('/admin/reportes/interesesmensual', [ReporteController::class, 'viewr
 Route::get('/admin/reportes/prestamosactivos', [ReporteController::class, 'viewprestamosactivos'])->name('reporte.prestamosactivos')->middleware('auth');
 Route::get('/admin/reportes/prestamosvencidos', [ReporteController::class, 'viewprestamosvencidos'])->name('reporte.prestamosvencidos')->middleware('auth');
 
-Route::get('/admin/transacciones/egresos', [creditoController::class, 'viewegresos'])->name('transacciones.egresos')->middleware('auth');
-Route::get('/admin/transacciones/ingresos', [creditoController::class, 'viewingresos'])->name('transacciones.ingresos')->middleware('auth');
+Route::get('/admin/transacciones/egresos', [CreditoController::class, 'viewegresos'])->name('transacciones.egresos')->middleware('auth');
+Route::get('/admin/transacciones/ingresos', [CreditoController::class, 'viewingresos'])->name('transacciones.ingresos')->middleware('auth');
 //rutas de  update
 Route::post('/admin/creditos/updatecomercio/{id}', [UpdateController::class, 'updatecomercio'])->name('creditos.updatecomercio')->middleware('auth');
 Route::post('/admin/creditos/updategrupal/{id}', [UpdateController::class, 'updateCreditoGrupal'])->name('creditos.updatecreditogrupal')->middleware('auth');
@@ -182,8 +182,8 @@ Route::post('/inicio-operaciones/start/{id}', [IniciarOpeController::class, 'sta
 Route::post('/inicio-operaciones/close', [IniciarOpeController::class, 'close'])->name('inicio_operaciones.close')->middleware('auth');
 
 
-Route::get('/getProvincias/{dep_id}', [clienteController::class, 'getProvincias'])->name('clientes.getProvincias')->middleware('auth');
-Route::get('/getDistritos/{prov_id}', [clienteController::class, 'getDistritos'])->name('clientes.getDistritos')->middleware('auth');
+Route::get('/getProvincias/{dep_id}', [ClienteController::class, 'getProvincias'])->name('clientes.getProvincias')->middleware('auth');
+Route::get('/getDistritos/{prov_id}', [ClienteController::class, 'getDistritos'])->name('clientes.getDistritos')->middleware('auth');
 
 //para exportar excel
 Route::get('/admin/reportes/clientes/export', [ExcelController::class, 'export'])->name('reporte.clientes.export')->middleware('auth');
@@ -191,9 +191,9 @@ Route::get('/admin/reportes/credito/exportcreditoactivo', [ExcelController::clas
 Route::get('/admin/reportes/credito/exportarcreditosindividual', [ExcelController::class, 'exportarCreditoIndividual'])->name('reporte.clientes.exportcreditoindividual')->middleware('auth');
 Route::get('/admin/reportes/credito/exportarcreditosgrupal', [ExcelController::class, 'exportarCreditoGrupal'])->name('reporte.clientes.exportcreditogrupal')->middleware('auth');
 
-Route::get('/admin/creditos/vercuotaspago/{id}', [creditoController::class, 'verpagocuota'])->name('creditos.verpagocuota')->middleware('auth');
-Route::post('/admin/creditos/pagocuota', [creditoController::class, 'pagocuota'])->name('creditos.pagocuota')->middleware('auth');
-Route::post('/admin/creditos/pagocuotagrupal', [creditoController::class, 'pagoGrupal'])->name('creditos.pagogrupal')->middleware('auth');
+Route::get('/admin/creditos/vercuotaspago/{id}', [CreditoController::class, 'verpagocuota'])->name('creditos.verpagocuota')->middleware('auth');
+Route::post('/admin/creditos/pagocuota', [CreditoController::class, 'pagocuota'])->name('creditos.pagocuota')->middleware('auth');
+Route::post('/admin/creditos/pagocuotagrupal', [CreditoController::class, 'pagoGrupal'])->name('creditos.pagogrupal')->middleware('auth');
 Route::get('/admin/generar-ticket-pago/{id}/{diferencia}', [PDFController::class, 'generarTicketDePago'])->name('generar.ticket.pago');
 Route::get('/admin/generar-ticket-pagogrupal/{array}', [PDFController::class, 'generarTicketDePagogrupal'])->name('generar.ticket.pagogrupal');
 
@@ -233,10 +233,10 @@ Route::get('/admin/boveda/{id}/movimientos/{movimientoId}/edit', [BovedaControll
 Route::post('/admin/boveda/{id}/movimientos/{movimientoId}', [BovedaController::class, 'actualizarMovimiento'])->name('boveda.movimientos.update')->middleware('auth');
 Route::delete('/admin/boveda/{id}/movimientos/{movimientoId}', [BovedaController::class, 'eliminarMovimiento'])->name('boveda.movimientos.destroy')->middleware('auth');
 //Pagos
-Route::post('/admin/credito/verpagototal', [creditoController::class, 'verpagototalindividual'])->name('credito.verpagototalindividual')->middleware('auth');
-Route::post('/admin/credito/verpagototalgrupal', [creditoController::class, 'verpagototalgrupal'])->name('credito.verpagototalgrupal')->middleware('auth');
-Route::post('/credito/confirmar-pago-individual', [creditoController::class, 'confirmarPagoIndividual'])->name('credito.confirmarPagoIndividual')->middleware('auth');
-Route::post('/credito/confirmar-pago-grupal', [creditoController::class, 'confirmarPagoGrupal'])->name('credito.confirmarPagoGrupal')->middleware('auth');
+Route::post('/admin/credito/verpagototal', [CreditoController::class, 'verpagototalindividual'])->name('credito.verpagototalindividual')->middleware('auth');
+Route::post('/admin/credito/verpagototalgrupal', [CreditoController::class, 'verpagototalgrupal'])->name('credito.verpagototalgrupal')->middleware('auth');
+Route::post('/credito/confirmar-pago-individual', [CreditoController::class, 'confirmarPagoIndividual'])->name('credito.confirmarPagoIndividual')->middleware('auth');
+Route::post('/credito/confirmar-pago-grupal', [CreditoController::class, 'confirmarPagoGrupal'])->name('credito.confirmarPagoGrupal')->middleware('auth');
 
 //contabilidad
 Route::get('/admin/cuentas', [CuentasController::class, 'index'])->name('cuentas.index')->middleware('auth');
@@ -245,18 +245,18 @@ Route::get('/cuentas/{id}/edit', [CuentasController::class, 'edit'])->name('cuen
 Route::put('/cuentas/{id}', [CuentasController::class, 'update'])->name('cuentas.update')->middleware('auth');
 Route::delete('/cuentas/{id}', [CuentasController::class, 'destroy'])->name('cuentas.destroy')->middleware('auth');
 
-Route::post('/calcular-cuota-pendiente', [creditoController::class, 'calcularCuotaPendiente'])->name('calcular.cuota.pendiente')->middleware('auth');
-Route::post('/generarcronogram/temp/', [creditoController::class, 'generarNuevoCronograma'])->name('generar.nuevo.cronograma');
-Route::post('/generarcronogram/final', [creditoController::class, 'amortizarCapital'])->name('amortizar.capital')->middleware('auth');
+Route::post('/calcular-cuota-pendiente', [CreditoController::class, 'calcularCuotaPendiente'])->name('calcular.cuota.pendiente')->middleware('auth');
+Route::post('/generarcronogram/temp/', [CreditoController::class, 'generarNuevoCronograma'])->name('generar.nuevo.cronograma');
+Route::post('/generarcronogram/final', [CreditoController::class, 'amortizarCapital'])->name('amortizar.capital')->middleware('auth');
 Route::get('/vernuevocronograma/{id}', [PDFController::class, 'generarNuevoCronogramaPDF'])->name('generar.pdf.nuevo cronograma');
 Route::get('/admin/generar-ticket-pagototal-individual/{array}', [PDFController::class, 'Pagototalindividual'])->name('generar.pdf.Pagototalindividual');
 
 //Reprogramacion de credito
-Route::post('/solicitar/reprogramacion', [creditoController::class, 'solicitarReprogramacion'])->name('solicitar.reprogramacion')->middleware('auth');
+Route::post('/solicitar/reprogramacion', [CreditoController::class, 'solicitarReprogramacion'])->name('solicitar.reprogramacion')->middleware('auth');
 Route::post('/reprogramaciones/store', [ReprogramacionController::class, 'reprogramacionStore'])->name('reprogramacion.store')->middleware('auth');
 Route::get('/admin/creditos/aprobarreprogramados', [ReprogramacionController::class, 'viewreprogramacion'])->name('reprogramacion.index')->middleware('auth');
 Route::post('/reprogramaciones/process', [ReprogramacionController::class, 'process'])->name('reprogramacion.process')->middleware('auth');
-Route::post('/generarcronogramreprogramado', [creditoController::class, 'generarreprogramacion'])->name('reprogramacion.exitosa')->middleware('auth');
+Route::post('/generarcronogramreprogramado', [CreditoController::class, 'generarreprogramacion'])->name('reprogramacion.exitosa')->middleware('auth');
 Route::get('/vernuevocronogramareprogramado/{id}', [PDFController::class, 'generarNuevoCronogramaReprogramadoPDF'])->name('generar.pdf.nuevo cronograma')->middleware('auth');
 // Vista CRUD
 Route::get('/admin/precios-oro', [GoldPriceController::class, 'index'])->name('preciosoro.index')->middleware('auth');

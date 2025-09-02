@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\credito;
+use App\Models\Credito;
 use App\Models\CorrelativoCredito;
 
 class FillCorrelativosForActiveGroupLoans extends Migration
@@ -11,7 +11,7 @@ class FillCorrelativosForActiveGroupLoans extends Migration
     public function up()
     {
         // Retrieve all paid group loans sorted by the oldest first
-        $creditos = credito::where('estado', 'pagado')
+        $creditos = Credito::where('estado', 'pagado')
                     ->where('producto', 'grupal')
                     ->where('activo', 1)
                     ->orderBy('fecha_desembolso')

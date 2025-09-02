@@ -7,8 +7,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
-use App\Models\credito;
-use App\Models\cliente;
+use App\Models\Credito;
+use App\Models\Cliente;
 use App\Models\CreditoCliente;
 use App\Models\CtsUsuario;
 use Illuminate\Support\Facades\DB;
@@ -221,7 +221,7 @@ class UsuarioController extends Controller
     public function actualizarCreditosTerminados()
     {
         // Obtener todos los créditos que actualmente están en estado "pagado"
-        $creditos = credito::where('estado', 'pagado')->get();
+        $creditos = Credito::where('estado', 'pagado')->get();
 
         foreach ($creditos as $credito) {
             $allPaid = true;

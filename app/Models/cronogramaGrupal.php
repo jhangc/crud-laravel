@@ -21,6 +21,6 @@ class CronogramaGrupal extends Model
 
     public function prestamo()
     {
-        return $this->belongsTo(credito::class);
+        return $this->belongsTo(Credito::class);
     }
 }

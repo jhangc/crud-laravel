@@ -18,12 +18,12 @@ class CreditoCliente extends Model
 
     public function prestamos()
     {
-        return $this->belongsToMany(credito::class, 'prestamo_id', 'cliente_id');
+        return $this->belongsToMany(Credito::class, 'prestamo_id', 'cliente_id');
     }
 
     public function clientes()
     {
-        return $this->belongsTo(cliente::class, 'cliente_id','id');
+        return $this->belongsTo(Cliente::class, 'cliente_id','id');
     }
     //no mover  metodos  , crear  nuevos  , puedes joder  otras funciones
     

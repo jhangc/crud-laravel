@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class cliente extends Model
+class Cliente extends Model
 {
     use HasFactory;
 
@@ -44,7 +44,7 @@ class cliente extends Model
     
     public function creditos()
     {
-        return $this->belongsToMany(credito::class, 'Credito_Cliente', 'cliente_id', 'prestamo_id');
+        return $this->belongsToMany(Credito::class, 'Credito_Cliente', 'cliente_id', 'prestamo_id');
     }
 
     public function distrito()
@@ -54,7 +54,7 @@ class cliente extends Model
 
     public function totalcreditos()
     {
-        return $this->hasManyThrough(credito::class, CreditoCliente::class, 'cliente_id', 'id', 'id', 'prestamo_id');
+        return $this->hasManyThrough(Credito::class, CreditoCliente::class, 'cliente_id', 'id', 'id', 'prestamo_id');
     }
 
 }

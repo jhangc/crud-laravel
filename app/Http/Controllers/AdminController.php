@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\credito;
+use App\Models\Credito;
 use App\Models\Cronograma;
 use App\Models\Caja;
-use App\Models\cliente;
+use App\Models\Cliente;
 use App\Models\Ingreso;
 use App\Models\Egreso;
 use App\Models\CreditoCliente;
@@ -37,14 +37,14 @@ class AdminController extends Controller
         // Verificar si el usuario tiene alguno de los roles
         if ($roles->contains('Asesor de creditos')) {
             // Obtener los IDs de créditos con estado pagado y registrados por el asesor de crédito actual
-            $idsCreditosPagados = credito::where('estado', 'pagado')
+            $idsCreditosPagados = Credito::where('estado', 'pagado')
                 ->where('user_id', $user->id)
                 ->pluck('id')
                 ->toArray();
 
             $creditosPagadosCount = count($idsCreditosPagados);
         } else {
-            $idsCreditosPagados = credito::where('estado', 'pagado')->pluck('id')->toArray();
+            $idsCreditosPagados = Credito::where('estado', 'pagado')->pluck('id')->toArray();
             $creditosPagadosCount = count($idsCreditosPagados);
         }
 
@@ -59,7 +59,7 @@ class AdminController extends Controller
             ->count();
 
         // Obtener el conteo de clientes activos
-        $clientesActivosCount = cliente::where('activo', 1)->count();
+        $clientesActivosCount = Cliente::where('activo', 1)->count();
 
         // Calcular la suma de todos los egresos menos los ingresos
         $totalIngresos = Ingreso::whereNotNull('cliente_id')->sum('monto'); // Ajusta 'monto' según el nombre de tu campo de cantidad en la tabla ingresos
@@ -136,7 +136,7 @@ class AdminController extends Controller
 
     public function aprobar(Request $request)
     {
-        $credito = credito::find($request->id);
+        $credito = Credito::find($request->id);
         $credito->estado = 'aprobado';
         $credito->comentario_administrador = $request->comentarioadministrador;
         $credito->save();
@@ -150,7 +150,7 @@ class AdminController extends Controller
 
     public function rechazar(Request $request)
     {
-        $credito = credito::find($request->id);
+        $credito = Credito::find($request->id);
         $credito->estado = 'rechazado';
         $credito->comentario_administrador = $request->comentarioadministrador;
         $credito->save();
@@ -164,7 +164,7 @@ class AdminController extends Controller
 
     public function observar(Request $request)
     {
-        $credito = credito::find($request->id);
+        $credito = Credito::find($request->id);
         $credito->estado = 'observado';
         $credito->comentario_administrador = $request->comentarioadministrador;
         $credito->save();
@@ -178,7 +178,7 @@ class AdminController extends Controller
 
     public function guardar(Request $request)
     {
-        $credito = credito::find($request->id);
+        $credito = Credito::find($request->id);
         if ($request->estado == 'rechazado por sistema') {
             $credito->estado = 'rechazado por sistema';
         } else {

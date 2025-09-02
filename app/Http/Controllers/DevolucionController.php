@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\credito;
+use App\Models\Credito;
 use App\Models\Cronograma;
 use App\Models\CredijoyaJoya;
 use App\Models\IngresoExtra;
@@ -20,7 +20,7 @@ class DevolucionController extends Controller
     }
 
     public function list(Request $r) {
-        $q = credito::with(['joyas' => function($qq){
+        $q = Credito::with(['joyas' => function($qq){
                     $qq->where('devuelta', 1);
                 }, 'clientes'])
             ->where('estado','terminado')
@@ -181,7 +181,7 @@ class DevolucionController extends Controller
         $clienteNombre = $cc->clientes?->nombre ?? '---';
 
         // Crédito y estado de custodia (para mostrar saldo)
-        $credito = \App\Models\credito::find($ingresoExtra->serie_documento);
+        $credito = \App\Models\Credito::find($ingresoExtra->serie_documento);
         $estado  = $credito ? $this->calcularEstadoCustodia($credito) : [
             'base'=>0,'porcentaje_mensual'=>0,'dias_cobra'=>0,'acumulado'=>0,'pagado'=>0,'pendiente'=>0,'desde_dia'=>16
         ];

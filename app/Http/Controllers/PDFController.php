@@ -9,10 +9,10 @@ use Carbon\Carbon;
 use Luecano\NumeroALetras\NumeroALetras;
 use App\Models\CorrelativoPagare;
 
-use App\Models\credito;
+use App\Models\Credito;
 use App\Models\CreditoCliente;
 use App\Models\Cronograma;
-use App\Models\cliente;
+use App\Models\Cliente;
 use App\Models\CorrelativoCredito;
 use App\Models\DepositoCts;
 use App\Models\Egreso;
@@ -32,7 +32,7 @@ class PdfController extends Controller
     public function generatecronogramaPDF(Request $request, $id)
     {
         $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         $cuotas = Cronograma::where('id_prestamo', $id)->first();
 
         $inventarioterminado = \App\Models\Inventario::where('id_prestamo', $id)
@@ -85,7 +85,7 @@ class PdfController extends Controller
 
     public function generatecronogramagrupalPDF(Request $request, $id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         $cuotas = Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
         $responsable = \App\Models\User::find($prestamo->user_id);
@@ -145,7 +145,7 @@ class PdfController extends Controller
 
     public function generatecronogramaindividualPDF(Request $request, $id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         $cuotas = Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
         $responsable = \App\Models\User::find($prestamo->user_id);
@@ -214,7 +214,7 @@ class PdfController extends Controller
 
     public function generatecontratogrupalPDF(Request $request, $id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         if (!$prestamo) {
             return response()->json(['error' => 'Crédito no encontrado'], 404);
         }
@@ -249,7 +249,7 @@ class PdfController extends Controller
 
     public function generatecrontratoindividualPDF(Request $request, $id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         $cuotas = Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = CreditoCliente::where('prestamo_id', $id)->with('clientes')->first(); // Obtener un solo cliente
         //$responsable = auth()->user();
@@ -272,7 +272,7 @@ class PdfController extends Controller
     }
     public function generatecronogramaindividualC(Request $request, $id)
     {
-        $prestamo = credito::with(['clientes', 'joyas'])->findOrFail($id);
+        $prestamo = Credito::with(['clientes', 'joyas'])->findOrFail($id);
         $cliente  = $prestamo->clientes->first();
         $user     = auth()->user();
         $sucursal = \App\Models\Sucursal::find($user->sucursal_id) ?? \App\Models\Sucursal::first();
@@ -354,7 +354,7 @@ class PdfController extends Controller
 
     public function generatecrontratoindividualC(Request $request, $id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         $cuotas = Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = CreditoCliente::where('prestamo_id', $id)->with('clientes')->first(); // Obtener un solo cliente
         //$responsable = auth()->user();
@@ -387,7 +387,7 @@ class PdfController extends Controller
 
     public function generatecartillaPDF(Request $request, $id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         $cuotas = Cronograma::where('id_prestamo', $id)->get();
         $credito_cliente = CreditoCliente::where('prestamo_id', $id)->get();
         $responsable = auth()->user();
@@ -418,7 +418,7 @@ class PdfController extends Controller
 
     public function generatepagarePDF(Request $request, $id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         if (!$prestamo) {
             return response()->json(['error' => 'Crédito no encontrado'], 404);
         }
@@ -637,7 +637,7 @@ class PdfController extends Controller
     public function generatePDF(Request $request, $id)
     {
         $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
-        $prestamo = \App\Models\credito::find($id);
+        $prestamo = \App\Models\Credito::find($id);
         $proyecciones = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
         $deudas = \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
         $gastosOperativos = \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
@@ -1283,7 +1283,7 @@ class PdfController extends Controller
     }
     public function generateticket($id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         $creditos = CreditoCliente::where('prestamo_id', $id)->get();
 
         // Obtener el usuario autenticado
@@ -1332,8 +1332,8 @@ class PdfController extends Controller
             return response()->json(['error' => 'Pago no encontrado.'], 404);
         }
 
-        $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
-        $cliente = \App\Models\cliente::find($ingreso->cliente_id);
+        $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
+        $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
         $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
 
         // Obtener la siguiente cuota
@@ -1553,7 +1553,7 @@ class PdfController extends Controller
 
     public function generatedetalleclientePDF(Request $request, $id)
     {
-        $cliente = cliente::find($id);
+        $cliente = Cliente::find($id);
         if (!$cliente) {
             return response()->json(['error' => 'Cliente no encontrado'], 404);
         }
@@ -1579,8 +1579,8 @@ class PdfController extends Controller
         $data = [];
 
         foreach ($ingresos as $ingreso) {
-            $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
-            $cliente = \App\Models\cliente::find($ingreso->cliente_id);
+            $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
+            $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
             $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
 
             // Obtener la siguiente cuota
@@ -1686,7 +1686,7 @@ class PdfController extends Controller
 
     public function generarNuevoCronogramaPDF($id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         if (!$prestamo) {
             abort(404, "Crédito no encontrado.");
         }
@@ -1775,7 +1775,7 @@ class PdfController extends Controller
 
     public function generarNuevoCronogramaReprogramadoPDF($id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         if (!$prestamo) {
             abort(404, "Crédito no encontrado.");
         }
@@ -1900,8 +1900,8 @@ class PdfController extends Controller
         }
         $ingreso = $ingresos->first();
         // dd($ingreso);
-        $prestamo = \App\Models\credito::find($ingreso->prestamo_id);
-        $cliente = \App\Models\cliente::find($ingreso->cliente_id);
+        $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
+        $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
         $total_pago = $ingresos->sum('monto');
         $total_mora = $ingresos->sum('monto_mora');
         $total_final_pago = $ingresos->sum('monto_total_pago_final');

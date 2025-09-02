@@ -44,12 +44,12 @@ class Ingreso extends Model
 
     public function cliente()
     {
-        return $this->belongsTo(cliente::class);
+        return $this->belongsTo(Cliente::class);
     }
 
     public function prestamo()
     {
-        return $this->belongsTo(credito::class);
+        return $this->belongsTo(Credito::class);
     }
 
     public function cronograma()

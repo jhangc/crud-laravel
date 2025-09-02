@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\credito;
+use App\Models\Credito;
 use App\Models\Cronograma;
 
 class CronogramaController extends Controller
@@ -75,7 +75,7 @@ class CronogramaController extends Controller
 // }
 public function vercuota(string $id)
     {
-        $credito =\App\Models\credito::findOrFail($id); // Buscar el crédito por ID
+        $credito =\App\Models\Credito::findOrFail($id); // Buscar el crédito por ID
         $cuotas = \App\Models\Cronograma::where('id_prestamo', $credito->id)->get(); // Obtener las cuotas del cronograma asociadas al préstamo
         $clientes = $credito->clientes; // Obtener los clientes asociados al crédito
         

@@ -51,7 +51,7 @@ class Credito extends Model
 
     public function clientes()
     {
-        return $this->belongsToMany(cliente::class, 'credito_cliente', 'prestamo_id', 'cliente_id');
+        return $this->belongsToMany(Cliente::class, 'credito_cliente', 'prestamo_id', 'cliente_id');
     }
 
     public function creditoClientes()

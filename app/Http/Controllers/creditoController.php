@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Models\credito;
-use App\Models\cliente;
+use App\Models\Credito;
+use App\Models\Cliente;
 use App\Models\CreditoCliente;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +22,7 @@ use App\Models\CorrelativoCredito;
 use App\Models\DepositoCts;
 use App\Models\Reprogramacion;
 
-class creditoController extends Controller
+class CreditoController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -38,10 +38,10 @@ class creditoController extends Controller
         // Verificar si el usuario tiene alguno de los roles
         if ($roles->contains('Administrador')) {
             // Si es administrador o cajera, obtener todos los créditos activos
-            $creditos = credito::with('clientes')->where('activo', 1)->get();
+            $creditos = Credito::with('clientes')->where('activo', 1)->get();
         } else {
             // Si no es administrador, obtener solo los créditos registrados por el usuario
-            $creditos = credito::with('clientes')->where('activo', 1)->where('user_id', $user->id)->get();
+            $creditos = Credito::with('clientes')->where('activo', 1)->where('user_id', $user->id)->get();
         }
 
         // Pasar los créditos a la vista
@@ -100,7 +100,7 @@ class creditoController extends Controller
     public function viewaprobar()
     {
         // Obtener solo los clientes activos (activo = 1)
-        $creditos = credito::with('clientes')
+        $creditos = Credito::with('clientes')
             ->where('activo', 1)
             ->where('estado', 'revisado')
             ->get();
@@ -112,7 +112,7 @@ class creditoController extends Controller
 
         $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
 
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         $proyecciones = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
         $deudas = \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
         $gastosOperativos = \App\Models\GastosOperativos::where('id_prestamo', $id)->get();
@@ -146,7 +146,7 @@ class creditoController extends Controller
 
         $cliente = $prestamo->clientes->first();
 
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         $responsable = $prestamo->user;
 
 
@@ -934,7 +934,7 @@ class creditoController extends Controller
     public function viewpagarcredito()
     {
         // Obtener solo los clientes activos (activo = 1)
-        $creditos = credito::with('clientes')
+        $creditos = Credito::with('clientes')
             ->where('activo', 1)
             ->where('estado', 'aprobado')
             ->get();
@@ -945,7 +945,7 @@ class creditoController extends Controller
     public function viewcobrar()
     {
         // Obtener solo los clientes activos (activo = 1)
-        $creditos = credito::with('clientes')
+        $creditos = Credito::with('clientes')
             ->where('activo', 1)
             ->where('estado', 'pagado')
             ->get();
@@ -955,7 +955,7 @@ class creditoController extends Controller
 
     public function pagar(Request $request, $id)
     {
-        $prestamo = credito::find($id);
+        $prestamo = Credito::find($id);
         $cuotas = Cronograma::where('id_prestamo', $id)->first();
         $cliente = $prestamo->clientes->first();
         $responsable = $prestamo->user->first();
@@ -3265,7 +3265,7 @@ class creditoController extends Controller
      */
     public function show($id)
     {
-        $credito = credito::find($id);
+        $credito = Credito::find($id);
         $garantia = \App\Models\Garantia::where('id_prestamo', $id)->first();
         $clientes = CreditoCliente::with('clientes')->where('prestamo_id', $id)->get();
         $activos = \App\Models\Activos::where('prestamo_id', $id)->first();
@@ -3368,7 +3368,7 @@ class creditoController extends Controller
     public function destroy(string $id)
     {
         // Buscar al credito por su ID
-        $credito = credito::find($id);
+        $credito = Credito::find($id);
 
         if (!$credito) {
             // Si el cliente no existe, redireccionar con un mensaje de error
@@ -3389,7 +3389,7 @@ class creditoController extends Controller
 
     public function vercuotas(string $id)
     {
-        $credito = credito::findOrFail($id); // Buscar el crédito por ID
+        $credito = Credito::findOrFail($id); // Buscar el crédito por ID
         $fechaDesembolso = $credito->fecha_desembolso; // Obtener la fecha de desembolso del crédito
         $tiempoMeses = $credito->tiempo; // Obtener el tiempo en meses del crédito
 

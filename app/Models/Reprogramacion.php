@@ -47,6 +47,6 @@ class Reprogramacion extends Model
      */
     public function credito()
     {
-        return $this->belongsTo(credito::class, 'credito_id');
+        return $this->belongsTo(Credito::class, 'credito_id');
     }
 }

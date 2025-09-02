@@ -19,7 +19,7 @@ class CorrelativoCredito extends Model
     // Define the relationship with the Credito model
     public function prestamo()
     {
-        return $this->belongsTo(credito::class, 'id_prestamo');
+        return $this->belongsTo(Credito::class, 'id_prestamo');
     }
 
     // Define the relationship with the Cliente model
@@ -31,7 +31,7 @@ class CorrelativoCredito extends Model
     public static function generateCorrelativosGrupales($idPrestamo, $serie = '0001')
     {
         DB::transaction(function () use ($idPrestamo, $serie) {
-            $credito = credito::find($idPrestamo);
+            $credito = Credito::find($idPrestamo);
             if (!$credito) {
                 throw new \Exception('Crédito no encontrado');
             }
