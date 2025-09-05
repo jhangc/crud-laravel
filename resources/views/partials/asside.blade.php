@@ -116,7 +116,7 @@
 
                 </li>
 
-                @role('Administrador|Asesor de creditos')
+                @role('Administrador|Asesor de creditos|Cajera')
                     <li class="nav-item has-treeview {{ request()->is('admin/clientes*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link {{ request()->is('admin/clientes*') ? 'active' : '' }}">
                             <i class="nav-icon fas"><i class="bi bi-person-check-fill"></i></i>
@@ -135,6 +135,14 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('preciosoro.index') }}" class="nav-link">
+                            <i class="nav-icon fas"><i class="bi bi-gem"></i></i>
+                            <p> Precios de Oro</p>
+                        </a>
+                    </li>
+
+                    
                 @endrole
 
                 <!-- validad operaciones -->
