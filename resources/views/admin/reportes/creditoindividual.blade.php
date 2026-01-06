@@ -4,18 +4,23 @@
     <div class="row">
         <h1>Reporte de Total de Clientes</h1>
     </div>
-        <style>
+    <style>
         .btn-success {
-            background-color: #28a745 !important; /* Verde intenso */
-            border-color: #28a745 !important; /* Borde del mismo color */
-            font-weight: bold; /* Texto en negrita */
+            background-color: #28a745 !important;
+            /* Verde intenso */
+            border-color: #28a745 !important;
+            /* Borde del mismo color */
+            font-weight: bold;
+            /* Texto en negrita */
         }
 
         .btn-success:hover {
-            background-color: #218838 !important; /* Verde más oscuro al pasar el mouse */
-            border-color: #1e7e34 !important; /* Ajuste del borde */
+            background-color: #218838 !important;
+            /* Verde más oscuro al pasar el mouse */
+            border-color: #1e7e34 !important;
+            /* Ajuste del borde */
         }
-</style>
+    </style>
 
     <div class="col-md-12">
         <div class="card card-outline">
@@ -29,11 +34,11 @@
                         </div>
                     </div>
                     <!-- <div class="col-md-6">
-                        <div class="card-tools float-right">
-                            <a href="{{ url('/admin/reportes/credito/exportarcreditosindividual') }}"
-                                class="btn btn-success"><i class="bi bi-file-earmark-excel"></i> Exportar a Excel</a>
-                        </div>
-                    </div> -->
+                                            <div class="card-tools float-right">
+                                                <a href="{{ url('/admin/reportes/credito/exportarcreditosindividual') }}"
+                                                    class="btn btn-success"><i class="bi bi-file-earmark-excel"></i> Exportar a Excel</a>
+                                            </div>
+                                        </div> -->
                 </div>
             </div>
         </div>
@@ -58,7 +63,7 @@
                             <th>Periodo de gracia</th>
                             <th>Fecha de último pago</th>
                             <!-- <th>Fecha de última refinanciación</th>
-                            <th>Fecha de última reprogramación</th> -->
+                                                <th>Fecha de última reprogramación</th> -->
                             <th>N° Cuotas pagadas</th>
                             <th>N° Cuotas pendientes</th>
                             <th>Capital cancelado</th>
@@ -106,13 +111,29 @@
                                 $contador++;
                                 $cliente = $credito->creditoClientes->first()->clientes; // Obtener el primer cliente relacionado
 
-                                $cuotasPagadas = $credito->ingresos->count();
+                                // $cuotasPagadas = $credito->ingresos->count();
+                                // $cuotasTotales = $credito->cronograma->count();
+                                // $cuotasPendientes = $cuotasTotales - $cuotasPagadas;
+
+                                // $pagadasCronogramaIds = $credito->ingresos->pluck('cronograma_id');
+                                // $cronogramaPagadas = $credito->cronograma->whereIn('id', $pagadasCronogramaIds);
+                                // $cronogramaPendientes = $credito->cronograma->whereNotIn('id', $pagadasCronogramaIds);
+
+                                // 1️⃣ Cronogramas pagados (fuente de verdad)
+                                $cronogramaPagadas = $credito->cronograma->filter(function ($cuota) use ($credito) {
+                                    return $credito->ingresos->where('cronograma_id', $cuota->id)->isNotEmpty();
+                                });
+
+                                // 2️⃣ Cronogramas pendientes
+                                $cronogramaPendientes = $credito->cronograma->whereNotIn(
+                                    'id',
+                                    $cronogramaPagadas->pluck('id'),
+                                );
+
+                                // 3️⃣ Conteos reales
+                                $cuotasPagadas = $cronogramaPagadas->count();
                                 $cuotasTotales = $credito->cronograma->count();
                                 $cuotasPendientes = $cuotasTotales - $cuotasPagadas;
-
-                                $pagadasCronogramaIds = $credito->ingresos->pluck('cronograma_id');
-                                $cronogramaPagadas = $credito->cronograma->whereIn('id', $pagadasCronogramaIds);
-                                $cronogramaPendientes = $credito->cronograma->whereNotIn('id', $pagadasCronogramaIds);
 
                                 $capitalCancelado = $cronogramaPagadas->sum('amortizacion');
                                 $interesCancelado = $cronogramaPagadas->sum('interes');
@@ -122,7 +143,10 @@
                                 //$capitalCancelado = $ultimoCronogramaPagado ? $ultimoCronogramaPagado->capital : 0;
                                 //$interesCancelado = $ultimoCronogramaPagado ? $ultimoCronogramaPagado->interes : 0;
 
-                                $interesMoratorioCancelado = $credito->ingresos->sum('monto_mora');
+                                // $interesMoratorioCancelado = $credito->ingresos->sum('monto_mora');
+                                $interesMoratorioCancelado = $credito->ingresos
+                                    ->whereNotNull('cronograma_id')
+                                    ->sum('monto_mora');
 
                                 $now = \Carbon\Carbon::now();
 
@@ -130,30 +154,24 @@
                                 $cronogramaPendientesVencido = $cronogramaPendientes->where('fecha', '<=', $now);
 
                                 // Obtener la fecha del último pago
-                                $ultimoPago = $credito->ingresos()->latest('fecha_pago')->first();
-                                $fechaUltimoPago = $ultimoPago ? $ultimoPago->fecha_pago : 'No hay pagos';
+                                // $ultimoPago = $credito->ingresos()->latest('fecha_pago')->first();
+                                // $fechaUltimoPago = $ultimoPago ? $ultimoPago->fecha_pago : 'No hay pagos';
+                                $ultimaCuotaPagada = $cronogramaPagadas->sortByDesc('fecha')->first();
 
-                                // Obtener la fecha de vencimiento de la próxima cuota
-                                $ultimaCuotaPagada = $credito->ingresos()->latest('fecha_pago')->first();
-                                if ($ultimaCuotaPagada) {
-                                    $proximaCuota = $credito
-                                        ->cronograma()
-                                        ->where('id', '>', $ultimaCuotaPagada->cronograma_id)
-                                        ->orderBy('fecha')
-                                        ->first();
-                                    $fechaVencimientoProximaCuota = $proximaCuota
-                                        ? $proximaCuota->fecha
-                                        : 'No hay próxima cuota';
-                                } else {
-                                    $primeraCuota = $credito->cronograma()->orderBy('fecha')->first();
-                                    $fechaVencimientoProximaCuota = $primeraCuota
-                                        ? $primeraCuota->fecha
-                                        : 'No hay cuotas';
-                                }
+                                $fechaUltimoPago = $ultimaCuotaPagada ? $ultimaCuotaPagada->fecha : 'No hay pagos';
+
+                                $proximaCuota = $cronogramaPendientes->sortBy('fecha')->first();
+
+                                $fechaVencimientoProximaCuota = $proximaCuota
+                                    ? $proximaCuota->fecha
+                                    : 'No hay próxima cuota';
 
                                 // Calcular los días de atraso o los días restantes
                                 $diasAtraso = 0;
-                                if ($fechaVencimientoProximaCuota!='No hay próxima cuota' && $fechaVencimientoProximaCuota!='No hay cuotas' ) {
+                                if (
+                                    $fechaVencimientoProximaCuota != 'No hay próxima cuota' &&
+                                    $fechaVencimientoProximaCuota != 'No hay cuotas'
+                                ) {
                                     $fechaVencimientoProximaCuotaFormatted = \Carbon\Carbon::parse(
                                         $fechaVencimientoProximaCuota,
                                     )->format('Y-m-d');
@@ -217,7 +235,7 @@
                                 <td>{{ $credito->periodo_gracia_dias }}</td>
                                 <td>{{ $fechaUltimoPago }}</td>
                                 <!-- <td>Fecha de última refinanciación</td>
-                            <td>Fecha de última reprogramación</td> -->
+                                                <td>Fecha de última reprogramación</td> -->
                                 <td>{{ $cuotasPagadas }}</td>
                                 <td>{{ $cuotasPendientes }}</td>
                                 <td>{{ $capitalCancelado }}</td>
@@ -300,17 +318,15 @@
                             "autoWidth": true,
                             "pageLength": 10,
                             dom: 'Bfrtip', // Agregar botones
-                            buttons: [
-                                {
-                                    extend: 'excelHtml5',
-                                    text: '<i class="bi bi-file-earmark-excel"></i> Exportar a Excel',
-                                    className: 'btn btn-success text-white', // Estilo mejorado
-                                    title: 'Reporte de Clientes',
-                                    exportOptions: {
-                                        columns: ':visible'
-                                    }
+                            buttons: [{
+                                extend: 'excelHtml5',
+                                text: '<i class="bi bi-file-earmark-excel"></i> Exportar a Excel',
+                                className: 'btn btn-success text-white', // Estilo mejorado
+                                title: 'Reporte de Clientes',
+                                exportOptions: {
+                                    columns: ':visible'
                                 }
-                            ]
+                            }]
                         });
 
                         $('#btn-buscar-cliente').on('click', function() {
