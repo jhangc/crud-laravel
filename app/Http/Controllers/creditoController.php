@@ -1065,7 +1065,6 @@ class CreditoController extends Controller
                     ->where('cliente_id', $clienteCredito->cliente_id)
                     ->first();
 
-                    dd($ingreso);
 
                 if ($ingreso) {
                     $cuota->estado = 'pagado';
