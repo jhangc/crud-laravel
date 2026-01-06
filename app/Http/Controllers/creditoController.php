@@ -1055,6 +1055,7 @@ class CreditoController extends Controller
                 // Asegurarse de que fecha_vencimiento sea una instancia de Carbon
                 $fecha_vencimiento = Carbon::parse($cuota->fecha);
 
+                //esta la antigua consulta
                 // $ingreso = Ingreso::where('prestamo_id', $id)
                 //     ->where('numero_cuota', $cuota->numero)
                 //     ->where('cliente_id', $clienteCredito->cliente_id)
@@ -1135,6 +1136,7 @@ class CreditoController extends Controller
                     $monto_mora_general = 0;
 
                     foreach ($cuotasRelacionadas as $cuotaRelacionada) {
+                        //esta la antigua consulta
                         // $ingresoRelacionado = Ingreso::where('prestamo_id', $id)
                         //     ->where('numero_cuota', $cuotaRelacionada->numero)
                         //     ->where('cliente_id', $cuotaRelacionada->cliente_id)
@@ -1176,6 +1178,7 @@ class CreditoController extends Controller
                     }
 
                     if ($estadoGeneral == 'pagado') {
+                        //esta la antigua consulta
                         // $ingresoGeneral = Ingreso::where('prestamo_id', $id)
                         //     ->where('numero_cuota', $cuotaGeneral->numero)
                         //     ->whereNull('cliente_id')
