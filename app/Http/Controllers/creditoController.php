@@ -165,7 +165,7 @@ class CreditoController extends Controller
 
         $estado = $prestamo->estado;
 
-        if ($prestamo->producto != "grupal"&& ($prestamo->categoria != 'credijoya')) {
+        if ($prestamo->producto != "grupal" && ($prestamo->categoria != 'credijoya')) {
             switch ($tipo) {
                 case 'comercio':
                     $totalVentas = round((($ventasdiarias->sum('promedio')) * $factormes), 2);
@@ -789,8 +789,7 @@ class CreditoController extends Controller
                         ));
                     }
             }
-        }
-        else if ($prestamo && ($prestamo->categoria == 'credijoya')) {
+        } else if ($prestamo && ($prestamo->categoria == 'credijoya')) {
             $modulo  = $request->query('modulo'); // 'aprobar' o null
             $cliente = $prestamo->clientes()->first();
             $responsable = $prestamo->user;
@@ -818,14 +817,24 @@ class CreditoController extends Controller
             $estado                  = $prestamo->estado;
 
             return view('admin.creditos.evaluacion_credijoya', compact(
-                'prestamo','cliente','responsable',
-                'joyas','cronograma',
-                'tasacionTotal','max80','montoAprobado','tea','itf','neto',
-                'cuotaEvaluar','comentarioasesor','comentarioadministrador',
-                'estado','modulo'
+                'prestamo',
+                'cliente',
+                'responsable',
+                'joyas',
+                'cronograma',
+                'tasacionTotal',
+                'max80',
+                'montoAprobado',
+                'tea',
+                'itf',
+                'neto',
+                'cuotaEvaluar',
+                'comentarioasesor',
+                'comentarioadministrador',
+                'estado',
+                'modulo'
             ));
-        }
-        else {
+        } else {
             $totalgarantia = $garantias->sum('valor_mercado');
 
             return view('admin.creditos.evaluaciongrupal', compact(
@@ -1046,8 +1055,13 @@ class CreditoController extends Controller
                 // Asegurarse de que fecha_vencimiento sea una instancia de Carbon
                 $fecha_vencimiento = Carbon::parse($cuota->fecha);
 
-                $ingreso = Ingreso::where('prestamo_id', $id)
-                    ->where('numero_cuota', $cuota->numero)
+                // $ingreso = Ingreso::where('prestamo_id', $id)
+                //     ->where('numero_cuota', $cuota->numero)
+                //     ->where('cliente_id', $clienteCredito->cliente_id)
+                //     ->first();
+
+                $ingreso = Ingreso::where('cronograma_id', $cuota->id)
+                    ->where('prestamo_id', $id)
                     ->where('cliente_id', $clienteCredito->cliente_id)
                     ->first();
 
@@ -1120,8 +1134,13 @@ class CreditoController extends Controller
                     $monto_mora_general = 0;
 
                     foreach ($cuotasRelacionadas as $cuotaRelacionada) {
-                        $ingresoRelacionado = Ingreso::where('prestamo_id', $id)
-                            ->where('numero_cuota', $cuotaRelacionada->numero)
+                        // $ingresoRelacionado = Ingreso::where('prestamo_id', $id)
+                        //     ->where('numero_cuota', $cuotaRelacionada->numero)
+                        //     ->where('cliente_id', $cuotaRelacionada->cliente_id)
+                        //     ->first();
+
+                        $ingresoRelacionado = Ingreso::where('cronograma_id', $cuotaRelacionada->id)
+                            ->where('prestamo_id', $id)
                             ->where('cliente_id', $cuotaRelacionada->cliente_id)
                             ->first();
 
@@ -1156,10 +1175,15 @@ class CreditoController extends Controller
                     }
 
                     if ($estadoGeneral == 'pagado') {
-                        $ingresoGeneral = Ingreso::where('prestamo_id', $id)
-                            ->where('numero_cuota', $cuotaGeneral->numero)
+                        // $ingresoGeneral = Ingreso::where('prestamo_id', $id)
+                        //     ->where('numero_cuota', $cuotaGeneral->numero)
+                        //     ->whereNull('cliente_id')
+                        //     ->first();
+
+                        $ingresoGeneral = Ingreso::where('cronograma_id', $cuotaGeneral->id)
                             ->whereNull('cliente_id')
                             ->first();
+
                         if ($ingresoGeneral) {
                             $ingreso_ids[] = $ingresoGeneral->id;
                             $fecha_pago = $ingresoGeneral->fecha_pago;
@@ -1451,7 +1475,7 @@ class CreditoController extends Controller
         $montoTotal   = $request->monto;
         $diferencia   = 0;
 
-        
+
 
         // Si paga más, la diferencia se reserva
         if ($montoPagado > $montoTotal) {
@@ -1462,7 +1486,7 @@ class CreditoController extends Controller
             $montoAplicado = $montoPagado;
         }
 
-        
+
 
         // Register the income
         $ingreso = Ingreso::create([
@@ -3316,21 +3340,26 @@ class CreditoController extends Controller
         if ($credito->producto === 'individual' && $credito->subproducto === 'credijoya' || $credito->categoria === 'credijoya') {
             $cliente = optional($credito->clientes)->first(); // relación many-to-many
             $joyas   = \App\Models\CredijoyaJoya::where('prestamo_id', $credito->id)
-                        ->get(['id','kilate as kilataje','precio_gramo','peso_bruto','peso_neto','piezas','descripcion','valor_tasacion','codigo']);
+                ->get(['id', 'kilate as kilataje', 'precio_gramo', 'peso_bruto', 'peso_neto', 'piezas', 'descripcion', 'valor_tasacion', 'codigo']);
 
             // totales de referencia (recalcular también en el front)
             $tasacion_total = (float) $joyas->sum('valor_tasacion');
             $monto_max_80   = round($tasacion_total * 0.80, 2);
 
             return view('admin.creditos.editcredijoya', compact(
-                'id','credito','cliente','joyas','tasacion_total','monto_max_80'
+                'id',
+                'credito',
+                'cliente',
+                'joyas',
+                'tasacion_total',
+                'monto_max_80'
             ));
         }
 
         // Ramas existentes
         $tipo       = $credito->tipo;
         $producto   = $credito->producto;
-        $subproducto= $credito->subproducto;
+        $subproducto = $credito->subproducto;
 
         if ($tipo == 'comercio' && $producto != 'grupal') {
             return view('admin.creditos.editcomercio', compact('id'));
