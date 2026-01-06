@@ -257,7 +257,7 @@ Route::post('/reprogramaciones/store', [ReprogramacionController::class, 'reprog
 Route::get('/admin/creditos/aprobarreprogramados', [ReprogramacionController::class, 'viewreprogramacion'])->name('reprogramacion.index')->middleware('auth');
 Route::post('/reprogramaciones/process', [ReprogramacionController::class, 'process'])->name('reprogramacion.process')->middleware('auth');
 Route::post('/generarcronogramreprogramado', [CreditoController::class, 'generarreprogramacion'])->name('reprogramacion.exitosa')->middleware('auth');
-Route::get('/vernuevocronogramareprogramado/{id}', [PDFController::class, 'generarNuevoCronogramaReprogramadoPDF'])->name('generar.pdf.nuevo cronograma')->middleware('auth');
+Route::get('/vernuevocronogramareprogramado/{id}', [PDFController::class, 'generarNuevoCronogramaReprogramadoPDF'])->name('generar.pdf.nuevo cronogramareprogramado')->middleware('auth');
 // Vista CRUD
 Route::get('/admin/precios-oro', [GoldPriceController::class, 'index'])->name('preciosoro.index')->middleware('auth');
 // API CRUD
