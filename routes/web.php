@@ -201,7 +201,7 @@ Route::get('/storage/foto/{filename}', [FileController::class, 'getFoto'])->name
 Route::get('/storage/pdf/{filename}', [FileController::class, 'getPdf'])->name('getPdf');
 
 Route::get('/admin/creditos/ingresosday', [AdminController::class, 'ingresosday'])->name('creditos.ingresosday')->middleware('auth');
-Route::get('/admin/creditos/egresosday', [AdminController::class, 'updateCreditoagricola'])->name('creditos.updateCreditoAgricola')->middleware('auth');
+//Route::get('/admin/creditos/egresosday', [AdminController::class, 'updateCreditoagricola'])->name('creditos.updateCreditoAgricola')->middleware('auth');
 Route::get('/admin/caja/obtener-transacciones/{id}', [AdminController::class, 'obtenerTransaccionesCaja'])->name('creditos.obtenerTransaccionesCaja')->middleware('auth');
 Route::get('/admin/caja/resetcaja/{id}', [AdminController::class, 'resetCaja'])->name('creditos.resetCaja')->middleware('auth');
 
