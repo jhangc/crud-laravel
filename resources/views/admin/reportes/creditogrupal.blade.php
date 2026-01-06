@@ -2,37 +2,35 @@
 
 @section('content')
     <div class="row">
-        <h1>Reporte de Total de Clientes</h1>
+        <h1>Reporte de Créditos Grupales</h1>
     </div>
-    <style>
-            .btn-success {
-                background-color: #28a745 !important; /* Verde intenso */
-                border-color: #28a745 !important; /* Borde del mismo color */
-                font-weight: bold; /* Texto en negrita */
-            }
 
-            .btn-success:hover {
-                background-color: #218838 !important; /* Verde más oscuro al pasar el mouse */
-                border-color: #1e7e34 !important; /* Ajuste del borde */
-            }
+    <style>
+        .btn-success {
+            background-color: #28a745 !important;
+            border-color: #28a745 !important;
+            font-weight: bold;
+        }
+
+        .btn-success:hover {
+            background-color: #218838 !important;
+            border-color: #1e7e34 !important;
+        }
     </style>
+
     <div class="col-md-12">
         <div class="card card-outline">
             <div class="card-header">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="input-group">
-                            <input type="text" id="buscar-cliente" class="form-control" placeholder="Buscar cliente...">
-                            <button class="btn btn-outline-primary" type="button" id="btn-buscar-cliente"><i
-                                    class="bi bi-search"></i> Buscar</button>
+                            <input type="text" id="buscar-cliente" class="form-control"
+                                placeholder="Buscar grupo...">
+                            <button class="btn btn-outline-primary" type="button" id="btn-buscar-cliente">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
                         </div>
                     </div>
-                    <!-- <div class="col-md-6">
-                        <div class="card-tools float-right">
-                            <a href="{{ url('/admin/reportes/credito/exportarcreditosgrupal') }}" class="btn btn-success"><i
-                                    class="bi bi-file-earmark-excel"></i> Exportar a Excel</a>
-                        </div>
-                    </div> -->
                 </div>
             </div>
         </div>
@@ -44,221 +42,156 @@
                         <tr>
                             <th>N°</th>
                             <th>Nombre del Grupo</th>
-                            <th>Código de agencia</th>
+                            <th>Código Agencia</th>
                             <th>Agencia</th>
-                            <th>Código del crédito Grupal</th>
-                            <th>Codigo de Prestamo</th>
-                            <th>Fecha de desembolso</th>
-                            <th>Fecha de vencimiento</th>
-                            <th>Fecha de vencimiento de cuota</th>
+                            <th>Código Crédito</th>
+                            <th>ID Crédito</th>
+                            <th>Fecha Desembolso</th>
+                            <th>Fecha Última Cuota</th>
+                            <th>Fecha Próxima Cuota</th>
                             <th>N° Cuotas</th>
-                            <th>Periocidad de cuotas</th>
-                            <th>Periodo de gracia</th>
-                            <th>Fecha de último pago</th>
-                            <th>N° Cuotas pagadas</th>
-                            <th>N° Cuotas pendientes</th>
-                            <th>Capital cancelado</th>
-                            <th>Interés cancelado</th>
-                            <th>Interés moratorio cancelado</th>
-                            <th>Destino del Credito</th>
+                            <th>Periodicidad</th>
+                            <th>Periodo Gracia</th>
+                            <th>Fecha Último Pago</th>
+                            <th>Cuotas Pagadas</th>
+                            <th>Cuotas Pendientes</th>
+                            <th>Capital Cancelado</th>
+                            <th>Interés Cancelado</th>
+                            <th>Interés Moratorio</th>
+                            <th>Destino</th>
                             <th>Producto</th>
-                            <th>Sub producto</th>
-                            <th>Monto original</th>
-                            <th>Saldo capital crédito</th>
-                            <th>Saldo capital normal</th>
-                            <th>Saldo capital vencido</th>
-                            <th>N° Días de atraso</th>
-                            <th>Riesgo individual</th>
-                            <th>Situacion contable</th>
-                            <th>Interés por cobrar</th>
-                            <th>Nombre de asesor de credito</th>
+                            <th>Subproducto</th>
+                            <th>Monto Crédito</th>
+                            <th>Saldo Capital Crédito</th>
+                            <th>Saldo Capital Normal</th>
+                            <th>Saldo Capital Vencido</th>
+                            <th>Días Atraso</th>
+                            <th>Riesgo</th>
+                            <th>Situación Contable</th>
+                            <th>Interés por Cobrar</th>
+                            <th>Asesor</th>
                             <th>TEA</th>
-                            <th>Tipo de cronograma</th>
+                            <th>Tipo Cronograma</th>
                             <th>Monto Cuota</th>
-                            <th>Monto Garantia</th>
+                            <th>Monto Garantía</th>
                             <th>N° Integrantes</th>
-                            <!-- <th></th> -->
                         </tr>
                     </thead>
+
                     <tbody>
                         @php $contador = 0; @endphp
+
                         @foreach ($creditos as $credito)
                             @php
                                 $contador++;
-                                $cliente = $credito->creditoClientes->first()->clientes; // Obtener el primer cliente relacionado
 
-                                // Filtrar cuotas pagadas donde id_cliente es null
-                                $cuotasPagadas = $credito
-                                    ->ingresos()
-                                    ->whereHas('cronograma', function ($query) {
-                                        $query->whereNull('cliente_id');
-                                    })
-                                    ->count();
+                                /** ================================
+                                 *  CRONOGRAMA GENERAL (FUENTE VERDAD)
+                                 * ================================ */
+                                $cronogramaGeneral = $credito->cronograma->whereNull('cliente_id');
 
-                                // Filtrar cuotas totales donde id_cliente es null
-                                $cuotasTotales = $credito->cronograma()->whereNull('cliente_id')->count();
+                                /** ================================
+                                 *  CRONOGRAMAS PAGADOS
+                                 * ================================ */
+                                $cronogramaPagadas = $cronogramaGeneral->filter(function ($cuota) use ($credito) {
+                                    return $credito->ingresos
+                                        ->where('cronograma_id', $cuota->id)
+                                        ->isNotEmpty();
+                                });
 
-                                $ultimaCuota = $credito
-                                    ->cronograma()
-                                    ->whereNull('cliente_id')
-                                    ->orderBy('fecha', 'desc')
-                                    ->first();
+                                /** ================================
+                                 *  CRONOGRAMAS PENDIENTES
+                                 * ================================ */
+                                $cronogramaPendientes = $cronogramaGeneral
+                                    ->whereNotIn('id', $cronogramaPagadas->pluck('id'));
 
-                                $fechaUltimaCuota = $ultimaCuota ? $ultimaCuota->fecha : 'No hay cuotas disponibles';
-
-                                // Calcular cuotas pendientes
+                                /** ================================
+                                 *  CONTEOS
+                                 * ================================ */
+                                $cuotasTotales = $cronogramaGeneral->count();
+                                $cuotasPagadas = $cronogramaPagadas->count();
                                 $cuotasPendientes = $cuotasTotales - $cuotasPagadas;
 
-                                $pagadasCronogramaIds = $credito
-                                    ->ingresos()
-                                    ->whereHas('cronograma', function ($query) {
-                                        $query->whereNull('cliente_id');
-                                    })
-                                    ->pluck('cronograma_id');
-
-                                // Filtrar cronograma pagadas y pendientes donde cliente_id es null
-                                $cronogramaPagadas = $credito
-                                    ->cronograma()
-                                    ->whereIn('id', $pagadasCronogramaIds)
-                                    ->whereNull('cliente_id')
-                                    ->get();
-                                $cronogramaPendientes = $credito
-                                    ->cronograma()
-                                    ->whereNotIn('id', $pagadasCronogramaIds)
-                                    ->whereNull('cliente_id')
-                                    ->get();
-
+                                /** ================================
+                                 *  MONTOS
+                                 * ================================ */
                                 $capitalCancelado = $cronogramaPagadas->sum('amortizacion');
-                                $interesCancelado = $cronogramaPagadas->last()
-                                    ? $cronogramaPagadas->last()->interes
-                                    : 0;
-
+                                $interesCancelado = $cronogramaPagadas->sum('interes');
                                 $interesporcobrar = $cronogramaPendientes->sum('interes');
 
-                                $interesMoratorioCancelado = $credito->ingresos->sum('monto_mora');
+                                $interesMoratorioCancelado = $credito->ingresos
+                                    ->whereNotNull('cronograma_id')
+                                    ->sum('monto_mora');
 
+                                /** ================================
+                                 *  FECHAS
+                                 * ================================ */
+                                $ultimaCuotaPagada = $cronogramaPagadas->sortByDesc('fecha')->first();
+                                $fechaUltimoPago = $ultimaCuotaPagada
+                                    ? $ultimaCuotaPagada->fecha
+                                    : 'No hay pagos';
+
+                                $proximaCuota = $cronogramaPendientes->sortBy('fecha')->first();
+                                $fechaVencimientoProximaCuota = $proximaCuota
+                                    ? $proximaCuota->fecha
+                                    : 'No hay próxima cuota';
+
+                                $ultimaCuota = $cronogramaGeneral->sortByDesc('fecha')->first();
+                                $fechaUltimaCuota = $ultimaCuota
+                                    ? $ultimaCuota->fecha
+                                    : 'No hay cuotas';
+
+                                /** ================================
+                                 *  ATRASO Y RIESGO
+                                 * ================================ */
                                 $now = \Carbon\Carbon::now();
-
-                                $cronogramaPendientesNormal = $cronogramaPendientes->where('fecha', '>', $now);
-                                $cronogramaPendientesVencido = $cronogramaPendientes->where('fecha', '<=', $now);
-
-                                // $saldoCapitalNormal=$cronogramaPendientesNormal->last() ? $cronogramaPendientesNormal->last()->amortizacion : 0;
-                                // $saldoCapitalVencido = $cronogramaPendientesVencido->last() ? $cronogramaPendientesVencido->last()->amortizacion : 0;
-                                // $saldoCapitalCredito = $saldoCapitalNormal + $saldoCapitalVencido;
-
-                                // Obtener la fecha del último pago
-                                $ultimoPago = $credito->ingresos()->latest('fecha_pago')->first();
-                                $fechaUltimoPago = $ultimoPago ? $ultimoPago->fecha_pago : 'No hay pagos';
-
-                                // Obtener la fecha de vencimiento de la próxima cuota
-                                $ultimaCuotaPagada = $credito
-                                    ->ingresos()
-                                    ->latest('fecha_pago')
-                                    ->where('cliente_id', null)
-                                    ->first();
-
-                                //dd($ultimaCuotaPagada);
-
-                                if ($ultimaCuotaPagada) {
-                                    $proximaCuota = $credito
-                                        ->cronograma()
-                                        ->where('cliente_id', null) // Filtro para cuotas generales
-                                        ->where('id', '>', $ultimaCuotaPagada->cronograma_id)
-                                        ->orderBy('fecha')
-                                        ->first();
-
-                                    $fechaVencimientoProximaCuota = $proximaCuota
-                                        ? $proximaCuota->fecha
-                                        : 'No hay próxima cuota';
-                                } else {
-                                    $primeraCuota = $credito
-                                        ->cronograma()
-                                        ->where('cliente_id', null) // Filtro para cuotas generales
-                                        ->orderBy('fecha')
-                                        ->first();
-                                    $fechaVencimientoProximaCuota = $primeraCuota
-                                        ? $primeraCuota->fecha
-                                        : 'No hay cuotas';
-                                }
-
-                                // Calcular los días de atraso o los días restantes
-                                // $diasAtraso = 0;
-                                // if ($fechaVencimientoProximaCuota) {
-                                //     $fechaVencimientoProximaCuotaFormatted = \Carbon\Carbon::parse(
-                                //         $fechaVencimientoProximaCuota,
-                                //     )->format('Y-m-d');
-                                //     $fechaActualFormatted = $now->format('Y-m-d');
-
-                                //     if ($fechaVencimientoProximaCuotaFormatted < $fechaActualFormatted) {
-                                //         $diasAtraso = \Carbon\Carbon::parse($fechaActualFormatted)->diffInDays(
-                                //             $fechaVencimientoProximaCuotaFormatted,
-                                //         );
-                                //     } else {
-                                //         $diasAtraso = -\Carbon\Carbon::parse($fechaActualFormatted)->diffInDays(
-                                //             $fechaVencimientoProximaCuotaFormatted,
-                                //         );
-                                //     }
-                                // }
-
                                 $diasAtraso = 0;
-                                if ($fechaVencimientoProximaCuota!='No hay próxima cuota' && $fechaVencimientoProximaCuota!='No hay cuotas' ) {
-                                    $fechaVencimientoProximaCuotaFormatted = \Carbon\Carbon::parse(
-                                        $fechaVencimientoProximaCuota,
-                                    )->format('Y-m-d');
-                                    $fechaActualFormatted = $now->format('Y-m-d');
 
-                                    if ($fechaVencimientoProximaCuotaFormatted < $fechaActualFormatted) {
-                                        $diasAtraso = \Carbon\Carbon::parse($fechaActualFormatted)->diffInDays(
-                                            $fechaVencimientoProximaCuotaFormatted,
-                                        );
-                                    } else {
-                                        $diasAtraso = -\Carbon\Carbon::parse($fechaActualFormatted)->diffInDays(
-                                            $fechaVencimientoProximaCuotaFormatted,
-                                        );
-                                    }
-                                } else {
-                                    $diasAtraso = 0;
+                                if ($fechaVencimientoProximaCuota && $fechaVencimientoProximaCuota !== 'No hay próxima cuota') {
+                                    $diasAtraso = \Carbon\Carbon::parse($fechaVencimientoProximaCuota)->diffInDays(
+                                        $now,
+                                        false
+                                    );
+                                    if ($diasAtraso < 0) $diasAtraso = 0;
                                 }
 
-                                // Calcular riesgo individual
-                                $riesgoIndividual = 'normal';
                                 if ($diasAtraso < 8) {
-                                    $riesgoIndividual = 'normal';
-                                } elseif ($diasAtraso >= 8 && $diasAtraso <= 30) {
-                                    $riesgoIndividual = 'CPP';
-                                } elseif ($diasAtraso > 30 && $diasAtraso <= 60) {
-                                    $riesgoIndividual = 'Deficiente';
-                                } elseif ($diasAtraso > 60 && $diasAtraso <= 120) {
-                                    $riesgoIndividual = 'Dudoso';
+                                    $riesgo = 'Normal';
+                                } elseif ($diasAtraso <= 30) {
+                                    $riesgo = 'CPP';
+                                } elseif ($diasAtraso <= 60) {
+                                    $riesgo = 'Deficiente';
+                                } elseif ($diasAtraso <= 120) {
+                                    $riesgo = 'Dudoso';
                                 } else {
-                                    $riesgoIndividual = 'Pérdida';
+                                    $riesgo = 'Pérdida';
                                 }
 
-                                // Calcular situación contable
-                                $situacionContable = $diasAtraso >= 1 ? 'Vencido' : 'Vigente';
+                                $situacionContable = $diasAtraso > 0 ? 'Vencido' : 'Vigente';
 
-                                $saldoCapitalNormal = 0;
+                                /** ================================
+                                 *  SALDOS
+                                 * ================================ */
                                 $saldoCapitalCredito = $credito->monto_total - $capitalCancelado;
+                                $saldoCapitalNormal = $cronogramaPendientes
+                                    ->where('fecha', '>', $now)
+                                    ->sum('amortizacion');
 
-                                $saldoCapitalVencido = $cronogramaPendientesVencido->sum('amortizacion');
+                                $saldoCapitalVencido = $cronogramaPendientes
+                                    ->where('fecha', '<=', $now)
+                                    ->sum('amortizacion');
 
                                 if ($diasAtraso > 30) {
                                     $saldoCapitalVencido = $credito->monto_total;
                                 }
-
                             @endphp
+
                             <tr>
-                                <td style="text-align: center">{{ $contador }}</td>
+                                <td>{{ $contador }}</td>
                                 <td>{{ $credito->nombre_prestamo }}</td>
                                 <td>{{ $credito->user->sucursal->id }}</td>
                                 <td>{{ $credito->user->sucursal->nombre }}</td>
-                                <td>
-                                    @if ($credito->correlativos->isNotEmpty())
-                                        {{ $credito->correlativos->first()->correlativo }}
-                                    @else
-                                        No asignado
-                                    @endif
-                                </td>
+                                <td>{{ optional($credito->correlativos->first())->correlativo ?? 'No asignado' }}</td>
                                 <td>{{ $credito->id }}</td>
                                 <td>{{ $credito->fecha_desembolso }}</td>
                                 <td>{{ $fechaUltimaCuota }}</td>
@@ -280,73 +213,43 @@
                                 <td>{{ $saldoCapitalNormal }}</td>
                                 <td>{{ $saldoCapitalVencido }}</td>
                                 <td>{{ $diasAtraso }}</td>
-                                <td>{{ $riesgoIndividual }}</td>
+                                <td>{{ $riesgo }}</td>
                                 <td>{{ $situacionContable }}</td>
                                 <td>{{ $interesporcobrar }}</td>
                                 <td>{{ $credito->user->name }}</td>
                                 <td>{{ $credito->tasa }}</td>
                                 <td>{{ $credito->recurrencia }}</td>
-                                <td>{{ $credito->cronograma->first()->monto }}</td>
-                                <td>{{ $credito->garantia ? $credito->garantia->valor_mercado : '0' }}</td>
+                                <td>{{ optional($credito->cronograma->first())->monto }}</td>
+                                <td>{{ optional($credito->garantia)->valor_mercado ?? 0 }}</td>
                                 <td>{{ $credito->cantidad_integrantes }}</td>
-                                <!-- <td>{{ $credito->cuotasPagadas }}</td> -->
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
+
                 <script>
                     $(document).ready(function() {
-                        var spanish = {
-                            "sProcessing": "Procesando...",
-                            "sLengthMenu": "Mostrar _MENU_ registros",
-                            "sZeroRecords": "No se encontraron resultados",
-                            "sEmptyTable": "Ningún dato disponible en esta tabla",
-                            "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-                            "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
-                            "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
-                            "sInfoPostFix": "",
-                            "sSearch": "Buscar:",
-                            "sUrl": "",
-                            "sInfoThousands": ",",
-                            "sLoadingRecords": "Cargando...",
-                            "oPaginate": {
-                                "sFirst": "Primero",
-                                "sLast": "Último",
-                                "sNext": "Siguiente",
-                                "sPrevious": "Anterior"
-                            },
-                            "oAria": {
-                                "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
-                                "sSortDescending": ": Activar para ordenar la columna de manera descendente"
-                            }
-                        };
-
                         $('#tablegrupal').DataTable({
-                            "paging": true,
-                            "lengthChange": false,
-                            "searching": true,
-                            "ordering": true,
-                            "info": true,
-                            "language": spanish,
-                            "autoWidth": true,
-                            "pageLength": 10,
-                            dom: 'Bfrtip', // Agregar botones
-                            buttons: [
-                                {
-                                    extend: 'excelHtml5',
-                                    text: '<i class="bi bi-file-earmark-excel"></i> Exportar a Excel',
-                                    className: 'btn btn-success text-white', // Estilo mejorado
-                                    title: 'Reporte GRUPAL',
-                                    exportOptions: {
-                                        columns: ':visible'
-                                    }
-                                }
-                            ]
+                            paging: true,
+                            lengthChange: false,
+                            searching: true,
+                            ordering: true,
+                            info: true,
+                            autoWidth: true,
+                            pageLength: 10,
+                            dom: 'Bfrtip',
+                            buttons: [{
+                                extend: 'excelHtml5',
+                                text: '<i class="bi bi-file-earmark-excel"></i> Exportar a Excel',
+                                className: 'btn btn-success text-white',
+                                title: 'Reporte Créditos Grupales'
+                            }]
                         });
 
                         $('#btn-buscar-cliente').on('click', function() {
-                            var table = $('#tablegrupal').DataTable();
-                            table.search($('#buscar-cliente').val()).draw();
+                            $('#tablegrupal').DataTable()
+                                .search($('#buscar-cliente').val())
+                                .draw();
                         });
                     });
                 </script>
