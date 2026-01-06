@@ -11,7 +11,7 @@
     </style>
     <div class="container flex container-large">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-            <h1 class="mb-3 mb-md-0">Cuotas del Crédito #{{ $credito->id }} prueba</h1>
+            <h1 class="mb-3 mb-md-0">Cuotas del Crédito #{{ $credito->id }} </h1>
 
             <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-md-center">
                 @role('Administrador|Asesor de creditos')
