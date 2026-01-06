@@ -1061,11 +1061,11 @@ class CreditoController extends Controller
                 //     ->where('cliente_id', $clienteCredito->cliente_id)
                 //     ->first();
 
-                $ingreso = Ingreso::where('cronograma_id', $cuota->id)
-                    ->where('prestamo_id', $id)
+                $ingreso = Ingreso::where('prestamo_id', $cuota->id_prestamo)
+                    ->where('numero_cuota', $cuota->numero)
                     ->where('cliente_id', $clienteCredito->cliente_id)
+                    ->where('cronograma_id', $cuota->id)
                     ->first();
-
 
                 if ($ingreso) {
                     $cuota->estado = 'pagado';
@@ -1142,9 +1142,10 @@ class CreditoController extends Controller
                         //     ->where('cliente_id', $cuotaRelacionada->cliente_id)
                         //     ->first();
 
-                        $ingresoRelacionado = Ingreso::where('cronograma_id', $cuotaRelacionada->id)
-                            ->where('prestamo_id', $id)
-                            ->where('cliente_id', $cuotaRelacionada->cliente_id)
+                        $ingresoRelacionado = Ingreso::where('prestamo_id', $cuotaRelacionada->id_prestamo)
+                            ->where('numero_cuota', $cuotaRelacionada->numero)
+                            ->where('cliente_id', $clienteCredito->cliente_id)
+                            ->where('cronograma_id', $cuotaRelacionada->id)
                             ->first();
 
                         if (!$ingresoRelacionado) {
@@ -1184,7 +1185,9 @@ class CreditoController extends Controller
                         //     ->whereNull('cliente_id')
                         //     ->first();
 
-                        $ingresoGeneral = Ingreso::where('cronograma_id', $cuotaGeneral->id)
+                        $ingresoGeneral = Ingreso::where('prestamo_id', $cuotaGeneral->id_prestamo)
+                            ->where('numero_cuota', $cuotaGeneral->numero)
+                            ->where('cronograma_id', $cuotaGeneral->id)
                             ->whereNull('cliente_id')
                             ->first();
 
