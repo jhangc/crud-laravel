@@ -1123,6 +1123,7 @@ class CreditoController extends Controller
                         ->whereNotNull('cliente_id')
                         ->get();
 
+
                     $estadoGeneral = 'pagado';
                     $pagadas = 0;
                     $pendientes = 0;
@@ -1146,7 +1147,7 @@ class CreditoController extends Controller
 
                         $ingresoRelacionado = Ingreso::where('prestamo_id', $cuotaRelacionada->id_prestamo)
                             ->where('numero_cuota', $cuotaRelacionada->numero)
-                            ->where('cliente_id', $clienteCredito->cliente_id)
+                            ->where('cliente_id', $cuotaRelacionada->cliente_id)
                             ->where('cronograma_id', $cuotaRelacionada->id)
                             ->first();
 
