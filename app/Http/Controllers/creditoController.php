@@ -1117,7 +1117,7 @@ class CreditoController extends Controller
             foreach ($todasLasCuotas as $cuotaGeneral) {
                 if (is_null($cuotaGeneral->cliente_id)) {
                     $fecha_vencimiento = Carbon::parse($cuotaGeneral->fecha);
-                    $cuotasRelacionadas = Cronograma::where('id_prestamo', $id)
+                    $cuotasRelacionadas = Cronograma::where('id_prestamo', $cuotaGeneral->id_prestamo)
                         ->where('fecha', $cuotaGeneral->fecha)
                         ->where('numero', $cuotaGeneral->numero)
                         ->whereNotNull('cliente_id')
