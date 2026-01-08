@@ -5,7 +5,7 @@ use App\Http\Controllers\apisnetController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PDFController;
+use App\Http\Controllers\PdfController;
 use App\Http\Controllers\IniciarOpeController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\GastoController;
@@ -153,27 +153,27 @@ Route::post('/admin/creditos/updateservicio/{id}', [UpdateController::class, 'up
 Route::post('/admin/creditos/updateprodcuccion/{id}', [UpdateController::class, 'updateCreditoProduccion'])->name('creditos.updateCreditoProduccion')->middleware('auth');
 Route::post('/admin/creditos/updateagricola/{id}', [UpdateController::class, 'updateCreditoagricola'])->name('creditos.updateCreditoAgricola')->middleware('auth');
 
-Route::get('/generar-pdf/{id}', [PDFController::class, 'generatePDF'])->name('generar-pdf');
-Route::get('/generar-cronograma/{id}', [PDFController::class, 'generatecronogramaPDF'])->name('generar-cronograma');
-Route::get('/generar-cronogramaindividual/{id}', [PDFController::class, 'generatecronogramaindividualPDF'])->name('generar-cronograma-individual');
-Route::get('/generar-cronogramagrupal/{id}', [PDFController::class, 'generatecronogramagrupalPDF'])->name('generar-cronograma-grupal');
+Route::get('/generar-pdf/{id}', [PdfController::class, 'generatePDF'])->name('generar-pdf');
+Route::get('/generar-cronograma/{id}', [PdfController::class, 'generatecronogramaPDF'])->name('generar-cronograma');
+Route::get('/generar-cronogramaindividual/{id}', [PdfController::class, 'generatecronogramaindividualPDF'])->name('generar-cronograma-individual');
+Route::get('/generar-cronogramagrupal/{id}', [PdfController::class, 'generatecronogramagrupalPDF'])->name('generar-cronograma-grupal');
 
-Route::get('/generar-contratogrupal/{id}', [PDFController::class, 'generatecontratogrupalPDF'])->name('generar-contrato-grupal');
-Route::get('/generar-contratoindividual/{id}', [PDFController::class, 'generatecrontratoindividualPDF'])->name('generar-contrato-individual');
+Route::get('/generar-contratogrupal/{id}', [PdfController::class, 'generatecontratogrupalPDF'])->name('generar-contrato-grupal');
+Route::get('/generar-contratoindividual/{id}', [PdfController::class, 'generatecrontratoindividualPDF'])->name('generar-contrato-individual');
 
-Route::get('/generar-cronogramacredijoya/{id}', [PDFController::class, 'generatecronogramaindividualC'])->name('generar-cronograma-credijoya');
-Route::get('/generar-contratocredijoya/{id}', [PDFController::class, 'generatecrontratoindividualC'])->name('generar-contrato-credijoya');
-Route::get('/generar-info-joya', [PDFController::class, 'genrarInfoC'])->name('generar-info-joya');
+Route::get('/generar-cronogramacredijoya/{id}', [PdfController::class, 'generatecronogramaindividualC'])->name('generar-cronograma-credijoya');
+Route::get('/generar-contratocredijoya/{id}', [PdfController::class, 'generatecrontratoindividualC'])->name('generar-contrato-credijoya');
+Route::get('/generar-info-joya', [PdfController::class, 'genrarInfoC'])->name('generar-info-joya');
 
-Route::get('/generar-cartilla/{id}', [PDFController::class, 'generatecartillaPDF'])->name('generar-cartilla');
-Route::get('/generar-pagare/{id}', [PDFController::class, 'generatepagarePDF'])->name('generar-pagare');
+Route::get('/generar-cartilla/{id}', [PdfController::class, 'generatecartillaPDF'])->name('generar-cartilla');
+Route::get('/generar-pagare/{id}', [PdfController::class, 'generatepagarePDF'])->name('generar-pagare');
 
-Route::get('/generar-ticket-desembolso/{id}', [PDFController::class, 'generateticket'])->name('generar-ticket');
+Route::get('/generar-ticket-desembolso/{id}', [PdfController::class, 'generateticket'])->name('generar-ticket');
 
-Route::get('/generar-carta-cobranza/{id}', [PDFController::class, 'generatecartacobranzaPDF'])->name('carta-cobranza-pdf');
-Route::get('/generar-carta-cobranza-grupal/{id}', [PDFController::class, 'generatecartacobranzagrupalPDF'])->name('carta-cobranza-grupal-pdf');
+Route::get('/generar-carta-cobranza/{id}', [PdfController::class, 'generatecartacobranzaPDF'])->name('carta-cobranza-pdf');
+Route::get('/generar-carta-cobranza-grupal/{id}', [PdfController::class, 'generatecartacobranzagrupalPDF'])->name('carta-cobranza-grupal-pdf');
 
-Route::get('/generar-detalle-cliente/{id}', [PDFController::class, 'generatedetalleclientePDF'])->name('detalle-cliente-pdf');
+Route::get('/generar-detalle-cliente/{id}', [PdfController::class, 'generatedetalleclientePDF'])->name('detalle-cliente-pdf');
 
 
 Route::get('/inicio-operaciones', [IniciarOpeController::class, 'index'])->name('inicio_operaciones.index')->middleware('auth');
@@ -194,8 +194,8 @@ Route::get('/admin/reportes/credito/exportarcreditosgrupal', [ExcelController::c
 Route::get('/admin/creditos/vercuotaspago/{id}', [CreditoController::class, 'verpagocuota'])->name('creditos.verpagocuota')->middleware('auth');
 Route::post('/admin/creditos/pagocuota', [CreditoController::class, 'pagocuota'])->name('creditos.pagocuota')->middleware('auth');
 Route::post('/admin/creditos/pagocuotagrupal', [CreditoController::class, 'pagoGrupal'])->name('creditos.pagogrupal')->middleware('auth');
-Route::get('/admin/generar-ticket-pago/{id}/{diferencia}', [PDFController::class, 'generarTicketDePago'])->name('generar.ticket.pago');
-Route::get('/admin/generar-ticket-pagogrupal/{array}', [PDFController::class, 'generarTicketDePagogrupal'])->name('generar.ticket.pagogrupal');
+Route::get('/admin/generar-ticket-pago/{id}/{diferencia}', [PdfController::class, 'generarTicketDePago'])->name('generar.ticket.pago');
+Route::get('/admin/generar-ticket-pagogrupal/{array}', [PdfController::class, 'generarTicketDePagogrupal'])->name('generar.ticket.pagogrupal');
 
 Route::get('/storage/foto/{filename}', [FileController::class, 'getFoto'])->name('getFoto');
 Route::get('/storage/pdf/{filename}', [FileController::class, 'getPdf'])->name('getPdf');
@@ -217,7 +217,7 @@ Route::post('/admin/ingresos-extras', [IngresoExtraController::class, 'store'])-
 Route::delete('/admin/ingresos-extras/{id}', [IngresoExtraController::class, 'destroy'])->name('ingresos-extras.destroy')->middleware('auth');
 
 //reporte de cja diairo
-Route::get('/admin/generar-transacciones-pdf/{caja_id}', [PDFController::class, 'generarTransaccionesPDF'])->name('caja.generarTransaccionesPDF');
+Route::get('/admin/generar-transacciones-pdf/{caja_id}', [PdfController::class, 'generarTransaccionesPDF'])->name('caja.generarTransaccionesPDF');
 Route::get('/admin/caja/generar-arqueo-pdf/{id}', [PdfController::class, 'generarArqueoPDF'])->name('pdf.generarArqueoPDF');
 
 Route::get('/admin/boveda', [BovedaController::class, 'index'])->name('boveda.index')->middleware('auth');
@@ -248,8 +248,8 @@ Route::delete('/cuentas/{id}', [CuentasController::class, 'destroy'])->name('cue
 Route::post('/calcular-cuota-pendiente', [CreditoController::class, 'calcularCuotaPendiente'])->name('calcular.cuota.pendiente')->middleware('auth');
 Route::post('/generarcronogram/temp/', [CreditoController::class, 'generarNuevoCronograma'])->name('generar.nuevo.cronograma');
 Route::post('/generarcronogram/final', [CreditoController::class, 'amortizarCapital'])->name('amortizar.capital')->middleware('auth');
-Route::get('/vernuevocronograma/{id}', [PDFController::class, 'generarNuevoCronogramaPDF'])->name('generar.pdf.nuevo cronograma');
-Route::get('/admin/generar-ticket-pagototal-individual/{array}', [PDFController::class, 'Pagototalindividual'])->name('generar.pdf.Pagototalindividual');
+Route::get('/vernuevocronograma/{id}', [PdfController::class, 'generarNuevoCronogramaPDF'])->name('generar.pdf.nuevo cronograma');
+Route::get('/admin/generar-ticket-pagototal-individual/{array}', [PdfController::class, 'Pagototalindividual'])->name('generar.pdf.Pagototalindividual');
 
 //Reprogramacion de credito
 Route::post('/solicitar/reprogramacion', [CreditoController::class, 'solicitarReprogramacion'])->name('solicitar.reprogramacion')->middleware('auth');
@@ -257,7 +257,7 @@ Route::post('/reprogramaciones/store', [ReprogramacionController::class, 'reprog
 Route::get('/admin/creditos/aprobarreprogramados', [ReprogramacionController::class, 'viewreprogramacion'])->name('reprogramacion.index')->middleware('auth');
 Route::post('/reprogramaciones/process', [ReprogramacionController::class, 'process'])->name('reprogramacion.process')->middleware('auth');
 Route::post('/generarcronogramreprogramado', [CreditoController::class, 'generarreprogramacion'])->name('reprogramacion.exitosa')->middleware('auth');
-Route::get('/vernuevocronogramareprogramado/{id}', [PDFController::class, 'generarNuevoCronogramaReprogramadoPDF'])->name('generar.pdf.nuevo cronogramareprogramado')->middleware('auth');
+Route::get('/vernuevocronogramareprogramado/{id}', [PdfController::class, 'generarNuevoCronogramaReprogramadoPDF'])->name('generar.pdf.nuevo cronogramareprogramado')->middleware('auth');
 // Vista CRUD
 Route::get('/admin/precios-oro', [GoldPriceController::class, 'index'])->name('preciosoro.index')->middleware('auth');
 // API CRUD
