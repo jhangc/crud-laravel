@@ -112,6 +112,8 @@ class CreditoController extends Controller
 
         $modulo = $request->query('modulo'); // Obtener el parámetro 'modulo' de la URL
 
+        //gsgfgd
+
         $prestamo = Credito::find($id);
         $proyecciones = \App\Models\ProyeccionesVentas::where('id_prestamo', $id)->get();
         $deudas = \App\Models\DeudasFinancieras::where('prestamo_id', $id)->get();
