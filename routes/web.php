@@ -286,6 +286,14 @@ Route::get('admin/credijoya/ticket-pago/{pago}', [CrediJoyaController::class, 't
 Route::get('admin/credijoya/pagos/reversar', [CrediJoyaController::class, 'indexReversarPago'])->name('pagocredijoya.index-reversar')->middleware('auth');
 Route::post('admin/credijoya/pago/{pago}/reversar', [CrediJoyaController::class, 'reversarPago'])->name('pagocredijoya.reversar')->middleware('auth');
 
+// Reversiones de Crédito Individual
+Route::get('admin/pagos/reversar-individual', [CreditoController::class, 'indexReversarPagoIndividual'])->name('pagos.index-reversar-individual')->middleware('auth');
+Route::post('admin/pagos/pago/{pago}/reversar-individual', [CreditoController::class, 'reversarPagoIndividual'])->name('pagos.reversar-individual')->middleware('auth');
+
+// Reversiones de Crédito Grupal
+Route::get('admin/pagos/reversar-grupal', [CreditoController::class, 'indexReversarPagoGrupal'])->name('pagos.index-reversar-grupal')->middleware('auth');
+Route::post('admin/pagos/reversar-grupal', [CreditoController::class, 'reversarPagoGrupal'])->name('pagos.reversar-grupal')->middleware('auth');
+
 Route::get('admin/credijoya/devoluciones', [DevolucionController::class,'index'])->name('devoluciones.index')->middleware('auth');
 Route::get('admin/credijoya/devoluciones/list', [DevolucionController::class,'list'])->name('devoluciones.list')->middleware('auth');
 Route::get('admin/credijoya/devoluciones/calcular-custodia/{credito}', [DevolucionController::class,'calcularCustodia'])->name('devoluciones.calcular')->middleware('auth');

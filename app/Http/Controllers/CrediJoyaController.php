@@ -1024,12 +1024,14 @@ class CrediJoyaController extends Controller
     // ===== Vista de reversión de pagos =====
     public function indexReversarPago()
     {
-        // Últimos 50 pagos de credijoya (sin paginación, DataTables lo maneja)
+        $fechaLimite = Carbon::now()->subDays(30)->toDateString();
+        // Últimos 30 días de pagos de credijoya
         $pagos = Ingreso::with(['cliente', 'prestamo'])
             ->whereHas('prestamo', function ($q) {
                 $q->where('subproducto', 'credijoya');
             })
-            ->orderBy('created_at', 'desc')
+            ->whereDate('fecha_pago', '>=', $fechaLimite)
+            ->orderBy('fecha_pago', 'desc')
             ->get();
 
         return view('admin.credijoya.reversar-pago', [

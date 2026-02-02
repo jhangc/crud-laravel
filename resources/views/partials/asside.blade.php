@@ -82,8 +82,8 @@
                             <p> Precios de Oro</p>
                         </a>
                     </li>
-                    <li class="nav-item has-treeview {{ request()->is('admin/credijoya/pagos/reversar*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->is('admin/credijoya/pagos/reversar*') ? 'active' : '' }}">
+                    <li class="nav-item has-treeview {{ request()->is('admin/credijoya/pagos/reversar*') || request()->is('admin/pagos/reversar-individual*') || request()->is('admin/pagos/reversar-grupal*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->is('admin/credijoya/pagos/reversar*') || request()->is('admin/pagos/reversar-individual*') || request()->is('admin/pagos/reversar-grupal*') ? 'active' : '' }}">
                             <i class="nav-icon fas"><i class="bi bi-arrow-counterclockwise"></i></i>
                             <p>
                                 Reversiones
@@ -96,6 +96,20 @@
                                     class="nav-link {{ request()->is('admin/credijoya/pagos/reversar') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Reversión Credijoya</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url('/admin/pagos/reversar-individual') }}"
+                                    class="nav-link {{ request()->is('admin/pagos/reversar-individual') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Reversión Individual</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url('/admin/pagos/reversar-grupal') }}"
+                                    class="nav-link {{ request()->is('admin/pagos/reversar-grupal') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Reversión Grupal</p>
                                 </a>
                             </li>
                         </ul>

@@ -9,11 +9,42 @@
         </div>
     </div>
 
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label><strong>Filtrar por Fecha Inicio:</strong></label>
+                            <input type="date" id="filtroFechaInicio" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label><strong>Filtrar por Fecha Fin:</strong></label>
+                            <input type="date" id="filtroFechaFin" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-primary btn-block" onclick="aplicarFiltros()">
+                                <i class="fas fa-filter"></i> Filtrar
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-secondary btn-block" onclick="limpiarFiltros()">
+                                <i class="fas fa-redo"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0">⚠️ Últimos Pagos Registrados</h5>
+                    <h5 class="mb-0">⚠️ Últimos Pagos Registrados (Últimos 30 días)</h5>
                 </div>
                 <div class="card-body">
                     @if($pagos->count() > 0)
@@ -180,7 +211,7 @@
         };
 
         // Inicializar DataTable
-        $('#tablaReversiones').DataTable({
+        var tabla = $('#tablaReversiones').DataTable({
             "paging": true,
             "lengthChange": true,
             "searching": true,
@@ -191,6 +222,26 @@
             "pageLength": 10,
             "order": [[6, "desc"]]  // Ordenar por columna Fecha Pago (índice 6) descendente
         });
+    });
+
+    function aplicarFiltros() {
+        const tabla = $('#tablaReversiones').DataTable();
+        const fechaInicio = document.getElementById('filtroFechaInicio').value;
+        const fechaFin = document.getElementById('filtroFechaFin').value;
+        
+        if (!fechaInicio || !fechaFin) {
+            Swal.fire('Error', 'Por favor selecciona ambas fechas', 'warning');
+            return;
+        }
+        
+        tabla.column(6).search('^' + fechaInicio + '|' + fechaFin + '$', true, false, true).draw();
+    }
+
+    function limpiarFiltros() {
+        const tabla = $('#tablaReversiones').DataTable();
+        document.getElementById('filtroFechaInicio').value = '';
+        document.getElementById('filtroFechaFin').value = '';
+        tabla.column(6).search('').draw();
     });
 
     function confirmReversarPago(pagoId, cliente, monto) {

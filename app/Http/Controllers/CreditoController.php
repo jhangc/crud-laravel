@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Credito;
 use App\Models\Cliente;
 use App\Models\CreditoCliente;
+use App\Models\ReversionPago;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -3442,4 +3443,212 @@ class CreditoController extends Controller
             ];
         }
     }
+
+    // ============ REVERSIONES DE PAGOS - INDIVIDUAL Y GRUPAL ============
+
+    public function indexReversarPagoIndividual()
+    {
+        $fechaLimite = Carbon::now()->subDays(30)->toDateString();
+        $pagos = Ingreso::with(['prestamo' => function ($query) {
+            $query->where('producto', 'individual')->orWhere('producto', 'microempresa');
+        }])
+            ->whereNotNull('cliente_id')
+            ->whereDate('fecha_pago', '>=', $fechaLimite)
+            ->orderBy('fecha_pago', 'desc')
+            ->get();
+
+        return view('admin.creditos.reversar-pago-individual', compact('pagos'));
+    }
+
+    public function reversarPagoIndividual(Ingreso $pago, Request $request)
+    {
+        $trace = Str::uuid()->toString();
+        $motivo = $request->input('motivo', 'Sin especificar');
+
+        try {
+            DB::beginTransaction();
+
+            $creditoId = $pago->prestamo_id;
+            $montoTotal = (float) $pago->monto;
+            $cajaId = $pago->transaccion_id;
+            $cronogramaId = $pago->cronograma_id;
+
+            // Restaurar cronograma a estado no pagado
+            if ($cronogramaId) {
+                $cronograma = Cronograma::find($cronogramaId);
+                if ($cronograma) {
+                    $cronograma->pagado = 0; // o el campo que controle el estado
+                    $cronograma->save();
+                }
+            }
+
+            // Restar de caja
+            if ($cajaId) {
+                $caja = CajaTransaccion::find($cajaId);
+                if ($caja) {
+                    $caja->cantidad_ingresos = round((float)($caja->cantidad_ingresos ?? 0) - $montoTotal, 2);
+                    $caja->save();
+                }
+            }
+
+            // Marcar ingreso como eliminado (SoftDelete)
+            $pago->delete();
+
+            // Guardar en auditoría
+            ReversionPago::create([
+                'ingreso_id'  => $pago->id,
+                'prestamo_id' => $creditoId,
+                'user_id'     => auth()->id(),
+                'monto'       => $montoTotal,
+                'motivo'      => $motivo,
+                'detalles'    => 'Reversión Crédito Individual',
+            ]);
+
+            DB::commit();
+            \Illuminate\Support\Facades\Log::info("Reversión de pago individual", [
+                'pago_id'    => $pago->id,
+                'credito_id' => $creditoId,
+                'monto'      => $montoTotal,
+                'motivo'     => $motivo,
+                'trace'      => $trace,
+                'usuario'    => auth()->id(),
+            ]);
+
+            return response()->json([
+                'ok'       => true,
+                'message'  => 'Pago individual reversado exitosamente',
+                'trace_id' => $trace,
+            ], 200);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Illuminate\Support\Facades\Log::error("Error en reversión de pago individual", [
+                'pago_id'   => $pago->id,
+                'error'     => $e->getMessage(),
+                'trace'     => $trace,
+                'usuario'   => auth()->id(),
+            ]);
+
+            return response()->json([
+                'ok'       => false,
+                'error'    => 'Error al reversionar el pago: ' . $e->getMessage(),
+                'trace_id' => $trace,
+            ], 500);
+        }
+    }
+
+    public function indexReversarPagoGrupal()
+    {
+        $fechaLimite = Carbon::now()->subDays(30)->toDateString();
+        $pagos = Ingreso::with([
+            'prestamo' => function ($query) {
+                $query->where('categoria', 'grupal');
+            },
+            'cliente'
+        ])
+            ->whereDate('fecha_pago', '>=', $fechaLimite)
+            ->orderBy('fecha_pago', 'desc')
+            ->get();
+
+        return view('admin.creditos.reversar-pago-grupal', compact('pagos'));
+    }
+
+    public function reversarPagoGrupal(Request $request)
+    {
+        $trace = Str::uuid()->toString();
+        $motivo = $request->input('motivo', 'Sin especificar');
+        $creditoId = $request->input('prestamo_id');
+        $fecha = $request->input('fecha');
+
+        try {
+            DB::beginTransaction();
+
+            // Obtener todos los ingresos de esta fecha para este crédito
+            $ingresos = Ingreso::where('prestamo_id', $creditoId)
+                ->whereDate('fecha_pago', $fecha)
+                ->get();
+
+            if ($ingresos->isEmpty()) {
+                return response()->json([
+                    'ok'    => false,
+                    'error' => 'No se encontraron pagos para reversar en esta fecha',
+                ], 404);
+            }
+
+            $montoTotalReversado = 0;
+            $cantidadIngresos = 0;
+
+            foreach ($ingresos as $ingreso) {
+                $montoTotalReversado += $ingreso->monto;
+                $cantidadIngresos++;
+
+                $cajaId = $ingreso->transaccion_id;
+                $cronogramaId = $ingreso->cronograma_id;
+
+                // Restaurar cronograma
+                if ($cronogramaId) {
+                    $cronograma = Cronograma::find($cronogramaId);
+                    if ($cronograma) {
+                        $cronograma->pagado = 0;
+                        $cronograma->save();
+                    }
+                }
+
+                // Restar de caja
+                if ($cajaId) {
+                    $caja = CajaTransaccion::find($cajaId);
+                    if ($caja) {
+                        $caja->cantidad_ingresos = round((float)($caja->cantidad_ingresos ?? 0) - $ingreso->monto, 2);
+                        $caja->save();
+                    }
+                }
+
+                // Eliminar ingreso
+                $ingreso->delete();
+
+                // Guardar en auditoría
+                ReversionPago::create([
+                    'ingreso_id'  => $ingreso->id,
+                    'prestamo_id' => $creditoId,
+                    'user_id'     => auth()->id(),
+                    'monto'       => $ingreso->monto,
+                    'motivo'      => $motivo,
+                    'detalles'    => 'Reversión Crédito Grupal',
+                ]);
+            }
+
+            DB::commit();
+            \Illuminate\Support\Facades\Log::info("Reversión de pago grupal", [
+                'credito_id'         => $creditoId,
+                'fecha'              => $fecha,
+                'cantidad_ingresos'  => $cantidadIngresos,
+                'monto_total'        => $montoTotalReversado,
+                'motivo'             => $motivo,
+                'trace'              => $trace,
+                'usuario'            => auth()->id(),
+            ]);
+
+            return response()->json([
+                'ok'       => true,
+                'message'  => "Pago grupal reversado exitosamente ($cantidadIngresos ingresos)",
+                'trace_id' => $trace,
+            ], 200);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Illuminate\Support\Facades\Log::error("Error en reversión de pago grupal", [
+                'credito_id' => $creditoId,
+                'error'      => $e->getMessage(),
+                'trace'      => $trace,
+                'usuario'    => auth()->id(),
+            ]);
+
+            return response()->json([
+                'ok'       => false,
+                'error'    => 'Error al reversionar el pago grupal: ' . $e->getMessage(),
+                'trace_id' => $trace,
+            ], 500);
+        }
+    }
 }
+
