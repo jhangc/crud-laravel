@@ -283,6 +283,8 @@ Route::get('admin/credijoya/ticket-desembolso/{prestamo}', [CrediJoyaController:
 Route::get('admin/credijoya/{credito}/pago', [CrediJoyaController::class, 'createPago'])->name('pagocredijoya.create')->middleware('auth');
 Route::post('admin/credijoya/{credito}/pago', [CrediJoyaController::class, 'storePago'])->name('pagocredijoya.store')->middleware('auth');
 Route::get('admin/credijoya/ticket-pago/{pago}', [CrediJoyaController::class, 'ticketPago'])->name('pagocredijoya.ticket')->middleware('auth');
+Route::get('admin/credijoya/pagos/reversar', [CrediJoyaController::class, 'indexReversarPago'])->name('pagocredijoya.index-reversar')->middleware('auth');
+Route::post('admin/credijoya/pago/{pago}/reversar', [CrediJoyaController::class, 'reversarPago'])->name('pagocredijoya.reversar')->middleware('auth');
 
 Route::get('admin/credijoya/devoluciones', [DevolucionController::class,'index'])->name('devoluciones.index')->middleware('auth');
 Route::get('admin/credijoya/devoluciones/list', [DevolucionController::class,'list'])->name('devoluciones.list')->middleware('auth');

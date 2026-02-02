@@ -7,6 +7,7 @@ use App\Models\CredijoyaJoya;
 use App\Models\Credito;
 use App\Models\CreditoCliente;
 use App\Models\Cronograma;
+use App\Models\ReversionPago;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -1019,6 +1020,23 @@ class CrediJoyaController extends Controller
             'amortizacionHoy' => $amortizacionHoy,
         ]);
     }
+
+    // ===== Vista de reversión de pagos =====
+    public function indexReversarPago()
+    {
+        // Últimos 50 pagos de credijoya (sin paginación, DataTables lo maneja)
+        $pagos = Ingreso::with(['cliente', 'prestamo'])
+            ->whereHas('prestamo', function ($q) {
+                $q->where('subproducto', 'credijoya');
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.credijoya.reversar-pago', [
+            'pagos' => $pagos,
+        ]);
+    }
+
     // === Procesar pago (AJAX)
     public function storePago(Request $r, credito $credito)
     {
@@ -1320,6 +1338,184 @@ class CrediJoyaController extends Controller
         Cronograma::where('id_prestamo', $creditoId)
             ->when(!empty($pagadas), fn($q)=>$q->whereNotIn('id', $pagadas))
             ->delete();
+    }
+
+    // ===== REVERSIÓN DE PAGO =====
+    public function reversarPago(Ingreso $pago, Request $request)
+    {
+        $trace = Str::uuid()->toString();
+        $motivo = $request->input('motivo', 'Sin especificar');
+
+        try {
+            DB::beginTransaction();
+
+            // Obtener datos del pago
+            $creditoId = $pago->prestamo_id;
+            $nuevoId   = $pago->nuevo_id;
+            $montoTotal = (float) $pago->monto;
+            $cajaId    = $pago->transaccion_id;
+
+            // Crédito actual
+            $credito = Credito::findOrFail($creditoId);
+
+            // ===== CASO 1: Pago SIN renovación (nuevo_id es NULL) =====
+            if (empty($nuevoId)) {
+                // Solo restaurar estado del crédito si estaba terminado
+                if ($credito->estado === 'terminado') {
+                    $credito->estado    = 'pagado';
+                    $credito->save();
+
+                    // Restaurar joyas
+                    foreach ($credito->joyas as $joya) {
+                        $joya->devuelta   = 0;
+                        $joya->fecha_pago = null;
+                        $joya->save();
+                    }
+                }
+
+                // Restar de caja
+                if ($cajaId) {
+                    $caja = CajaTransaccion::find($cajaId);
+                    if ($caja) {
+                        $caja->cantidad_ingresos = round((float)($caja->cantidad_ingresos ?? 0) - $montoTotal, 2);
+                        $caja->save();
+                    }
+                }
+
+                // Marcar ingreso como eliminado (SoftDelete)
+                $pago->delete();
+
+                // Guardar en auditoría
+                ReversionPago::create([
+                    'ingreso_id'  => $pago->id,
+                    'prestamo_id' => $creditoId,
+                    'user_id'     => auth()->id(),
+                    'monto'       => $montoTotal,
+                    'motivo'      => $motivo,
+                    'detalles'    => 'Reversión sin renovación',
+                ]);
+
+                DB::commit();
+                Log::info("Reversión de pago (sin renovación)", [
+                    'pago_id'      => $pago->id,
+                    'credito_id'   => $creditoId,
+                    'monto'        => $montoTotal,
+                    'motivo'       => $motivo,
+                    'trace'        => $trace,
+                    'usuario'      => auth()->id(),
+                ]);
+
+                return response()->json([
+                    'ok'       => true,
+                    'message'  => 'Pago reversado exitosamente',
+                    'trace_id' => $trace,
+                ], 200);
+            }
+
+            // ===== CASO 2: Pago CON renovación (nuevo_id tiene valor) =====
+            $nuevoCreditoId = (int) $nuevoId;
+            $nuevoCredito   = Credito::find($nuevoCreditoId);
+
+            if ($nuevoCredito) {
+                // 1) Eliminar cuotas del nuevo crédito
+                Cronograma::where('id_prestamo', $nuevoCreditoId)->delete();
+
+                // 2) Eliminar vínculo cliente del nuevo crédito
+                CreditoCliente::where('prestamo_id', $nuevoCreditoId)->delete();
+
+                // 3) Transferir joyas de vuelta al crédito anterior
+                CredijoyaJoya::where('prestamo_id', $nuevoCreditoId)
+                    ->update([
+                        'prestamo_id'  => $creditoId,
+                        'devuelta'     => 0,
+                        'fecha_pago'   => null,
+                    ]);
+
+                // 4) Eliminar el nuevo crédito
+                $nuevoCredito->delete();
+            }
+
+            // 5) Restaurar crédito anterior
+            $creditoAnterior = Credito::find($creditoId);
+            if ($creditoAnterior) {
+                // Recrear la cuota vigente si fue eliminada
+                $cuotasExistentes = Cronograma::where('id_prestamo', $creditoId)->count();
+                if ($cuotasExistentes === 0) {
+                    // Recalcular y crear cronograma nuevamente
+                    $this->guardarCronograma(
+                        $creditoId,
+                        (int)$creditoAnterior->id_cliente,
+                        (float)$creditoAnterior->monto_total,
+                        (float)$creditoAnterior->tasa,
+                        $creditoAnterior->fecha_desembolso
+                    );
+                }
+
+                $creditoAnterior->estado    = 'pagado';
+                $creditoAnterior->save();
+
+                // Restaurar joyas
+                foreach ($creditoAnterior->joyas as $joya) {
+                    $joya->devuelta   = 0;
+                    $joya->fecha_pago = null;
+                    $joya->save();
+                }
+            }
+
+            // 6) Restar de caja
+            if ($cajaId) {
+                $caja = CajaTransaccion::find($cajaId);
+                if ($caja) {
+                    $caja->cantidad_ingresos = round((float)($caja->cantidad_ingresos ?? 0) - $montoTotal, 2);
+                    $caja->save();
+                }
+            }
+
+            // 7) Eliminar ingreso
+            $pago->delete();
+
+            // Guardar en auditoría
+            ReversionPago::create([
+                'ingreso_id'  => $pago->id,
+                'prestamo_id' => $creditoId,
+                'user_id'     => auth()->id(),
+                'monto'       => $montoTotal,
+                'motivo'      => $motivo,
+                'detalles'    => "Reversión con renovación. Crédito nuevo ID: {$nuevoCreditoId}",
+            ]);
+
+            DB::commit();
+            Log::info("Reversión de pago (con renovación)", [
+                'pago_id'           => $pago->id,
+                'credito_anterior'  => $creditoId,
+                'nuevo_credito'     => $nuevoCreditoId,
+                'monto'             => $montoTotal,
+                'motivo'            => $motivo,
+                'trace'             => $trace,
+                'usuario'           => auth()->id(),
+            ]);
+
+            return response()->json([
+                'ok'       => true,
+                'message'  => 'Pago reversado exitosamente. Crédito restaurado.',
+                'trace_id' => $trace,
+            ], 200);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error("Error en reversión de pago", [
+                'pago_id'   => $pago->id,
+                'error'     => $e->getMessage(),
+                'trace'     => $trace,
+                'usuario'   => auth()->id(),
+            ]);
+
+            return response()->json([
+                'ok'       => false,
+                'error'    => 'Error al reversionar el pago: ' . $e->getMessage(),
+                'trace_id' => $trace,
+            ], 500);
+        }
     }
 
    

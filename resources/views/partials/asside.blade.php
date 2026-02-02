@@ -82,6 +82,24 @@
                             <p> Precios de Oro</p>
                         </a>
                     </li>
+                    <li class="nav-item has-treeview {{ request()->is('admin/credijoya/pagos/reversar*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->is('admin/credijoya/pagos/reversar*') ? 'active' : '' }}">
+                            <i class="nav-icon fas"><i class="bi bi-arrow-counterclockwise"></i></i>
+                            <p>
+                                Reversiones
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ url('/admin/credijoya/pagos/reversar') }}"
+                                    class="nav-link {{ request()->is('admin/credijoya/pagos/reversar') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Reversión Credijoya</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                 @endrole
 
 
