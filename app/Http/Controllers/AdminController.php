@@ -210,8 +210,9 @@ class AdminController extends Controller
 
         // Verificar si la caja tiene una transacción abierta o cerrada hoy
         $ultimaTransaccion = $caja->transacciones()
-            // ->whereDate('created_at', $today)
-            ->orderBy('created_at', 'desc')->first();
+            ->withoutTrashed()  // ← Excluye soft-deleted
+            ->orderBy('created_at', 'desc')
+            ->first();
         if (!$ultimaTransaccion) {
             return response()->json([
                 'success' => false,
