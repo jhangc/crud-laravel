@@ -3473,14 +3473,7 @@ class CreditoController extends Controller
             $cajaId = $pago->transaccion_id;
             $cronogramaId = $pago->cronograma_id;
 
-            // Restaurar cronograma a estado no pagado
-            if ($cronogramaId) {
-                $cronograma = Cronograma::find($cronogramaId);
-                if ($cronograma) {
-                    $cronograma->pagado = 0; // o el campo que controle el estado
-                    $cronograma->save();
-                }
-            }
+            // El estado de la cuota se calcula por existencia de ingreso
 
             // Restar de caja
             if ($cajaId) {
@@ -3585,14 +3578,7 @@ class CreditoController extends Controller
                 $cajaId = $ingreso->transaccion_id;
                 $cronogramaId = $ingreso->cronograma_id;
 
-                // Restaurar cronograma
-                if ($cronogramaId) {
-                    $cronograma = Cronograma::find($cronogramaId);
-                    if ($cronograma) {
-                        $cronograma->pagado = 0;
-                        $cronograma->save();
-                    }
-                }
+                // El estado de la cuota se calcula por existencia de ingreso
 
                 // Restar de caja
                 if ($cajaId) {

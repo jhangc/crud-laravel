@@ -242,7 +242,7 @@
         document.getElementById('filtroFechaInicio').value = '';
         document.getElementById('filtroFechaFin').value = '';
         tabla.column(6).search('').draw();
-    });
+    }
 
     function confirmReversarPago(pagoId, cliente, monto) {
         pagoIdActual = pagoId;
