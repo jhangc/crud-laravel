@@ -2672,6 +2672,7 @@ class CreditoController extends Controller
             ])
                 ->withCount('creditoClientes as cliente_creditos_count')
                 ->where('activo', 1)
+                ->where('estado', '!=', 'pagado')
                 ->whereHas('cronograma', function ($query) use ($today) {
                     $query->where('fecha', '<', $today)
                         ->whereDoesntHave('ingresos');
@@ -2689,6 +2690,7 @@ class CreditoController extends Controller
             ])
                 ->withCount('creditoClientes as cliente_creditos_count')
                 ->where('activo', 1)
+                ->where('estado', '!=', 'pagado')
                 ->where('user_id', $user->id)
                 ->whereHas('cronograma', function ($query) use ($today) {
                     $query->where('fecha', '<', $today)
