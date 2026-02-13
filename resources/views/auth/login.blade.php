@@ -14,11 +14,82 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="{{asset('dist/css/adminlte.min.css')}}">
   <link rel="icon" href="{{ asset('dist/img/fdfds.ico') }}" type="image/x-icon">
+  
+  <style>
+    body.login-page {
+      background: linear-gradient(135deg, #044b6b 0%, #066a94 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .login-box {
+      width: 400px;
+    }
+    
+    .login-logo {
+      text-align: center;
+      margin-bottom: 30px;
+      background: white;
+      padding: 30px 20px;
+      border-radius: 10px 10px 0 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .login-logo img {
+      max-width: 280px;
+      height: auto;
+      margin-bottom: 15px;
+    }
+    
+    .login-logo a {
+      color: #044b6b;
+      font-weight: 600;
+      font-size: 18px;
+      text-decoration: none;
+    }
+    
+    .card {
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      border: none;
+    }
+    
+    .card-body {
+      padding: 30px;
+    }
+    
+    .login-box-msg {
+      color: #666;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    
+    .btn-primary {
+      background-color: #044b6b;
+      border-color: #044b6b;
+      padding: 10px;
+      font-weight: 500;
+    }
+    
+    .btn-primary:hover {
+      background-color: #066a94;
+      border-color: #066a94;
+    }
+    
+    .form-control:focus {
+      border-color: #044b6b;
+      box-shadow: 0 0 0 0.2rem rgba(4, 75, 107, 0.25);
+    }
+  </style>
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <a href="{{url('/')}}"><b>SISTEMA DE ACCESO GRUPO CREDIPALMO</b></a>
+    <img src="{{asset('logo.png')}}" alt="Grupo Credipalmo Logo">
+    <br>
+    <a href="{{url('/')}}"><b>SISTEMA DE ACCESO</b></a>
   </div>
   <!-- /.login-logo -->
   <div class="card">
@@ -82,5 +153,16 @@ echo $password;
 <script src="{{asset('plugins/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
 <!-- AdminLTE App -->
 <script src="{{asset('dist/js/adminlte.min.js')}}"></script>
+<script>
+$(function() {
+  $('form[action$="login"]').on('submit', function() {
+    var btn = $(this).find('button[type="submit"]');
+    btn.prop('disabled', true);
+    var original = btn.html();
+    btn.data('original', original);
+    btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Iniciando...');
+  });
+});
+</script>
 </body>
 </html>
