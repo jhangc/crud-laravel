@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\User;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -20,6 +23,8 @@ class LoginController extends Controller
 
     use AuthenticatesUsers;
 
+    protected $estadoBloqueado = false;
+
     /**
      * Where to redirect users after login.
      *
@@ -35,5 +40,31 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    protected function attemptLogin(Request $request)
+    {
+        $user = User::where($this->username(), $request->input($this->username()))->first();
+
+        if ($user && (string) $user->estado === '0') {
+            $this->estadoBloqueado = true;
+            return false;
+        }
+
+        return $this->guard()->attempt(
+            $this->credentials($request),
+            $request->boolean('remember')
+        );
+    }
+
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        if ($this->estadoBloqueado) {
+            throw ValidationException::withMessages([
+                $this->username() => ['Este usuario está inactivo y no puede iniciar sesión.'],
+            ]);
+        }
+
+        return parent::sendFailedLoginResponse($request);
     }
 }

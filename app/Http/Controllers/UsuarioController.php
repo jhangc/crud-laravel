@@ -11,7 +11,10 @@ use App\Models\Credito;
 use App\Models\Cliente;
 use App\Models\CreditoCliente;
 use App\Models\CtsUsuario;
+use App\Models\CajaTransaccion;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Carbon;
 
 class UsuarioController extends Controller
 {
@@ -24,7 +27,27 @@ class UsuarioController extends Controller
         $usuarios = User::with('roles')->where(function ($query) {
             $query->where('estado', 1)
                 ->orWhereNull('estado');
-        })->get();
+        })->with('ctsUsuario')->get();
+
+        $limiteInactividad = now()->subMinutes((int) config('session.lifetime', 120));
+
+        $cajerasConCajaAbierta = CajaTransaccion::whereNull('hora_cierre')
+            ->whereNull('fecha_cierre')
+            ->pluck('user_id');
+
+        foreach ($usuarios as $usuario) {
+            $ultimaActividadRaw = Cache::get('user-last-activity-' . $usuario->id);
+            $ultimaActividad = $ultimaActividadRaw ? Carbon::parse($ultimaActividadRaw) : null;
+
+            $usuario->sesion_activa = $ultimaActividad && $ultimaActividad->greaterThanOrEqualTo($limiteInactividad);
+            $usuario->ultima_actividad = $ultimaActividad;
+
+            $usuario->es_cajera = $usuario->roles->contains(function ($role) {
+                return strtolower($role->name) === 'cajera';
+            });
+
+            $usuario->caja_abierta = $usuario->es_cajera && $cajerasConCajaAbierta->contains($usuario->id);
+        }
 
         return view('admin.usuarios.index', ['usuarios' => $usuarios]);
     }

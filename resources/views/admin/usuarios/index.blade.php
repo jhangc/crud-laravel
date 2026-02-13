@@ -42,6 +42,12 @@
                                     <center>Dirección</center>
                                 </th>
                                 <th>
+                                    <center>Sesión</center>
+                                </th>
+                                <th>
+                                    <center>Caja</center>
+                                </th>
+                                <th>
                                     <center>Acciones</center>
                                 </th>
                             </tr>
@@ -73,6 +79,22 @@
                                     
                                     <td>{{ $usuario->telefono }}</td>
                                     <td>{{ $usuario->direccion }}</td>
+                                    <td style="text-align:center">
+                                        @if ($usuario->sesion_activa)
+                                            <span class="badge badge-success">Activa</span>
+                                        @else
+                                            <span class="badge badge-secondary">Inactiva</span>
+                                        @endif
+                                    </td>
+                                    <td style="text-align:center">
+                                        @if (!$usuario->es_cajera)
+                                            <span class="badge badge-light">N/A</span>
+                                        @elseif ($usuario->caja_abierta)
+                                            <span class="badge badge-success">Abierta</span>
+                                        @else
+                                            <span class="badge badge-secondary">Cerrada</span>
+                                        @endif
+                                    </td>
                                     
                                     <td style="text-align:center">
                                         <div class="btn-group" role="group" aria-label="Basic example">
