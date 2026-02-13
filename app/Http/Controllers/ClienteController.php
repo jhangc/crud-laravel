@@ -17,13 +17,87 @@ class ClienteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Obtener solo los clientes activos (activo = 1)
-        $clientes = Cliente::where('activo', 1)->get();
+        if ($request->ajax()) {
+            $draw = (int) $request->input('draw', 1);
+            $start = (int) $request->input('start', 0);
+            $length = (int) $request->input('length', 25);
+            $search = trim((string) $request->input('search.value', ''));
 
-        // Pasar los clientes activos a la vista
-        return view('admin.clientes.index', ['clientes' => $clientes]);
+            $orderColumnIndex = (int) $request->input('order.0.column', 1);
+            $orderDirection = $request->input('order.0.dir', 'asc') === 'desc' ? 'desc' : 'asc';
+
+            $columnMap = [
+                0 => 'id',
+                1 => 'nombre',
+                2 => 'documento_identidad',
+                3 => 'profesion',
+                4 => 'estado_civil',
+                5 => 'conyugue',
+                6 => 'dni_conyugue',
+                7 => 'id',
+                8 => 'id',
+                9 => 'id',
+            ];
+
+            $orderColumn = $columnMap[$orderColumnIndex] ?? 'id';
+
+            $query = Cliente::query()->where('activo', 1);
+            $recordsTotal = Cliente::where('activo', 1)->count();
+
+            if ($search !== '') {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nombre', 'like', "%{$search}%")
+                        ->orWhere('documento_identidad', 'like', "%{$search}%")
+                        ->orWhere('profesion', 'like', "%{$search}%")
+                        ->orWhere('estado_civil', 'like', "%{$search}%")
+                        ->orWhere('conyugue', 'like', "%{$search}%")
+                        ->orWhere('dni_conyugue', 'like', "%{$search}%");
+                });
+            }
+
+            $recordsFiltered = (clone $query)->count();
+
+            $clientes = $query
+                ->orderBy($orderColumn, $orderDirection)
+                ->skip($start)
+                ->take($length)
+                ->get([
+                    'id',
+                    'nombre',
+                    'documento_identidad',
+                    'profesion',
+                    'estado_civil',
+                    'conyugue',
+                    'dni_conyugue',
+                    'foto',
+                    'dni_pdf',
+                ]);
+
+            $data = $clientes->map(function ($cliente) {
+                return [
+                    'id' => $cliente->id,
+                    'nombre' => $cliente->nombre,
+                    'documento_identidad' => $cliente->documento_identidad,
+                    'profesion' => $cliente->profesion,
+                    'estado_civil' => $cliente->estado_civil,
+                    'conyugue' => $cliente->conyugue,
+                    'dni_conyugue' => $cliente->dni_conyugue,
+                    'has_foto' => !empty($cliente->foto),
+                    'has_dni_pdf' => !empty($cliente->dni_pdf),
+                ];
+            });
+
+            return response()->json([
+                'draw' => $draw,
+                'recordsTotal' => $recordsTotal,
+                'recordsFiltered' => $recordsFiltered,
+                'data' => $data,
+            ]);
+        }
+
+        return view('admin.clientes.index');
     }
     public function viewevaluar()
     {
