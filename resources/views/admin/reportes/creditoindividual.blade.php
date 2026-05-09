@@ -258,9 +258,9 @@
                                 <td>{{ $cliente->profesion }}</td>
                                 <td>{{ $cliente->estado_civil }}</td>
                                 <td>{{ $cliente->direccion }}</td>
-                                <td>{{ $cliente->distrito->dis_nombre }}</td>
-                                <td>{{ $cliente->distrito->provincia->pro_nombre }}</td>
-                                <td>{{ $cliente->distrito->provincia->departamento->dep_nombre }}</td>
+                                <td>{{ $cliente->distrito?->dis_nombre }}</td>
+                                <td>{{ $cliente->distrito?->provincia?->pro_nombre }}</td>
+                                <td>{{ $cliente->distrito?->provincia?->departamento?->dep_nombre }}</td>
                                 <td>{{ $credito->cronograma->first()->monto }}</td>
                                 <td>{{ $credito->recurrencia }}</td>
                                 <td>Aprobada Con Excepcion</td>
