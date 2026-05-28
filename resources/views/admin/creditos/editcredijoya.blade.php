@@ -175,7 +175,7 @@
                   <input type="text" id="tasacion_total" class="form-control" value="{{ number_format($tasacion_total,2,'.','') }}" readonly>
                 </div>
                 <div class="col-md-3">
-                  <label class="mb-0">Máx. 80% (referencial)</label>
+                  <label class="mb-0">Máx. 100% (referencial)</label>
                   <input type="text" id="monto_max_80" class="form-control" value="{{ number_format($monto_max_80,2,'.','') }}" readonly>
                 </div>
                 <div class="col-md-3">
@@ -201,9 +201,9 @@
                   <div class="form-group">
                     <label for="monto_aprobado">Monto aprobado (S/.)</label>
                     <input type="number" step="0.01" id="monto_aprobado" name="monto_aprobado"
-                           class="form-control param-field" placeholder="≤ 80% tasación" required
+                           class="form-control param-field" placeholder="≤ 100% tasación" required
                            value="{{ number_format($credito->monto_total,2,'.','') }}">
-                    <small class="text-muted">Límite sugerido: 80% de la tasación.</small>
+                    <small class="text-muted">Límite sugerido: 100% de la tasación.</small>
                   </div>
                 </div>
                 <div class="col-md-3">
@@ -300,7 +300,7 @@ $(function(){
     $('#tasacion_total').val(fmt(totalTasacion));
     $('#total_tasacion_footer').val(fmt(totalTasacion));
 
-    const max80 = totalTasacion * 0.80;
+    const max80 = totalTasacion * 1.00;
     $('#monto_max_80').val(fmt(max80));
 
     let aprobado = num($('#monto_aprobado').val());

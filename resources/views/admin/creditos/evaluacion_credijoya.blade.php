@@ -32,7 +32,7 @@
           <thead><tr><th>Indicador</th><th>Resultado</th></tr></thead>
           <tbody>
             <tr><td>Tasación total</td><td>S/ {{ number_format($tasacionTotal,2) }}</td></tr>
-            <tr><td>Máx. 80% referencia</td><td><b>S/ {{ number_format($max80,2) }}</b></td></tr>
+            <tr><td>Máx. 100% referencia</td><td><b>S/ {{ number_format($max80,2) }}</b></td></tr>
             <tr>
               <td>Monto aprobado</td>
               <td class="{{ $montoAprobado > $max80 ? 'text-danger font-weight-bold':'' }}">

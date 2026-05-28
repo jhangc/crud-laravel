@@ -168,7 +168,7 @@
                   <input type="text" id="tasacion_total" class="form-control" value="0.00" readonly>
                 </div>
                 <div class="col-md-3">
-                  <label class="mb-0">Máx. 80% (referencial)</label>
+                  <label class="mb-0">Máx. 100% (referencial)</label>
                   <input type="text" id="monto_max_80" class="form-control" value="0.00" readonly>
                 </div>
                 <div class="col-md-3">
@@ -192,8 +192,8 @@
                   <div class="form-group">
                     <label for="monto_aprobado">Monto aprobado (S/.)</label>
                     <input type="number" step="0.01" id="monto_aprobado" name="monto_aprobado"
-                           class="form-control param-field" placeholder="≤ 80% tasación" required>
-                    <small class="text-muted">Se propone 80% automáticamente; puedes reducirlo.</small>
+                           class="form-control param-field" placeholder="≤ 100% tasación" required>
+                    <small class="text-muted">Se propone 100% automáticamente; puedes reducirlo.</small>
                   </div>
                 </div>
                 <div class="col-md-3">
@@ -239,20 +239,20 @@
 
   // ===== Recalculo maestro (sin deuda/ITF/neto) =====
   function recomputarTotales(){
-    // Tasación y 80%
+    // Tasación y 100%
     const totalTasacion = joyas.reduce((s,j)=> s + j.valor_tasacion, 0);
     $('#tasacion_total').val(fmt(totalTasacion));
-    const max80 = totalTasacion * 0.80;
+    const max80 = totalTasacion * 1.00;
     $('#monto_max_80').val(fmt(max80));
 
-    // Proponer 80% si está vacío
+    // Proponer 100% si está vacío
     let aprobado = num($('#monto_aprobado').val());
     if(!aprobado){
       aprobado = max80;
       $('#monto_aprobado').val(fmt(max80));
     }
 
-    // Validar límite 80%
+    // Validar límite 100%
     if(aprobado > max80){
       $('#monto_aprobado').addClass('is-invalid').val(fmt(max80));
     } else {

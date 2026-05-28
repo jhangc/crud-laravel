@@ -57,14 +57,14 @@ class CrediJoyaController extends Controller
         $clienteId     = (int) $cliente->id;
         $tasacionTotal = (float) $r->input('tasacion_total');
         $max80         = (float) $r->input('monto_max_80');      // viene del front, pero lo recalculamos por seguridad
-        $max80_calc    = round($tasacionTotal * 0.80, 2);
+        $max80_calc    = round($tasacionTotal * 1.00, 2);
         $montoAprobado = (float) $r->input('monto_aprobado');
 
-        // Blindaje backend: monto aprobado no puede exceder el 80%
+        // Blindaje backend: monto aprobado no puede exceder el 100%
         if ($montoAprobado > $max80_calc + 0.001) {
             return response()->json([
                 'ok' => false,
-                'message' => 'El monto aprobado no puede superar el 80% de la tasación.',
+                'message' => 'El monto aprobado no puede superar el 100% de la tasación.',
                 'max_80'  => $max80_calc
             ], 422);
         }
@@ -278,15 +278,15 @@ class CrediJoyaController extends Controller
 
         $credito = Credito::findOrFail($id);
 
-        // ---- seguridad backend: 80% de tasación ----
+        // ---- seguridad backend: 100% de tasación ----
         $tasacionTotal = (float) $r->input('tasacion_total');
-        $max80_calc    = round($tasacionTotal * 0.80, 2);
+        $max80_calc    = round($tasacionTotal * 1.00, 2);
         $montoAprobado = (float) $r->input('monto_aprobado');
 
         if ($montoAprobado > $max80_calc + 0.001) {
             return response()->json([
                 'ok' => false,
-                'message' => 'El monto aprobado no puede superar el 80% de la tasación.',
+                'message' => 'El monto aprobado no puede superar el 100% de la tasación.',
                 'max_80'  => $max80_calc
             ], 422);
         }

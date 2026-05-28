@@ -803,7 +803,7 @@ class CreditoController extends Controller
 
             // Resumen
             $tasacionTotal = (float) ($prestamo->tasacion_total ?? $joyas->sum('valor_tasacion'));
-            $max80         = round($tasacionTotal * 0.80, 2);
+            $max80         = round($tasacionTotal * 1.00, 2);
             $montoAprobado = (float) ($prestamo->monto_total ?? 0);
             $tea           = (float) ($prestamo->tasa ?? 0);
             $itf           = (float) ($prestamo->itf_desembolso ?? 0);
@@ -3357,7 +3357,7 @@ class CreditoController extends Controller
 
             // totales de referencia (recalcular también en el front)
             $tasacion_total = (float) $joyas->sum('valor_tasacion');
-            $monto_max_80   = round($tasacion_total * 0.80, 2);
+            $monto_max_80   = round($tasacion_total * 1.00, 2);
 
             return view('admin.creditos.editcredijoya', compact(
                 'id',
