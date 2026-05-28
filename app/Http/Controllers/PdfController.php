@@ -1601,8 +1601,6 @@ class PdfController extends Controller
 
         $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->get();
 
-        $ingresos = \App\Models\Ingreso::whereIn('id', $idsArray)->get();
-
         if ($ingresos->isEmpty()) {
             return response()->json(['error' => 'Pagos no encontrados.'], 404);
         }
@@ -1614,12 +1612,42 @@ class PdfController extends Controller
             $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
             $cronograma = \App\Models\Cronograma::find($ingreso->cronograma_id);
 
-            // Obtener la siguiente cuota
-            $siguienteCuota = \App\Models\Cronograma::where('id_prestamo', $ingreso->prestamo_id)
-                ->where('numero', '>', $ingreso->numero_cuota)
-                ->where('cliente_id', '=', $ingreso->cliente_id)
-                ->orderBy('numero', 'asc')
-                ->first();
+            $saldoRestante = 0.0;
+            $moraVigente = 0.0;
+
+            if ($cronograma && is_null($ingreso->cliente_id)) {
+                // En cuota general, usar la suma real de saldos/moras de los integrantes
+                // para evitar residuos por redondeo del registro general.
+                $cuotasIntegrantes = \App\Models\Cronograma::where('id_prestamo', $ingreso->prestamo_id)
+                    ->where('numero', $ingreso->numero_cuota)
+                    ->where('fecha', $cronograma->fecha)
+                    ->whereNotNull('cliente_id')
+                    ->get();
+
+                foreach ($cuotasIntegrantes as $cuotaIntegrante) {
+                    $estado = $cuotaIntegrante->saldoYMora();
+                    $saldoRestante += (float) ($estado['saldo'] ?? 0);
+                    $moraVigente += (float) ($estado['mora'] ?? 0);
+                }
+            } elseif ($cronograma) {
+                $estado = $cronograma->saldoYMora();
+                $saldoRestante = (float) ($estado['saldo'] ?? 0);
+                $moraVigente = (float) ($estado['mora'] ?? 0);
+            }
+
+            $saldoRestante = round($saldoRestante, 2);
+            $moraVigente = round($moraVigente, 2);
+            $totalPendiente = round($saldoRestante + $moraVigente, 2);
+
+            // Obtener la siguiente cuota (individual o general segun el tipo del ingreso)
+            $qSiguiente = \App\Models\Cronograma::where('id_prestamo', $ingreso->prestamo_id)
+                ->where('numero', '>', $ingreso->numero_cuota);
+            if (is_null($ingreso->cliente_id)) {
+                $qSiguiente->whereNull('cliente_id');
+            } else {
+                $qSiguiente->where('cliente_id', '=', $ingreso->cliente_id);
+            }
+            $siguienteCuota = $qSiguiente->orderBy('numero', 'asc')->first();
             $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
 
             $data[] = [
@@ -1627,6 +1655,9 @@ class PdfController extends Controller
                 'cliente' => $cliente,
                 'ingreso' => $ingreso,
                 'cronograma' => $cronograma,
+                'saldo_restante' => $saldoRestante,
+                'mora_vigente' => $moraVigente,
+                'total_pendiente' => $totalPendiente,
                 'fechaSiguienteCuota' => $fechaSiguienteCuota,
                 'siguienteCuota' => $siguienteCuota
             ];
