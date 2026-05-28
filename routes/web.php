@@ -194,6 +194,7 @@ Route::get('/admin/reportes/credito/exportarcreditosgrupal', [ExcelController::c
 Route::get('/admin/creditos/vercuotaspago/{id}', [CreditoController::class, 'verpagocuota'])->name('creditos.verpagocuota')->middleware('auth');
 Route::post('/admin/creditos/pagocuota', [CreditoController::class, 'pagocuota'])->name('creditos.pagocuota')->middleware('auth');
 Route::post('/admin/creditos/pagocuotagrupal', [CreditoController::class, 'pagoGrupal'])->name('creditos.pagogrupal')->middleware('auth');
+Route::post('/admin/creditos/abonocuotagrupal', [CreditoController::class, 'abonoGrupal'])->name('creditos.abonogrupal')->middleware('auth');
 Route::get('/admin/generar-ticket-pago/{id}/{diferencia}', [PdfController::class, 'generarTicketDePago'])->name('generar.ticket.pago');
 Route::get('/admin/generar-ticket-pagogrupal/{array}', [PdfController::class, 'generarTicketDePagogrupal'])->name('generar.ticket.pagogrupal');
 

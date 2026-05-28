@@ -167,8 +167,8 @@
                             <td>S/. {{ number_format($cuota->monto_vencido, 2) }}</td>
                             <td>S/. {{ number_format($cuota->abono_capital ?? 0, 2) }}</td>
                             <td>S/. {{ number_format($cuota->mora_pagada ?? 0, 2) }}</td>
-                            <td>{{ $cuota->fecha_ultimo_abono_ref ?? '-' }}</td>
-                            <td>{{ is_null($cuota->dias_desde_ultimo_abono_ref ?? null) ? '-' : $cuota->dias_desde_ultimo_abono_ref }}</td>
+                            <td>{{ $cuota->fecha_ultimo_abono ?? '-' }}</td>
+                            <td>{{ is_null($cuota->dias_desde_ultimo_abono ?? null) ? '-' : $cuota->dias_desde_ultimo_abono }}</td>
                             <td>{{ $cuota->detalle_estado ?? '-' }}</td>
                             <td>
                                 @if ($cuota->estado == 'pagado')
@@ -188,6 +188,8 @@
                                             {{ $cuota->estado == 'parcial' ? 'SALDAR TODO' : 'PAGAR TODO' }}
                                         </button>
                                     @endif
+                                    <button class="btn btn-info"
+                                        onclick="abonarCuotaGeneral({{ $credito->id }}, '{{ $cuota->fecha }}', '{{ $cuota->numero }}', {{ number_format($cuota->monto_total_pago_final, 2, '.', '') }})">Abonar</button>
                                     <button class="btn btn-{{ $cuota->estado == 'vencida' ? 'warning' : 'primary' }}"
                                         onclick="pagarCuotaGeneral({{ $credito->id }}, '{{ $cuota->fecha }}')">Pagar</button>
                                 @else
@@ -249,8 +251,8 @@
                                     <span class="badge badge-warning">Pendiente</span>
                                 @endif
                             </td>
-                            <td>{{ $cuota->fecha_ultimo_abono ?? '-' }}</td>
-                            <td>{{ is_null($cuota->dias_desde_ultimo_abono ?? null) ? '-' : $cuota->dias_desde_ultimo_abono }}</td>
+                            <td>{{ $cuota->fecha_ultimo_abono_ref ?? '-' }}</td>
+                            <td>{{ is_null($cuota->dias_desde_ultimo_abono_ref ?? null) ? '-' : $cuota->dias_desde_ultimo_abono_ref }}</td>
                             <td>{{ $cuota->mora_desde ?? '-' }}</td>
                             <td>{{ $cuota->detalle_estado ?? '-' }}</td>
                             <td>
@@ -683,6 +685,67 @@
                         }
                     });
                 }
+            });
+        }
+
+        function abonarCuotaGeneral(prestamo_id, fecha, numero_cuota, monto_referencia) {
+            Swal.fire({
+                title: 'Abono a cuota general',
+                text: 'Ingresa el monto a abonar. Se repartira entre los integrantes de la cuota.',
+                input: 'number',
+                inputAttributes: {
+                    min: '0.01',
+                    step: '0.01'
+                },
+                inputValue: monto_referencia > 0 ? Number(monto_referencia).toFixed(2) : '',
+                showCancelButton: true,
+                confirmButtonText: 'Aplicar abono',
+                cancelButtonText: 'Cancelar',
+                preConfirm: (value) => {
+                    const v = parseFloat(value);
+                    if (!(v > 0)) {
+                        Swal.showValidationMessage('Ingresa un monto mayor a 0.');
+                        return false;
+                    }
+                    return v.toFixed(2);
+                }
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                $.ajax({
+                    url: '{{ route('creditos.abonogrupal') }}',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        prestamo_id: prestamo_id,
+                        fecha: fecha,
+                        numero_cuota: numero_cuota,
+                        monto_abono: result.value
+                    },
+                    success: function(response) {
+                        let msg = response.success || 'Abono registrado.';
+                        if (Number(response.diferencia || 0) > 0) {
+                            msg += ' Sobra no aplicada: S/. ' + Number(response.diferencia).toFixed(2);
+                        }
+                        Swal.fire({
+                            title: 'Exito',
+                            text: msg,
+                            icon: 'success'
+                        }).then(() => {
+                            if (response.ingreso_ids && response.ingreso_ids.length) {
+                                window.open('/admin/generar-ticket-pagogrupal/' + response.ingreso_ids.join('-'), '_blank');
+                            }
+                            location.reload();
+                        });
+                    },
+                    error: function(response) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: response.responseJSON?.error || 'No se pudo registrar el abono grupal.',
+                            icon: 'error'
+                        });
+                    }
+                });
             });
         }
 

@@ -63,10 +63,25 @@
             <hr>
 
             <table class="kv">
-                <tr><td class="l">Pago a cuota</td><td class="r">S/ {{ number_format($item['ingreso']->monto_total_pago_final, 2) }}</td></tr>
+                <tr><td class="l">Abono a capital</td><td class="r">S/ {{ number_format($item['ingreso']->monto_total_pago_final, 2) }}</td></tr>
                 <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $item['ingreso']->dias_mora }}</td></tr>
-                <tr><td class="l">Mora</td><td class="r">S/ {{ number_format($item['ingreso']->monto_mora, 2) }}</td></tr>
-                <tr class="tot"><td class="l">Total pagado</td><td class="r">S/ {{ number_format($item['ingreso']->monto, 2) }}</td></tr>
+                <tr><td class="l">Mora pagada</td><td class="r">S/ {{ number_format($item['ingreso']->monto_mora, 2) }}</td></tr>
+                <tr class="tot"><td class="l">Total abonado hoy</td><td class="r">S/ {{ number_format($item['ingreso']->monto, 2) }}</td></tr>
+            </table>
+
+            <hr>
+
+            @php
+                $estActual = $item['cronograma'] ? $item['cronograma']->saldoYMora() : ['saldo' => 0, 'mora' => 0];
+                $saldoRestante = (float)($estActual['saldo'] ?? 0);
+                $moraVigente = (float)($estActual['mora'] ?? 0);
+                $totalPendiente = round($saldoRestante + $moraVigente, 2);
+            @endphp
+
+            <table class="kv">
+                <tr><td class="l">Saldo restante cuota</td><td class="r">S/ {{ number_format($saldoRestante, 2) }}</td></tr>
+                <tr><td class="l">Mora vigente restante</td><td class="r">S/ {{ number_format($moraVigente, 2) }}</td></tr>
+                <tr class="tot"><td class="l">Total pendiente cuota</td><td class="r">S/ {{ number_format($totalPendiente, 2) }}</td></tr>
             </table>
 
             <hr>
