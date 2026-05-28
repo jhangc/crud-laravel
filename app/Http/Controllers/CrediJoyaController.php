@@ -969,16 +969,18 @@ class CrediJoyaController extends Controller
     // ===== Helpers =====
     private function primeraCuotaNoPagada(int $prestamoId): ?Cronograma
     {
-        $pagadas = Ingreso::where('prestamo_id', $prestamoId)
-            ->pluck('cronograma_id')
-            ->filter()
-            ->flip();
+        // Un crédito cerrado no tiene cuota vigente (aunque su cuota tenga abonos parciales).
+        $credito = Credito::find($prestamoId);
+        if ($credito && $credito->estado === 'terminado') {
+            return null;
+        }
 
+        // Vigente = primera cuota cuyo saldo aún no está saldado (soporta abonos parciales).
         return Cronograma::where('id_prestamo', $prestamoId)
             ->orderBy('numero')
             ->get()
-            ->first(function ($c) use ($pagadas) {
-                return !isset($pagadas[$c->id]);
+            ->first(function ($c) {
+                return $c->saldoYMora()['saldo'] > 0.009;
             });
     }
 
@@ -997,10 +999,15 @@ class CrediJoyaController extends Controller
         // Interés y mora del día
         $interesHoy = 0.00;
         $moraHoy = 0.00;
+        $saldoCuota = 0.00;
+        $parcialIniciado = false;
         if ($cuotaVigente) {
             $interesHoy = $this->interesDevengadoHastaHoy($cuotaVigente, $credito);
-            $moraData   = $this->calcularMoraPorDia((float)$cuotaVigente->monto, (string)$cuotaVigente->fecha);
-            $moraHoy    = $moraData['mora'];
+            // Saldo y mora rodante (soporta abonos parciales previos).
+            $estadoCuota = $cuotaVigente->saldoYMora();
+            $moraHoy     = $estadoCuota['mora'];
+            $saldoCuota  = $estadoCuota['saldo'];
+            $parcialIniciado = $cuotaVigente->ingresos()->exists();
         }
 
         $esMismoDia = \Carbon\Carbon::parse($credito->fecha_desembolso)->isSameDay(now());
@@ -1015,6 +1022,8 @@ class CrediJoyaController extends Controller
             'cuotaVigente'    => $cuotaVigente,
             'interesHoy'      => round($interesHoy, 2),
             'moraHoy'         => round($moraHoy, 2),
+            'saldoCuota'      => round($saldoCuota, 2),
+            'parcialIniciado' => $parcialIniciado,
             'joyas'           => $joyas,
             'esMismoDia'      => $esMismoDia,
             'amortizacionHoy' => $amortizacionHoy,
@@ -1045,8 +1054,8 @@ class CrediJoyaController extends Controller
         $trace = Str::uuid()->toString();
 
         $r->validate([
-            'tipo_pago'  => 'required|in:total,interes,parcial',
-            'modo_pago'  => 'required|in:interes,cuota,totalhoy,adelanto',
+            'tipo_pago'  => 'required|in:total,interes,parcial,abono',
+            'modo_pago'  => 'required|in:interes,cuota,totalhoy,adelanto,parcialcuota',
             'monto_pago' => 'required|numeric|min:0.01',
             'nueva_tasa_tea'  => 'nullable|numeric|min:1', // <<< NUEVO
         ]);
@@ -1076,8 +1085,13 @@ class CrediJoyaController extends Controller
         // Cuota vigente
         $cuota = $this->primeraCuotaNoPagada($credito->id);
         if (!$cuota) {
-           
+
             return response()->json(['ok'=>false,'error'=>'El crédito no tiene cuotas pendientes.','trace_id'=>$trace], 422);
+        }
+
+        // ===== Pago parcial / adelanto de cuota: no renueva, baja el saldo y la mora corre sobre el resto =====
+        if ($tipo === 'abono') {
+            return $this->registrarAbonoCuota($r, $credito, $cuota, $caja, $clienteId, $monto, $modo, $trace);
         }
 
         // Mínimos hoy
@@ -1178,6 +1192,94 @@ class CrediJoyaController extends Controller
             return response()->json(['ok'=>false,'error'=>'No se pudo registrar el pago: '.$e->getMessage(), 'trace_id'=>$trace], 500);
         }
     }
+    // Pago parcial / adelanto de una cuota (mantiene el crédito abierto; mora rodante)
+    private function registrarAbonoCuota(Request $r, credito $credito, Cronograma $cuota, $caja, int $clienteId, float $monto, string $modo, string $trace)
+    {
+        DB::beginTransaction();
+        try {
+            $estado = $cuota->saldoYMora();
+            $saldo  = (float) $estado['saldo'];
+            $mora   = (float) $estado['mora'];
+
+            if ($saldo <= 0.009) {
+                DB::rollBack();
+                return response()->json(['ok'=>false,'error'=>'La cuota ya está saldada.','trace_id'=>$trace], 422);
+            }
+
+            // Tope: no se puede abonar más que mora vigente + saldo restante.
+            $tope = round($mora + $saldo, 2);
+            if ($monto > $tope) $monto = $tope;
+
+            // Reparto: Mora -> Interés pendiente -> Capital pendiente.
+            $aplicaMora = round(min($monto, $mora), 2);
+            $resto      = round($monto - $aplicaMora, 2);
+
+            $interesPagadoPrev = (float) Ingreso::where('cronograma_id', $cuota->id)->sum('interes_pagado');
+            $capitalPagadoPrev = (float) Ingreso::where('cronograma_id', $cuota->id)->sum('capital_pagado');
+            $interesPend = round(max((float)$cuota->interes - $interesPagadoPrev, 0), 2);
+            $capitalPend = round(max((float)$cuota->amortizacion - $capitalPagadoPrev, 0), 2);
+
+            $aplicaInteres = round(min($resto, $interesPend), 2);
+            $resto         = round($resto - $aplicaInteres, 2);
+            $aplicaCapital = round(min($resto, $capitalPend), 2);
+
+            $montoFinal = round($aplicaMora + $aplicaInteres + $aplicaCapital, 2);
+            if ($montoFinal <= 0) {
+                DB::rollBack();
+                return response()->json(['ok'=>false,'error'=>'Ingresa un monto válido para abonar.','trace_id'=>$trace], 422);
+            }
+
+            $ing = Ingreso::create([
+                'transaccion_id'         => $caja->id,
+                'prestamo_id'            => $credito->id,
+                'cliente_id'             => $clienteId,
+                'cronograma_id'          => $cuota->id,
+                'numero_cuota'           => $cuota->numero,
+                'monto'                  => $montoFinal,
+                'monto_mora'             => $aplicaMora,
+                'interes_pagado'         => $aplicaInteres,
+                'capital_pagado'         => $aplicaCapital,
+                'dias_mora'              => $estado['dias'],
+                'porcentaje_mora'        => $estado['porcentaje'],
+                'fecha_pago'             => now()->toDateString(),
+                'hora_pago'              => now()->toTimeString(),
+                'sucursal_id'            => auth()->user()->sucursal_id,
+                'monto_total_pago_final' => $montoFinal,
+                'modo'                   => $modo,   // parcialcuota
+                'tipo'                   => 'abono',
+                'nuevo_id'               => null,
+            ]);
+
+            $caja->cantidad_ingresos = (float)($caja->cantidad_ingresos ?? 0) + $montoFinal;
+            $caja->save();
+
+            // ¿Quedó saldada la cuota tras este abono?
+            $saldoRest = (float) $cuota->saldoYMora()['saldo'];
+            if ($saldoRest <= 0.009) {
+                $credito->estado    = 'terminado';
+                $credito->fecha_fin = now()->toDateString();
+                $credito->save();
+
+                foreach ($credito->joyas as $j) {
+                    $j->devuelta   = 1;
+                    $j->fecha_pago = now();
+                    $j->save();
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'ok'         => true,
+                'ticket_url' => route('pagocredijoya.ticket', $ing->id),
+                'trace_id'   => $trace,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['ok'=>false,'error'=>'No se pudo registrar el abono: '.$e->getMessage(),'trace_id'=>$trace], 500);
+        }
+    }
+
     // 3) Ticket de pago
     public function ticketPago(Ingreso $pago)
     {
@@ -1231,6 +1333,17 @@ class CrediJoyaController extends Controller
                 'monto'         => round((float)$nuevaCuota->monto, 2),
             ] : null,
         ];
+
+        // Datos extra para abonos / pagos parciales (saldo restante y mora rodante).
+        if (($pago->tipo ?? null) === 'abono') {
+            $cuotaPago = Cronograma::find($pago->cronograma_id);
+            $estCuota  = $cuotaPago
+                ? $cuotaPago->saldoYMora()
+                : ['saldo' => 0, 'mora' => 0, 'fecha_corte' => now()->toDateString()];
+            $desglose['saldo_restante'] = round((float)$estCuota['saldo'], 2);
+            $desglose['mora_vigente']   = round((float)$estCuota['mora'], 2);
+            $desglose['mora_desde']     = $estCuota['fecha_corte'];
+        }
 
         // Saldo del crédito original al momento de emitir ticket (puede ser 0 si terminó)
         $saldo = method_exists($this, 'recalcularSaldoCredito')

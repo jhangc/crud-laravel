@@ -1343,8 +1343,39 @@ class PdfController extends Controller
             ->first();
         $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
 
-        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota', 'siguienteCuota', 'diferencia'))
-            ->setPaper([0, 0, 200, 400]); // Ajustar el tamaño del papel si es necesario
+        // Saldo restante de la cuota tras este pago (relevante para abonos parciales).
+        $esAbono       = ($ingreso->tipo ?? null) === 'abono';
+        $saldoRestante = $cronograma ? round((float) $cronograma->saldoYMora()['saldo'], 2) : 0.0;
+
+        // Tipo real del pago, para que el ticket no sea confuso.
+        $esParcial = $esAbono && $saldoRestante > 0.009;
+
+        // El aviso de "la mora seguirá corriendo" solo aplica si la cuota ya venció.
+        $moraCorre = $esParcial && $cronograma
+            && \Carbon\Carbon::parse($cronograma->fecha)->startOfDay()->lt(\Carbon\Carbon::today());
+        if ($esParcial) {
+            $tipoPagoTexto = 'PAGO PARCIAL (ABONO)';
+        } elseif ($esAbono) {
+            $tipoPagoTexto = 'PAGO TOTAL DE CUOTA';
+        } else {
+            $tipoPagoTexto = 'PAGO DE CUOTA';
+        }
+
+        // Altura del papel según el contenido, para que salga en UNA sola hoja (sin página en blanco).
+        $lineas = 14; // base (incluye margen por nombre largo)
+        if ($esParcial) {
+            $lineas += 2;
+        }
+        if (($diferencia ?? 0) > 0) {
+            $lineas += 2;
+        }
+        if ($cronograma && $cronograma->pago_capital != null) {
+            $lineas += 1;
+        }
+        $alto = 235 + ($lineas * 16);
+
+        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota', 'siguienteCuota', 'diferencia', 'esAbono', 'esParcial', 'moraCorre', 'tipoPagoTexto', 'saldoRestante'))
+            ->setPaper([0, 0, 200, $alto]);
         return $pdf->stream('ticket.pdf');
     }
     public function generarTransaccionesPDF($caja_id)

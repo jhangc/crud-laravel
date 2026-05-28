@@ -1029,6 +1029,32 @@ class CreditoController extends Controller
         return response()->json(['success' => true, 'transaccion_id' => $transaccion->id]);
     }
 
+    /**
+     * ¿La cuota está liquidada?
+     * Sí cuando: tiene un ingreso de "cierre" (pago normal/total, no un abono parcial),
+     * o cuando los abonos parciales ya cubren todo el saldo. Esto preserva el pago
+     * anticipado (que liquida cuotas futuras con solo amortización) y a la vez soporta
+     * los nuevos abonos parciales (tipo = 'abono').
+     */
+    private function cuotaLiquidada(Cronograma $cuota): bool
+    {
+        $tieneCierre = Ingreso::where('cronograma_id', $cuota->id)
+            ->where(function ($q) {
+                $q->whereNull('tipo')->orWhere('tipo', '!=', 'abono');
+            })
+            ->exists();
+        if ($tieneCierre) {
+            return true;
+        }
+
+        if (!Ingreso::where('cronograma_id', $cuota->id)->exists()) {
+            return false; // sin ingresos: no liquidada
+        }
+
+        // Solo abonos parciales: liquidada si ya no queda saldo.
+        return $cuota->saldoYMora()['saldo'] <= 0.009;
+    }
+
     public function verpagocuota($id)
     {
         $credito = Credito::find($id);
@@ -1070,26 +1096,46 @@ class CreditoController extends Controller
                     ->where('cronograma_id', $cuota->id)
                     ->first();
 
-                if ($ingreso) {
+                // Saldo y mora rodante derivados del historial (soporta abonos parciales).
+                $est         = $cuota->saldoYMora();
+                $saldoCuota  = (float) $est['saldo'];
+                $tieneAbonos = $cuota->ingresos()->exists();
+
+                if ($this->cuotaLiquidada($cuota)) {
+                    // Cuota saldada (uno o varios ingresos cubren el total)
+                    $ultIng = Ingreso::where('cronograma_id', $cuota->id)->orderBy('id', 'desc')->first();
                     $cuota->estado = 'pagado';
-                    $cuota->fecha_pago = $ingreso->fecha_pago;
-                    $cuota->dias_mora = $ingreso->dias_mora;
-                    $cuota->monto_mora = $ingreso->monto_mora;
-                    $cuota->porcentaje_mora = $ingreso->porcentaje_mora;
-                    $cuota->monto_total_pago_final = round($ingreso->monto, 2);
-                    $cuota->ingreso_id = $ingreso->id;
-                    $cuota->diferencia = $ingreso->diferencia;
+                    $cuota->fecha_pago = optional($ultIng)->fecha_pago;
+                    $cuota->dias_mora = (int) $est['dias'];
+                    $cuota->monto_mora = (float) Ingreso::where('cronograma_id', $cuota->id)->sum('monto_mora');
+                    $cuota->porcentaje_mora = optional($ultIng)->porcentaje_mora;
+                    $cuota->monto_total_pago_final = round((float) Ingreso::where('cronograma_id', $cuota->id)->sum('monto'), 2);
+                    $cuota->ingreso_id = optional($ultIng)->id;
+                    $cuota->diferencia = optional($ultIng)->diferencia;
+                    $cuota->saldo = 0;
                     $puedeAmortizar++;
+                } elseif ($tieneAbonos) {
+                    // Cuota con abonos parciales: aún queda saldo por pagar (mora rodante)
+                    $cuota->estado = 'parcial';
+                    $cuota->dias_mora = (int) $est['dias'];
+                    $cuota->porcentaje_mora = $est['porcentaje'];
+                    $cuota->monto_mora = (float) $est['mora'];
+                    $cuota->saldo = round($saldoCuota, 2);
+                    $cuota->monto_total_pago_final = round($saldoCuota + (float) $est['mora'], 2);
+                    if ($controlUltimaIndividual == 0) {
+                        $cuota->ultima = 1;
+                        $controlUltimaIndividual = 1;
+                    }
+                    if ((int) $est['dias'] > 0) {
+                        $cuotasVencidas++;
+                    }
                 } elseif (now()->greaterThan($fecha_vencimiento)) {
                     $cuota->estado = 'vencida';
-                    $cuota->dias_mora = now()->diffInDays($fecha_vencimiento);
-                    $cuota->porcentaje_mora = 1.5; // 0.3% por día de mora por cada mil soles
-                    $cuota->monto_mora = round(($cuota->monto * $cuota->porcentaje_mora / 1000) * $cuota->dias_mora
-                        // * 5
-                        ,
-                        2
-                    );
-                    $cuota->monto_total_pago_final = round($cuota->monto + $cuota->monto_mora, 2);
+                    $cuota->dias_mora = (int) $est['dias'];
+                    $cuota->porcentaje_mora = $est['porcentaje'];
+                    $cuota->monto_mora = (float) $est['mora'];
+                    $cuota->saldo = round($saldoCuota, 2);
+                    $cuota->monto_total_pago_final = round($saldoCuota + (float) $est['mora'], 2);
                     if ($controlUltimaIndividual == 0) {
                         $cuota->ultima = 1;
                         $controlUltimaIndividual = 1;
@@ -1100,7 +1146,8 @@ class CreditoController extends Controller
                     $cuota->dias_mora = 0;
                     $cuota->monto_mora = 0;
                     $cuota->porcentaje_mora = 0;
-                    $cuota->monto_total_pago_final = round($cuota->monto, 2);
+                    $cuota->saldo = round($saldoCuota, 2);
+                    $cuota->monto_total_pago_final = round($saldoCuota, 2);
                     if ($controlUltimaIndividual == 0) {
                         $cuota->ultima = 1;
                         $controlUltimaIndividual = 1;
@@ -1138,21 +1185,42 @@ class CreditoController extends Controller
                     $fecha_pago = null;
                     $dias_mora_general = 0;
                     $monto_mora_general = 0;
+                    $hayParciales = false;
+                    $refIngreso = null;
 
                     foreach ($cuotasRelacionadas as $cuotaRelacionada) {
-                        //esta la antigua consulta
-                        // $ingresoRelacionado = Ingreso::where('prestamo_id', $id)
-                        //     ->where('numero_cuota', $cuotaRelacionada->numero)
-                        //     ->where('cliente_id', $cuotaRelacionada->cliente_id)
-                        //     ->first();
+                        // Liquidada = pago de cierre o abonos que ya cubren el saldo.
+                        $liquidada   = $this->cuotaLiquidada($cuotaRelacionada);
+                        $tieneAbonos = $cuotaRelacionada->ingresos()->exists();
+                        $estRel      = $cuotaRelacionada->saldoYMora();
 
-                        $ingresoRelacionado = Ingreso::where('prestamo_id', $cuotaRelacionada->id_prestamo)
-                            ->where('numero_cuota', $cuotaRelacionada->numero)
-                            ->where('cliente_id', $cuotaRelacionada->cliente_id)
-                            ->where('cronograma_id', $cuotaRelacionada->id)
-                            ->first();
-
-                        if (!$ingresoRelacionado) {
+                        if ($liquidada) {
+                            $pagadas++;
+                            $montoPagado += (float) Ingreso::where('cronograma_id', $cuotaRelacionada->id)->sum('monto');
+                            $ultRel = Ingreso::where('cronograma_id', $cuotaRelacionada->id)->orderBy('id', 'desc')->first();
+                            if ($ultRel) {
+                                $ingreso_ids[] = $ultRel->id;
+                                $fecha_pago = $ultRel->fecha_pago;
+                                $diasMora = $ultRel->dias_mora;
+                                $montoMoraTotal = $ultRel->monto_mora;
+                                $refIngreso = $ultRel;
+                            }
+                        } elseif ($tieneAbonos) {
+                            // Miembro con abono parcial: aún queda saldo (mora rodante)
+                            $hayParciales = true;
+                            $saldoRel = (float) $estRel['saldo'];
+                            if (now()->greaterThan($fecha_vencimiento)) {
+                                $estadoGeneral = 'vencida';
+                                $vencidas++;
+                                $montoVencido += $saldoRel;
+                                $diasMora = max($diasMora, (int) $estRel['dias']);
+                                $montoMoraTotal += (float) $estRel['mora'];
+                            } else {
+                                $estadoGeneral = 'pendiente';
+                                $pendientes++;
+                                $montoPendiente += $saldoRel;
+                            }
+                        } else {
                             if (now()->greaterThan($fecha_vencimiento)) {
                                 $estadoGeneral = 'vencida';
                                 $vencidas++;
@@ -1172,13 +1240,6 @@ class CreditoController extends Controller
                                 $pendientes++;
                                 $montoPendiente += $cuotaRelacionada->monto;
                             }
-                        } else {
-                            $pagadas++;
-                            $montoPagado += $ingresoRelacionado->monto;
-                            $ingreso_ids[] = $ingresoRelacionado->id;
-                            $fecha_pago = $ingresoRelacionado->fecha_pago;
-                            $diasMora = $ingresoRelacionado->dias_mora;
-                            $montoMoraTotal = $ingresoRelacionado->monto_mora;
                         }
                     }
 
@@ -1200,23 +1261,23 @@ class CreditoController extends Controller
                             $fecha_pago = $ingresoGeneral->fecha_pago;
                             $diasMora = $ingresoGeneral->dias_mora;
                             $montoMoraTotal = $ingresoGeneral->monto_mora;
-                        } else {
+                        } elseif ($refIngreso) {
                             //si todas als relacionadas estan pagadas  si  no existe ingresod ela gneral si ,
                             $newIngreso = new Ingreso();
-                            $newIngreso->transaccion_id = $ingresoRelacionado->transaccion_id;
+                            $newIngreso->transaccion_id = $refIngreso->transaccion_id;
                             $newIngreso->cliente_id = null;
-                            $newIngreso->prestamo_id = $ingresoRelacionado->prestamo_id;
+                            $newIngreso->prestamo_id = $refIngreso->prestamo_id;
                             $newIngreso->cronograma_id = $cuotaGeneral->id;
                             $newIngreso->numero_cuota = $cuotaGeneral->numero;
                             $newIngreso->monto_cuota = null;
-                            $newIngreso->fecha_pago = $ingresoRelacionado->fecha_pago;
-                            $newIngreso->hora_pago = $ingresoRelacionado->hora_pago;
+                            $newIngreso->fecha_pago = $refIngreso->fecha_pago;
+                            $newIngreso->hora_pago = $refIngreso->hora_pago;
                             $newIngreso->monto = $cuotaGeneral->monto;
                             $newIngreso->monto_mora = $montoMoraTotal;          // Nuevo campo
                             $newIngreso->dias_mora = $diasMora;           // Nuevo campo
                             $newIngreso->porcentaje_mora = $diasMora > 0 ? 1.5 : 0;   // Nuevo campo
                             $newIngreso->monto_total_pago_final = $montoMoraTotal + $cuotaGeneral->monto; // Nuevo campo
-                            $newIngreso->sucursal_id = $ingresoRelacionado->sucursal_id;
+                            $newIngreso->sucursal_id = $refIngreso->sucursal_id;
                             $newIngreso->save();
                         }
                         $puedeAmortizar++;
@@ -1225,7 +1286,7 @@ class CreditoController extends Controller
                         $cuotasVencidas++;
                     }
 
-                    if ($pagadas > 0 && ($pendientes > 0 || $vencidas > 0)) {
+                    if ($hayParciales || ($pagadas > 0 && ($pendientes > 0 || $vencidas > 0))) {
                         $estadoGeneral = 'parcial';
                     }
 
@@ -1482,50 +1543,67 @@ class CreditoController extends Controller
             return response()->json(['error' => 'No hay una caja abierta para el usuario actual'], 400);
         }
 
-        $montoPagado  = $request->mpc_monto_pagado;
-        $montoTotal   = $request->monto;
-        $diferencia   = 0;
-
-
-
-        // Si paga más, la diferencia se reserva
-        if ($montoPagado > $montoTotal) {
-            $diferencia = round($montoPagado - $montoTotal, 2);
-            $montoAplicado = $montoTotal;
-        } else {
-            // igual o menor, aplicamos lo que pagó
-            $montoAplicado = $montoPagado;
+        // Cuota a pagar (saldo y mora rodante se derivan del historial de ingresos)
+        $cuota = Cronograma::find($request->cronograma_id);
+        if (!$cuota) {
+            return response()->json(['error' => 'No se encontró la cuota.'], 404);
         }
 
+        $est   = $cuota->saldoYMora();
+        $saldo = (float) $est['saldo'];
+        $mora  = (float) $est['mora'];
 
+        if ($saldo <= 0.009) {
+            return response()->json(['error' => 'La cuota ya está saldada.'], 422);
+        }
+
+        $montoPagado = round((float) $request->mpc_monto_pagado, 2);
+        if ($montoPagado <= 0) {
+            return response()->json(['error' => 'Ingresa un monto válido para abonar.'], 422);
+        }
+
+        // Tope de esta cuota = saldo + mora vigente. El exceso se reserva para la siguiente cuota.
+        $tope       = round($saldo + $mora, 2);
+        $diferencia = 0;
+        if ($montoPagado > $tope) {
+            $diferencia  = round($montoPagado - $tope, 2);
+            $montoPagado = $tope;
+        }
+
+        // Reparto: primero la mora, el resto baja el saldo de la cuota.
+        $aplicaMora = round(min($montoPagado, $mora), 2);
+        $aCuota     = round($montoPagado - $aplicaMora, 2);
+        $montoIngreso = round($aplicaMora + $aCuota, 2);
 
         // Register the income
         $ingreso = Ingreso::create([
             'transaccion_id' => $ultimaTransaccion->id,
             'prestamo_id' => $request->prestamo_id,
             'cliente_id' => $request->cliente_id,
-            'cronograma_id' => $request->cronograma_id,
-            'numero_cuota' => $request->numero_cuota,
-            'monto' => $montoAplicado, // Monto cuota
-            'monto_mora' => $request->monto_mora,
-            'dias_mora' => $request->dias_mora,
+            'cronograma_id' => $cuota->id,
+            'numero_cuota' => $cuota->numero,
+            'monto' => $montoIngreso, // total recibido aplicado a esta cuota (mora + saldo)
+            'monto_mora' => $aplicaMora,
+            'dias_mora' => $est['dias'],
             'diferencia' => $diferencia,
-            'porcentaje_mora' => $request->porcentaje_mora,
+            'porcentaje_mora' => $est['porcentaje'],
             'fecha_pago' => now()->toDateString(),
             'hora_pago' => now()->toTimeString(),
             'sucursal_id' => $user->sucursal_id,
-            'monto_total_pago_final' => round($montoAplicado - $request->monto_mora, 2), // Monto total a pagar (incluyendo mora)
+            'monto_total_pago_final' => $aCuota, // lo que bajó el saldo (sin mora)
+            'tipo' => 'abono', // marca de pago parcial (la cuota sigue abierta hasta saldar)
         ]);
 
         // Update the total income in the cash transaction
-        $ultimaTransaccion->cantidad_ingresos += $montoAplicado;
+        $ultimaTransaccion->cantidad_ingresos += $montoIngreso;
         $ultimaTransaccion->save();
 
         // 6. Si hay sobra, ajustar la siguiente cuota
         $nextInfo = null;
         if ($diferencia > 0) {
-            $nextCuota = \App\Models\Cronograma::where('id_prestamo', $request->prestamo_id)
-                ->where('numero', '>', $request->numero_cuota)
+            $nextCuota = Cronograma::where('id_prestamo', $request->prestamo_id)
+                ->where('numero', '>', $cuota->numero)
+                ->when($request->cliente_id, fn($q) => $q->where('cliente_id', $request->cliente_id))
                 ->orderBy('numero')
                 ->first();
 
@@ -1541,10 +1619,14 @@ class CreditoController extends Controller
             }
         }
 
+        // Saldo restante de la cuota tras este abono (para el front).
+        $saldoRestante = (float) $cuota->saldoYMora()['saldo'];
+
         $response = [
-            'success'    => 'Cuota pagada con éxito',
-            'ingreso_id' => $ingreso->id,
-            'diferencia' => $diferencia,
+            'success'        => $saldoRestante > 0.009 ? 'Abono registrado con éxito' : 'Cuota pagada con éxito',
+            'ingreso_id'     => $ingreso->id,
+            'diferencia'     => $diferencia,
+            'saldo_restante' => round($saldoRestante, 2),
         ];
 
         if ($nextInfo) {
@@ -1581,47 +1663,49 @@ class CreditoController extends Controller
         DB::beginTransaction();
         try {
             foreach ($cuotas as $cuota) {
-                // Verificar si la cuota ya tiene un ingreso asociado
-                $ingresoExistente = Ingreso::where('prestamo_id', $prestamo_id)
-                    ->where('cronograma_id', $cuota->id)
-                    // ->where('cronograma_id', $cuota->id)
-                    ->first();
+                // Saltar las cuotas ya liquidadas (incluye las saldadas por abonos parciales).
+                if ($this->cuotaLiquidada($cuota)) {
+                    continue;
+                }
 
-                if (!$ingresoExistente) {
-                    $dias_mora = 0;
-                    $monto_mora = 0;
-                    $porcentaje_mora =  1.5; // Asumiendo 0.3% de mora por día por cada mil soles
+                $porcentaje_mora = 1.5; // Asumiendo 0.3% de mora por día por cada mil soles
+                $dias_mora = 0;
+                $monto_mora = 0;
 
-                    // Calcular mora si está vencida
+                if (!is_null($cuota->cliente_id) && $cuota->ingresos()->exists()) {
+                    // Miembro con abonos parciales: cobrar el saldo restante + mora rodante.
+                    $est  = $cuota->saldoYMora();
+                    $base = (float) $est['saldo'];
+                    $monto_mora = (float) $est['mora'];
+                    $dias_mora  = (int) $est['dias'];
+                } else {
+                    // Cuota fresca (miembro o fila general): cuota completa + mora si está vencida.
                     if (Carbon::now()->greaterThan(Carbon::parse($cuota->fecha))) {
                         $dias_mora = Carbon::now()->diffInDays(Carbon::parse($cuota->fecha));
-                        $monto_mora = round(($cuota->monto * $porcentaje_mora / 1000) * $dias_mora
-                            // * 5
-                            ,
-                            2
-                        );
+                        $monto_mora = round(($cuota->monto * $porcentaje_mora / 1000) * $dias_mora, 2);
                     }
+                    $base = (float) $cuota->monto;
+                }
 
-                    // Register the income for each cuota
-                    $ingreso = Ingreso::create([
-                        'transaccion_id' => $ultimaTransaccion->id,
-                        'prestamo_id' => $cuota->id_prestamo,
-                        'cliente_id' => $cuota->cliente_id,
-                        'cronograma_id' => $cuota->id,
-                        'numero_cuota' => $cuota->numero,
-                        'monto' =>  round($cuota->monto + $monto_mora, 2),
-                        'monto_mora' => $monto_mora,
-                        'dias_mora' => $dias_mora,
-                        'porcentaje_mora' => $porcentaje_mora,
-                        'fecha_pago' => now()->toDateString(),
-                        'hora_pago' => now()->toTimeString(),
-                        'sucursal_id' => $user->sucursal_id,
-                        'monto_total_pago_final' => $cuota->monto,
-                    ]);
-                    $ingreso_ids[] = $ingreso->id;
-                    if ($ingreso->cliente_id != null) {
-                        $ultimaTransaccion->cantidad_ingresos +=  $ingreso->monto;
-                    }
+                // Register the income for each cuota
+                $ingreso = Ingreso::create([
+                    'transaccion_id' => $ultimaTransaccion->id,
+                    'prestamo_id' => $cuota->id_prestamo,
+                    'cliente_id' => $cuota->cliente_id,
+                    'cronograma_id' => $cuota->id,
+                    'numero_cuota' => $cuota->numero,
+                    'monto' =>  round($base + $monto_mora, 2),
+                    'monto_mora' => $monto_mora,
+                    'dias_mora' => $dias_mora,
+                    'porcentaje_mora' => $porcentaje_mora,
+                    'fecha_pago' => now()->toDateString(),
+                    'hora_pago' => now()->toTimeString(),
+                    'sucursal_id' => $user->sucursal_id,
+                    'monto_total_pago_final' => round($base, 2),
+                ]);
+                $ingreso_ids[] = $ingreso->id;
+                if ($ingreso->cliente_id != null) {
+                    $ultimaTransaccion->cantidad_ingresos +=  $ingreso->monto;
                 }
             }
 
@@ -1665,20 +1749,25 @@ class CreditoController extends Controller
         DB::beginTransaction();
         try {
             foreach ($cuotas as $cuota) {
-                // Verificar si la cuota ya tiene un ingreso asociado
-                $ingresoExistente = Ingreso::where('prestamo_id', $prestamo_id)
-                    ->where('cronograma_id', $cuota->id)
-                    ->first();
+                // Saltar las cuotas ya liquidadas (incluye las saldadas por abonos parciales).
+                if ($this->cuotaLiquidada($cuota)) {
+                    continue;
+                }
 
-                if (!$ingresoExistente) {
-                    $dias_mora = 0;
-                    $monto_mora = 0;
-                    $porcentaje_mora = 1.5; // 0.3% de mora por día por cada mil soles
+                $porcentaje_mora = 1.5; // 0.3% de mora por día por cada mil soles
+                $dias_mora = 0;
+                $monto_mora = 0;
 
-                    // Determinar si la cuota está vencida
-                    $fecha_cuota = Carbon::parse($cuota->fecha);
-                    $vencida = Carbon::now()->greaterThan($fecha_cuota);
+                $fecha_cuota = Carbon::parse($cuota->fecha);
+                $vencida = Carbon::now()->greaterThan($fecha_cuota);
 
+                if ($cuota->ingresos()->exists()) {
+                    // Cuota con abonos parciales: pagar el saldo restante + mora rodante.
+                    $est        = $cuota->saldoYMora();
+                    $monto_pago = (float) $est['saldo'];
+                    $monto_mora = (float) $est['mora'];
+                    $dias_mora  = (int) $est['dias'];
+                } else {
                     if ($vencida) {
                         $dias_mora = Carbon::now()->diffInDays($fecha_cuota);
                         $monto_mora = round(($cuota->monto * $porcentaje_mora / 1000) * $dias_mora, 2);
@@ -1692,29 +1781,29 @@ class CreditoController extends Controller
                     } else {
                         $monto_pago = $cuota->amortizacion;
                     }
-
-                    $totalPagar = round($monto_pago + $monto_mora, 2);
-
-                    // Registrar el ingreso
-                    $ingreso = Ingreso::create([
-                        'transaccion_id' => $ultimaTransaccion->id,
-                        'prestamo_id' => $cuota->id_prestamo,
-                        'cliente_id' => $cuota->cliente_id,
-                        'cronograma_id' => $cuota->id,
-                        'numero_cuota' => $cuota->numero,
-                        'monto' => $totalPagar,
-                        'monto_mora' => $monto_mora,
-                        'dias_mora' => $dias_mora,
-                        'porcentaje_mora' => $porcentaje_mora,
-                        'fecha_pago' => now()->toDateString(),
-                        'hora_pago' => now()->toTimeString(),
-                        'sucursal_id' => $user->sucursal_id,
-                        'monto_total_pago_final' => $totalPagar,
-                    ]);
-
-                    $ingreso_ids[] = $ingreso->id;
-                    $totalPago += $totalPagar;
                 }
+
+                $totalPagar = round($monto_pago + $monto_mora, 2);
+
+                // Registrar el ingreso (pago de cierre de la cuota)
+                $ingreso = Ingreso::create([
+                    'transaccion_id' => $ultimaTransaccion->id,
+                    'prestamo_id' => $cuota->id_prestamo,
+                    'cliente_id' => $cuota->cliente_id,
+                    'cronograma_id' => $cuota->id,
+                    'numero_cuota' => $cuota->numero,
+                    'monto' => $totalPagar,
+                    'monto_mora' => $monto_mora,
+                    'dias_mora' => $dias_mora,
+                    'porcentaje_mora' => $porcentaje_mora,
+                    'fecha_pago' => now()->toDateString(),
+                    'hora_pago' => now()->toTimeString(),
+                    'sucursal_id' => $user->sucursal_id,
+                    'monto_total_pago_final' => $totalPagar,
+                ]);
+
+                $ingreso_ids[] = $ingreso->id;
+                $totalPago += $totalPagar;
             }
 
             // Actualizar la cantidad total de ingresos en la caja
@@ -1759,19 +1848,25 @@ class CreditoController extends Controller
         DB::beginTransaction();
         try {
             foreach ($cuotas as $cuota) {
-                // Verificar si la cuota ya tiene un ingreso asociado
-                $ingresoExistente = Ingreso::where('prestamo_id', $prestamo_id)
-                    ->where('cronograma_id', $cuota->id)
-                    ->first();
+                // Saltar las cuotas ya liquidadas (incluye las saldadas por abonos parciales).
+                if ($this->cuotaLiquidada($cuota)) {
+                    continue;
+                }
 
-                if (!$ingresoExistente) {
-                    $dias_mora = 0;
-                    $monto_mora = 0;
-                    $porcentaje_mora = 1.5; // 0.3% de mora por día por cada mil soles
+                $porcentaje_mora = 1.5; // 0.3% de mora por día por cada mil soles
+                $dias_mora = 0;
+                $monto_mora = 0;
 
-                    // Determinar si la cuota está vencida
-                    $fecha_cuota = Carbon::parse($cuota->fecha);
-                    $vencida = Carbon::now()->greaterThan($fecha_cuota);
+                $fecha_cuota = Carbon::parse($cuota->fecha);
+                $vencida = Carbon::now()->greaterThan($fecha_cuota);
+
+                if (!is_null($cuota->cliente_id) && $cuota->ingresos()->exists()) {
+                    // Miembro con abonos parciales: cobrar el saldo restante + mora rodante.
+                    $est        = $cuota->saldoYMora();
+                    $monto_pago = (float) $est['saldo'];
+                    $monto_mora = (float) $est['mora'];
+                    $dias_mora  = (int) $est['dias'];
+                } else {
                     if ($vencida) {
                         $dias_mora = Carbon::now()->diffInDays($fecha_cuota);
                         $monto_mora = round(($cuota->monto * $porcentaje_mora / 1000) * $dias_mora, 2);
@@ -1781,28 +1876,27 @@ class CreditoController extends Controller
                     } else {
                         $monto_pago = $cuota->amortizacion;
                     }
-
-                    $totalPagar = round($monto_pago + $monto_mora, 2);
-
-
-                    $ingreso = Ingreso::create([
-                        'transaccion_id' => $ultimaTransaccion->id,
-                        'prestamo_id' => $cuota->id_prestamo,
-                        'cliente_id' => $cuota->cliente_id,
-                        'cronograma_id' => $cuota->id,
-                        'numero_cuota' => $cuota->numero,
-                        'monto' => $totalPagar,
-                        'monto_mora' => $monto_mora,
-                        'dias_mora' => $dias_mora,
-                        'porcentaje_mora' => $porcentaje_mora,
-                        'fecha_pago' => now()->toDateString(),
-                        'hora_pago' => now()->toTimeString(),
-                        'sucursal_id' => $user->sucursal_id,
-                        'monto_total_pago_final' => $totalPagar,
-                    ]);
-                    $ingreso_ids[] = $ingreso->id;
-                    $ultimaTransaccion->cantidad_ingresos += $ingreso->monto;
                 }
+
+                $totalPagar = round($monto_pago + $monto_mora, 2);
+
+                $ingreso = Ingreso::create([
+                    'transaccion_id' => $ultimaTransaccion->id,
+                    'prestamo_id' => $cuota->id_prestamo,
+                    'cliente_id' => $cuota->cliente_id,
+                    'cronograma_id' => $cuota->id,
+                    'numero_cuota' => $cuota->numero,
+                    'monto' => $totalPagar,
+                    'monto_mora' => $monto_mora,
+                    'dias_mora' => $dias_mora,
+                    'porcentaje_mora' => $porcentaje_mora,
+                    'fecha_pago' => now()->toDateString(),
+                    'hora_pago' => now()->toTimeString(),
+                    'sucursal_id' => $user->sucursal_id,
+                    'monto_total_pago_final' => $totalPagar,
+                ]);
+                $ingreso_ids[] = $ingreso->id;
+                $ultimaTransaccion->cantidad_ingresos += $ingreso->monto;
             }
 
             $ultimaTransaccion->save(); // Guardar la transacción con la suma actualizada

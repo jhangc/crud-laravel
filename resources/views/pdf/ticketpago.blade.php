@@ -1,62 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket</title>
     <style>
+        /* dompdf ignora el margen de @page cuando el papel se fija por tamaño, y no respeta
+           box-sizing. Solución fiable: padding en el contenedor SIN width:100% — el bloque
+           llena el ancho del papel y el padding queda por dentro (deja margen, no desborda). */
+        @page { margin: 0; }
+        html, body { margin: 0; padding: 0; }
+
         body {
-            font-family: Arial, sans-serif;
-            font-size: 10px;
+            font-family: "DejaVu Sans", Arial, sans-serif;
+            font-size: 9px;
+            color: #000;
+            line-height: 1.25;
         }
 
-        .ticket {
-            width: 200px;
-            margin: auto;
-        }
+        .ticket { padding: 8px 14px; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 10px;
-        }
+        .header { text-align: center; margin-bottom: 4px; }
+        .header img { width: 60px; height: auto; }
+        .brand { font-size: 11px; font-weight: bold; margin-top: 2px; }
+        .sub { font-size: 9px; margin-top: 1px; }
 
-        .header img {
-            width: 80px;
-            height: auto;
-        }
+        hr { border: 0; border-top: 1px dashed #000; margin: 5px 0; }
 
-        .header h2 {
-            margin: 0;
-            font-size: 12px;
-        }
+        table.kv { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        table.kv td { padding: 1px 0; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
+        table.kv td.l { font-weight: bold; padding-right: 4px; width: 58%; }
+        table.kv td.r { text-align: right; width: 42%; }
+        tr.tot td { border-top: 1px solid #000; font-weight: bold; padding-top: 2px; }
 
-        .header h4 {
-            margin: 5px 0;
-            font-size: 10px;
+        .tag {
+            text-align: center; font-weight: bold; font-size: 9.5px;
+            border: 1px solid #000; border-radius: 3px; padding: 2px 0; margin: 4px 0;
         }
+        .note { font-size: 8px; color: #333; margin: 2px 0 0; }
+        .sec { font-weight: bold; text-align: center; margin: 4px 0 1px; }
 
-        .content p {
-            margin: 2px 0;
-        }
-
-        .content .label {
-            font-weight: bold;
-        }
-
-        .content .value {
-            float: right;
-        }
-
-        .signature {
-            margin-top: 10px;
-        }
-
-        .signature .line {
-            border-top: 1px solid #000;
-            margin: 5px 0;
-            width: 100%;
-        }
+        .sign { margin-top: 14px; text-align: center; }
+        .sign .line { border-top: 1px solid #000; width: 80%; margin: 16px auto 2px; }
     </style>
 </head>
 
@@ -64,74 +50,66 @@
     <div class="ticket">
         <div class="header">
             <img src="{{ asset('logo.png') }}" alt="Logo">
-            <h2>Grupo Credipalmo</h2>
-            <h4>Comprobante de Pago</h4>
+            <div class="brand">Grupo Credipalmo</div>
+            <div class="sub">Comprobante de Pago</div>
         </div>
-        <div class="content">
-            <p><span class="label">Fecha:</span> <span
-                    class="value">{{ $ingreso->created_at->format('d/m/Y H:i:s') }}</span></p>
-            <p><span class="label">DNI:</span> <span class="value">{{ $cliente->documento_identidad }}</span></p>
-            <p><span class="label">Nombres:</span> <span class="value">{{ $cliente->nombre }}</span></p>
-            <p><span class="label">N° de Cuota:</span> <span class="value">{{ $ingreso->numero_cuota }}</span></p>
-            <p><span class="label">Monto de Pago:</span> <span
-                    class="value">S/.{{ number_format($ingreso->monto_total_pago_final, 2) }}</span></p>
-            <p><span class="label">Días de Mora:</span> <span class="value">{{ $ingreso->dias_mora }}</span></p>
-            <p><span class="label">Monto de Mora:</span> <span
-                    class="value">S/.{{ number_format($ingreso->monto_mora, 2) }}</span></p>
-            <p><span class="label">Monto Total a Pagar:</span> <span
-                    class="value">S/.{{ number_format($ingreso->monto, 2) }}</span></p>
 
+        <hr>
+
+        <table class="kv">
+            <tr><td class="l">Fecha</td><td class="r">{{ $ingreso->created_at->format('d/m/Y H:i') }}</td></tr>
+            <tr><td class="l">DNI</td><td class="r">{{ $cliente->documento_identidad }}</td></tr>
+            <tr><td class="l">N&deg; Cuota</td><td class="r">{{ $ingreso->numero_cuota }}</td></tr>
+            <tr><td colspan="2" class="l">Cliente: <span style="font-weight:normal">{{ $cliente->nombre }}</span></td></tr>
+        </table>
+
+        <div class="tag">{{ $tipoPagoTexto ?? 'PAGO DE CUOTA' }}</div>
+
+        <hr>
+
+        <table class="kv">
+            <tr><td class="l">Pago a cuota</td><td class="r">S/ {{ number_format($ingreso->monto_total_pago_final, 2) }}</td></tr>
+            <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $ingreso->dias_mora }}</td></tr>
+            <tr><td class="l">Mora</td><td class="r">S/ {{ number_format($ingreso->monto_mora, 2) }}</td></tr>
+            <tr class="tot"><td class="l">Total pagado</td><td class="r">S/ {{ number_format($ingreso->monto, 2) }}</td></tr>
             @if(($diferencia ?? 0) > 0)
-                <p>
-                    <span class="label">Adelanto:</span>
-                    <span class="value">S/.{{ number_format($diferencia, 2) }}</span>
-                </p>
-
-                <p>
-                    <span class="label">Total Pagado</span>
-                    <span class="value">S/.{{ number_format($diferencia + $ingreso->monto, 2) }}</span>
-                </p>
+                <tr><td class="l">Adelanto sig. cuota</td><td class="r">S/ {{ number_format($diferencia, 2) }}</td></tr>
+                <tr class="tot"><td class="l">Total recibido</td><td class="r">S/ {{ number_format($diferencia + $ingreso->monto, 2) }}</td></tr>
             @endif
-            <br>
-            <p><span class="label">Observaciones:</span><span class="value">
-                    @if ($cronograma->pago_capital == null)
-                    @else
-                        Pago Capital-{{ $cronograma->pago_capital == 1 ? 'Reducir cuota' : 'Reducir plazo' }}
-                    @endif
-                </span></p>
-            <br>
-            <p><span class="label">Interés:</span> <span class="value">S/.
-                    @if ($cronograma->pago_capital == null)
-                        {{ number_format($cronograma->interes, 2) }}
-                    @else
-                        {{ number_format($cronograma->intereses_capital ?? 0, 2) }}
-                    @endif
-                </span></p>
-            <p><span class="label">Amortización:</span> <span class="value">S/.
+        </table>
 
-                    @if ($cronograma->pago_capital == null)
-                        {{ number_format($cronograma->amortizacion ?? 0, 2) }}
-                    @else
-                        {{ number_format($cronograma->monto_capital ?? 0, 2) }}
-                    @endif
-                </span></p>
-            <!-- <p><span class="label">Saldo de Deuda:</span> <span class="value">S/.{{ $cronograma->pago_capital == null
-                ? number_format($cronograma->saldo_deuda, 2)
-                : number_format($cronograma->nuevo_saldo_deuda ?? 0, 2) }}</span></p> -->
+        @if(!empty($esParcial))
+            <table class="kv">
+                <tr class="tot"><td class="l">Saldo restante cuota</td><td class="r">S/ {{ number_format($saldoRestante ?? 0, 2) }}</td></tr>
+            </table>
+            @if(!empty($moraCorre))
+                <div class="note" style="text-align:center;">La mora seguir&aacute; corriendo sobre el saldo restante desde hoy.</div>
+            @endif
+        @else
+            <div class="note" style="text-align:center;">Cuota cancelada.</div>
+        @endif
 
-            <p><span class="label">Monto sig.Cuota:</span> <span
-                    class="value">S/.{{ $fechaSiguienteCuota != 'N/A' ? $siguienteCuota->monto : '0.00' }}</span></p>
+        <hr>
 
+        <table class="kv">
+            @if($cronograma->pago_capital != null)
+                <tr><td class="l">Observaci&oacute;n</td><td class="r">Pago Capital &mdash; {{ $cronograma->pago_capital == 1 ? 'Reducir cuota' : 'Reducir plazo' }}</td></tr>
+            @endif
+            <tr><td class="l">Inter&eacute;s</td><td class="r">S/ {{ number_format($cronograma->pago_capital == null ? $cronograma->interes : ($cronograma->intereses_capital ?? 0), 2) }}</td></tr>
+            <tr><td class="l">Amortizaci&oacute;n</td><td class="r">S/ {{ number_format($cronograma->pago_capital == null ? ($cronograma->amortizacion ?? 0) : ($cronograma->monto_capital ?? 0), 2) }}</td></tr>
+        </table>
 
-            <br>
+        <hr>
 
-            <p><span class="label">Fecha Venc. Siguiente Cuota:</span> <span
-                    class="label">{{ $fechaSiguienteCuota }}</span></p>
-        </div>
-        <div class="signature">
-            <p><strong>Firma:</strong></p>
-            <br>
+        <div class="sec">Pr&oacute;xima cuota</div>
+        <table class="kv">
+            <tr><td class="l">Monto</td><td class="r">S/ {{ $fechaSiguienteCuota != 'N/A' ? number_format($siguienteCuota->monto, 2) : '0.00' }}</td></tr>
+            <tr><td class="l">Vence</td><td class="r">{{ $fechaSiguienteCuota != 'N/A' ? \Carbon\Carbon::parse($fechaSiguienteCuota)->format('d/m/Y') : '—' }}</td></tr>
+        </table>
+
+        <div class="sign">
             <div class="line"></div>
+            Firma
         </div>
     </div>
 </body>

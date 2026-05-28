@@ -48,4 +48,68 @@ class Cronograma extends Model
     {
         return $this->hasMany(Ingreso::class, 'cronograma_id');
     }
+
+    /**
+     * Saldo y mora vigente de la cuota, derivados del historial de Ingresos.
+     *
+     * La mora corre sobre el saldo que va quedando: en cada abono se reinicia el
+     * conteo a partir de ese día sobre el nuevo saldo. "Pagado a cuota" de cada
+     * ingreso = monto - monto_mora. Para una cuota sin abonos coincide con la mora
+     * clásica (monto * porMil/1000 * días vencidos).
+     */
+    public function saldoYMora(float $porMil = 1.5): array
+    {
+        $monto = round((float) $this->monto, 2);
+        $vto   = \Carbon\Carbon::parse($this->fecha)->startOfDay();
+        $hoy   = \Carbon\Carbon::now()->startOfDay();
+
+        $ingresos = $this->ingresos()
+            ->orderBy('fecha_pago')
+            ->orderBy('id')
+            ->get();
+
+        $balance     = $monto;
+        $accruedMora = 0.0;
+        $paidMora    = 0.0;
+        $cursor      = $vto->copy();
+
+        foreach ($ingresos as $ing) {
+            $payDate = \Carbon\Carbon::parse($ing->fecha_pago)->startOfDay();
+
+            // Devengar mora desde el último corte hasta este abono, sobre el saldo vigente.
+            if ($payDate->greaterThan($vto) && $balance > 0.009) {
+                $desde = $cursor->greaterThan($vto) ? $cursor : $vto;
+                $dias  = max(0, $desde->diffInDays($payDate));
+                $accruedMora += ($balance * $porMil / 1000) * $dias;
+            }
+
+            $pagadoCuota = round((float) $ing->monto - (float) $ing->monto_mora, 2);
+            if ($pagadoCuota > 0) {
+                $balance = round($balance - $pagadoCuota, 2);
+                if ($balance < 0) $balance = 0.0;
+            }
+            $paidMora += (float) $ing->monto_mora;
+
+            if ($payDate->greaterThan($cursor)) $cursor = $payDate->copy();
+        }
+
+        // Mora devengada desde el último corte hasta hoy, sobre el saldo restante.
+        $diasMora = 0;
+        if ($hoy->greaterThan($vto) && $balance > 0.009) {
+            $desde    = $cursor->greaterThan($vto) ? $cursor : $vto;
+            $diasMora = max(0, $desde->diffInDays($hoy));
+            $accruedMora += ($balance * $porMil / 1000) * $diasMora;
+        }
+
+        $moraVigente = round($accruedMora - $paidMora, 2);
+        if ($moraVigente < 0) $moraVigente = 0.0;
+
+        return [
+            'saldo'       => round(max($balance, 0), 2),
+            'mora'        => $moraVigente,
+            'dias'        => $diasMora,
+            'porcentaje'  => $porMil,
+            'fecha_corte' => $cursor->toDateString(),
+        ];
+    }
 }

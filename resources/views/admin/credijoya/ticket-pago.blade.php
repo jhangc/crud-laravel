@@ -104,6 +104,26 @@
     <tr><td class="bold">Total:</td><td class="right bold">{{ $totalPag }}</td></tr>
   </table>
 
+  <!-- Block de ADELANTO / PAGO PARCIAL -->
+  @if(($desglose['tipo'] ?? '') === 'abono')
+    @php
+      $saldoR    = number_format((float)($desglose['saldo_restante'] ?? 0), 2, '.', '');
+      $moraV     = number_format((float)($desglose['mora_vigente'] ?? 0), 2, '.', '');
+      $moraDesde = !empty($desglose['mora_desde'])
+                    ? \Carbon\Carbon::parse($desglose['mora_desde'])->format('d/m/Y')
+                    : $fechaStr;
+    @endphp
+    <hr>
+    <div class="bold center">ADELANTO / PAGO PARCIAL</div>
+    <div class="kv"><span class="lbl">Saldo restante:</span><span class="val">S/ {{ $saldoR }}</span></div>
+    @if((float)($desglose['saldo_restante'] ?? 0) > 0.009)
+      <div class="kv"><span class="lbl">Mora vigente:</span><span class="val">S/ {{ $moraV }}</span></div>
+      <div class="small muted">La mora corre desde {{ $moraDesde }} sobre el saldo restante.</div>
+    @else
+      <div class="small muted center">Cuota cancelada. Joyas liberadas.</div>
+    @endif
+  @endif
+
   <!-- Estado del crédito -->
 
   <!-- Block de RENOVACIÓN / NUEVO CRÉDITO -->

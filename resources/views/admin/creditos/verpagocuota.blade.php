@@ -168,6 +168,8 @@
                             <td>
                                 @if ($cuota->estado == 'pagado')
                                     <span class="badge badge-success">Pagado</span>
+                                @elseif ($cuota->estado == 'parcial')
+                                    <span class="badge badge-info">Parcial — saldo S/ {{ number_format($cuota->saldo ?? 0, 2) }}</span>
                                 @elseif ($cuota->estado == 'vencida')
                                     <span
                                         class="badge badge-danger">{{ $cuota->dias_mora > 1 ? 'vencida' : 'VENCE-HOY' }}</span>
@@ -191,15 +193,15 @@
                                                 class="btn btn-warning mb-2">Ver Nuevo Cronograma</a>
                                         @endif
                                     </div>
-                                @elseif ($cuota->estado == 'pendiente' || $cuota->estado == 'vencida')
+                                @elseif ($cuota->estado == 'pendiente' || $cuota->estado == 'vencida' || $cuota->estado == 'parcial')
                                     @if ($cuota->ultima == '1' && $credito->categoria != 'grupal')
                                         <button class="btn btn-info" data-toggle="modal" data-target="#pagarTodoModal"
                                             onclick="pagarTodoindividual({{ $credito->id }}, '{{ $cuota->fecha }}','{{ $cuota->numero }}')">PAGAR
                                             TODO</button>
                                     @endif
-                                    <button class="btn btn-{{ $cuota->estado == 'vencida' ? 'warning' : 'primary' }}"
+                                    <button class="btn btn-{{ $cuota->estado == 'vencida' ? 'warning' : ($cuota->estado == 'parcial' ? 'info' : 'primary') }}"
                                         data-toggle="modal" data-target="#modalPagarCuota"
-                                        onclick="pagarCuota({{ $credito->id }}, {{ $clienteCredito->cliente_id }}, {{ $cuota->id }}, {{ $cuota->numero }}, {{ $cuota->monto_total_pago_final }}, {{ $cuota->monto }}, {{ $cuota->dias_mora }}, {{ $cuota->porcentaje_mora }})">Pagar</button>
+                                        onclick="pagarCuota({{ $credito->id }}, {{ $clienteCredito->cliente_id }}, {{ $cuota->id }}, {{ $cuota->numero }}, {{ $cuota->monto_total_pago_final }}, {{ $cuota->monto }}, {{ $cuota->dias_mora }}, {{ $cuota->porcentaje_mora }})">{{ $cuota->estado == 'parcial' ? 'Abonar' : 'Pagar' }}</button>
                                 @else
                                     {{ $cuota->fecha_pago }}
                                 @endif
@@ -434,7 +436,7 @@
                         </div>
                         <div class="modal-body">
                             <div class="form-group">
-                                <label>Monto Total a Pagar</label>
+                                <label>Saldo + mora a pagar</label>
                                 <!-- solo para mostrar, no se envía directamente -->
                                 <input type="text" class="form-control" id="mpc_monto_total_display" disabled>
                             </div>
@@ -442,6 +444,10 @@
                                 <label>Monto a Abonar</label>
                                 <input type="number" step="0.01" class="form-control" name="monto_pagado"
                                     id="mpc_monto_pagado" required>
+                                <small class="form-text text-muted">
+                                    Puedes pagar el total o una parte (abono). Primero se cubre la mora y el resto baja el saldo;
+                                    la mora seguirá corriendo sobre el saldo restante.
+                                </small>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -486,8 +492,8 @@
             $('#mpc_dias_mora_hidden').val(dias_mora);
             $('#mpc_porcentaje_mora_hidden').val(porcentaje_mora);
 
-            // limpiar el campo de abono
-            $('#mpc_monto_pagado').val('');
+            // sugerir el saldo + mora (para terminar de pagar), pero editable: puede abonar una parte
+            $('#mpc_monto_pagado').val(monto_total_pago_final.toFixed(2));
 
         }
 
@@ -511,12 +517,12 @@
 
             const mpc_monto_pagado = parseFloat($('#mpc_monto_pagado').val());
 
-            // ——— Validación front —
-            if (mpc_monto_pagado < monto_total) {
+            // ——— Validación front: se permite abonar una parte (pago parcial) —
+            if (!(mpc_monto_pagado > 0)) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Monto insuficiente',
-                    text: `El monto ingresado (S/. ${mpc_monto_pagado.toFixed(2)}) no puede ser menor al total a pagar (S/. ${monto_total.toFixed(2)}).`
+                    title: 'Monto inválido',
+                    text: 'Ingresa un monto a abonar mayor a 0.'
                 });
                 return; // salimos y no hacemos la petición
             }

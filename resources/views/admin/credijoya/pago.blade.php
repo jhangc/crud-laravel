@@ -111,10 +111,12 @@
         $intProg   = round((float)$cuotaVigente->interes,2);
         $moraCalc  = round((float)$moraHoy, 2);
         $intHoy    = round((float)$interesHoy, 2);
+        $saldoCta  = round((float)($saldoCuota ?? $cuotaProg), 2);
       @endphp
 
       <div class="row g-3 kpi text-center text-md-start">
         <div class="col-6 col-md-2"><div class="label">Vence</div><div class="value">{{ $vto->format('d/m/Y') }}</div></div>
+        <div class="col-6 col-md-2"><div class="label">Saldo cuota</div><div class="value text-success">S/ {{ number_format($saldoCta,2) }}</div></div>
         <div class="col-6 col-md-2"><div class="label">Capital</div><div class="value text-primary">S/ {{ number_format($amort,2) }}</div></div>
         <div class="col-6 col-md-2"><div class="label">Int. prog.</div><div class="value">S/ {{ number_format($intProg,2) }}</div></div>
         <div class="col-6 col-md-2"><div class="label">Int. a hoy</div><div class="value">S/ {{ number_format($intHoy,2) }}</div></div>
@@ -160,6 +162,10 @@
             <div class="opt" data-modo="adelanto" role="tab" aria-selected="false" tabindex="0">
               Interés + adelanto
               <small>Interés + tu adelanto <span class="pill-badge warn">Renueva 1 mes</span></small>
+            </div>
+            <div class="opt" data-modo="parcialcuota" role="tab" aria-selected="false" tabindex="0">
+              Adelanto / Parcial
+              <small>Abona por partes <span class="pill-badge">Baja saldo</span></small>
             </div>
           </div>
           <div class="form-text mt-2" id="ayudaModo">Pone al día (no amortiza capital).</div>
@@ -239,6 +245,7 @@
 
   const hayCuota    = {{ $cuotaVigente ? 'true' : 'false' }};
   const esMismoDia  = {{ isset($esMismoDia) && $esMismoDia ? 'true' : 'false' }};
+  const parcialIniciado = {{ isset($parcialIniciado) && $parcialIniciado ? 'true' : 'false' }};
   if (!hayCuota) return;
 
   const CUOTA = {
@@ -247,6 +254,7 @@
     intProg   : {{ isset($cuotaVigente) ? number_format($intProg,2,'.','')   : '0' }},
     intHoy    : {{ isset($cuotaVigente) ? number_format($intHoy,2,'.','')    : '0' }},
     mora      : {{ isset($cuotaVigente) ? number_format($moraCalc,2,'.','')  : '0' }},
+    saldo     : {{ isset($cuotaVigente) ? number_format($saldoCta,2,'.','')  : '0' }},
     vencida   : {{ isset($cuotaVigente) && $esVencida ? 'true' : 'false' }},
     diasRest  : {{ isset($cuotaVigente) ? (int)$diasHastaVencer : 0 }},
   };
@@ -350,11 +358,22 @@
       );
       setMsg('');
     } else if (modo==='adelanto'){
-      $tipoHidden.val('parcial'); $adelBox.show(); 
-      $teaBox.show(); 
+      $tipoHidden.val('parcial'); $adelBox.show();
+      $teaBox.show();
       lockMonto(basePorModo('adelanto'), false);
       setAyuda('Interés + mora + tu adelanto de capital (renueva 1 mes).', 'Puedes editar por encima del mínimo.');
       setMsg('El pago mínimo es S/ ' + toMoney(minimoInter()));
+    } else if (modo==='parcialcuota'){
+      $tipoHidden.val('abono'); $adelBox.hide();
+      hideTea();
+      const mora = Number(CUOTA.mora);
+      const sugerido = Number(CUOTA.saldo) + mora;   // monto para terminar de pagar la cuota
+      lockMonto(sugerido, false);                    // editable: puede abonar una parte o todo
+      setAyuda(
+        'Abona lo que quieras de tu cuota. Primero se cubre la mora y el resto baja tu saldo; la mora seguirá corriendo sobre el saldo restante.',
+        'Editable. Puedes pagar una parte o el total.'
+      );
+      setMsg('Saldo de la cuota: S/ ' + toMoney(CUOTA.saldo) + (mora > 0 ? ' · Mora vigente: S/ ' + toMoney(mora) : ''));
     }
   }
 
@@ -471,10 +490,12 @@
   /* ------------------------------ INIT ------------------------------ */
   function init(){
   if (esMismoDia){
-    setModo('totalhoy'); 
+    setModo('totalhoy');
     $tipoHidden.val('total');
     lockMonto(Number(CUOTA.amort), true); // sólo capital
     $teaBox.hide(); $teaIn.val('');       // <<< asegurar oculto
+  } else if (parcialIniciado){
+    setModo('parcialcuota');              // ya hay abonos: continuar pagando el saldo
   } else {
     setModo('interes');
   }
