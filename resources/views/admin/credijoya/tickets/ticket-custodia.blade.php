@@ -1,124 +1,77 @@
 <!doctype html>
-<html>
+<html lang="es">
 <head>
 <meta charset="utf-8">
+<title>Recibo de Custodia</title>
 <style>
-  /* ===== Config térmica ===== */
-  @page { margin: 2; }
-  html, body { margin: 2; padding: 2; }
+  @page { margin: 0; }
+  html, body { margin: 0; padding: 0; }
 
-  body{
-    font-family: "DejaVu Sans","DejaVu Sans Mono", Arial, sans-serif;
-    font-size: 10.5px;
-    line-height: 1.28;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  body {
+    font-family: "DejaVu Sans", Arial, sans-serif;
+    font-size: 9px;
+    color: #000;
+    line-height: 1.25;
   }
 
-  /* Utilidades */
-  .c{ text-align:center }
-  .b{ font-weight:700 }
-  .sm{ font-size:10px }
-  .mt6{ margin-top:6px }
+  .ticket { padding: 8px 14px; }
 
-  /* Encabezado */
-  .logo{ text-align:center; margin: 4px 0 6px; }
-  .logo img{
-    display:block;
-    margin: 0 auto;
-    /* Evita desbordes en 58mm y 80mm */
-    max-width: 50%;
-    height: auto;
-    object-fit: contain;
-  }
+  .header { text-align: center; margin-bottom: 4px; }
+  .header img { width: 62px; height: auto; }
+  .brand { font-size: 11px; font-weight: bold; margin-top: 2px; }
+  .sub { font-size: 9px; margin-top: 1px; }
 
-  /* Grid etiqueta / valor */
-  .kv{
-    display:grid;
-    grid-template-columns: 1fr auto;
-    gap: 6px;
-    align-items:center;
-    margin: 2px 0;
-    word-break: break-word;
-  }
-  .kv .b{ font-weight:700; }
-  .kv .val{ text-align:right; font-variant-numeric: tabular-nums; }
+  hr { border: 0; border-top: 1px dashed #000; margin: 5px 0; }
 
-  hr{ border:0; border-top:1px dashed #999; margin:6px 0; }
-  .muted{ color:#666; }
+  table.kv { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  table.kv td { padding: 1px 0; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
+  table.kv td.l { font-weight: bold; padding-right: 4px; width: 58%; }
+  table.kv td.r { text-align: right; width: 42%; }
+  tr.tot td { border-top: 1px solid #000; font-weight: bold; padding-top: 2px; }
 
-  /* Tabla simple */
-  table{ width:100%; border-collapse:collapse; }
-  th, td{ padding: 3px 2px; border-bottom:1px solid #eee; }
-  th{ text-align:left; }
+  .sec { font-weight: bold; text-align: center; margin: 4px 0 1px; }
+  .note { font-size: 8px; color: #333; }
 </style>
 </head>
 <body>
 
-  {{-- HEADER --}}
-  @php
-    // Para Dompdf, usa path absoluto si existe; de lo contrario, intenta con asset()
-    $logoPath = public_path('logo.png');
-    $logo = file_exists($logoPath) ? $logoPath : (filter_var(asset('logo.png'), FILTER_VALIDATE_URL) ? asset('logo.png') : null);
-  @endphp
+@php
+  $logoPath = public_path('logo.png');
+  $logo = file_exists($logoPath) ? $logoPath : (filter_var(asset('logo.png'), FILTER_VALIDATE_URL) ? asset('logo.png') : null);
+@endphp
 
-  @if($logo)
-    <div class="logo">
-      <img src="{{ $logo }}" alt="Logo">
-    </div>
-  @endif
-
-  <div class="c b mt6">RECIBO DE CUSTODIA</div>
-  <hr>
-
-  {{-- METADATA --}}
-  <div class="kv sm">
-    <div>Fecha: <span class="b">{{ $fecha }}</span></div>
-    <div>Hora: <span class="b">{{ $hora }}</span></div>
+<div class="ticket">
+  <div class="header">
+    @if($logo)<img src="{{ $logo }}" alt="Logo">@endif
+    <div class="brand">Grupo Credipalmo</div>
+    <div class="sub">Recibo de Custodia</div>
   </div>
 
   <hr>
 
-  {{-- DETALLE DEL PAGO --}}
-  <div class="kv">
-    <div>Motivo</div>
-    <div class="b">Custodia de Joyas</div>
-  </div>
-  <div class="kv">
-    <div>Monto del ticket</div>
-    <div class="b">S/ {{ number_format($ing->monto,2,'.','') }}</div>
-  </div>
-
-  {{-- RESUMEN FINANCIERO --}}
-  <div class="mt6 b">Estado de custodia</div>
-  <table class="sm">
-    <tr>
-      <td>% mensual</td>
-      <td style="text-align:right">{{ number_format($estado['porcentaje_mensual'] ?? 0,2) }}% (prorrateo diario)</td>
-    </tr>
-    <tr>
-      <td>Días cobrados</td>
-      <td style="text-align:right">{{ $estado['dias_cobra'] ?? 0 }} (desde día {{ $estado['desde_dia'] ?? 16 }})</td>
-    </tr>
-    <tr>
-      <td>Acumulado a la fecha</td>
-      <td class="b" style="text-align:right">S/ {{ number_format($estado['acumulado'] ?? 0,2,'.','') }}</td>
-    </tr>
-    <tr>
-      <td>Pagado total</td>
-      <td style="text-align:right">S/ {{ number_format($estado['pagado'] ?? 0,2,'.','') }}</td>
-    </tr>
-    <tr>
-      <td>Saldo pendiente</td>
-      <td class="b" style="text-align:right">S/ {{ number_format($estado['pendiente'] ?? 0,2,'.','') }}</td>
-    </tr>
+  <table class="kv">
+    <tr><td class="l">Fecha</td><td class="r">{{ $fecha }} {{ $hora }}</td></tr>
+    <tr><td class="l">Motivo</td><td class="r">Custodia de Joyas</td></tr>
+    <tr class="tot"><td class="l">Monto del ticket</td><td class="r">S/ {{ number_format($ing->monto, 2) }}</td></tr>
   </table>
 
   <hr>
-    <div class="c sm">
-    Gracias por su pago<br>
-    <span class="muted">El cobro de custodia aplica a partir del día 16 después de cancelado el crédito.</span>
+
+  <div class="sec">Estado de custodia</div>
+  <table class="kv">
+    <tr><td class="l">% mensual</td><td class="r">{{ number_format($estado['porcentaje_mensual'] ?? 0, 2) }}%</td></tr>
+    <tr><td class="l">D&iacute;as cobrados</td><td class="r">{{ $estado['dias_cobra'] ?? 0 }} (desde d&iacute;a {{ $estado['desde_dia'] ?? 16 }})</td></tr>
+    <tr><td class="l">Acumulado a la fecha</td><td class="r">S/ {{ number_format($estado['acumulado'] ?? 0, 2) }}</td></tr>
+    <tr><td class="l">Pagado total</td><td class="r">S/ {{ number_format($estado['pagado'] ?? 0, 2) }}</td></tr>
+    <tr class="tot"><td class="l">Saldo pendiente</td><td class="r">S/ {{ number_format($estado['pendiente'] ?? 0, 2) }}</td></tr>
+  </table>
+
+  <hr>
+  <div class="note" style="text-align:center;">
+    Gracias por su pago.<br>
+    El cobro de custodia aplica a partir del d&iacute;a 16 despu&eacute;s de cancelado el cr&eacute;dito.
   </div>
+</div>
 
 </body>
 </html>

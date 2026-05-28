@@ -4,136 +4,89 @@
 <meta charset="utf-8">
 <title>Tickets</title>
 <style>
-  /* Base */
-  * { box-sizing: border-box; }
-  body{ font-family: Arial, sans-serif; font-size:10px; margin:0; padding:0; }
+  @page { margin: 0; }
+  html, body { margin: 0; padding: 0; }
 
-  /* Contenedor del ticket (200px como pediste) */
-  .ticket{
-    width:200px;
-    margin:0 auto 14px auto;
-    padding-bottom:8px;
-    border-bottom:1px dashed #999;
-    page-break-inside: avoid;
+  body {
+    font-family: "DejaVu Sans", Arial, sans-serif;
+    font-size: 9px;
+    color: #000;
+    line-height: 1.25;
   }
 
-  /* Header con logo */
-  .hdr{ text-align:center; margin-bottom:8px; }
-  .hdr img{ width:80px; height:auto; display:block; margin:0 auto 4px auto; }
-  .hdr .title{ font-weight:bold; font-size:12px; }
-  .hdr .subtitle{ font-size:10px; margin-top:2px; }
+  .ticket { padding: 8px 14px; page-break-after: always; }
+  .ticket:last-child { page-break-after: auto; }
 
-  /* Filas con 2 columnas fijas (mejor que floats) */
-  .row{
-    display:grid;
-    grid-template-columns: 1fr auto;
-    gap:8px;
-    align-items:center;
-    margin:2px 0;
-    word-break: break-word;
-  }
-  .label{ font-weight:bold; }
-  .right{ text-align:right; }
+  .header { text-align: center; margin-bottom: 4px; }
+  .header img { width: 62px; height: auto; }
+  .brand { font-size: 11px; font-weight: bold; margin-top: 2px; }
+  .sub { font-size: 9px; margin-top: 1px; }
 
-  /* Firma */
-  .firma{ text-align:center; margin-top:10px; }
-  .firma .line{ border-top:1px solid #000; margin:5px 0; }
+  hr { border: 0; border-top: 1px dashed #000; margin: 5px 0; }
 
-  /* Impresión: cada ticket en una hoja/salto */
-  @media print{
-    .ticket{
-      border:0;
-      margin:0 auto;
-      page-break-after: always;
-    }
-    .ticket:last-child{
-      page-break-after: auto;
-    }
-  }
+  table.kv { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  table.kv td { padding: 1px 0; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
+  table.kv td.l { font-weight: bold; padding-right: 4px; width: 56%; }
+  table.kv td.r { text-align: right; width: 44%; }
+  tr.tot td { border-top: 1px solid #000; font-weight: bold; padding-top: 2px; }
+
+  .sec { font-weight: bold; text-align: center; margin: 4px 0 1px; }
+
+  .sign { margin-top: 14px; text-align: center; }
+  .sign .line { border-top: 1px solid #000; width: 80%; margin: 16px auto 2px; }
 </style>
 </head>
 <body>
 
 @foreach($tickets as $t)
+  @php $diferencia = $t['diferencia'] ?? 0; $pc = $t['cronograma']->pago_capital ?? null; @endphp
   <div class="ticket">
-    <div class="hdr">
+    <div class="header">
       <img src="{{ asset('logo.png') }}" alt="Logo">
-      <div class="title">Grupo Credipalmo</div>
-      <div class="subtitle">Comprobante de Pago</div>
+      <div class="brand">Grupo Credipalmo</div>
+      <div class="sub">Comprobante de Pago</div>
     </div>
 
-    <div class="row"><span class="label">Fecha</span>
-      <span class="right">{{ \Carbon\Carbon::parse($t['ingreso']->created_at)->format('d/m/Y H:i:s') }}</span>
-    </div>
-    <div class="row"><span class="label">Crédito</span>
-      <span class="right">#{{ $t['prestamo']->id }}</span>
-    </div>
-    <div class="row"><span class="label">Cliente</span>
-      <span class="right">{{ $t['cliente']->nombre }}</span>
-    </div>
-    <div class="row"><span class="label">DNI</span>
-      <span class="right">{{ $t['cliente']->documento_identidad }}</span>
-    </div>
-    <div class="row"><span class="label">Cuota N°</span>
-      <span class="right">{{ $t['ingreso']->numero_cuota }}</span>
-    </div>
-    <div class="row"><span class="label">Vcto. Cuota</span>
-      <span class="right">{{ $t['cronograma']->fecha }}</span>
-    </div>
-    <div class="row"><span class="label">Monto de Cuota </span>
-      <span class="right">{{$t['cronograma']->monto}}</span>
-    </div>
+    <hr>
 
-    <div class="row"><span>Interés</span>
-      <span class="right">S/. {{ number_format(($t['cronograma']->interes ?? 0),2) }}</span>
-    </div>
-    <div class="row"><span>Amortización</span>
-      <span class="right">S/. {{ number_format(($t['cronograma']->amortizacion ?? 0),2) }}</span>
-    </div>
-    <div class="row"><span>Mora</span>
-      <span class="right">S/. {{ number_format(($t['ingreso']->monto_mora ?? 0),2) }}</span>
-    </div>
+    <table class="kv">
+      <tr><td class="l">Fecha</td><td class="r">{{ \Carbon\Carbon::parse($t['ingreso']->created_at)->format('d/m/Y H:i') }}</td></tr>
+      <tr><td class="l">Cr&eacute;dito</td><td class="r">#{{ $t['prestamo']->id }}</td></tr>
+      <tr><td class="l">DNI</td><td class="r">{{ $t['cliente']->documento_identidad }}</td></tr>
+      <tr><td class="l">Cuota N&deg;</td><td class="r">{{ $t['ingreso']->numero_cuota }}</td></tr>
+      <tr><td class="l">Vcto. cuota</td><td class="r">{{ \Carbon\Carbon::parse($t['cronograma']->fecha)->format('d/m/Y') }}</td></tr>
+      <tr><td colspan="2" class="l">Cliente: <span style="font-weight:normal">{{ $t['cliente']->nombre }}</span></td></tr>
+    </table>
 
-    {{-- Adelanto / Total pagado opcional --}}
-    @php $diferencia = $t['diferencia'] ?? 0; @endphp
-    @if($diferencia > 0)
-      <div class="row"><span class="label">Adelanto</span>
-        <span class="right">S/. {{ number_format($diferencia,2) }}</span>
-      </div>
-      <div class="row"><span class="label">Total Pagado</span>
-        <span class="right">S/. {{ number_format($diferencia + $t['ingreso']->monto,2) }}</span>
-      </div>
+    <hr>
+
+    <table class="kv">
+      <tr><td class="l">Monto de cuota</td><td class="r">S/ {{ number_format($t['cronograma']->monto, 2) }}</td></tr>
+      <tr><td class="l">Inter&eacute;s</td><td class="r">S/ {{ number_format($t['cronograma']->interes ?? 0, 2) }}</td></tr>
+      <tr><td class="l">Amortizaci&oacute;n</td><td class="r">S/ {{ number_format($t['cronograma']->amortizacion ?? 0, 2) }}</td></tr>
+      <tr><td class="l">Mora</td><td class="r">S/ {{ number_format($t['ingreso']->monto_mora ?? 0, 2) }}</td></tr>
+      <tr class="tot"><td class="l">Monto pagado</td><td class="r">S/ {{ number_format($t['ingreso']->monto, 2) }}</td></tr>
+      @if($diferencia > 0)
+        <tr><td class="l">Adelanto</td><td class="r">S/ {{ number_format($diferencia, 2) }}</td></tr>
+        <tr class="tot"><td class="l">Total pagado</td><td class="r">S/ {{ number_format($diferencia + $t['ingreso']->monto, 2) }}</td></tr>
+      @endif
+    </table>
+
+    @if($pc !== null)
+      <div class="note" style="font-size:8px;color:#333;margin-top:2px;">Observaci&oacute;n: Pago Capital &mdash; {{ $pc == 1 ? 'Reducir cuota' : 'Reducir plazo' }}</div>
     @endif
 
-    <div class="row label"><span>Monto Pagado</span>
-      <span class="right">S/. {{ number_format($t['ingreso']->monto,2) }}</span>
-    </div>
+    <hr>
 
-    {{-- Observación de pago de capital --}}
-    @php $pc = $t['cronograma']->pago_capital ?? null; @endphp
-    <div class="row"><span class="label">Observaciones</span>
-      <span class="right">
-        @if ($pc === null)
-          —
-        @else
-          Pago Capital - {{ $pc == 1 ? 'Reducir cuota' : 'Reducir plazo' }}
-        @endif
-      </span>
-    </div>
+    <div class="sec">Pr&oacute;xima cuota</div>
+    <table class="kv">
+      <tr><td class="l">Monto</td><td class="r">S/ {{ $t['sig_cuota'] ? number_format($t['sig_cuota']->monto, 2) : '0.00' }}</td></tr>
+      <tr><td class="l">Vence</td><td class="r">{{ $t['fecha_sig'] ?? '—' }}</td></tr>
+    </table>
 
-    {{-- Próxima cuota --}}
-    <div class="row"><span>Próx. venc.</span>
-      <span class="right">{{ $t['fecha_sig'] }}</span>
-    </div>
-    @if($t['sig_cuota'])
-      <div class="row"><span>Monto próx. cuota</span>
-        <span class="right">S/. {{ number_format($t['sig_cuota']->monto,2) }}</span>
-      </div>
-    @endif
-
-    <div class="firma">
+    <div class="sign">
       <div class="line"></div>
-      <div>Firma</div>
+      Firma
     </div>
   </div>
 @endforeach

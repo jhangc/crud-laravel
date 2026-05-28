@@ -8,6 +8,55 @@
             padding: 0 15px;
             margin: 0 auto;
         }
+
+        .cuotas-table-wrap {
+            width: 100%;
+            overflow-x: visible;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .cuotas-table-wrap .table {
+            margin-bottom: 0;
+        }
+
+        .cuotas-table-wrap .table th,
+        .cuotas-table-wrap .table td {
+            white-space: normal;
+            vertical-align: middle;
+        }
+
+        .action-cell {
+            min-width: 210px;
+        }
+
+        .btn-saldar-total {
+            font-weight: 600;
+        }
+
+        @media (max-width: 1600px) {
+            .cuotas-table-wrap {
+                overflow-x: auto;
+            }
+
+            .cuotas-table-wrap .table th,
+            .cuotas-table-wrap .table td {
+                white-space: nowrap;
+            }
+        }
+
+        @media (max-width: 1440px) {
+            .cuotas-table-wrap .table th,
+            .cuotas-table-wrap .table td {
+                font-size: 0.82rem;
+                padding: 0.45rem;
+            }
+
+            .btn {
+                padding: 0.3rem 0.55rem;
+            }
+        }
     </style>
     <div class="container flex container-large">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
@@ -63,7 +112,8 @@
 
         @if ($credito->categoria == 'grupal')
             <h2>Cuotas Generales</h2>
-            <table class="table table-striped">
+            <div class="cuotas-table-wrap">
+            <table class="table table-striped table-sm table-hover">
                 <thead>
                     <tr>
                         <th>Cuota</th>
@@ -79,6 +129,11 @@
                         <th>Monto Pagado</th>
                         <th>Monto Pendiente</th>
                         <th>Monto Vencido</th>
+                        <th>Abono Capital</th>
+                        <th>Mora Pagada</th>
+                        <th>Ultimo Abono</th>
+                        <th>Dias Desde Abono</th>
+                        <th>Detalle</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -93,7 +148,7 @@
                             <td>{{ number_format($cuota->monto_mora, 2) }}</td> <!-- Mostrar el monto de mora -->
                             <td>{{ number_format($cuota->monto_total_pago_final, 2) }}</td>
                             <!-- Mostrar el monto total a pagar -->
-                            <td>
+                            <td class="action-cell">
                                 @if ($cuota->estado == 'pagado')
                                     <span class="badge badge-success">Pagado</span>
                                 @elseif ($cuota->estado == 'vencida')
@@ -110,6 +165,11 @@
                             <td>S/. {{ number_format($cuota->monto_pagado, 2) }}</td>
                             <td>S/. {{ number_format($cuota->monto_pendiente, 2) }}</td>
                             <td>S/. {{ number_format($cuota->monto_vencido, 2) }}</td>
+                            <td>S/. {{ number_format($cuota->abono_capital ?? 0, 2) }}</td>
+                            <td>S/. {{ number_format($cuota->mora_pagada ?? 0, 2) }}</td>
+                            <td>{{ $cuota->fecha_ultimo_abono_ref ?? '-' }}</td>
+                            <td>{{ is_null($cuota->dias_desde_ultimo_abono_ref ?? null) ? '-' : $cuota->dias_desde_ultimo_abono_ref }}</td>
+                            <td>{{ $cuota->detalle_estado ?? '-' }}</td>
                             <td>
                                 @if ($cuota->estado == 'pagado')
                                     {{ $cuota->fecha_pago }}
@@ -123,9 +183,9 @@
                                     </div>
                                 @elseif ($cuota->estado == 'pendiente' || $cuota->estado == 'vencida' || $cuota->estado == 'parcial')
                                     @if ($cuota->ultima == 1)
-                                        <button class="btn btn-info" data-toggle="modal" data-target="#pagarTodoModal"
+                                        <button class="btn btn-{{ $cuota->estado == 'parcial' ? 'warning' : 'secondary' }} btn-saldar-total" data-toggle="modal" data-target="#pagarTodoModal"
                                             onclick="pagarTodogrupal({{ $credito->id }}, '{{ $cuota->fecha }}', '{{ $cuota->numero }}')">
-                                            PAGAR TODO
+                                            {{ $cuota->estado == 'parcial' ? 'SALDAR TODO' : 'PAGAR TODO' }}
                                         </button>
                                     @endif
                                     <button class="btn btn-{{ $cuota->estado == 'vencida' ? 'warning' : 'primary' }}"
@@ -138,12 +198,14 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         @endif
 
         @foreach ($clientesCredito as $clienteCredito)
             <br><br>
             <h3>Cliente: {{ $clienteCredito->clientes->nombre }}</h3>
-            <table class="table table-striped">
+            <div class="cuotas-table-wrap">
+            <table class="table table-striped table-sm table-hover">
                 <thead>
                     <tr>
                         <th>Cuota</th>
@@ -152,7 +214,14 @@
                         <th>Días de Mora</th>
                         <th>Monto de Mora</th>
                         <th>Monto Total a Pagar</th>
+                        <th>Total Abonado</th>
+                        <th>Abono Capital</th>
+                        <th>Mora Pagada</th>
                         <th>Estado</th>
+                        <th>Ultimo Abono</th>
+                        <th>Dias Desde Abono</th>
+                        <th>Mora Desde</th>
+                        <th>Detalle</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -165,11 +234,14 @@
                             <td>{{ $cuota->dias_mora }}</td>
                             <td>{{ number_format($cuota->monto_mora, 2) }}</td>
                             <td>{{ number_format($cuota->monto_total_pago_final, 2) }}</td>
-                            <td>
+                            <td>S/. {{ number_format($cuota->total_abonado ?? 0, 2) }}</td>
+                            <td>S/. {{ number_format($cuota->abono_capital ?? 0, 2) }}</td>
+                            <td>S/. {{ number_format($cuota->mora_pagada ?? 0, 2) }}</td>
+                            <td class="action-cell">
                                 @if ($cuota->estado == 'pagado')
                                     <span class="badge badge-success">Pagado</span>
                                 @elseif ($cuota->estado == 'parcial')
-                                    <span class="badge badge-info">Parcial — saldo S/ {{ number_format($cuota->saldo ?? 0, 2) }}</span>
+                                    <span class="badge badge-info">Parcial - saldo S/ {{ number_format($cuota->saldo ?? 0, 2) }}</span>
                                 @elseif ($cuota->estado == 'vencida')
                                     <span
                                         class="badge badge-danger">{{ $cuota->dias_mora > 1 ? 'vencida' : 'VENCE-HOY' }}</span>
@@ -177,6 +249,10 @@
                                     <span class="badge badge-warning">Pendiente</span>
                                 @endif
                             </td>
+                            <td>{{ $cuota->fecha_ultimo_abono ?? '-' }}</td>
+                            <td>{{ is_null($cuota->dias_desde_ultimo_abono ?? null) ? '-' : $cuota->dias_desde_ultimo_abono }}</td>
+                            <td>{{ $cuota->mora_desde ?? '-' }}</td>
+                            <td>{{ $cuota->detalle_estado ?? '-' }}</td>
                             <td>
                                 @if ($cuota->estado == 'pagado')
                                     {{ $cuota->fecha_pago }}
@@ -195,9 +271,10 @@
                                     </div>
                                 @elseif ($cuota->estado == 'pendiente' || $cuota->estado == 'vencida' || $cuota->estado == 'parcial')
                                     @if ($cuota->ultima == '1' && $credito->categoria != 'grupal')
-                                        <button class="btn btn-info" data-toggle="modal" data-target="#pagarTodoModal"
-                                            onclick="pagarTodoindividual({{ $credito->id }}, '{{ $cuota->fecha }}','{{ $cuota->numero }}')">PAGAR
-                                            TODO</button>
+                                        <button class="btn btn-{{ $cuota->estado == 'parcial' ? 'warning' : 'secondary' }} btn-saldar-total" data-toggle="modal" data-target="#pagarTodoModal"
+                                            onclick="pagarTodoindividual({{ $credito->id }}, '{{ $cuota->fecha }}','{{ $cuota->numero }}')">
+                                            {{ $cuota->estado == 'parcial' ? 'SALDAR TODO' : 'PAGAR TODO' }}
+                                        </button>
                                     @endif
                                     <button class="btn btn-{{ $cuota->estado == 'vencida' ? 'warning' : ($cuota->estado == 'parcial' ? 'info' : 'primary') }}"
                                         data-toggle="modal" data-target="#modalPagarCuota"
@@ -210,6 +287,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         @endforeach
 
 
@@ -1056,3 +1134,4 @@
 
 
 @endsection
+

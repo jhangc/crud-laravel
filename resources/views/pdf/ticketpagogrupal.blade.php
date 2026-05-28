@@ -1,140 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket</title>
     <style>
+        @page { margin: 0; }
+        html, body { margin: 0; padding: 0; }
+
         body {
-            font-family: Arial, sans-serif;
-            font-size: 10px;
+            font-family: "DejaVu Sans", Arial, sans-serif;
+            font-size: 9px;
+            color: #000;
+            line-height: 1.25;
         }
 
-        .ticket {
-            width: 200px;
-            margin: auto;
-            page-break-after: always;
-        }
+        .ticket { padding: 8px 14px; page-break-after: always; }
+        .ticket:last-child { page-break-after: auto; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 10px;
-        }
+        .header { text-align: center; margin-bottom: 4px; }
+        .header img { width: 60px; height: auto; }
+        .brand { font-size: 11px; font-weight: bold; margin-top: 2px; }
+        .sub { font-size: 9px; margin-top: 1px; }
 
-        .header img {
-            width: 80px;
-            height: auto;
-        }
+        hr { border: 0; border-top: 1px dashed #000; margin: 5px 0; }
 
-        .header h2 {
-            margin: 0;
-            font-size: 12px;
-        }
+        table.kv { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        table.kv td { padding: 1px 0; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
+        table.kv td.l { font-weight: bold; padding-right: 4px; width: 58%; }
+        table.kv td.r { text-align: right; width: 42%; }
+        tr.tot td { border-top: 1px solid #000; font-weight: bold; padding-top: 2px; }
 
-        .header h4 {
-            margin: 5px 0;
-            font-size: 10px;
-        }
+        .sec { font-weight: bold; text-align: center; margin: 4px 0 1px; }
 
-        .content p {
-            margin: 2px 0;
-        }
-
-        .content .label {
-            font-weight: bold;
-        }
-
-        .content .value {
-            float: right;
-        }
-
-        .signature {
-            margin-top: 10px;
-        }
-
-        .signature .line {
-            border-top: 1px solid #000;
-            margin: 5px 0;
-            width: 100%;
-        }
+        .sign { margin-top: 14px; text-align: center; }
+        .sign .line { border-top: 1px solid #000; width: 80%; margin: 16px auto 2px; }
     </style>
 </head>
 
 <body>
     @foreach ($data as $item)
-    <div class="ticket">
-        <div class="header">
-            <img src="{{ asset('logo.png') }}" alt="Logo">
-            <h2>Grupo Credipalmo</h2>
-            <h4>Comprobante de Pago</h4>
+        <div class="ticket">
+            <div class="header">
+                <img src="{{ asset('logo.png') }}" alt="Logo">
+                <div class="brand">Grupo Credipalmo</div>
+                <div class="sub">Comprobante de Pago</div>
+            </div>
+
+            <hr>
+
+            <table class="kv">
+                <tr><td class="l">Fecha</td><td class="r">{{ $item['ingreso']->created_at->format('d/m/Y H:i') }}</td></tr>
+                <tr>
+                    <td class="l">{{ isset($item['cliente']->documento_identidad) ? 'DNI' : 'Grupo' }}</td>
+                    <td class="r">{{ isset($item['cliente']->documento_identidad) ? $item['cliente']->documento_identidad : $item['prestamo']->nombre_prestamo }}</td>
+                </tr>
+                <tr><td class="l">N&deg; Cuota</td><td class="r">{{ $item['ingreso']->numero_cuota }}</td></tr>
+                <tr><td colspan="2" class="l">{{ isset($item['cliente']->documento_identidad) ? 'Cliente' : 'Detalle' }}: <span style="font-weight:normal">{{ $item['cliente']->nombre ?? 'Cuota General' }}</span></td></tr>
+            </table>
+
+            <hr>
+
+            <table class="kv">
+                <tr><td class="l">Pago a cuota</td><td class="r">S/ {{ number_format($item['ingreso']->monto_total_pago_final, 2) }}</td></tr>
+                <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $item['ingreso']->dias_mora }}</td></tr>
+                <tr><td class="l">Mora</td><td class="r">S/ {{ number_format($item['ingreso']->monto_mora, 2) }}</td></tr>
+                <tr class="tot"><td class="l">Total pagado</td><td class="r">S/ {{ number_format($item['ingreso']->monto, 2) }}</td></tr>
+            </table>
+
+            <hr>
+
+            <table class="kv">
+                @if($item['cronograma']->pago_capital != null)
+                    <tr><td class="l">Observaci&oacute;n</td><td class="r">Pago Capital &mdash; {{ $item['cronograma']->pago_capital == 1 ? 'Reducir cuota' : 'Reducir plazo' }}</td></tr>
+                @endif
+                <tr><td class="l">Inter&eacute;s</td><td class="r">S/ {{ number_format($item['cronograma']->pago_capital == null ? $item['cronograma']->interes : ($item['cronograma']->intereses_capital ?? 0), 2) }}</td></tr>
+                <tr><td class="l">Amortizaci&oacute;n</td><td class="r">S/ {{ number_format($item['cronograma']->pago_capital == null ? ($item['cronograma']->amortizacion ?? 0) : ($item['cronograma']->monto_capital ?? 0), 2) }}</td></tr>
+            </table>
+
+            <hr>
+
+            <div class="sec">Pr&oacute;xima cuota</div>
+            <table class="kv">
+                <tr><td class="l">Monto</td><td class="r">S/ {{ $item['fechaSiguienteCuota'] != 'N/A' ? number_format($item['siguienteCuota']->monto, 2) : '0.00' }}</td></tr>
+                <tr><td class="l">Vence</td><td class="r">{{ $item['fechaSiguienteCuota'] != 'N/A' ? \Carbon\Carbon::parse($item['fechaSiguienteCuota'])->format('d/m/Y') : '—' }}</td></tr>
+            </table>
+
+            <div class="sign">
+                <div class="line"></div>
+                Firma
+            </div>
         </div>
-        <div class="content">
-            <p><span class="label">Fecha:</span> <span class="value">{{ $item['ingreso']->created_at->format('d/m/Y H:i:s') }}</span></p>
-            <p>
-            <p>
-                <span class="label">
-                    {{ isset($item['cliente']->documento_identidad) ? 'DNI' : 'GRUPO' }}:
-                </span>
-                <span class="value">
-                    {{ isset($item['cliente']->documento_identidad) ? $item['cliente']->documento_identidad : $item['prestamo']->nombre_prestamo }}
-                </span>
-            </p>
-            <p><span class="label"> {{ isset($item['cliente']->documento_identidad) ? 'Nombres' : 'Cuota' }}:</span> <span class="value">{{ $item['cliente']->nombre ?? 'Cuota General' }}</span></p>
-            <p><span class="label">N° de Cuota:</span> <span class="value">{{ $item['ingreso']->numero_cuota }}</span></p>
-            <p><span class="label">Monto de Pago:</span> <span class="value">S/.{{ number_format($item['ingreso']->monto_total_pago_final, 2) }}</span></p>
-            <p><span class="label">Días de Mora:</span> <span class="value">{{ $item['ingreso']->dias_mora }}</span></p>
-            <p><span class="label">Monto de Mora:</span> <span class="value">S/.{{ number_format($item['ingreso']->monto_mora, 2) }}</span></p>
-            <p><span class="label">Monto Total a Pagar:</span> <span class="value">S/.{{ number_format($item['ingreso']->monto, 2) }}</span></p>
-            <br>
-            <p><span class="label">Observaciones:</span><span class="value">
-                    @if($item['cronograma']->pago_capital == null)
-                    @else
-                    Pago Capital-{{ $item['cronograma']->pago_capital == 1 ? 'Reducir cuota' : 'Reducir plazo' }}
-                    @endif
-                </span></p>
-            <br>
-            <p><span class="label">Interés:</span> <span class="value">S/.
-                    @if($item['cronograma']->pago_capital == null)
-                    {{ number_format($item['cronograma']->interes, 2) }}
-
-                    @else
-                    {{ number_format($item['cronograma']->intereses_capital ?? 0, 2) }}
-
-                    @endif
-                </span></p>
-            <p><span class="label">Amortización:</span> <span class="value">S/.
-
-                    @if($item['cronograma']->pago_capital == null)
-                    {{ number_format($item['cronograma']->amortizacion ?? 0, 2) }}
-
-                    @else
-                    {{ number_format($item['cronograma']->monto_capital ?? 0, 2) }}
-
-                    @endif
-                </span></p>
-            <!-- <p><span class="label">Saldo de Deuda:</span> <span class="value">S/.{{ $item['cronograma']->pago_capital == null 
-                            ? number_format($item['cronograma']->saldo_deuda, 2) 
-                            : number_format($item['cronograma']->nuevo_saldo_deuda ?? 0, 2) 
-                        }}</span></p> -->
-
-                        <p><span class="label">Monto sig.Cuota:</span> <span class="value">S/.{{ $item['fechaSiguienteCuota'] !='N/A'?(
-                             number_format($item['siguienteCuota']->monto, 2) 
-                            ):'0.00';
-                        }}</span></p>
-
-
-
-            <br>
-
-            <p><span class="label">Fecha Venc. Siguiente Cuota:</span> <span class="label">{{ $item['fechaSiguienteCuota'] }}</span></p>
-        </div>
-        <div class="signature">
-            <p><strong>Firma:</strong></p>
-            <br>
-            <div class="line"></div>
-        </div>
-    </div>
     @endforeach
 </body>
 

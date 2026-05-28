@@ -1634,7 +1634,7 @@ class PdfController extends Controller
 
         //  dd($data);
 
-        $pdf = Pdf::loadView('pdf.ticketpagogrupal', compact('data'))->setPaper([0, 0, 200, 400]);
+        $pdf = Pdf::loadView('pdf.ticketpagogrupal', compact('data'))->setPaper([0, 0, 200, 470]);
         return $pdf->stream('tickets.pdf');
     }
 

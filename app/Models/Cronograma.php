@@ -68,10 +68,9 @@ class Cronograma extends Model
             ->orderBy('id')
             ->get();
 
-        $balance     = $monto;
-        $accruedMora = 0.0;
-        $paidMora    = 0.0;
-        $cursor      = $vto->copy();
+        $balance       = $monto;
+        $moraPendiente = 0.0;
+        $cursor        = $vto->copy();
 
         foreach ($ingresos as $ing) {
             $payDate = \Carbon\Carbon::parse($ing->fecha_pago)->startOfDay();
@@ -80,7 +79,15 @@ class Cronograma extends Model
             if ($payDate->greaterThan($vto) && $balance > 0.009) {
                 $desde = $cursor->greaterThan($vto) ? $cursor : $vto;
                 $dias  = max(0, $desde->diffInDays($payDate));
-                $accruedMora += ($balance * $porMil / 1000) * $dias;
+                $moraPendiente += ($balance * $porMil / 1000) * $dias;
+            }
+
+            // El pago de mora no puede generar "saldo a favor" para moras futuras.
+            $pagoMora = (float) $ing->monto_mora;
+            if ($pagoMora > 0) {
+                $aplicaMora = min($pagoMora, $moraPendiente);
+                $moraPendiente = round($moraPendiente - $aplicaMora, 2);
+                if ($moraPendiente < 0) $moraPendiente = 0.0;
             }
 
             $pagadoCuota = round((float) $ing->monto - (float) $ing->monto_mora, 2);
@@ -88,7 +95,6 @@ class Cronograma extends Model
                 $balance = round($balance - $pagadoCuota, 2);
                 if ($balance < 0) $balance = 0.0;
             }
-            $paidMora += (float) $ing->monto_mora;
 
             if ($payDate->greaterThan($cursor)) $cursor = $payDate->copy();
         }
@@ -98,10 +104,10 @@ class Cronograma extends Model
         if ($hoy->greaterThan($vto) && $balance > 0.009) {
             $desde    = $cursor->greaterThan($vto) ? $cursor : $vto;
             $diasMora = max(0, $desde->diffInDays($hoy));
-            $accruedMora += ($balance * $porMil / 1000) * $diasMora;
+            $moraPendiente += ($balance * $porMil / 1000) * $diasMora;
         }
 
-        $moraVigente = round($accruedMora - $paidMora, 2);
+        $moraVigente = round($moraPendiente, 2);
         if ($moraVigente < 0) $moraVigente = 0.0;
 
         return [
