@@ -27,9 +27,12 @@
             vertical-align: middle;
         }
 
-        .action-cell {
-            min-width: 210px;
+        /* El ancho mínimo va en la columna de Acciones (última), no en Estado */
+        .action-cell,
+        .cuotas-table-wrap .table td:last-child {
+            min-width: 200px;
         }
+        .estado-cell { white-space: nowrap; }
 
         .btn-saldar-total {
             font-weight: 600;
@@ -173,7 +176,7 @@
                             <td>{{ $cuota->numero }}</td>
                             <td>{{ \Carbon\Carbon::parse($cuota->fecha)->format('d/m/Y') }}</td>
                             <td class="num">{{ number_format($cuota->monto, 2) }}</td>
-                            <td class="action-cell">
+                            <td class="text-center estado-cell">
                                 @if ($cuota->estado == 'pagado')
                                     <span class="badge badge-success">Pagado</span>
                                 @elseif ($cuota->estado == 'vencida')
@@ -276,7 +279,7 @@
                             <td>{{ $cuota->numero }}</td>
                             <td>{{ \Carbon\Carbon::parse($cuota->fecha)->format('d/m/Y') }}</td>
                             <td class="num">{{ number_format($cuota->monto, 2) }}</td>
-                            <td class="action-cell">
+                            <td class="text-center estado-cell">
                                 @if ($cuota->estado == 'pagado')
                                     <span class="badge badge-success">Pagado</span>
                                 @elseif ($cuota->estado == 'parcial')
