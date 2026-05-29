@@ -22,7 +22,7 @@
     .brand { font-size: 11px; font-weight: bold; margin-top: 2px; }
     .sub { font-size: 9px; margin-top: 1px; }
 
-    hr { border: 0; border-top: 1px dashed #000; margin: 5px 0; }
+    hr { border: 0; height: 0; margin: 5px 0; }
 
     table.kv { width: 100%; border-collapse: collapse; table-layout: fixed; }
     table.kv td { padding: 1px 0; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -22,7 +22,7 @@
   .brand { font-size: 11px; font-weight: bold; margin-top: 2px; }
   .sub { font-size: 9px; margin-top: 1px; }
 
-  hr { border: 0; border-top: 1px dashed #000; margin: 5px 0; }
+  hr { border: 0; height: 0; margin: 5px 0; }
 
   table.kv { width: 100%; border-collapse: collapse; table-layout: fixed; }
   table.kv td { padding: 1px 0; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
@@ -81,7 +81,7 @@
     <div class="sec">Pr&oacute;xima cuota</div>
     <table class="kv">
       <tr><td class="l">Monto</td><td class="r">S/ {{ $t['sig_cuota'] ? number_format($t['sig_cuota']->monto, 2) : '0.00' }}</td></tr>
-      <tr><td class="l">Vence</td><td class="r">{{ $t['fecha_sig'] ?? '—' }}</td></tr>
+      <tr><td class="l">Vence</td><td class="r">{{ $t['fecha_sig'] ?? 'â€”' }}</td></tr>
     </table>
 
     <div class="sign">

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket</title>
     <style>
-        /* dompdf ignora el margen de @page cuando el papel se fija por tamaño, y no respeta
-           box-sizing. Solución fiable: padding en el contenedor SIN width:100% — el bloque
+        /* dompdf ignora el margen de @page cuando el papel se fija por tamaÃ±o, y no respeta
+           box-sizing. SoluciÃ³n fiable: padding en el contenedor SIN width:100% â€” el bloque
            llena el ancho del papel y el padding queda por dentro (deja margen, no desborda). */
         @page { margin: 0; }
         html, body { margin: 0; padding: 0; }
@@ -26,7 +26,7 @@
         .brand { font-size: 11px; font-weight: bold; margin-top: 2px; }
         .sub { font-size: 9px; margin-top: 1px; }
 
-        hr { border: 0; border-top: 1px dashed #000; margin: 5px 0; }
+        hr { border: 0; height: 0; margin: 5px 0; }
 
         table.kv { width: 100%; border-collapse: collapse; table-layout: fixed; }
         table.kv td { padding: 1px 0; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
@@ -104,7 +104,7 @@
         <div class="sec">Pr&oacute;xima cuota</div>
         <table class="kv">
             <tr><td class="l">Monto</td><td class="r">S/ {{ $fechaSiguienteCuota != 'N/A' ? number_format($siguienteCuota->monto, 2) : '0.00' }}</td></tr>
-            <tr><td class="l">Vence</td><td class="r">{{ $fechaSiguienteCuota != 'N/A' ? \Carbon\Carbon::parse($fechaSiguienteCuota)->format('d/m/Y') : '—' }}</td></tr>
+            <tr><td class="l">Vence</td><td class="r">{{ $fechaSiguienteCuota != 'N/A' ? \Carbon\Carbon::parse($fechaSiguienteCuota)->format('d/m/Y') : 'â€”' }}</td></tr>
         </table>
 
         <div class="sign">

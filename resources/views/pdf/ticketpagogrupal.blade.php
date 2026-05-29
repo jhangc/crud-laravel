@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -24,7 +24,7 @@
         .brand { font-size: 11px; font-weight: bold; margin-top: 2px; }
         .sub { font-size: 9px; margin-top: 1px; }
 
-        hr { border: 0; border-top: 1px dashed #000; margin: 5px 0; }
+        hr { border: 0; height: 0; margin: 5px 0; }
 
         table.kv { width: 100%; border-collapse: collapse; table-layout: fixed; }
         table.kv td { padding: 1px 0; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
@@ -92,7 +92,7 @@
             <div class="sec">Pr&oacute;xima cuota</div>
             <table class="kv">
                 <tr><td class="l">Monto</td><td class="r">S/ {{ $item['fechaSiguienteCuota'] != 'N/A' ? number_format($item['siguienteCuota']->monto, 2) : '0.00' }}</td></tr>
-                <tr><td class="l">Vence</td><td class="r">{{ $item['fechaSiguienteCuota'] != 'N/A' ? \Carbon\Carbon::parse($item['fechaSiguienteCuota'])->format('d/m/Y') : '—' }}</td></tr>
+                <tr><td class="l">Vence</td><td class="r">{{ $item['fechaSiguienteCuota'] != 'N/A' ? \Carbon\Carbon::parse($item['fechaSiguienteCuota'])->format('d/m/Y') : 'â€”' }}</td></tr>
             </table>
 
             <div class="sign">
