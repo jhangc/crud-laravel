@@ -295,9 +295,9 @@
                             <td class="num">S/ {{ number_format($cuota->mora_pagada ?? 0, 2) }}</td>
                             <td class="num">S/ {{ number_format($cuota->total_abonado ?? 0, 2) }}</td>
                             <td>
-                                {{ $cuota->fecha_ultimo_abono_ref ?? '-' }}
-                                @if(!is_null($cuota->dias_desde_ultimo_abono_ref ?? null))
-                                    <br><small>hace {{ $cuota->dias_desde_ultimo_abono_ref }}d</small>
+                                {{ $cuota->fecha_ultimo_abono ?? '-' }}
+                                @if(!is_null($cuota->dias_desde_ultimo_abono ?? null))
+                                    <br><small>hace {{ $cuota->dias_desde_ultimo_abono }}d</small>
                                 @endif
                             </td>
                             <td class="num col-grp"><strong class="{{ ($cuota->saldo ?? 0) > 0 ? 'txt-danger' : 'text-muted' }}">S/ {{ number_format($cuota->saldo ?? 0, 2) }}</strong></td>
