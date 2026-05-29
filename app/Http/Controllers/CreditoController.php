@@ -1241,7 +1241,9 @@ class CreditoController extends Controller
                                 $ingreso_ids[] = $ultRel->id;
                                 $fecha_pago = $ultRel->fecha_pago;
                                 $diasMora = max($diasMora, (int) $ultRel->dias_mora);
-                                $montoMoraTotal += (float) $ultRel->monto_mora;
+                                // Nota: NO se suma $ultRel->monto_mora a $montoMoraTotal.
+                                // Esa mora ya fue pagada (se refleja en "Mora pag."); $montoMoraTotal
+                                // representa solo la mora vigente/pendiente de los miembros no liquidados.
                                 $refIngreso = $ultRel;
                             }
                         } else {
@@ -1297,10 +1299,10 @@ class CreditoController extends Controller
                             $newIngreso->fecha_pago = $refIngreso->fecha_pago;
                             $newIngreso->hora_pago = $refIngreso->hora_pago;
                             $newIngreso->monto = $cuotaGeneral->monto;
-                            $newIngreso->monto_mora = $montoMoraTotal;          // Nuevo campo
+                            $newIngreso->monto_mora = round($moraPagadaGeneral, 2);          // mora efectivamente pagada
                             $newIngreso->dias_mora = $diasMora;           // Nuevo campo
                             $newIngreso->porcentaje_mora = $diasMora > 0 ? 1.5 : 0;   // Nuevo campo
-                            $newIngreso->monto_total_pago_final = $montoMoraTotal + $cuotaGeneral->monto; // Nuevo campo
+                            $newIngreso->monto_total_pago_final = round($moraPagadaGeneral, 2) + $cuotaGeneral->monto; // Nuevo campo
                             $newIngreso->sucursal_id = $refIngreso->sucursal_id;
                             $newIngreso->save();
                         }
