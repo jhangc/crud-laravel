@@ -35,6 +35,33 @@
             font-weight: 600;
         }
 
+        /* Encabezados agrupados por sección para interpretar mejor la info de abonos */
+        .cuotas-table-wrap .table thead th {
+            vertical-align: middle;
+            text-align: center;
+            font-size: 0.78rem;
+        }
+        .cuotas-table-wrap .table td.num,
+        .cuotas-table-wrap .table th.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .col-grp { border-left: 2px solid #cbd5e1 !important; }
+        .grp-mem  { background: #f5f3ff; }   /* Miembros (grupal) */
+        .grp-pago { background: #eef8f0; }   /* Pagado */
+        .grp-pend { background: #fff5ee; }   /* Pendiente */
+        .cuotas-table-wrap .table td small { color: #94a3b8; }
+
+        /* Colores semánticos para que la info no se vea plana */
+        .txt-ok     { color: #157347; font-weight: 600; }
+        .txt-warn   { color: #b45309; font-weight: 600; }
+        .txt-danger { color: #c0392b; font-weight: 600; }
+        .txt-info   { color: #1d4ed8; }
+        .detalle    { font-size: 0.78rem; line-height: 1.2; }
+        .cuotas-table-wrap .table thead th.grp-mem  { color: #6d28d9; }
+        .cuotas-table-wrap .table thead th.grp-pago { color: #157347; }
+        .cuotas-table-wrap .table thead th.grp-pend { color: #b45309; }
+
         @media (max-width: 1600px) {
             .cuotas-table-wrap {
                 overflow-x: auto;
@@ -116,60 +143,64 @@
             <table class="table table-striped table-sm table-hover">
                 <thead>
                     <tr>
-                        <th>Cuota</th>
-                        <th>Monto</th>
-                        <th>Fecha Vencimiento</th>
-                        <th>Días de Mora</th>
-                        <th>Monto de Mora</th>
-                        <th>Monto Total a Pagar</th>
-                        <th>Estado</th>
-                        <th>Pagadas</th>
-                        <th>Pendientes</th>
-                        <th>Vencidas</th>
-                        <th>Monto Pagado</th>
-                        <th>Monto Pendiente</th>
-                        <th>Monto Vencido</th>
-                        <th>Abono Capital</th>
-                        <th>Mora Pagada</th>
-                        <th>Ultimo Abono</th>
-                        <th>Dias Desde Abono</th>
-                        <th>Detalle</th>
-                        <th>Acciones</th>
+                        <th rowspan="2">#</th>
+                        <th rowspan="2">Vence</th>
+                        <th rowspan="2" class="num">Monto</th>
+                        <th rowspan="2">Estado</th>
+                        <th colspan="3" class="grp-mem col-grp">Miembros</th>
+                        <th colspan="4" class="grp-pago col-grp">Pagado</th>
+                        <th colspan="4" class="grp-pend col-grp">Pendiente</th>
+                        <th rowspan="2">Detalle</th>
+                        <th rowspan="2">Acciones</th>
+                    </tr>
+                    <tr>
+                        <th class="grp-mem col-grp">Pagadas</th>
+                        <th class="grp-mem">Pend.</th>
+                        <th class="grp-mem">Venc.</th>
+                        <th class="num grp-pago col-grp">Total abonado</th>
+                        <th class="num grp-pago">Abono cap.</th>
+                        <th class="num grp-pago">Mora pag.</th>
+                        <th class="grp-pago">Últ. abono</th>
+                        <th class="num grp-pend col-grp">M. pendiente</th>
+                        <th class="num grp-pend">M. vencido</th>
+                        <th class="num grp-pend">Mora vig.</th>
+                        <th class="num grp-pend">Total a pagar</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($cuotasGenerales as $cuota)
                         <tr>
-
                             <td>{{ $cuota->numero }}</td>
-                            <td>{{ number_format($cuota->monto, 2) }}</td>
-                            <td>{{ $cuota->fecha }}</td>
-                            <td>{{ $cuota->dias_mora }}</td> <!-- Mostrar los días de mora -->
-                            <td>{{ number_format($cuota->monto_mora, 2) }}</td> <!-- Mostrar el monto de mora -->
-                            <td>{{ number_format($cuota->monto_total_pago_final, 2) }}</td>
-                            <!-- Mostrar el monto total a pagar -->
+                            <td>{{ \Carbon\Carbon::parse($cuota->fecha)->format('d/m/Y') }}</td>
+                            <td class="num">{{ number_format($cuota->monto, 2) }}</td>
                             <td class="action-cell">
                                 @if ($cuota->estado == 'pagado')
                                     <span class="badge badge-success">Pagado</span>
                                 @elseif ($cuota->estado == 'vencida')
-                                    <span class="badge badge-danger">vencida</span>
+                                    <span class="badge badge-danger">Vencida</span>
                                 @elseif ($cuota->estado == 'pendiente')
                                     <span class="badge badge-warning">Pendiente</span>
                                 @else
                                     <span class="badge badge-info">Parcial</span>
                                 @endif
                             </td>
-                            <td>{{ $cuota->pagadas }}</td>
+                            <td class="col-grp">{{ $cuota->pagadas }}</td>
                             <td>{{ $cuota->pendientes }}</td>
                             <td>{{ $cuota->vencidas }}</td>
-                            <td>S/. {{ number_format($cuota->monto_pagado, 2) }}</td>
-                            <td>S/. {{ number_format($cuota->monto_pendiente, 2) }}</td>
-                            <td>S/. {{ number_format($cuota->monto_vencido, 2) }}</td>
-                            <td>S/. {{ number_format($cuota->abono_capital ?? 0, 2) }}</td>
-                            <td>S/. {{ number_format($cuota->mora_pagada ?? 0, 2) }}</td>
-                            <td>{{ $cuota->fecha_ultimo_abono ?? '-' }}</td>
-                            <td>{{ is_null($cuota->dias_desde_ultimo_abono ?? null) ? '-' : $cuota->dias_desde_ultimo_abono }}</td>
-                            <td>{{ $cuota->detalle_estado ?? '-' }}</td>
+                            <td class="num col-grp">S/ {{ number_format($cuota->total_abonado ?? 0, 2) }}</td>
+                            <td class="num">S/ {{ number_format($cuota->abono_capital ?? 0, 2) }}</td>
+                            <td class="num">S/ {{ number_format($cuota->mora_pagada ?? 0, 2) }}</td>
+                            <td>
+                                {{ $cuota->fecha_ultimo_abono ?? '-' }}
+                                @if(!is_null($cuota->dias_desde_ultimo_abono ?? null))
+                                    <br><small>hace {{ $cuota->dias_desde_ultimo_abono }}d</small>
+                                @endif
+                            </td>
+                            <td class="num col-grp">S/ {{ number_format($cuota->monto_pendiente, 2) }}</td>
+                            <td class="num">S/ {{ number_format($cuota->monto_vencido, 2) }}</td>
+                            <td class="num">S/ {{ number_format($cuota->estado == 'pagado' ? 0 : $cuota->monto_mora, 2) }}@if($cuota->estado != 'pagado' && $cuota->dias_mora)<br><small>{{ $cuota->dias_mora }}d</small>@endif</td>
+                            <td class="num"><strong class="{{ ($cuota->estado != 'pagado' && $cuota->monto_total_pago_final > 0) ? 'txt-warn' : '' }}">S/ {{ number_format($cuota->estado == 'pagado' ? 0 : $cuota->monto_total_pago_final, 2) }}</strong></td>
+                            <td class="detalle {{ $cuota->estado == 'pagado' ? 'txt-ok' : ($cuota->estado == 'pendiente' ? 'txt-info' : 'txt-danger') }}">{{ $cuota->detalle_estado ?? '-' }}</td>
                             <td>
                                 @if ($cuota->estado == 'pagado')
                                     {{ $cuota->fecha_pago }}
@@ -191,8 +222,12 @@
                                         </button>
                                     @endif
                                     @if (($cuota->total_abonado ?? 0) > 0)
+                                        @if (!empty($cuota->ingreso_ids))
+                                            <a href="{{ route('generar.ticket.pagogrupal', ['array' => implode('-', $cuota->ingreso_ids)]) }}"
+                                                target="_blank" class="btn btn-info mb-1">Ticket Ultimo Pago</a>
+                                        @endif
                                         <a href="{{ route('generar.ticket.pagogrupal.historial', ['prestamo_id' => $credito->id, 'numero_cuota' => $cuota->numero, 'fecha' => $cuota->fecha]) }}"
-                                            target="_blank" class="btn btn-outline-info">Ticket Historial</a>
+                                            target="_blank" class="btn btn-outline-info mb-1">Ticket Historial</a>
                                     @endif
                                     <button class="btn btn-info"
                                         onclick="abonarCuotaGeneral({{ $credito->id }}, '{{ $cuota->fecha }}', '{{ $cuota->numero }}', {{ number_format($cuota->monto_total_pago_final, 2, '.', '') }})">Abonar</button>
@@ -216,51 +251,59 @@
             <table class="table table-striped table-sm table-hover">
                 <thead>
                     <tr>
-                        <th>Cuota</th>
-                        <th>Monto</th>
-                        <th>Fecha Vencimiento</th>
-                        <th>Días de Mora</th>
-                        <th>Monto de Mora</th>
-                        <th>Monto Total a Pagar</th>
-                        <th>Total Abonado</th>
-                        <th>Abono Capital</th>
-                        <th>Mora Pagada</th>
-                        <th>Estado</th>
-                        <th>Ultimo Abono</th>
-                        <th>Dias Desde Abono</th>
-                        <th>Mora Desde</th>
-                        <th>Detalle</th>
-                        <th>Acciones</th>
+                        <th rowspan="2">#</th>
+                        <th rowspan="2">Vence</th>
+                        <th rowspan="2" class="num">Monto cuota</th>
+                        <th rowspan="2">Estado</th>
+                        <th colspan="4" class="grp-pago col-grp">Pagado</th>
+                        <th colspan="3" class="grp-pend col-grp">Pendiente</th>
+                        <th rowspan="2">Detalle</th>
+                        <th rowspan="2">Acciones</th>
+                    </tr>
+                    <tr>
+                        <th class="num grp-pago col-grp">Abono cap.</th>
+                        <th class="num grp-pago">Mora pag.</th>
+                        <th class="num grp-pago">Total abonado</th>
+                        <th class="grp-pago">Últ. abono</th>
+                        <th class="num grp-pend col-grp">Saldo</th>
+                        <th class="num grp-pend">Mora vig.</th>
+                        <th class="num grp-pend">Total a pagar</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($cuotasPorCliente[$clienteCredito->cliente_id] as $cuota)
                         <tr>
                             <td>{{ $cuota->numero }}</td>
-                            <td>{{ number_format($cuota->monto, 2) }}</td>
-                            <td>{{ $cuota->fecha }}</td>
-                            <td>{{ $cuota->dias_mora }}</td>
-                            <td>{{ number_format($cuota->monto_mora, 2) }}</td>
-                            <td>{{ number_format($cuota->monto_total_pago_final, 2) }}</td>
-                            <td>S/. {{ number_format($cuota->total_abonado ?? 0, 2) }}</td>
-                            <td>S/. {{ number_format($cuota->abono_capital ?? 0, 2) }}</td>
-                            <td>S/. {{ number_format($cuota->mora_pagada ?? 0, 2) }}</td>
+                            <td>{{ \Carbon\Carbon::parse($cuota->fecha)->format('d/m/Y') }}</td>
+                            <td class="num">{{ number_format($cuota->monto, 2) }}</td>
                             <td class="action-cell">
                                 @if ($cuota->estado == 'pagado')
                                     <span class="badge badge-success">Pagado</span>
                                 @elseif ($cuota->estado == 'parcial')
-                                    <span class="badge badge-info">Parcial - saldo S/ {{ number_format($cuota->saldo ?? 0, 2) }}</span>
+                                    <span class="badge badge-info">Parcial</span>
                                 @elseif ($cuota->estado == 'vencida')
                                     <span
-                                        class="badge badge-danger">{{ $cuota->dias_mora > 1 ? 'vencida' : 'VENCE-HOY' }}</span>
+                                        class="badge badge-danger">{{ $cuota->dias_mora > 1 ? 'Vencida' : 'VENCE-HOY' }}</span>
                                 @else
                                     <span class="badge badge-warning">Pendiente</span>
                                 @endif
                             </td>
-                            <td>{{ $cuota->fecha_ultimo_abono_ref ?? '-' }}</td>
-                            <td>{{ is_null($cuota->dias_desde_ultimo_abono_ref ?? null) ? '-' : $cuota->dias_desde_ultimo_abono_ref }}</td>
-                            <td>{{ $cuota->mora_desde ?? '-' }}</td>
-                            <td>{{ $cuota->detalle_estado ?? '-' }}</td>
+                            <td class="num col-grp">S/ {{ number_format($cuota->abono_capital ?? 0, 2) }}</td>
+                            <td class="num">S/ {{ number_format($cuota->mora_pagada ?? 0, 2) }}</td>
+                            <td class="num">S/ {{ number_format($cuota->total_abonado ?? 0, 2) }}</td>
+                            <td>
+                                {{ $cuota->fecha_ultimo_abono_ref ?? '-' }}
+                                @if(!is_null($cuota->dias_desde_ultimo_abono_ref ?? null))
+                                    <br><small>hace {{ $cuota->dias_desde_ultimo_abono_ref }}d</small>
+                                @endif
+                            </td>
+                            <td class="num col-grp"><strong class="{{ ($cuota->saldo ?? 0) > 0 ? 'txt-danger' : 'text-muted' }}">S/ {{ number_format($cuota->saldo ?? 0, 2) }}</strong></td>
+                            <td class="num">
+                                S/ {{ number_format($cuota->estado == 'pagado' ? 0 : $cuota->monto_mora, 2) }}
+                                @if($cuota->estado != 'pagado' && $cuota->dias_mora)<br><small>{{ $cuota->dias_mora }}d</small>@endif
+                            </td>
+                            <td class="num"><strong class="{{ ($cuota->estado != 'pagado' && $cuota->monto_total_pago_final > 0) ? 'txt-warn' : '' }}">S/ {{ number_format($cuota->estado == 'pagado' ? 0 : $cuota->monto_total_pago_final, 2) }}</strong></td>
+                            <td class="detalle {{ $cuota->estado == 'pagado' ? 'txt-ok' : ($cuota->estado == 'pendiente' ? 'txt-info' : 'txt-danger') }}">{{ $cuota->detalle_estado ?? '-' }}</td>
                             <td>
                                 @if ($cuota->estado == 'pagado')
                                     {{ $cuota->fecha_pago }}
@@ -287,8 +330,12 @@
                                         </button>
                                     @endif
                                     @if (($cuota->total_abonado ?? 0) > 0)
+                                        @if (!empty($cuota->ingreso_id))
+                                            <a href="{{ route('generar.ticket.pago', ['id' => $cuota->ingreso_id, 'diferencia' => $cuota->diferencia ?? 0]) }}"
+                                                target="_blank" class="btn btn-info mb-1">Ticket Ultimo Pago</a>
+                                        @endif
                                         <a href="{{ route('generar.ticket.cuotaindividual.historial', ['prestamo_id' => $credito->id, 'cliente_id' => $clienteCredito->cliente_id, 'numero_cuota' => $cuota->numero, 'fecha' => $cuota->fecha]) }}"
-                                            target="_blank" class="btn btn-outline-info">Ticket Historial</a>
+                                            target="_blank" class="btn btn-outline-info mb-1">Ticket Historial</a>
                                     @endif
                                     <button class="btn btn-{{ $cuota->estado == 'vencida' ? 'warning' : ($cuota->estado == 'parcial' ? 'info' : 'primary') }}"
                                         data-toggle="modal" data-target="#modalPagarCuota"

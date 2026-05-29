@@ -1093,7 +1093,7 @@ class CreditoController extends Controller
                 $ingresosCuota = Ingreso::where('cronograma_id', $cuota->id)
                     ->orderBy('fecha_pago')
                     ->orderBy('id')
-                    ->get(['id', 'monto', 'monto_mora', 'fecha_pago']);
+                    ->get(['id', 'monto', 'monto_mora', 'fecha_pago', 'diferencia']);
                 $ultIngCuota = $ingresosCuota->last();
                 $cuota->fecha_ultimo_abono = optional($ultIngCuota)->fecha_pago;
                 $cuota->total_abonado = round((float) $ingresosCuota->sum('monto'), 2);
@@ -1135,6 +1135,8 @@ class CreditoController extends Controller
                     $cuota->monto_mora = (float) $est['mora'];
                     $cuota->saldo = round($saldoCuota, 2);
                     $cuota->monto_total_pago_final = round($saldoCuota + (float) $est['mora'], 2);
+                    $cuota->ingreso_id = optional($ultIngCuota)->id;          // último abono (para ticket)
+                    $cuota->diferencia = optional($ultIngCuota)->diferencia ?? 0;
                     $cuota->mora_desde = $cuota->fecha_ultimo_abono ?? $cuota->fecha;
                     $cuota->detalle_estado = ((int) $est['dias'] > 0)
                         ? 'Mora corriendo desde ' . $cuota->mora_desde
@@ -1258,6 +1260,9 @@ class CreditoController extends Controller
                             }
                             if ($tieneAbonos) {
                                 $hayParciales = true;
+                                if ($ultRel) {
+                                    $ingreso_ids[] = $ultRel->id; // último abono del miembro (para ticket)
+                                }
                             }
                         }
                     }
