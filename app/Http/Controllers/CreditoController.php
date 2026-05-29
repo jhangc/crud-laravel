@@ -1170,9 +1170,9 @@ class CreditoController extends Controller
                     $cuota->saldo = round($saldoCuota, 2);
                     $cuota->monto_total_pago_final = round($saldoCuota, 2);
                     $cuota->mora_desde = null;
-                    $cuota->detalle_estado = $cuota->fecha_ultimo_abono_ref
-                        ? 'Cuota al dia. Ultimo abono del cliente: ' . $cuota->fecha_ultimo_abono_ref
-                        : 'Cuota al dia.';
+                    $cuota->detalle_estado = $cuota->fecha_ultimo_abono
+                        ? 'Cuota al dia. Ultimo abono: ' . $cuota->fecha_ultimo_abono
+                        : 'Pendiente, aun no vence.';
                     if ($controlUltimaIndividual == 0) {
                         $cuota->ultima = 1;
                         $controlUltimaIndividual = 1;
@@ -1340,7 +1340,7 @@ class CreditoController extends Controller
                         ? 'Cuota general cancelada.'
                         : (($estadoGeneral == 'parcial' || $estadoGeneral == 'vencida')
                             ? 'Mora corriendo desde ' . $cuotaGeneral->mora_desde
-                            : 'Aun sin mora, pendiente a vencimiento.');
+                            : 'Pendiente, aun no vence.');
 
                     // Marcar la última cuota
                     if ($controlUltimaGeneral == 0 && $estadoGeneral != 'pagado') {
