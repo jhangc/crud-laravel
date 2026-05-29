@@ -175,7 +175,9 @@
                                     {{ $cuota->fecha_pago }}
                                     <div class="d-flex flex-wrap">
                                         <a href="{{ route('generar.ticket.pagogrupal', ['array' => implode('-', $cuota->ingreso_ids)]) }}"
-                                            target="_blank" class="btn btn-info mr-2 mb-2">Ver Ticket</a>
+                                            target="_blank" class="btn btn-info mr-2 mb-2">Ticket Ultimo Pago</a>
+                                        <a href="{{ route('generar.ticket.pagogrupal.historial', ['prestamo_id' => $credito->id, 'numero_cuota' => $cuota->numero, 'fecha' => $cuota->fecha]) }}"
+                                            target="_blank" class="btn btn-outline-info mr-2 mb-2">Ticket Historial</a>
                                         @if ($cuota->pago_capital != null)
                                             <a href="{{ url('/vernuevocronograma/' . $credito->id) }}" target="_blank"
                                                 class="btn btn-warning mb-2">Ver Nuevo Cronograma</a>
@@ -187,6 +189,10 @@
                                             onclick="pagarTodogrupal({{ $credito->id }}, '{{ $cuota->fecha }}', '{{ $cuota->numero }}')">
                                             {{ $cuota->estado == 'parcial' ? 'SALDAR TODO' : 'PAGAR TODO' }}
                                         </button>
+                                    @endif
+                                    @if (($cuota->total_abonado ?? 0) > 0)
+                                        <a href="{{ route('generar.ticket.pagogrupal.historial', ['prestamo_id' => $credito->id, 'numero_cuota' => $cuota->numero, 'fecha' => $cuota->fecha]) }}"
+                                            target="_blank" class="btn btn-outline-info">Ticket Historial</a>
                                     @endif
                                     <button class="btn btn-info"
                                         onclick="abonarCuotaGeneral({{ $credito->id }}, '{{ $cuota->fecha }}', '{{ $cuota->numero }}', {{ number_format($cuota->monto_total_pago_final, 2, '.', '') }})">Abonar</button>
@@ -263,9 +269,11 @@
                                             'id' => $cuota->ingreso_id,
                                             'diferencia' => $cuota->diferencia,
                                         ]) }}"
-                                            target="_blank" class="btn btn-info">
-                                            Ver Ticket
+                                            target="_blank" class="btn btn-info mr-2 mb-2">
+                                            Ticket Ultimo Pago
                                         </a>
+                                        <a href="{{ route('generar.ticket.cuotaindividual.historial', ['prestamo_id' => $credito->id, 'cliente_id' => $clienteCredito->cliente_id, 'numero_cuota' => $cuota->numero, 'fecha' => $cuota->fecha]) }}"
+                                            target="_blank" class="btn btn-outline-info mr-2 mb-2">Ticket Historial</a>
                                         @if ($cuota->pago_capital != null)
                                             <a href="{{ url('/vernuevocronograma/' . $credito->id) }}" target="_blank"
                                                 class="btn btn-warning mb-2">Ver Nuevo Cronograma</a>
@@ -277,6 +285,10 @@
                                             onclick="pagarTodoindividual({{ $credito->id }}, '{{ $cuota->fecha }}','{{ $cuota->numero }}')">
                                             {{ $cuota->estado == 'parcial' ? 'SALDAR TODO' : 'PAGAR TODO' }}
                                         </button>
+                                    @endif
+                                    @if (($cuota->total_abonado ?? 0) > 0)
+                                        <a href="{{ route('generar.ticket.cuotaindividual.historial', ['prestamo_id' => $credito->id, 'cliente_id' => $clienteCredito->cliente_id, 'numero_cuota' => $cuota->numero, 'fecha' => $cuota->fecha]) }}"
+                                            target="_blank" class="btn btn-outline-info">Ticket Historial</a>
                                     @endif
                                     <button class="btn btn-{{ $cuota->estado == 'vencida' ? 'warning' : ($cuota->estado == 'parcial' ? 'info' : 'primary') }}"
                                         data-toggle="modal" data-target="#modalPagarCuota"

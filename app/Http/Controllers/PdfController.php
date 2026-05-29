@@ -1669,6 +1669,184 @@ class PdfController extends Controller
         return $pdf->stream('tickets.pdf');
     }
 
+    public function generarTicketHistorialCuotaGrupal($prestamo_id, $numero_cuota, $fecha)
+    {
+        $prestamo = \App\Models\Credito::find($prestamo_id);
+        if (!$prestamo) {
+            return response()->json(['error' => 'Credito no encontrado.'], 404);
+        }
+
+        $cuotaGeneral = \App\Models\Cronograma::where('id_prestamo', $prestamo_id)
+            ->where('numero', $numero_cuota)
+            ->where('fecha', $fecha)
+            ->whereNull('cliente_id')
+            ->first();
+
+        if (!$cuotaGeneral) {
+            return response()->json(['error' => 'Cuota general no encontrada.'], 404);
+        }
+
+        $cuotasIntegrantes = \App\Models\Cronograma::where('id_prestamo', $prestamo_id)
+            ->where('numero', $numero_cuota)
+            ->where('fecha', $fecha)
+            ->whereNotNull('cliente_id')
+            ->get();
+
+        $cronogramaIdsIntegrantes = $cuotasIntegrantes->pluck('id')->all();
+        $clientesMap = \App\Models\Cliente::whereIn('id', $cuotasIntegrantes->pluck('cliente_id')->unique()->all())
+            ->pluck('nombre', 'id');
+
+        $movimientosIntegrantes = \App\Models\Ingreso::where('prestamo_id', $prestamo_id)
+            ->where('numero_cuota', $numero_cuota)
+            ->whereIn('cronograma_id', $cronogramaIdsIntegrantes)
+            ->whereNotNull('cliente_id')
+            ->orderBy('fecha_pago', 'asc')
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($mov) use ($clientesMap) {
+                $mov->integrante = $clientesMap[$mov->cliente_id] ?? ('Cliente #' . $mov->cliente_id);
+                $mov->es_general = false;
+                return $mov;
+            });
+
+        $movimientosGenerales = \App\Models\Ingreso::where('prestamo_id', $prestamo_id)
+            ->where('numero_cuota', $numero_cuota)
+            ->where('cronograma_id', $cuotaGeneral->id)
+            ->whereNull('cliente_id')
+            ->orderBy('fecha_pago', 'asc')
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($mov) {
+                $mov->integrante = 'Cuota General';
+                $mov->es_general = true;
+                return $mov;
+            });
+
+        $estadosIntegrantes = [];
+        foreach ($cuotasIntegrantes as $cuotaIntegrante) {
+            $estadoInt = $cuotaIntegrante->saldoYMora();
+            $estadosIntegrantes[$cuotaIntegrante->cliente_id] = [
+                'saldo' => round((float) ($estadoInt['saldo'] ?? 0), 2),
+                'mora' => round((float) ($estadoInt['mora'] ?? 0), 2),
+            ];
+        }
+
+        $gruposIntegrantes = $movimientosIntegrantes
+            ->groupBy('cliente_id')
+            ->map(function ($items, $clienteId) use ($clientesMap, $estadosIntegrantes) {
+                $saldo = (float) ($estadosIntegrantes[$clienteId]['saldo'] ?? 0);
+                $mora = (float) ($estadosIntegrantes[$clienteId]['mora'] ?? 0);
+                return [
+                    'cliente_id' => (int) $clienteId,
+                    'integrante' => $clientesMap[$clienteId] ?? ('Cliente #' . $clienteId),
+                    'movimientos' => $items->values(),
+                    'capital' => round((float) $items->sum('monto_total_pago_final'), 2),
+                    'mora_pagada' => round((float) $items->sum('monto_mora'), 2),
+                    'total_abonado' => round((float) $items->sum('monto'), 2),
+                    'saldo_actual' => $saldo,
+                    'mora_actual' => $mora,
+                    'pendiente_actual' => round($saldo + $mora, 2),
+                ];
+            })
+            ->values();
+
+        if ($gruposIntegrantes->isEmpty() && $movimientosGenerales->isEmpty()) {
+            return response()->json(['error' => 'No hay movimientos para esta cuota.'], 404);
+        }
+
+        $saldoActual = 0.0;
+        $moraActual = 0.0;
+
+        foreach ($cuotasIntegrantes as $cuotaIntegrante) {
+            $estado = $cuotaIntegrante->saldoYMora();
+            $saldoActual += (float) ($estado['saldo'] ?? 0);
+            $moraActual += (float) ($estado['mora'] ?? 0);
+        }
+
+        $saldoActual = round($saldoActual, 2);
+        $moraActual = round($moraActual, 2);
+        $totalPendiente = round($saldoActual + $moraActual, 2);
+
+        $resumen = [
+            'capital' => round((float) $movimientosIntegrantes->sum('monto_total_pago_final'), 2),
+            'mora' => round((float) $movimientosIntegrantes->sum('monto_mora'), 2),
+            'total' => round((float) $movimientosIntegrantes->sum('monto'), 2),
+            'saldo_actual' => $saldoActual,
+            'mora_actual' => $moraActual,
+            'pendiente_actual' => $totalPendiente,
+        ];
+
+        $titulo = 'Ticket Historial - Cuota General';
+        $subtitulo = 'Agrupado por integrante';
+        $data = compact('prestamo', 'cuotaGeneral', 'gruposIntegrantes', 'movimientosGenerales', 'resumen', 'titulo', 'subtitulo');
+        $pdf = Pdf::loadView('pdf.ticketpagogrupalhistorial', $data)->setPaper([0, 0, 200, 470]);
+        return $pdf->stream('ticket-historial-cuota-grupal.pdf');
+    }
+
+    public function generarTicketHistorialCuotaIndividual($prestamo_id, $cliente_id, $numero_cuota, $fecha)
+    {
+        $prestamo = \App\Models\Credito::find($prestamo_id);
+        if (!$prestamo) {
+            return response()->json(['error' => 'Credito no encontrado.'], 404);
+        }
+
+        $cuota = \App\Models\Cronograma::where('id_prestamo', $prestamo_id)
+            ->where('cliente_id', $cliente_id)
+            ->where('numero', $numero_cuota)
+            ->where('fecha', $fecha)
+            ->first();
+
+        if (!$cuota) {
+            return response()->json(['error' => 'Cuota individual no encontrada.'], 404);
+        }
+
+        $movimientos = \App\Models\Ingreso::where('prestamo_id', $prestamo_id)
+            ->where('cronograma_id', $cuota->id)
+            ->where('cliente_id', $cliente_id)
+            ->orderBy('fecha_pago', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        if ($movimientos->isEmpty()) {
+            return response()->json(['error' => 'No hay abonos para esta cuota individual.'], 404);
+        }
+
+        $estado = $cuota->saldoYMora();
+        $saldoActual = round((float) ($estado['saldo'] ?? 0), 2);
+        $moraActual = round((float) ($estado['mora'] ?? 0), 2);
+        $totalPendiente = round($saldoActual + $moraActual, 2);
+
+        $resumen = [
+            'capital' => round((float) $movimientos->sum('monto_total_pago_final'), 2),
+            'mora' => round((float) $movimientos->sum('monto_mora'), 2),
+            'total' => round((float) $movimientos->sum('monto'), 2),
+            'saldo_actual' => $saldoActual,
+            'mora_actual' => $moraActual,
+            'pendiente_actual' => $totalPendiente,
+        ];
+
+        $cliente = \App\Models\Cliente::find($cliente_id);
+        $nombreCliente = $cliente ? $cliente->nombre : ('Cliente #' . $cliente_id);
+        $gruposIntegrantes = collect([[
+            'cliente_id' => (int) $cliente_id,
+            'integrante' => $nombreCliente,
+            'movimientos' => $movimientos->values(),
+            'capital' => round((float) $movimientos->sum('monto_total_pago_final'), 2),
+            'mora_pagada' => round((float) $movimientos->sum('monto_mora'), 2),
+            'total_abonado' => round((float) $movimientos->sum('monto'), 2),
+            'saldo_actual' => $saldoActual,
+            'mora_actual' => $moraActual,
+            'pendiente_actual' => $totalPendiente,
+        ]]);
+        $movimientosGenerales = collect();
+        $cuotaGeneral = $cuota;
+        $titulo = 'Ticket Historial - Cuota Individual';
+        $subtitulo = 'Cliente: ' . $nombreCliente;
+        $data = compact('prestamo', 'cuotaGeneral', 'gruposIntegrantes', 'movimientosGenerales', 'resumen', 'titulo', 'subtitulo');
+        $pdf = Pdf::loadView('pdf.ticketpagogrupalhistorial', $data)->setPaper([0, 0, 200, 470]);
+        return $pdf->stream('ticket-historial-cuota-individual.pdf');
+    }
+
 
 
 

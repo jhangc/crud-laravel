@@ -197,6 +197,8 @@ Route::post('/admin/creditos/pagocuotagrupal', [CreditoController::class, 'pagoG
 Route::post('/admin/creditos/abonocuotagrupal', [CreditoController::class, 'abonoGrupal'])->name('creditos.abonogrupal')->middleware('auth');
 Route::get('/admin/generar-ticket-pago/{id}/{diferencia}', [PdfController::class, 'generarTicketDePago'])->name('generar.ticket.pago');
 Route::get('/admin/generar-ticket-pagogrupal/{array}', [PdfController::class, 'generarTicketDePagogrupal'])->name('generar.ticket.pagogrupal');
+Route::get('/admin/generar-ticket-pagogrupal-historial/{prestamo_id}/{numero_cuota}/{fecha}', [PdfController::class, 'generarTicketHistorialCuotaGrupal'])->name('generar.ticket.pagogrupal.historial');
+Route::get('/admin/generar-ticket-cuota-individual-historial/{prestamo_id}/{cliente_id}/{numero_cuota}/{fecha}', [PdfController::class, 'generarTicketHistorialCuotaIndividual'])->name('generar.ticket.cuotaindividual.historial');
 
 Route::get('/storage/foto/{filename}', [FileController::class, 'getFoto'])->name('getFoto');
 Route::get('/storage/pdf/{filename}', [FileController::class, 'getPdf'])->name('getPdf');
