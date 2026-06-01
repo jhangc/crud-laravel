@@ -105,6 +105,10 @@
         <table class="kv">
             <tr><td class="l">Monto</td><td class="r">S/ {{ $fechaSiguienteCuota != 'N/A' ? number_format($siguienteCuota->monto, 2) : '0.00' }}</td></tr>
             <tr><td class="l">Vence</td><td class="r">{{ $fechaSiguienteCuota != 'N/A' ? \Carbon\Carbon::parse($fechaSiguienteCuota)->format('d/m/Y') : '&mdash;' }}</td></tr>
+            @if($fechaSiguienteCuota != 'N/A')
+                <tr><td class="l">Amortizaci&oacute;n</td><td class="r">S/ {{ number_format($siguienteCuota->pago_capital == null ? ($siguienteCuota->amortizacion ?? 0) : ($siguienteCuota->monto_capital ?? 0), 2) }}</td></tr>
+                <tr><td class="l">Inter&eacute;s</td><td class="r">S/ {{ number_format($siguienteCuota->pago_capital == null ? $siguienteCuota->interes : ($siguienteCuota->intereses_capital ?? 0), 2) }}</td></tr>
+            @endif
             @if($fechaSiguienteCuota != 'N/A' && isset($sigCuotaMora) && ($sigCuotaMora['mora'] ?? 0) > 0)
                 @php $sigSaldo = $sigCuotaMora['saldo'] ?? $siguienteCuota->monto; @endphp
                 @if($sigSaldo < $siguienteCuota->monto - 0.009)
