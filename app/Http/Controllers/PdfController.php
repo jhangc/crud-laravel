@@ -1342,6 +1342,7 @@ class PdfController extends Controller
             ->orderBy('numero', 'asc')
             ->first();
         $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
+        $sigCuotaMora = $siguienteCuota ? $siguienteCuota->saldoYMora() : null;
 
         // Saldo restante de la cuota tras este pago (relevante para abonos parciales).
         $esAbono       = ($ingreso->tipo ?? null) === 'abono';
@@ -1372,9 +1373,12 @@ class PdfController extends Controller
         if ($cronograma && $cronograma->pago_capital != null) {
             $lineas += 1;
         }
+        if ($sigCuotaMora && ($sigCuotaMora['mora'] ?? 0) > 0) {
+            $lineas += 4;
+        }
         $alto = 235 + ($lineas * 16);
 
-        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota', 'siguienteCuota', 'diferencia', 'esAbono', 'esParcial', 'moraCorre', 'tipoPagoTexto', 'saldoRestante'))
+        $pdf = Pdf::loadView('pdf.ticketpago', compact('prestamo', 'cliente', 'ingreso', 'cronograma', 'fechaSiguienteCuota', 'siguienteCuota', 'sigCuotaMora', 'diferencia', 'esAbono', 'esParcial', 'moraCorre', 'tipoPagoTexto', 'saldoRestante'))
             ->setPaper([0, 0, 200, $alto]);
         return $pdf->stream('ticket.pdf');
     }
@@ -1650,6 +1654,25 @@ class PdfController extends Controller
             $siguienteCuota = $qSiguiente->orderBy('numero', 'asc')->first();
             $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';
 
+            // Para cuota general: sumar saldoYMora de cada integrante individual
+            // (igual que se hace para el saldo/mora de la cuota actual).
+            if ($siguienteCuota && is_null($ingreso->cliente_id)) {
+                $cuotasSig = \App\Models\Cronograma::where('id_prestamo', $ingreso->prestamo_id)
+                    ->where('numero', $siguienteCuota->numero)
+                    ->whereNotNull('cliente_id')
+                    ->get();
+                $scMora = $scSaldo = $scDias = 0;
+                foreach ($cuotasSig as $cs) {
+                    $e = $cs->saldoYMora();
+                    $scMora  += $e['mora'];
+                    $scSaldo += $e['saldo'];
+                    $scDias   = max($scDias, $e['dias']);
+                }
+                $sigCuotaMoraCalc = ['mora' => round($scMora, 2), 'saldo' => round($scSaldo, 2), 'dias' => $scDias];
+            } else {
+                $sigCuotaMoraCalc = $siguienteCuota ? $siguienteCuota->saldoYMora() : null;
+            }
+
             $data[] = [
                 'prestamo' => $prestamo,
                 'cliente' => $cliente,
@@ -1659,7 +1682,8 @@ class PdfController extends Controller
                 'mora_vigente' => $moraVigente,
                 'total_pendiente' => $totalPendiente,
                 'fechaSiguienteCuota' => $fechaSiguienteCuota,
-                'siguienteCuota' => $siguienteCuota
+                'siguienteCuota' => $siguienteCuota,
+                'sig_cuota_mora' => $sigCuotaMoraCalc,
             ];
         }
 

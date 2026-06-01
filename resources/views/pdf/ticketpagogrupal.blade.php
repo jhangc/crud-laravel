@@ -90,9 +90,20 @@
             <hr>
 
             <div class="sec">Pr&oacute;xima cuota</div>
+            @php $sigMora = $item['sig_cuota_mora'] ?? null; @endphp
             <table class="kv">
                 <tr><td class="l">Monto</td><td class="r">S/ {{ $item['fechaSiguienteCuota'] != 'N/A' ? number_format($item['siguienteCuota']->monto, 2) : '0.00' }}</td></tr>
-                <tr><td class="l">Vence</td><td class="r">{{ $item['fechaSiguienteCuota'] != 'N/A' ? \Carbon\Carbon::parse($item['fechaSiguienteCuota'])->format('d/m/Y') : 'â€”' }}</td></tr>
+                <tr><td class="l">Vence</td><td class="r">{{ $item['fechaSiguienteCuota'] != 'N/A' ? \Carbon\Carbon::parse($item['fechaSiguienteCuota'])->format('d/m/Y') : '&mdash;' }}</td></tr>
+                @if($item['fechaSiguienteCuota'] != 'N/A' && $sigMora && ($sigMora['mora'] ?? 0) > 0)
+                    @php $sigSaldo = $sigMora['saldo'] ?? $item['siguienteCuota']->monto; @endphp
+                    @if($sigSaldo < $item['siguienteCuota']->monto - 0.009)
+                        <tr><td class="l">Saldo pend.</td><td class="r">S/ {{ number_format($sigSaldo, 2) }}</td></tr>
+                    @endif
+                    <tr><td class="l">D&iacute;as mora acum.</td><td class="r">{{ $sigMora['dias'] }}</td></tr>
+                    <tr><td class="l">Calculado al</td><td class="r">{{ \Carbon\Carbon::today()->format('d/m/Y') }}</td></tr>
+                    <tr><td class="l">Mora acum.</td><td class="r">S/ {{ number_format($sigMora['mora'], 2) }}</td></tr>
+                    <tr class="tot"><td class="l">Total a pagar</td><td class="r">S/ {{ number_format($sigSaldo + $sigMora['mora'], 2) }}</td></tr>
+                @endif
             </table>
 
             <div class="sign">
