@@ -16,6 +16,7 @@ class ReversionPago extends Model
         'monto',
         'motivo',
         'detalles',
+        'lote_reversion',
         'restablecido_at',
         'restablecido_por',
         'motivo_restablecimiento',

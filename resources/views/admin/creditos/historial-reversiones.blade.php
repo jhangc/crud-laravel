@@ -177,26 +177,49 @@ function abrirModalRestablecer(reversionId, ingresoId) {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            $.ajax({
-                url: '/admin/pagos/restablecer/' + reversionId,
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'Content-Type': 'application/json'
-                },
-                data: JSON.stringify({ motivo: result.value }),
-                success: function (response) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Listo!',
-                        text: response.message,
-                    }).then(() => location.reload());
-                },
-                error: function (xhr) {
-                    const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
-                    Swal.fire({ icon: 'error', title: 'Error', text: errorMsg });
-                }
-            });
+            enviarRestablecer(reversionId, result.value, false);
+        }
+    });
+}
+
+function enviarRestablecer(reversionId, motivo, forzar) {
+    $.ajax({
+        url: '/admin/pagos/restablecer/' + reversionId,
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({ motivo: motivo, forzar: forzar }),
+        success: function (response) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Listo!',
+                text: response.message,
+            }).then(() => location.reload());
+        },
+        error: function (xhr) {
+            // 409 = conflicto: la cuota ya se volvió a pagar. Ofrecer forzar.
+            if (xhr.status === 409 && xhr.responseJSON?.conflicto) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '⚠️ La cuota ya fue pagada de nuevo',
+                    html: xhr.responseJSON.error +
+                        '<br><br><strong>¿Restablecer de todos modos?</strong> Esto puede dejar el pago DUPLICADO.',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, restablecer igual',
+                    cancelButtonText: 'Cancelar',
+                }).then((r) => {
+                    if (r.isConfirmed) {
+                        enviarRestablecer(reversionId, motivo, true); // forzar
+                    }
+                });
+                return;
+            }
+            const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+            Swal.fire({ icon: 'error', title: 'Error', text: errorMsg });
         }
     });
 }

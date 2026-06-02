@@ -3811,6 +3811,7 @@ class CreditoController extends Controller
                 'monto'       => $montoTotal,
                 'motivo'      => $motivo,
                 'detalles'    => 'Reversión Crédito Individual',
+                'lote_reversion' => $trace,
             ]);
 
             DB::commit();
@@ -3954,6 +3955,7 @@ class CreditoController extends Controller
             'motivo' => 'required|string|max:500',
         ]);
         $motivoRestab = $validated['motivo'];
+        $forzar = $request->boolean('forzar'); // permite restablecer aun con conflicto
 
         // Si ya fue restablecido antes, no repetir.
         if (!is_null($reversion->restablecido_at)) {
@@ -3963,53 +3965,97 @@ class CreditoController extends Controller
             ], 422);
         }
 
-        try {
-            DB::beginTransaction();
+        // Lote: si pertenece a un grupo reversado junto, se restablece TODO el lote
+        // (integrantes + cierre global). Si no tiene lote (datos antiguos), solo este.
+        $hermanas = $reversion->lote_reversion
+            ? ReversionPago::where('lote_reversion', $reversion->lote_reversion)
+                ->whereNull('restablecido_at')
+                ->get()
+            : collect([$reversion]);
 
-            $ingreso = Ingreso::withTrashed()->find($reversion->ingreso_id);
+        // CANDADO: detectar si la cuota ya fue pagada de nuevo despues de la reversion.
+        // Si existe un ingreso ACTIVO de la misma cuota/miembro (distinto del que vamos a
+        // restaurar), restablecer duplicaria el pago. Se bloquea salvo que se fuerce.
+        if (!$forzar) {
+            $conflictos = [];
+            foreach ($hermanas as $rev) {
+                $ing = Ingreso::withTrashed()->find($rev->ingreso_id);
+                if (!$ing) {
+                    continue;
+                }
+                $q = Ingreso::where('prestamo_id', $ing->prestamo_id)
+                    ->where('numero_cuota', $ing->numero_cuota)
+                    ->where('id', '!=', $ing->id);
+                is_null($ing->cliente_id)
+                    ? $q->whereNull('cliente_id')
+                    : $q->where('cliente_id', $ing->cliente_id);
 
-            if (!$ingreso) {
-                DB::rollBack();
-                return response()->json([
-                    'ok'    => false,
-                    'error' => 'El ingreso original ya no existe; no se puede restablecer.',
-                ], 404);
-            }
-
-            // Restaurar el ingreso (deshacer SoftDelete) si sigue dado de baja.
-            if ($ingreso->trashed()) {
-                $ingreso->restore();
-
-                // Volver a sumar el monto a la caja (inverso de la reversion)
-                if ($ingreso->transaccion_id) {
-                    $caja = CajaTransaccion::find($ingreso->transaccion_id);
-                    if ($caja) {
-                        $caja->cantidad_ingresos = round((float) ($caja->cantidad_ingresos ?? 0) + (float) $ingreso->monto, 2);
-                        $caja->save();
-                    }
+                if ($q->exists()) {
+                    $conflictos[] = is_null($ing->cliente_id)
+                        ? 'cierre del grupo'
+                        : (optional($ing->cliente)->nombre ?? ('integrante ' . $ing->cliente_id));
                 }
             }
 
-            // Marcar la reversion como restablecida (quien, cuando y por que). No se borra: queda la traza.
-            $reversion->restablecido_at         = now();
-            $reversion->restablecido_por         = auth()->id();
-            $reversion->motivo_restablecimiento  = $motivoRestab;
-            $reversion->save();
+            if (!empty($conflictos)) {
+                return response()->json([
+                    'ok'        => false,
+                    'conflicto' => true,
+                    'error'     => 'Esta cuota ya tiene un pago activo más nuevo (se volvió a cobrar después de la reversión). '
+                        . 'Restablecer duplicaría el pago. Conflicto en: ' . implode(', ', array_unique($conflictos)) . '.',
+                ], 409);
+            }
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $restablecidos = 0;
+
+            foreach ($hermanas as $rev) {
+                $ingreso = Ingreso::withTrashed()->find($rev->ingreso_id);
+                if (!$ingreso) {
+                    continue; // ingreso ya no existe; se omite (no rompe el resto)
+                }
+
+                // Restaurar el ingreso (deshacer SoftDelete) si sigue dado de baja.
+                if ($ingreso->trashed()) {
+                    $ingreso->restore();
+
+                    // Volver a sumar el monto a la caja (inverso de la reversion)
+                    if ($ingreso->transaccion_id) {
+                        $caja = CajaTransaccion::find($ingreso->transaccion_id);
+                        if ($caja) {
+                            $caja->cantidad_ingresos = round((float) ($caja->cantidad_ingresos ?? 0) + (float) $ingreso->monto, 2);
+                            $caja->save();
+                        }
+                    }
+                }
+
+                // Marcar como restablecida (quien, cuando y por que). No se borra: queda la traza.
+                $rev->restablecido_at        = now();
+                $rev->restablecido_por       = auth()->id();
+                $rev->motivo_restablecimiento = $motivoRestab;
+                $rev->save();
+                $restablecidos++;
+            }
 
             DB::commit();
             \Illuminate\Support\Facades\Log::info("Restablecimiento de pago", [
-                'reversion_id' => $reversion->id,
-                'ingreso_id'   => $ingreso->id,
-                'prestamo_id'  => $ingreso->prestamo_id,
-                'monto'        => (float) $ingreso->monto,
-                'motivo'       => $motivoRestab,
-                'trace'        => $trace,
-                'usuario'      => auth()->id(),
+                'reversion_id'   => $reversion->id,
+                'lote_reversion' => $reversion->lote_reversion,
+                'restablecidos'  => $restablecidos,
+                'prestamo_id'    => $reversion->prestamo_id,
+                'motivo'         => $motivoRestab,
+                'trace'          => $trace,
+                'usuario'        => auth()->id(),
             ]);
 
             return response()->json([
                 'ok'       => true,
-                'message'  => 'Pago restablecido exitosamente.',
+                'message'  => $restablecidos > 1
+                    ? "Grupo restablecido exitosamente ({$restablecidos} pagos)."
+                    : 'Pago restablecido exitosamente.',
                 'trace_id' => $trace,
             ], 200);
 
@@ -4108,6 +4154,7 @@ class CreditoController extends Controller
                     'monto'       => $ingreso->monto,
                     'motivo'      => $motivo,
                     'detalles'    => "Reversión Crédito Grupal - Cuota {$numeroCuota}",
+                    'lote_reversion' => $trace,
                 ]);
             }
 
@@ -4203,6 +4250,7 @@ class CreditoController extends Controller
                     'monto'       => (float) $ing->monto,
                     'motivo'      => $motivo,
                     'detalles'    => $detalle . " - Cuota {$ing->numero_cuota}",
+                    'lote_reversion' => $trace,
                 ]);
 
                 $ing->delete();
