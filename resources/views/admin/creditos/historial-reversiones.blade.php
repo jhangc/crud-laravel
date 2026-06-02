@@ -65,6 +65,7 @@
                                         <th>Tipo</th>
                                         <th>Cliente / Grupo</th>
                                         <th>Cuota #</th>
+                                        <th>Fecha del pago</th>
                                         <th>Monto</th>
                                         <th>Motivo</th>
                                         <th>Detalles</th>
@@ -102,6 +103,18 @@
                                                 @endif
                                             </td>
                                             <td>{{ optional($rev->ingreso)->numero_cuota ?? '-' }}</td>
+                                            <td>
+                                                @if(optional($rev->ingreso)->fecha_pago)
+                                                    <span data-order="{{ \Carbon\Carbon::parse($rev->ingreso->fecha_pago)->format('Y-m-d') }}">
+                                                        {{ \Carbon\Carbon::parse($rev->ingreso->fecha_pago)->format('d/m/Y') }}
+                                                    </span>
+                                                    @if($rev->ingreso->hora_pago)
+                                                        <small class="text-muted">{{ \Carbon\Carbon::parse($rev->ingreso->hora_pago)->format('H:i') }}</small>
+                                                    @endif
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
                                             <td>S/. {{ number_format($rev->monto, 2) }}</td>
                                             <td>{{ $rev->motivo }}</td>
                                             <td>{{ $rev->detalles }}</td>
