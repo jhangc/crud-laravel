@@ -64,9 +64,15 @@
         </table>
 
         <div class="tag">{{ $tipoPagoTexto ?? 'PAGO DE CUOTA' }}</div>
-
+         <hr>
+         <table class="kv">
+            @if($cronograma->pago_capital != null)
+                <tr><td class="l">Observaci&oacute;n</td><td class="r">Pago Capital &mdash; {{ $cronograma->pago_capital == 1 ? 'Reducir cuota' : 'Reducir plazo' }}</td></tr>
+            @endif
+            <tr><td class="l">Inter&eacute;s</td><td class="r">S/ {{ number_format($cronograma->pago_capital == null ? $cronograma->interes : ($cronograma->intereses_capital ?? 0), 2) }}</td></tr>
+            <tr><td class="l">Amortizaci&oacute;n</td><td class="r">S/ {{ number_format($cronograma->pago_capital == null ? ($cronograma->amortizacion ?? 0) : ($cronograma->monto_capital ?? 0), 2) }}</td></tr>
+        </table>
         <hr>
-
         <table class="kv">
             <tr><td class="l">Pago a cuota</td><td class="r">S/ {{ number_format($ingreso->monto_total_pago_final, 2) }}</td></tr>
             <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $ingreso->dias_mora }}</td></tr>
@@ -91,16 +97,6 @@
 
         <hr>
 
-        <table class="kv">
-            @if($cronograma->pago_capital != null)
-                <tr><td class="l">Observaci&oacute;n</td><td class="r">Pago Capital &mdash; {{ $cronograma->pago_capital == 1 ? 'Reducir cuota' : 'Reducir plazo' }}</td></tr>
-            @endif
-            <tr><td class="l">Inter&eacute;s</td><td class="r">S/ {{ number_format($cronograma->pago_capital == null ? $cronograma->interes : ($cronograma->intereses_capital ?? 0), 2) }}</td></tr>
-            <tr><td class="l">Amortizaci&oacute;n</td><td class="r">S/ {{ number_format($cronograma->pago_capital == null ? ($cronograma->amortizacion ?? 0) : ($cronograma->monto_capital ?? 0), 2) }}</td></tr>
-        </table>
-
-        <hr>
-
         <div class="sec">Pr&oacute;xima cuota</div>
         <table class="kv">
             <tr><td class="l">Monto</td><td class="r">S/ {{ $fechaSiguienteCuota != 'N/A' ? number_format($siguienteCuota->monto, 2) : '0.00' }}</td></tr>
@@ -115,7 +111,6 @@
                     <tr><td class="l">Saldo pend.</td><td class="r">S/ {{ number_format($sigSaldo, 2) }}</td></tr>
                 @endif
                 <tr><td class="l">D&iacute;as mora acum.</td><td class="r">{{ $sigCuotaMora['dias'] }}</td></tr>
-                <tr><td class="l">Calculado al</td><td class="r">{{ \Carbon\Carbon::today()->format('d/m/Y') }}</td></tr>
                 <tr><td class="l">Mora acum.</td><td class="r">S/ {{ number_format($sigCuotaMora['mora'], 2) }}</td></tr>
                 <tr class="tot"><td class="l">Total a pagar</td><td class="r">S/ {{ number_format($sigSaldo + $sigCuotaMora['mora'], 2) }}</td></tr>
             @endif

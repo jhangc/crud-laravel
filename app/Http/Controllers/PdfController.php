@@ -1339,6 +1339,7 @@ class PdfController extends Controller
         // Obtener la siguiente cuota
         $siguienteCuota = \App\Models\Cronograma::where('id_prestamo', $ingreso->prestamo_id)
             ->where('numero', '>', $ingreso->numero_cuota)
+            ->where('cliente_id', $ingreso->cliente_id)
             ->orderBy('numero', 'asc')
             ->first();
         $fechaSiguienteCuota = $siguienteCuota ? $siguienteCuota->fecha : 'N/A';

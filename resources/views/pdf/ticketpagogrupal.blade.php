@@ -59,26 +59,7 @@
                 <tr><td class="l">N&deg; Cuota</td><td class="r">{{ $item['ingreso']->numero_cuota }}</td></tr>
                 <tr><td colspan="2" class="l">{{ isset($item['cliente']->documento_identidad) ? 'Cliente' : 'Detalle' }}: <span style="font-weight:normal">{{ $item['cliente']->nombre ?? 'Cuota General' }}</span></td></tr>
             </table>
-
             <hr>
-
-            <table class="kv">
-                <tr><td class="l">Abono a capital</td><td class="r">S/ {{ number_format($item['ingreso']->monto_total_pago_final, 2) }}</td></tr>
-                <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $item['ingreso']->dias_mora }}</td></tr>
-                <tr><td class="l">Mora pagada</td><td class="r">S/ {{ number_format($item['ingreso']->monto_mora, 2) }}</td></tr>
-                <tr class="tot"><td class="l">Total abonado hoy</td><td class="r">S/ {{ number_format($item['ingreso']->monto, 2) }}</td></tr>
-            </table>
-
-            <hr>
-
-            <table class="kv">
-                <tr><td class="l">Saldo restante cuota</td><td class="r">S/ {{ number_format((float)($item['saldo_restante'] ?? 0), 2) }}</td></tr>
-                <tr><td class="l">Mora vigente restante</td><td class="r">S/ {{ number_format((float)($item['mora_vigente'] ?? 0), 2) }}</td></tr>
-                <tr class="tot"><td class="l">Total pendiente cuota</td><td class="r">S/ {{ number_format((float)($item['total_pendiente'] ?? 0), 2) }}</td></tr>
-            </table>
-
-            <hr>
-
             <table class="kv">
                 @if($item['cronograma']->pago_capital != null)
                     <tr><td class="l">Observaci&oacute;n</td><td class="r">Pago Capital &mdash; {{ $item['cronograma']->pago_capital == 1 ? 'Reducir cuota' : 'Reducir plazo' }}</td></tr>
@@ -86,11 +67,23 @@
                 <tr><td class="l">Inter&eacute;s</td><td class="r">S/ {{ number_format($item['cronograma']->pago_capital == null ? $item['cronograma']->interes : ($item['cronograma']->intereses_capital ?? 0), 2) }}</td></tr>
                 <tr><td class="l">Amortizaci&oacute;n</td><td class="r">S/ {{ number_format($item['cronograma']->pago_capital == null ? ($item['cronograma']->amortizacion ?? 0) : ($item['cronograma']->monto_capital ?? 0), 2) }}</td></tr>
             </table>
-
             <hr>
-
+            <table class="kv">
+                <tr><td class="l">Abono a capital</td><td class="r">S/ {{ number_format($item['ingreso']->monto_total_pago_final, 2) }}</td></tr>
+                <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $item['ingreso']->dias_mora }}</td></tr>
+                <tr><td class="l">Mora pagada</td><td class="r">S/ {{ number_format($item['ingreso']->monto_mora, 2) }}</td></tr>
+                <tr class="tot"><td class="l">Total abonado hoy</td><td class="r">S/ {{ number_format($item['ingreso']->monto, 2) }}</td></tr>
+            </table>
+            <hr>
+            <table class="kv">
+                <tr><td class="l">Saldo restante cuota</td><td class="r">S/ {{ number_format((float)($item['saldo_restante'] ?? 0), 2) }}</td></tr>
+                <tr><td class="l">Mora vigente restante</td><td class="r">S/ {{ number_format((float)($item['mora_vigente'] ?? 0), 2) }}</td></tr>
+                <tr class="tot"><td class="l">Total pendiente cuota</td><td class="r">S/ {{ number_format((float)($item['total_pendiente'] ?? 0), 2) }}</td></tr>
+            </table>
+            <hr>
             <div class="sec">Pr&oacute;xima cuota</div>
-            @php $sigMora = $item['sig_cuota_mora'] ?? null; @endphp
+            @php $sigMora = $item['sig_cuota_mora'] ?? null; 
+            @endphp
             <table class="kv">
                 <tr><td class="l">Monto</td><td class="r">S/ {{ $item['fechaSiguienteCuota'] != 'N/A' ? number_format($item['siguienteCuota']->monto, 2) : '0.00' }}</td></tr>
                 <tr><td class="l">Vence</td><td class="r">{{ $item['fechaSiguienteCuota'] != 'N/A' ? \Carbon\Carbon::parse($item['fechaSiguienteCuota'])->format('d/m/Y') : '&mdash;' }}</td></tr>
@@ -105,7 +98,6 @@
                         <tr><td class="l">Saldo pend.</td><td class="r">S/ {{ number_format($sigSaldo, 2) }}</td></tr>
                     @endif
                     <tr><td class="l">D&iacute;as mora acum.</td><td class="r">{{ $sigMora['dias'] }}</td></tr>
-                    <tr><td class="l">Calculado al</td><td class="r">{{ \Carbon\Carbon::today()->format('d/m/Y') }}</td></tr>
                     <tr><td class="l">Mora acum.</td><td class="r">S/ {{ number_format($sigMora['mora'], 2) }}</td></tr>
                     <tr class="tot"><td class="l">Total a pagar</td><td class="r">S/ {{ number_format($sigSaldo + $sigMora['mora'], 2) }}</td></tr>
                 @endif
