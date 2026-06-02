@@ -50,47 +50,47 @@
                     <h5 class="mb-0">⚠️ Últimos Pagos Grupales Registrados (Últimos 30 días)</h5>
                 </div>
                 <div class="card-body">
-                    @if($pagos->count() > 0)
+                    @if($grupos->count() > 0)
                         <div class="table-responsive">
                             <table id="tablaPagosGrupal" class="table table-striped table-hover">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>ID Pago</th>
-                                        <th>ID Crédito</th>
-                                        <th>Nombre/Grupo</th>
-                                        <th>Monto</th>
+                                        <th></th>
+                                        <th>Crédito</th>
+                                        <th>Grupo</th>
                                         <th>Cuota #</th>
-                                        <th>Fecha Pago</th>
-                                        <th>Tipo</th>
+                                        <th>Integrantes</th>
+                                        <th>Total pagado</th>
+                                        <th>Fecha</th>
+                                        <th>Hora</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($pagos as $pago)
-                                        <tr>
-                                            <td>{{ $pago->id }}</td>
-                                            <td>{{ $pago->prestamo_id }}</td>
-                                            <td>
-                                                @if($pago->cliente_id)
-                                                    {{ $pago->cliente->nombre ?? 'Sin nombre' }}
-                                                @else
-                                                    {{ $pago->prestamo->nombre_prestamo ?? 'Grupo sin nombre' }}
-                                                @endif
+                                    @foreach($grupos as $g)
+                                        <tr data-integrantes='@json($g['integrantes'])' data-dia="{{ \Carbon\Carbon::parse($g['fecha'])->format('d/m/Y') }}">
+                                            <td class="details-control text-center" style="cursor:pointer; width:30px;">
+                                                <i class="fas fa-plus-circle text-primary"></i>
                                             </td>
-                                            <td>S/. {{ number_format($pago->monto, 2) }}</td>
-                                            <td>{{ $pago->numero_cuota }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}</td>
-                                            <td>
-                                                @if($pago->cliente_id)
-                                                    <span class="badge badge-info">Integrante</span>
-                                                @else
-                                                    <span class="badge badge-primary">Grupo</span>
-                                                @endif
+                                            <td>#{{ $g['prestamo_id'] }}</td>
+                                            <td><strong>{{ $g['nombre'] }}</strong></td>
+                                            <td><span class="badge badge-secondary">Cuota {{ $g['numero_cuota'] }}</span></td>
+                                            <td class="text-center">{{ $g['num_integrantes'] }}</td>
+                                            <td>S/. {{ number_format($g['total'], 2) }}</td>
+                                            <td data-order="{{ $g['fecha'] }}">
+                                                {{ \Carbon\Carbon::parse($g['fecha'])->format('d/m/Y') }}
                                             </td>
+                                            <td>{{ $g['hora'] }}</td>
                                             <td>
-                                                <button class="btn btn-sm btn-danger" onclick="abrirModalReversalGrupal({{ $pago->prestamo_id }}, '{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('Y-m-d') }}', {{ (int) $pago->numero_cuota }})">
-                                                    <i class="fas fa-trash"></i> Reversar
-                                                </button>
+                                                @if($g['es_grupo'])
+                                                    <button class="btn btn-sm btn-danger"
+                                                            onclick="abrirModalReversalGrupal({{ (int) $g['transaccion_id'] }}, {{ (int) $g['prestamo_id'] }}, {{ (int) $g['numero_cuota'] }}, '{{ addslashes($g['nombre']) }}', '{{ \Carbon\Carbon::parse($g['fecha'])->format('d/m/Y') }}')">
+                                                        <i class="fas fa-trash"></i> Reversar grupo
+                                                    </button>
+                                                @else
+                                                    <span class="badge badge-warning" title="Pago hecho por separado">Pago separado</span>
+                                                    <small class="text-muted d-block">Reversar en el detalle ▸</small>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
@@ -119,10 +119,10 @@
                 </button>
             </div>
             <div class="modal-body">
-                <p><strong>ID Crédito Grupal:</strong> <span id="creditoId"></span></p>
+                <p><strong>Grupo:</strong> <span id="creditoId"></span></p>
                 <p><strong>Cuota #:</strong> <span id="numeroCuota"></span></p>
                 <p><strong>Fecha de Pago:</strong> <span id="fechaPago"></span></p>
-                <p class="text-danger"><strong>Advertencia:</strong> Se reversarán los ingresos de <strong>esta cuota</strong> en esta fecha para todos los integrantes del grupo. Otras cuotas no se verán afectadas.</p>
+                <p class="text-danger"><strong>Advertencia:</strong> Se reversarán los ingresos de <strong>este pago grupal</strong> (todos los integrantes que pagaron juntos en esta transacción). Otros pagos no se verán afectados.</p>
                 <div class="form-group">
                     <label for="motivoTextareaGrupal"><strong>Motivo de la reversión:</strong></label>
                     <textarea class="form-control" id="motivoTextareaGrupal" rows="4" placeholder="Describa el motivo de la reversión..." required></textarea>
@@ -139,18 +139,18 @@
 </div>
 
 <script>
-let creditoActualId = null;
-let fechaActual = null;
+let transaccionActual = null;
+let prestamoActual = null;
 let numeroCuotaActual = null;
 let tablaGrupal = null;
 
-function abrirModalReversalGrupal(creditoId, fecha, numeroCuota) {
-    creditoActualId = creditoId;
-    fechaActual = fecha;
+function abrirModalReversalGrupal(transaccionId, prestamoId, numeroCuota, nombre, fecha) {
+    transaccionActual = transaccionId;
+    prestamoActual = prestamoId;
     numeroCuotaActual = numeroCuota;
-    document.getElementById('creditoId').textContent = creditoId;
+    document.getElementById('creditoId').textContent = nombre + ' (Crédito #' + prestamoId + ')';
     document.getElementById('numeroCuota').textContent = numeroCuota;
-    document.getElementById('fechaPago').textContent = new Date(fecha).toLocaleDateString('es-ES');
+    document.getElementById('fechaPago').textContent = fecha;
     document.getElementById('motivoTextareaGrupal').value = '';
     $('#modalReversalGrupal').modal('show');
 }
@@ -192,8 +192,8 @@ function realizarReversalGrupal(motivo) {
             'Content-Type': 'application/json'
         },
         data: JSON.stringify({
-            prestamo_id: creditoActualId,
-            fecha: fechaActual,
+            transaccion_id: transaccionActual,
+            prestamo_id: prestamoActual,
             numero_cuota: numeroCuotaActual,
             motivo: motivo
         }),
@@ -231,7 +231,7 @@ function aplicarFiltros() {
         return;
     }
 
-    tablaGrupal.column(4).search(
+    tablaGrupal.column(6).search(
         '^' + fechaInicio + '|' + fechaFin + '$',
         true,
         false,
@@ -242,7 +242,77 @@ function aplicarFiltros() {
 function limpiarFiltros() {
     document.getElementById('filtroFechaInicio').value = '';
     document.getElementById('filtroFechaFin').value = '';
-    tablaGrupal.column(4).search('').draw();
+    tablaGrupal.column(6).search('').draw();
+}
+
+// Escapa comillas para insertar texto en el onclick generado.
+function escAttr(s) {
+    return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+// Construye la tabla de detalle (integrantes) de una cuota grupal,
+// con un boton Reversar por integrante.
+function formatoDetalleIntegrantes(integrantes) {
+    if (!integrantes || !integrantes.length) {
+        return '<div class="p-2 text-muted">Sin integrantes.</div>';
+    }
+    let filas = integrantes.map(function (i) {
+        return '<tr>' +
+            '<td>#' + i.id + '</td>' +
+            '<td>' + i.nombre + '</td>' +
+            '<td>Cuota ' + i.cuota + '</td>' +
+            '<td>S/. ' + Number(i.monto).toFixed(2) + '</td>' +
+            '<td>' + (i.hora || '') + '</td>' +
+            '<td><button class="btn btn-sm btn-outline-danger" onclick="reversarIntegrante(' +
+                i.id + ", '" + escAttr(i.nombre) + "')\">" +
+                '<i class="fas fa-trash"></i> Reversar</button></td>' +
+            '</tr>';
+    }).join('');
+
+    return '<div class="p-2 bg-light">' +
+        '<table class="table table-sm table-bordered mb-0">' +
+        '<thead><tr>' +
+        '<th>ID Pago</th><th>Integrante</th><th>Cuota</th><th>Monto</th><th>Hora</th><th>Acción</th>' +
+        '</tr></thead><tbody>' + filas + '</tbody></table></div>';
+}
+
+// Reversa el pago de un solo integrante (pide motivo obligatorio).
+function reversarIntegrante(ingresoId, nombre) {
+    Swal.fire({
+        title: 'Reversar pago de ' + nombre,
+        text: 'Se reversará solo el pago de este integrante (y el cierre del grupo de esa cuota, si existe).',
+        icon: 'warning',
+        input: 'textarea',
+        inputLabel: 'Motivo de la reversión (obligatorio)',
+        inputPlaceholder: 'Describa el motivo...',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, reversar',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (!value || !value.trim()) { return 'El motivo es obligatorio'; }
+        }
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+        $.ajax({
+            url: '/admin/pagos/reversar-integrante/' + ingresoId,
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({ motivo: result.value }),
+            success: function (response) {
+                Swal.fire({ icon: 'success', title: '¡Éxito!', text: response.message })
+                    .then(() => location.reload());
+            },
+            error: function (xhr) {
+                const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+                Swal.fire({ icon: 'error', title: 'Error', text: errorMsg });
+            }
+        });
+    });
 }
 
 $(document).ready(function () {
@@ -264,10 +334,49 @@ $(document).ready(function () {
             }
         },
         "paging": true,
-        "pageLength": 10,
+        "pageLength": 25,
         "searching": true,
         "ordering": true,
-        "order": [[4, "desc"]]
+        // Sin orden inicial: respeta el orden del servidor (agrupado por evento de pago).
+        "order": [],
+        // La primera columna (control de expandir) y la de acciones no se ordenan.
+        "columnDefs": [
+            { "orderable": false, "targets": [0, -1] }
+        ],
+        // Cabecera separadora por dia de pago.
+        "drawCallback": function () {
+            let api = this.api();
+            let rows = api.rows({ page: 'current' }).nodes();
+            let last = null;
+            $(rows).each(function () {
+                let dia = $(this).data('dia');
+                if (last !== dia) {
+                    $(this).before(
+                        '<tr class="bg-secondary text-white"><td colspan="9">' +
+                        '<i class="fas fa-calendar-day"></i> <strong>' + dia + '</strong></td></tr>'
+                    );
+                    last = dia;
+                }
+            });
+        }
+    });
+
+    // Expandir / contraer el detalle de integrantes de cada cuota grupal.
+    $('#tablaPagosGrupal tbody').on('click', 'td.details-control', function () {
+        let tr = $(this).closest('tr');
+        let row = tablaGrupal.row(tr);
+        let icono = $(this).find('i');
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+            icono.removeClass('fa-minus-circle text-danger').addClass('fa-plus-circle text-primary');
+        } else {
+            let integrantes = tr.data('integrantes');
+            row.child(formatoDetalleIntegrantes(integrantes)).show();
+            tr.addClass('shown');
+            icono.removeClass('fa-plus-circle text-primary').addClass('fa-minus-circle text-danger');
+        }
     });
 });
 </script>

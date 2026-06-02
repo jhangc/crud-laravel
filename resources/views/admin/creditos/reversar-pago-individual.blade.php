@@ -50,33 +50,31 @@
                     <h5 class="mb-0">⚠️ Últimos Pagos Registrados (Últimos 30 días)</h5>
                 </div>
                 <div class="card-body">
-                    @if($pagos->count() > 0)
+                    @if($grupos->count() > 0)
                         <div class="table-responsive">
                             <table id="tablaPagosIndividual" class="table table-striped table-hover">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>ID Pago</th>
-                                        <th>ID Crédito</th>
+                                        <th></th>
+                                        <th>Crédito</th>
                                         <th>Cliente</th>
-                                        <th>Monto</th>
-                                        <th>Cuota #</th>
-                                        <th>Fecha Pago</th>
-                                        <th>Acciones</th>
+                                        <th>Pagos del día</th>
+                                        <th>Total pagado</th>
+                                        <th>Fecha</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($pagos as $pago)
-                                        <tr>
-                                            <td>{{ $pago->id }}</td>
-                                            <td>{{ $pago->prestamo_id }}</td>
-                                            <td>{{ optional($pago->cliente)->nombre ?? 'N/A' }}</td>
-                                            <td>S/. {{ number_format($pago->monto, 2) }}</td>
-                                            <td>{{ $pago->numero_cuota }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-danger" onclick="abrirModalReversal({{ $pago->id }}, 'S/. {{ number_format($pago->monto, 2) }}', '{{ optional($pago->cliente)->nombre ?? 'N/A' }}')">
-                                                    <i class="fas fa-trash"></i> Reversar
-                                                </button>
+                                    @foreach($grupos as $g)
+                                        <tr data-pagos='@json($g['pagos'])' data-dia="{{ \Carbon\Carbon::parse($g['fecha'])->format('d/m/Y') }}">
+                                            <td class="details-control text-center" style="cursor:pointer; width:30px;">
+                                                <i class="fas fa-plus-circle text-primary"></i>
+                                            </td>
+                                            <td>#{{ $g['prestamo_id'] }}</td>
+                                            <td><strong>{{ $g['cliente'] }}</strong></td>
+                                            <td class="text-center">{{ $g['num_pagos'] }}</td>
+                                            <td>S/. {{ number_format($g['total'], 2) }}</td>
+                                            <td data-order="{{ $g['fecha'] }}">
+                                                {{ \Carbon\Carbon::parse($g['fecha'])->format('d/m/Y') }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -219,6 +217,38 @@ function limpiarFiltros() {
     tablaIndividual.column(5).search('').draw();
 }
 
+// Escapa comillas para insertar texto en el onclick generado.
+function escAttr(s) {
+    return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+// Construye la tabla de detalle (pagos del credito) con un boton Reversar por pago.
+function formatoDetallePagos(pagos) {
+    if (!pagos || !pagos.length) {
+        return '<div class="p-2 text-muted">Sin pagos.</div>';
+    }
+    let filas = pagos.map(function (p) {
+        let montoTxt = 'S/. ' + Number(p.monto).toFixed(2);
+        let fecha = p.fecha ? p.fecha.split('-').reverse().join('/') : '';
+        return '<tr>' +
+            '<td>#' + p.id + '</td>' +
+            '<td>Cuota ' + p.cuota + '</td>' +
+            '<td>' + montoTxt + '</td>' +
+            '<td>' + fecha + '</td>' +
+            '<td>' + (p.hora || '') + '</td>' +
+            '<td><button class="btn btn-sm btn-danger" onclick="abrirModalReversal(' +
+                p.id + ", '" + escAttr(montoTxt) + "', '" + escAttr(p.cliente) + "')\">" +
+                '<i class="fas fa-trash"></i> Reversar</button></td>' +
+            '</tr>';
+    }).join('');
+
+    return '<div class="p-2 bg-light">' +
+        '<table class="table table-sm table-bordered mb-0">' +
+        '<thead><tr>' +
+        '<th>ID Pago</th><th>Cuota</th><th>Monto</th><th>Fecha</th><th>Hora</th><th>Acción</th>' +
+        '</tr></thead><tbody>' + filas + '</tbody></table></div>';
+}
+
 $(document).ready(function () {
     tablaIndividual = $('#tablaPagosIndividual').DataTable({
         "language": {
@@ -238,10 +268,48 @@ $(document).ready(function () {
             }
         },
         "paging": true,
-        "pageLength": 10,
+        "pageLength": 25,
         "searching": true,
         "ordering": true,
-        "order": [[5, "desc"]]
+        // Sin orden inicial: respeta el orden del servidor (credito con pago mas reciente arriba).
+        "order": [],
+        "columnDefs": [
+            { "orderable": false, "targets": [0] }
+        ],
+        // Cabecera separadora por dia (ultimo pago del credito).
+        "drawCallback": function () {
+            let api = this.api();
+            let rows = api.rows({ page: 'current' }).nodes();
+            let last = null;
+            $(rows).each(function () {
+                let dia = $(this).data('dia');
+                if (last !== dia) {
+                    $(this).before(
+                        '<tr class="bg-secondary text-white"><td colspan="6">' +
+                        '<i class="fas fa-calendar-day"></i> <strong>' + dia + '</strong></td></tr>'
+                    );
+                    last = dia;
+                }
+            });
+        }
+    });
+
+    // Expandir / contraer el detalle de pagos de cada credito.
+    $('#tablaPagosIndividual tbody').on('click', 'td.details-control', function () {
+        let tr = $(this).closest('tr');
+        let row = tablaIndividual.row(tr);
+        let icono = $(this).find('i');
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+            icono.removeClass('fa-minus-circle text-danger').addClass('fa-plus-circle text-primary');
+        } else {
+            let pagos = tr.data('pagos');
+            row.child(formatoDetallePagos(pagos)).show();
+            tr.addClass('shown');
+            icono.removeClass('fa-plus-circle text-primary').addClass('fa-minus-circle text-danger');
+        }
     });
 });
 </script>

@@ -3735,9 +3735,40 @@ class CreditoController extends Controller
             ->whereNotNull('cliente_id')
             ->whereDate('fecha_pago', '>=', $fechaLimite)
             ->orderBy('fecha_pago', 'desc')
+            ->orderBy('hora_pago', 'desc')
             ->get();
 
-        return view('admin.creditos.reversar-pago-individual', compact('pagos'));
+        // Una fila por credito + DIA: asi la cabecera del dia coincide con los pagos
+        // del detalle (un credito con pagos en varios dias aparece una vez por dia, no
+        // todo mezclado bajo su ultimo pago). El individual se reversa por ingreso (id),
+        // asi que cada pago del detalle lleva su propio boton.
+        $grupos = $pagos
+            ->groupBy(function ($p) {
+                return $p->prestamo_id . '|' . \Carbon\Carbon::parse($p->fecha_pago)->format('Y-m-d');
+            })
+            ->map(function ($items) {
+                $primero = $items->first();
+                return [
+                    'prestamo_id' => $primero->prestamo_id,
+                    'cliente'     => optional($primero->cliente)->nombre ?? 'Sin nombre',
+                    'num_pagos'   => $items->count(),
+                    'total'       => round((float) $items->sum('monto'), 2),
+                    'fecha'       => \Carbon\Carbon::parse($primero->fecha_pago)->format('Y-m-d'),
+                    'pagos'       => $items->map(function ($p) {
+                        return [
+                            'id'      => $p->id,
+                            'cuota'   => $p->numero_cuota,
+                            'monto'   => round((float) $p->monto, 2),
+                            'fecha'   => \Carbon\Carbon::parse($p->fecha_pago)->format('Y-m-d'),
+                            'hora'    => $p->hora_pago,
+                            'cliente' => optional($p->cliente)->nombre ?? 'Sin nombre',
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
+
+        return view('admin.creditos.reversar-pago-individual', compact('grupos'));
     }
 
     public function reversarPagoIndividual(Ingreso $pago, Request $request)
@@ -3825,9 +3856,63 @@ class CreditoController extends Controller
             ->with(['prestamo', 'cliente'])
             ->whereDate('fecha_pago', '>=', $fechaLimite)
             ->orderBy('fecha_pago', 'desc')
+            ->orderBy('hora_pago', 'desc')
             ->get();
 
-        return view('admin.creditos.reversar-pago-grupal', compact('pagos'));
+        // Helper: arma la estructura de una fila a partir de un conjunto de ingresos.
+        $construirFila = function ($items, bool $esGrupo) {
+            $primero     = $items->first();
+            $integrantes = $items->whereNotNull('cliente_id')->values();
+            $filaGrupo   = $items->firstWhere('cliente_id', null);
+            $total = $filaGrupo ? (float) $filaGrupo->monto : (float) $integrantes->sum('monto');
+
+            return [
+                'transaccion_id'  => $primero->transaccion_id,
+                'prestamo_id'     => $primero->prestamo_id,
+                'nombre'          => optional($primero->prestamo)->nombre_prestamo ?? 'Grupo sin nombre',
+                'numero_cuota'    => $primero->numero_cuota,
+                'fecha'           => \Carbon\Carbon::parse($primero->fecha_pago)->format('Y-m-d'),
+                'hora'            => $primero->hora_pago,
+                'total'           => round($total, 2),
+                'num_integrantes' => $integrantes->count(),
+                'es_grupo'        => $esGrupo,
+                'integrantes'     => $integrantes->map(function ($i) {
+                    return [
+                        'id'     => $i->id,
+                        'nombre' => optional($i->cliente)->nombre ?? 'Sin nombre',
+                        'cuota'  => $i->numero_cuota,
+                        'monto'  => round((float) $i->monto, 2),
+                        'hora'   => $i->hora_pago,
+                    ];
+                })->values(),
+            ];
+        };
+
+        // Solo es GRUPO cuando existe el pago global de la cuota general (ingreso de
+        // cierre con cliente_id NULL). Mientras no exista, cada integrante es un pago
+        // SEPARADO -> su propia fila (aunque compartan transaccion de caja, que solo es
+        // la sesion del cajero y puede tener muchos abonos sueltos a distintas horas).
+        $grupos = $pagos
+            ->groupBy(function ($p) {
+                $tx = $p->transaccion_id ?: ('x' . $p->id);
+                return $tx . '|' . $p->prestamo_id . '|' . $p->numero_cuota;
+            })
+            ->flatMap(function ($items) use ($construirFila) {
+                $filaGrupo = $items->firstWhere('cliente_id', null);
+
+                if ($filaGrupo) {
+                    // Pago global de la cuota: una sola fila agrupada.
+                    return collect([$construirFila($items, true)]);
+                }
+
+                // Sin cierre global: cada integrante es un pago separado, fila propia.
+                return $items->whereNotNull('cliente_id')->values()->map(function ($ing) use ($construirFila) {
+                    return $construirFila(collect([$ing]), false);
+                });
+            })
+            ->values();
+
+        return view('admin.creditos.reversar-pago-grupal', compact('grupos'));
     }
 
     /**
@@ -3951,41 +4036,44 @@ class CreditoController extends Controller
 
         // Validacion server-side (no solo en el JS).
         $validated = $request->validate([
-            'prestamo_id'  => 'required|integer',
-            'fecha'        => 'required|date',
-            'numero_cuota' => 'required|integer',
-            'motivo'       => 'required|string|max:500',
+            'transaccion_id' => 'required|integer',
+            'prestamo_id'    => 'required|integer',
+            'numero_cuota'   => 'required|integer',
+            'motivo'         => 'required|string|max:500',
         ]);
 
-        $motivo      = $validated['motivo'];
-        $creditoId   = $validated['prestamo_id'];
-        $fecha       = $validated['fecha'];
-        $numeroCuota = $validated['numero_cuota'];
-
-        // Verificar que el credito exista y sea realmente grupal.
-        $credito = Credito::find($creditoId);
-        if (!$credito || $credito->categoria !== 'grupal') {
-            return response()->json([
-                'ok'    => false,
-                'error' => 'El credito no existe o no es grupal.',
-            ], 422);
-        }
+        $motivo        = $validated['motivo'];
+        $transaccionId = $validated['transaccion_id'];
+        $creditoId     = $validated['prestamo_id'];
+        $numeroCuota   = $validated['numero_cuota'];
 
         try {
             DB::beginTransaction();
 
-            // Solo los ingresos de ESA cuota en ESA fecha para este credito.
-            // Asi reversar la cuota 3 no toca la cuota 4 pagada el mismo dia.
-            $ingresos = Ingreso::where('prestamo_id', $creditoId)
+            // Solo los ingresos de ESE evento de pago (transaccion de caja) para ESE
+            // credito y esa cuota. Una transaccion puede pagar varios creditos, por eso
+            // se filtra tambien por prestamo_id.
+            $ingresos = Ingreso::where('transaccion_id', $transaccionId)
+                ->where('prestamo_id', $creditoId)
                 ->where('numero_cuota', $numeroCuota)
-                ->whereDate('fecha_pago', $fecha)
                 ->get();
 
             if ($ingresos->isEmpty()) {
+                DB::rollBack();
                 return response()->json([
                     'ok'    => false,
-                    'error' => 'No se encontraron pagos para reversar en esta fecha',
+                    'error' => 'No se encontraron pagos para reversar en esta transacción.',
                 ], 404);
+            }
+
+            // Verificar que el credito exista y sea realmente grupal.
+            $credito = Credito::find($creditoId);
+            if (!$credito || $credito->categoria !== 'grupal') {
+                DB::rollBack();
+                return response()->json([
+                    'ok'    => false,
+                    'error' => 'El crédito no existe o no es grupal.',
+                ], 422);
             }
 
             $montoTotalReversado = 0;
@@ -4026,8 +4114,8 @@ class CreditoController extends Controller
             DB::commit();
             \Illuminate\Support\Facades\Log::info("Reversión de pago grupal", [
                 'credito_id'         => $creditoId,
+                'transaccion_id'     => $transaccionId,
                 'numero_cuota'       => $numeroCuota,
-                'fecha'              => $fecha,
                 'cantidad_ingresos'  => $cantidadIngresos,
                 'monto_total'        => $montoTotalReversado,
                 'motivo'             => $motivo,
@@ -4044,15 +4132,111 @@ class CreditoController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             \Illuminate\Support\Facades\Log::error("Error en reversión de pago grupal", [
-                'credito_id' => $creditoId,
-                'error'      => $e->getMessage(),
-                'trace'      => $trace,
-                'usuario'    => auth()->id(),
+                'transaccion_id' => $transaccionId,
+                'numero_cuota'   => $numeroCuota,
+                'error'          => $e->getMessage(),
+                'trace'          => $trace,
+                'usuario'        => auth()->id(),
             ]);
 
             return response()->json([
                 'ok'       => false,
                 'error'    => 'Error al reversionar el pago grupal: ' . $e->getMessage(),
+                'trace_id' => $trace,
+            ], 500);
+        }
+    }
+
+    /**
+     * Reversa el pago de UN solo integrante dentro de un credito grupal.
+     * Como la cuota grupal deja de estar completa, tambien reversa el ingreso
+     * "cierre del grupo" (cliente_id NULL) de esa misma cuota y fecha, si existe.
+     */
+    public function reversarIntegranteGrupal(Ingreso $pago, Request $request)
+    {
+        $trace = Str::uuid()->toString();
+
+        $validated = $request->validate([
+            'motivo' => 'required|string|max:500',
+        ]);
+        $motivo = $validated['motivo'];
+
+        if (is_null($pago->cliente_id)) {
+            return response()->json([
+                'ok'    => false,
+                'error' => 'Ese pago es el total del grupo, no un integrante. Usa "Reversar cuota".',
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Ingresos a reversar: el del integrante + el cierre del grupo (si existe).
+            $aReversar = collect([$pago]);
+            $general = Ingreso::where('prestamo_id', $pago->prestamo_id)
+                ->whereNull('cliente_id')
+                ->where('numero_cuota', $pago->numero_cuota)
+                ->whereDate('fecha_pago', $pago->fecha_pago)
+                ->first();
+            if ($general) {
+                $aReversar->push($general);
+            }
+
+            foreach ($aReversar as $ing) {
+                // Restar de caja
+                if ($ing->transaccion_id) {
+                    $caja = CajaTransaccion::find($ing->transaccion_id);
+                    if ($caja) {
+                        $caja->cantidad_ingresos = round((float) ($caja->cantidad_ingresos ?? 0) - (float) $ing->monto, 2);
+                        $caja->save();
+                    }
+                }
+
+                $detalle = is_null($ing->cliente_id)
+                    ? 'Reversión cierre de grupo (por integrante)'
+                    : 'Reversión de integrante de grupo';
+
+                ReversionPago::create([
+                    'ingreso_id'  => $ing->id,
+                    'prestamo_id' => $ing->prestamo_id,
+                    'user_id'     => auth()->id(),
+                    'monto'       => (float) $ing->monto,
+                    'motivo'      => $motivo,
+                    'detalles'    => $detalle . " - Cuota {$ing->numero_cuota}",
+                ]);
+
+                $ing->delete();
+            }
+
+            DB::commit();
+            \Illuminate\Support\Facades\Log::info("Reversión de integrante grupal", [
+                'pago_id'      => $pago->id,
+                'credito_id'   => $pago->prestamo_id,
+                'numero_cuota' => $pago->numero_cuota,
+                'incluyo_cierre' => (bool) $general,
+                'motivo'       => $motivo,
+                'trace'        => $trace,
+                'usuario'      => auth()->id(),
+            ]);
+
+            return response()->json([
+                'ok'       => true,
+                'message'  => 'Pago del integrante reversado exitosamente.',
+                'trace_id' => $trace,
+            ], 200);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Illuminate\Support\Facades\Log::error("Error en reversión de integrante grupal", [
+                'pago_id' => $pago->id,
+                'error'   => $e->getMessage(),
+                'trace'   => $trace,
+                'usuario' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'ok'       => false,
+                'error'    => 'Error al reversar el integrante: ' . $e->getMessage(),
                 'trace_id' => $trace,
             ], 500);
         }

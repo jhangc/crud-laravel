@@ -296,6 +296,7 @@ Route::post('admin/pagos/pago/{pago}/reversar-individual', [CreditoController::c
 // Reversiones de Crédito Grupal (solo Administrador)
 Route::get('admin/pagos/reversar-grupal', [CreditoController::class, 'indexReversarPagoGrupal'])->name('pagos.index-reversar-grupal')->middleware(['auth', 'role:Administrador']);
 Route::post('admin/pagos/reversar-grupal', [CreditoController::class, 'reversarPagoGrupal'])->name('pagos.reversar-grupal')->middleware(['auth', 'role:Administrador']);
+Route::post('admin/pagos/reversar-integrante/{pago}', [CreditoController::class, 'reversarIntegranteGrupal'])->name('pagos.reversar-integrante')->middleware(['auth', 'role:Administrador']);
 
 // Historial de pagos dados de baja / reversados (solo Administrador)
 Route::get('admin/pagos/historial-reversiones', [CreditoController::class, 'historialReversiones'])->name('pagos.historial-reversiones')->middleware(['auth', 'role:Administrador']);
