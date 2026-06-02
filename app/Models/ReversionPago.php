@@ -16,6 +16,13 @@ class ReversionPago extends Model
         'monto',
         'motivo',
         'detalles',
+        'restablecido_at',
+        'restablecido_por',
+        'motivo_restablecimiento',
+    ];
+
+    protected $casts = [
+        'restablecido_at' => 'datetime',
     ];
 
     public function ingreso(): BelongsTo
@@ -31,5 +38,10 @@ class ReversionPago extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function restablecidoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'restablecido_por');
     }
 }

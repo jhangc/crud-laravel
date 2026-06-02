@@ -112,6 +112,13 @@
                                     <p>Reversión Grupal</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ url('/admin/pagos/historial-reversiones') }}"
+                                    class="nav-link {{ request()->is('admin/pagos/historial-reversiones') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Historial de Reversiones</p>
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 @endrole

@@ -3,10 +3,13 @@
 @section('content')
 <div class="container-fluid">
     <div class="row mb-4">
-        <div class="col-md-12">
-            <h2><i class="fas fa-undo"></i> Reversar Pago - Crédito Grupal</h2>
-            <hr>
+        <div class="col-md-12 d-flex justify-content-between align-items-center">
+            <h2 class="mb-0"><i class="fas fa-undo"></i> Reversar Pago - Crédito Grupal</h2>
+            <a href="{{ route('pagos.historial-reversiones') }}" class="btn btn-outline-dark">
+                <i class="fas fa-history"></i> Ver pagos dados de baja
+            </a>
         </div>
+        <div class="col-md-12"><hr></div>
     </div>
 
     <div class="row mb-3">
@@ -85,7 +88,7 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <button class="btn btn-sm btn-danger" onclick="abrirModalReversalGrupal({{ $pago->prestamo_id }}, '{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('Y-m-d') }}')">
+                                                <button class="btn btn-sm btn-danger" onclick="abrirModalReversalGrupal({{ $pago->prestamo_id }}, '{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('Y-m-d') }}', {{ (int) $pago->numero_cuota }})">
                                                     <i class="fas fa-trash"></i> Reversar
                                                 </button>
                                             </td>
@@ -117,8 +120,9 @@
             </div>
             <div class="modal-body">
                 <p><strong>ID Crédito Grupal:</strong> <span id="creditoId"></span></p>
+                <p><strong>Cuota #:</strong> <span id="numeroCuota"></span></p>
                 <p><strong>Fecha de Pago:</strong> <span id="fechaPago"></span></p>
-                <p class="text-danger"><strong>Advertencia:</strong> Se reversarán TODOS los ingresos de esta fecha para este crédito.</p>
+                <p class="text-danger"><strong>Advertencia:</strong> Se reversarán los ingresos de <strong>esta cuota</strong> en esta fecha para todos los integrantes del grupo. Otras cuotas no se verán afectadas.</p>
                 <div class="form-group">
                     <label for="motivoTextareaGrupal"><strong>Motivo de la reversión:</strong></label>
                     <textarea class="form-control" id="motivoTextareaGrupal" rows="4" placeholder="Describa el motivo de la reversión..." required></textarea>
@@ -137,12 +141,15 @@
 <script>
 let creditoActualId = null;
 let fechaActual = null;
+let numeroCuotaActual = null;
 let tablaGrupal = null;
 
-function abrirModalReversalGrupal(creditoId, fecha) {
+function abrirModalReversalGrupal(creditoId, fecha, numeroCuota) {
     creditoActualId = creditoId;
     fechaActual = fecha;
+    numeroCuotaActual = numeroCuota;
     document.getElementById('creditoId').textContent = creditoId;
+    document.getElementById('numeroCuota').textContent = numeroCuota;
     document.getElementById('fechaPago').textContent = new Date(fecha).toLocaleDateString('es-ES');
     document.getElementById('motivoTextareaGrupal').value = '';
     $('#modalReversalGrupal').modal('show');
@@ -162,7 +169,7 @@ function confirmarReversalGrupal() {
 
     Swal.fire({
         title: '¿Está seguro?',
-        text: 'Esta acción reversará TODOS los pagos de esta fecha para este crédito grupal. ¿Desea continuar?',
+        text: 'Esta acción reversará los pagos de esta cuota para todos los integrantes del grupo. ¿Desea continuar?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
@@ -187,6 +194,7 @@ function realizarReversalGrupal(motivo) {
         data: JSON.stringify({
             prestamo_id: creditoActualId,
             fecha: fechaActual,
+            numero_cuota: numeroCuotaActual,
             motivo: motivo
         }),
         success: function (response) {

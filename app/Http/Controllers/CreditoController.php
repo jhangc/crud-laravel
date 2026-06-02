@@ -3725,9 +3725,13 @@ class CreditoController extends Controller
     public function indexReversarPagoIndividual()
     {
         $fechaLimite = Carbon::now()->subDays(30)->toDateString();
-        $pagos = Ingreso::with(['prestamo' => function ($query) {
-            $query->where('producto', 'individual')->orWhere('producto', 'microempresa');
-        }])
+        // whereHas filtra las filas padre (Ingreso); el with() solo precarga la relacion.
+        // Solo creditos NO grupales (individual / microempresa).
+        $pagos = Ingreso::whereHas('prestamo', function ($query) {
+            $query->whereIn('producto', ['individual', 'microempresa'])
+                ->where('categoria', '!=', 'grupal');
+        })
+            ->with(['prestamo', 'cliente'])
             ->whereNotNull('cliente_id')
             ->whereDate('fecha_pago', '>=', $fechaLimite)
             ->orderBy('fecha_pago', 'desc')
@@ -3739,7 +3743,12 @@ class CreditoController extends Controller
     public function reversarPagoIndividual(Ingreso $pago, Request $request)
     {
         $trace = Str::uuid()->toString();
-        $motivo = $request->input('motivo', 'Sin especificar');
+
+        // Validacion server-side (no solo en el JS).
+        $validated = $request->validate([
+            'motivo' => 'required|string|max:500',
+        ]);
+        $motivo = $validated['motivo'];
 
         try {
             DB::beginTransaction();
@@ -3809,12 +3818,11 @@ class CreditoController extends Controller
     public function indexReversarPagoGrupal()
     {
         $fechaLimite = Carbon::now()->subDays(30)->toDateString();
-        $pagos = Ingreso::with([
-            'prestamo' => function ($query) {
-                $query->where('categoria', 'grupal');
-            },
-            'cliente'
-        ])
+        // whereHas filtra las filas padre (Ingreso); el with() solo precarga la relacion.
+        $pagos = Ingreso::whereHas('prestamo', function ($query) {
+            $query->where('categoria', 'grupal');
+        })
+            ->with(['prestamo', 'cliente'])
             ->whereDate('fecha_pago', '>=', $fechaLimite)
             ->orderBy('fecha_pago', 'desc')
             ->get();
@@ -3822,18 +3830,154 @@ class CreditoController extends Controller
         return view('admin.creditos.reversar-pago-grupal', compact('pagos'));
     }
 
-    public function reversarPagoGrupal(Request $request)
+    /**
+     * Historial de TODAS las reversiones (pagos dados de baja).
+     * Lee de la tabla de auditoria reversiones_pagos.
+     * Acepta ?prestamo_id= para ver el historial de un credito puntual (roadmap).
+     */
+    public function historialReversiones(Request $request)
+    {
+        $prestamoId = $request->query('prestamo_id');
+
+        $reversiones = ReversionPago::with([
+            // El ingreso esta soft-deleted; withTrashed para poder mostrar su detalle.
+            'ingreso' => fn($q) => $q->withTrashed()->with('cliente'),
+            'prestamo',
+            'usuario',
+            'restablecidoPor',
+        ])
+            ->when($prestamoId, fn($q) => $q->where('prestamo_id', $prestamoId))
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $totalReversado = round((float) $reversiones->sum('monto'), 2);
+
+        return view('admin.creditos.historial-reversiones', compact('reversiones', 'prestamoId', 'totalReversado'));
+    }
+
+    /**
+     * Restablece (recupera) un pago dado de baja: restaura el ingreso soft-deleted,
+     * lo vuelve a sumar a la caja y elimina el registro de reversion (auditoria).
+     * Es la operacion inversa de la reversion.
+     */
+    public function restablecerPago(ReversionPago $reversion, Request $request)
     {
         $trace = Str::uuid()->toString();
-        $motivo = $request->input('motivo', 'Sin especificar');
-        $creditoId = $request->input('prestamo_id');
-        $fecha = $request->input('fecha');
+
+        // Motivo del restablecimiento obligatorio (queda como traza de por que se recupero).
+        $validated = $request->validate([
+            'motivo' => 'required|string|max:500',
+        ]);
+        $motivoRestab = $validated['motivo'];
+
+        // Si ya fue restablecido antes, no repetir.
+        if (!is_null($reversion->restablecido_at)) {
+            return response()->json([
+                'ok'    => false,
+                'error' => 'Esta baja ya fue restablecida anteriormente.',
+            ], 422);
+        }
 
         try {
             DB::beginTransaction();
 
-            // Obtener todos los ingresos de esta fecha para este crédito
+            $ingreso = Ingreso::withTrashed()->find($reversion->ingreso_id);
+
+            if (!$ingreso) {
+                DB::rollBack();
+                return response()->json([
+                    'ok'    => false,
+                    'error' => 'El ingreso original ya no existe; no se puede restablecer.',
+                ], 404);
+            }
+
+            // Restaurar el ingreso (deshacer SoftDelete) si sigue dado de baja.
+            if ($ingreso->trashed()) {
+                $ingreso->restore();
+
+                // Volver a sumar el monto a la caja (inverso de la reversion)
+                if ($ingreso->transaccion_id) {
+                    $caja = CajaTransaccion::find($ingreso->transaccion_id);
+                    if ($caja) {
+                        $caja->cantidad_ingresos = round((float) ($caja->cantidad_ingresos ?? 0) + (float) $ingreso->monto, 2);
+                        $caja->save();
+                    }
+                }
+            }
+
+            // Marcar la reversion como restablecida (quien, cuando y por que). No se borra: queda la traza.
+            $reversion->restablecido_at         = now();
+            $reversion->restablecido_por         = auth()->id();
+            $reversion->motivo_restablecimiento  = $motivoRestab;
+            $reversion->save();
+
+            DB::commit();
+            \Illuminate\Support\Facades\Log::info("Restablecimiento de pago", [
+                'reversion_id' => $reversion->id,
+                'ingreso_id'   => $ingreso->id,
+                'prestamo_id'  => $ingreso->prestamo_id,
+                'monto'        => (float) $ingreso->monto,
+                'motivo'       => $motivoRestab,
+                'trace'        => $trace,
+                'usuario'      => auth()->id(),
+            ]);
+
+            return response()->json([
+                'ok'       => true,
+                'message'  => 'Pago restablecido exitosamente.',
+                'trace_id' => $trace,
+            ], 200);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Illuminate\Support\Facades\Log::error("Error al restablecer pago", [
+                'reversion_id' => $reversion->id,
+                'error'        => $e->getMessage(),
+                'trace'        => $trace,
+                'usuario'      => auth()->id(),
+            ]);
+
+            return response()->json([
+                'ok'       => false,
+                'error'    => 'Error al restablecer el pago: ' . $e->getMessage(),
+                'trace_id' => $trace,
+            ], 500);
+        }
+    }
+
+    public function reversarPagoGrupal(Request $request)
+    {
+        $trace = Str::uuid()->toString();
+
+        // Validacion server-side (no solo en el JS).
+        $validated = $request->validate([
+            'prestamo_id'  => 'required|integer',
+            'fecha'        => 'required|date',
+            'numero_cuota' => 'required|integer',
+            'motivo'       => 'required|string|max:500',
+        ]);
+
+        $motivo      = $validated['motivo'];
+        $creditoId   = $validated['prestamo_id'];
+        $fecha       = $validated['fecha'];
+        $numeroCuota = $validated['numero_cuota'];
+
+        // Verificar que el credito exista y sea realmente grupal.
+        $credito = Credito::find($creditoId);
+        if (!$credito || $credito->categoria !== 'grupal') {
+            return response()->json([
+                'ok'    => false,
+                'error' => 'El credito no existe o no es grupal.',
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Solo los ingresos de ESA cuota en ESA fecha para este credito.
+            // Asi reversar la cuota 3 no toca la cuota 4 pagada el mismo dia.
             $ingresos = Ingreso::where('prestamo_id', $creditoId)
+                ->where('numero_cuota', $numeroCuota)
                 ->whereDate('fecha_pago', $fecha)
                 ->get();
 
@@ -3875,13 +4019,14 @@ class CreditoController extends Controller
                     'user_id'     => auth()->id(),
                     'monto'       => $ingreso->monto,
                     'motivo'      => $motivo,
-                    'detalles'    => 'Reversión Crédito Grupal',
+                    'detalles'    => "Reversión Crédito Grupal - Cuota {$numeroCuota}",
                 ]);
             }
 
             DB::commit();
             \Illuminate\Support\Facades\Log::info("Reversión de pago grupal", [
                 'credito_id'         => $creditoId,
+                'numero_cuota'       => $numeroCuota,
                 'fecha'              => $fecha,
                 'cantidad_ingresos'  => $cantidadIngresos,
                 'monto_total'        => $montoTotalReversado,
@@ -3892,7 +4037,7 @@ class CreditoController extends Controller
 
             return response()->json([
                 'ok'       => true,
-                'message'  => "Pago grupal reversado exitosamente ($cantidadIngresos ingresos)",
+                'message'  => "Cuota {$numeroCuota} reversada exitosamente ($cantidadIngresos ingresos)",
                 'trace_id' => $trace,
             ], 200);
 
