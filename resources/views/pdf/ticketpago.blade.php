@@ -75,7 +75,15 @@
         <hr>
         <table class="kv">
             <tr><td class="l">Pago a cuota</td><td class="r">S/ {{ number_format($ingreso->monto_total_pago_final, 2) }}</td></tr>
-            <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $ingreso->dias_mora }}</td></tr>
+            @php
+                $diasAtrasoCuota = 0;
+                if (!empty($cronograma)) {
+                    $vencTk = \Carbon\Carbon::parse($cronograma->fecha)->startOfDay();
+                    $pagoTk = \Carbon\Carbon::parse($ingreso->fecha_pago ?? $ingreso->created_at)->startOfDay();
+                    $diasAtrasoCuota = $pagoTk->greaterThan($vencTk) ? (int) $vencTk->diffInDays($pagoTk) : 0;
+                }
+            @endphp
+            <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $diasAtrasoCuota }}</td></tr>
             <tr><td class="l">Mora</td><td class="r">S/ {{ number_format($ingreso->monto_mora, 2) }}</td></tr>
             <tr class="tot"><td class="l">Total pagado</td><td class="r">S/ {{ number_format($ingreso->monto, 2) }}</td></tr>
             @if(($diferencia ?? 0) > 0)

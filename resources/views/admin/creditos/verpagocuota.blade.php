@@ -61,6 +61,25 @@
         .txt-danger { color: #c0392b; font-weight: 600; }
         .txt-info   { color: #1d4ed8; }
         .detalle    { font-size: 0.78rem; line-height: 1.2; }
+
+        /* Días de atraso de la cuota vigente, en grande */
+        .dias-atraso-grande {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
+            margin-top: 4px;
+            color: #c0392b;
+            font-weight: 800;
+        }
+        .dias-atraso-grande .num-dias { font-size: 1.9rem; }
+        .dias-atraso-grande .lbl-dias {
+            font-size: 0.62rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #b45309;
+        }
         .cuotas-table-wrap .table thead th.grp-mem  { color: #6d28d9; }
         .cuotas-table-wrap .table thead th.grp-pago { color: #157347; }
         .cuotas-table-wrap .table thead th.grp-pend { color: #b45309; }
@@ -150,6 +169,7 @@
                         <th rowspan="2">Vence</th>
                         <th rowspan="2" class="num">Monto</th>
                         <th rowspan="2">Estado</th>
+                        <th rowspan="2">Días atraso</th>
                         <th colspan="3" class="grp-mem col-grp">Miembros</th>
                         <th colspan="4" class="grp-pago col-grp">Pagado</th>
                         <th colspan="4" class="grp-pend col-grp">Pendiente</th>
@@ -187,6 +207,25 @@
                                     <span class="badge badge-info">Parcial</span>
                                 @endif
                             </td>
+                            <td class="text-center">
+                                @php
+                                    $diasAtraso = 0;
+                                    if ($cuota->estado != 'pagado') {
+                                        $vencDA = \Carbon\Carbon::parse($cuota->fecha)->startOfDay();
+                                        $hoyDA = \Carbon\Carbon::now()->startOfDay();
+                                        $diasAtraso = $hoyDA->greaterThan($vencDA) ? (int) $vencDA->diffInDays($hoyDA) : 0;
+                                    }
+                                @endphp
+                                @if($diasAtraso > 0)
+                                    @if(($cuota->ultima ?? 0) == 1)
+                                        <div class="dias-atraso-grande"><span class="num-dias">{{ $diasAtraso }}</span><span class="lbl-dias">días de atraso</span></div>
+                                    @else
+                                        <span class="txt-danger">{{ $diasAtraso }}d</span>
+                                    @endif
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
                             <td class="col-grp">{{ $cuota->pagadas }}</td>
                             <td>{{ $cuota->pendientes }}</td>
                             <td>{{ $cuota->vencidas }}</td>
@@ -201,7 +240,11 @@
                             </td>
                             <td class="num col-grp">S/ {{ number_format($cuota->monto_pendiente, 2) }}</td>
                             <td class="num">S/ {{ number_format($cuota->monto_vencido, 2) }}</td>
-                            <td class="num">S/ {{ number_format($cuota->estado == 'pagado' ? 0 : $cuota->monto_mora, 2) }}@if($cuota->estado != 'pagado' && $cuota->dias_mora)<br><small>{{ $cuota->dias_mora }}d</small>@endif</td>
+                            <td class="num">S/ {{ number_format($cuota->estado == 'pagado' ? 0 : $cuota->monto_mora, 2) }}
+                                @if($cuota->estado != 'pagado' && $cuota->dias_mora)<br><small>mora
+                                     {{ $cuota->dias_mora }}d
+
+                                </small>@endif</td>
                             <td class="num"><strong class="{{ ($cuota->estado != 'pagado' && $cuota->monto_total_pago_final > 0) ? 'txt-warn' : '' }}">S/ {{ number_format($cuota->estado == 'pagado' ? 0 : $cuota->monto_total_pago_final, 2) }}</strong></td>
                             <td class="detalle {{ $cuota->estado == 'pagado' ? 'txt-ok' : ($cuota->estado == 'pendiente' ? 'txt-info' : 'txt-danger') }}">{{ $cuota->detalle_estado ?? '-' }}</td>
                             <td>
@@ -258,6 +301,7 @@
                         <th rowspan="2">Vence</th>
                         <th rowspan="2" class="num">Monto cuota</th>
                         <th rowspan="2">Estado</th>
+                        <th rowspan="2">Días atraso</th>
                         <th colspan="4" class="grp-pago col-grp">Pagado</th>
                         <th colspan="3" class="grp-pend col-grp">Pendiente</th>
                         <th rowspan="2">Detalle</th>
@@ -291,6 +335,25 @@
                                     <span class="badge badge-warning">Pendiente</span>
                                 @endif
                             </td>
+                            <td class="text-center">
+                                @php
+                                    $diasAtraso = 0;
+                                    if ($cuota->estado != 'pagado') {
+                                        $vencDA = \Carbon\Carbon::parse($cuota->fecha)->startOfDay();
+                                        $hoyDA = \Carbon\Carbon::now()->startOfDay();
+                                        $diasAtraso = $hoyDA->greaterThan($vencDA) ? (int) $vencDA->diffInDays($hoyDA) : 0;
+                                    }
+                                @endphp
+                                @if($diasAtraso > 0)
+                                    @if(($cuota->ultima ?? 0) == 1)
+                                        <div class="dias-atraso-grande"><span class="num-dias">{{ $diasAtraso }}</span><span class="lbl-dias">días de atraso</span></div>
+                                    @else
+                                        <span class="txt-danger">{{ $diasAtraso }}d</span>
+                                    @endif
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
                             <td class="num col-grp">S/ {{ number_format($cuota->abono_capital ?? 0, 2) }}</td>
                             <td class="num">S/ {{ number_format($cuota->mora_pagada ?? 0, 2) }}</td>
                             <td class="num">S/ {{ number_format($cuota->total_abonado ?? 0, 2) }}</td>
@@ -303,7 +366,7 @@
                             <td class="num col-grp"><strong class="{{ ($cuota->saldo ?? 0) > 0 ? 'txt-danger' : 'text-muted' }}">S/ {{ number_format($cuota->saldo ?? 0, 2) }}</strong></td>
                             <td class="num">
                                 S/ {{ number_format($cuota->estado == 'pagado' ? 0 : $cuota->monto_mora, 2) }}
-                                @if($cuota->estado != 'pagado' && $cuota->dias_mora)<br><small>{{ $cuota->dias_mora }}d</small>@endif
+                                @if($cuota->estado != 'pagado' && $cuota->dias_mora)<br><small>mora {{ $cuota->dias_mora }}d</small>@endif
                             </td>
                             <td class="num"><strong class="{{ ($cuota->estado != 'pagado' && $cuota->monto_total_pago_final > 0) ? 'txt-warn' : '' }}">S/ {{ number_format($cuota->estado == 'pagado' ? 0 : $cuota->monto_total_pago_final, 2) }}</strong></td>
                             <td class="detalle {{ $cuota->estado == 'pagado' ? 'txt-ok' : ($cuota->estado == 'pendiente' ? 'txt-info' : 'txt-danger') }}">{{ $cuota->detalle_estado ?? '-' }}</td>

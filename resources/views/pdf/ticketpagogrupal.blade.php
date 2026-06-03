@@ -70,7 +70,15 @@
             <hr>
             <table class="kv">
                 <tr><td class="l">Abono a capital</td><td class="r">S/ {{ number_format($item['ingreso']->monto_total_pago_final, 2) }}</td></tr>
-                <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $item['ingreso']->dias_mora }}</td></tr>
+                @php
+                    $diasAtrasoCuota = 0;
+                    if (!empty($item['cronograma'])) {
+                        $vencTk = \Carbon\Carbon::parse($item['cronograma']->fecha)->startOfDay();
+                        $pagoTk = \Carbon\Carbon::parse($item['ingreso']->fecha_pago ?? $item['ingreso']->created_at)->startOfDay();
+                        $diasAtrasoCuota = $pagoTk->greaterThan($vencTk) ? (int) $vencTk->diffInDays($pagoTk) : 0;
+                    }
+                @endphp
+                <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $diasAtrasoCuota }}</td></tr>
                 <tr><td class="l">Mora pagada</td><td class="r">S/ {{ number_format($item['ingreso']->monto_mora, 2) }}</td></tr>
                 <tr class="tot"><td class="l">Total abonado hoy</td><td class="r">S/ {{ number_format($item['ingreso']->monto, 2) }}</td></tr>
             </table>
