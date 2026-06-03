@@ -160,7 +160,7 @@
 
 
         @if ($credito->categoria == 'grupal')
-            <h2>Cuotas Generales</h2>
+            <h2>Cuotas Generales:{{ $credito->nombre_prestamo ?? '' }}</h2>
             <div class="cuotas-table-wrap">
             <table class="table table-striped table-sm table-hover">
                 <thead>
