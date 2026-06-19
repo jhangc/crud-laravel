@@ -208,18 +208,35 @@
     @endrole
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-        fetch('{{ route("creditos.actualizarTerminados") }}')
+        // 1) CORRECCIÓN: reactiva créditos mal marcados como terminado (con saldo pendiente).
+        fetch('{{ route("creditos.corregirTerminados") }}')
             .then(response => {
             if (!response.ok) {
-                throw new Error("Error en la respuesta");
+                throw new Error("Error en la respuesta de corrección");
             }
             return response.json();
             })
             .then(data => {
-            console.log("Respuesta:", data);
+            console.log("Corrección:", data);
             })
             .catch(error => {
-            console.error('Error en la petición:', error);
+            console.error('Error en la corrección:', error);
+            })
+            // 2) ACTUALIZACIÓN: recién después marca como terminado los que sí están pagados al 100%.
+            .finally(() => {
+            fetch('{{ route("creditos.actualizarTerminados") }}')
+                .then(response => {
+                if (!response.ok) {
+                    throw new Error("Error en la respuesta");
+                }
+                return response.json();
+                })
+                .then(data => {
+                console.log("Actualización:", data);
+                })
+                .catch(error => {
+                console.error('Error en la petición:', error);
+                });
             });
         });
     </script>

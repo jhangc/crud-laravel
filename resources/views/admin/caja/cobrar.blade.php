@@ -18,6 +18,7 @@
                                 <th >Nro</th>
                                 <th>ID</th>
                                 <th >Nombres</th>
+                                <th>Nombre grupo</th>
                                 <th>Negocio</th>
                                 <th>Tipo de credito</th>
                                 <th>Producto</th>
@@ -40,6 +41,13 @@
                                         @foreach($credito->clientes as $cliente)
                                             {{ $cliente->nombre }}<br>
                                         @endforeach
+                                    </td>
+                                    <td>
+                                        @if ($credito->categoria == 'grupal')
+                                            {{ $credito->nombre_prestamo }}
+                                        @else
+                                            -
+                                        @endif
                                     </td>
                                     <td>{{ $credito->descripcion_negocio}}</td>
                                     <td>{{ $credito->tipo }}</td>

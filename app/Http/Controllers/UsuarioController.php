@@ -243,6 +243,15 @@ class UsuarioController extends Controller
 
     public function actualizarCreditosTerminados()
     {
+        // Tolerancia en céntimos para redondeos
+        $epsilon = 0.01;
+
+        // Una cuota está pagada solo si su SALDO real (monto - abonos a cuota) está cubierto,
+        // no basta con que exista un ingreso: un pago parcial deja saldo pendiente.
+        $cuotaPagada = function ($cuota) use ($epsilon) {
+            return $cuota->saldoYMora()['saldo'] <= $epsilon;
+        };
+
         // Obtener todos los créditos que actualmente están en estado "pagado"
         $creditos = Credito::where('estado', 'pagado')->get();
 
@@ -253,8 +262,8 @@ class UsuarioController extends Controller
             if ($credito->categoria != 'grupal') {
                 $cuotas = $credito->cronograma()->whereNotNull('cliente_id')->get();
                 foreach ($cuotas as $cuota) {
-                    // Si para alguna cuota no existe un ingreso asociado, la cuota no está pagada
-                    if (!\App\Models\Ingreso::where('cronograma_id', $cuota->id)->exists()) {
+                    // Si alguna cuota aún tiene saldo, el crédito no está terminado
+                    if (!$cuotaPagada($cuota)) {
                         $allPaid = false;
                         break;
                     }
@@ -264,7 +273,7 @@ class UsuarioController extends Controller
                 // y además las cuotas individuales de cada cliente
                 $cuotasGenerales = $credito->cronograma()->whereNull('cliente_id')->get();
                 foreach ($cuotasGenerales as $cuotaGeneral) {
-                    if (!\App\Models\Ingreso::where('cronograma_id', $cuotaGeneral->id)->exists()) {
+                    if (!$cuotaPagada($cuotaGeneral)) {
                         $allPaid = false;
                         break;
                     }
@@ -274,7 +283,7 @@ class UsuarioController extends Controller
                     foreach ($credito->creditoClientes as $cc) {
                         $cuotasInd = $credito->cronograma()->where('cliente_id', $cc->cliente_id)->get();
                         foreach ($cuotasInd as $cuotaInd) {
-                            if (!\App\Models\Ingreso::where('cronograma_id', $cuotaInd->id)->exists()) {
+                            if (!$cuotaPagada($cuotaInd)) {
                                 $allPaid = false;
                                 break 2; // Salir de ambos bucles
                             }
@@ -283,7 +292,7 @@ class UsuarioController extends Controller
                 }
             }
 
-            // Si todas las cuotas de este crédito tienen un ingreso asociado, se actualiza el estado a "terminado"
+            // Si todas las cuotas están completamente pagadas, se actualiza el estado a "terminado"
             if ($allPaid) {
                 $credito->estado = 'terminado';
                 $credito->save();
@@ -291,5 +300,88 @@ class UsuarioController extends Controller
         }
 
         return response()->json(['success' => 'Estados de créditos actualizados correctamente.']);
+    }
+
+    /**
+     * Script de CORRECCIÓN. Debe ejecutarse ANTES del de actualización.
+     *
+     * Reactiva (vuelve a "pagado" = Activo) los créditos que quedaron mal
+     * marcados como "terminado" pese a tener saldo pendiente, para que la
+     * cajera pueda seguir cobrando. Usa exactamente el mismo criterio de saldo
+     * que actualizarCreditosTerminados(), de modo que ambos scripts conviven:
+     * la corrección reabre lo que aún debe y la actualización cierra solo lo
+     * que de verdad está pagado por completo.
+     *
+     * Se EXCLUYEN los CrediJoya: su cierre puede provenir de una renovación
+     * (se cierra el crédito viejo con saldo y se traslada a uno nuevo), por lo
+     * que un saldo pendiente no implica error. Esos se revisan por separado.
+     */
+    public function corregirCreditosTerminadosErroneos()
+    {
+        // Tolerancia en céntimos para redondeos
+        $epsilon = 0.01;
+
+        // Una cuota está pagada solo si su SALDO real está cubierto.
+        $cuotaPagada = function ($cuota) use ($epsilon) {
+            return $cuota->saldoYMora()['saldo'] <= $epsilon;
+        };
+
+        // Solo créditos marcados "terminado", excluyendo CrediJoya.
+        $creditos = Credito::where('estado', 'terminado')
+            ->where(function ($q) {
+                $q->where('categoria', '!=', 'credijoya')->orWhereNull('categoria');
+            })
+            ->get();
+
+        $corregidos = [];
+
+        foreach ($creditos as $credito) {
+            $tieneSaldo = false;
+
+            // Para créditos individuales: cuotas con cliente asignado
+            if ($credito->categoria != 'grupal') {
+                $cuotas = $credito->cronograma()->whereNotNull('cliente_id')->get();
+                foreach ($cuotas as $cuota) {
+                    if (!$cuotaPagada($cuota)) {
+                        $tieneSaldo = true;
+                        break;
+                    }
+                }
+            } else {
+                // Para créditos grupales: cuotas generales (cliente_id null)
+                // y además las cuotas individuales de cada cliente
+                $cuotasGenerales = $credito->cronograma()->whereNull('cliente_id')->get();
+                foreach ($cuotasGenerales as $cuotaGeneral) {
+                    if (!$cuotaPagada($cuotaGeneral)) {
+                        $tieneSaldo = true;
+                        break;
+                    }
+                }
+                if (!$tieneSaldo) {
+                    foreach ($credito->creditoClientes as $cc) {
+                        $cuotasInd = $credito->cronograma()->where('cliente_id', $cc->cliente_id)->get();
+                        foreach ($cuotasInd as $cuotaInd) {
+                            if (!$cuotaPagada($cuotaInd)) {
+                                $tieneSaldo = true;
+                                break 2;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Si todavía debe, no debió quedar "terminado": se reactiva para cobranza.
+            if ($tieneSaldo) {
+                $credito->estado = 'pagado';
+                $credito->save();
+                $corregidos[] = $credito->id;
+            }
+        }
+
+        return response()->json([
+            'success'    => 'Créditos corregidos correctamente.',
+            'total'      => count($corregidos),
+            'corregidos' => $corregidos,
+        ]);
     }
 }

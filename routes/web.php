@@ -46,6 +46,7 @@ use App\Models\InicioDesembolso;
 Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::get('/admin/credito/corregir-estado', [UsuarioController::class, 'corregirCreditosTerminadosErroneos'])->name('creditos.corregirTerminados');
 Route::get('/admin/credito/estado', [UsuarioController::class, 'actualizarCreditosTerminados'])->name('creditos.actualizarTerminados');
 //Route::get('/', function () { return view('admin'); });
 
