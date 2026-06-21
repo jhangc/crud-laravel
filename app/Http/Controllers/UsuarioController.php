@@ -243,63 +243,30 @@ class UsuarioController extends Controller
 
     public function actualizarCreditosTerminados()
     {
-        // Tolerancia en céntimos para redondeos
-        $epsilon = 0.01;
+        // Créditos en estado "pagado" (Activo), excluyendo CrediJoya: estos se
+        // cierran por su propio flujo (que además libera las joyas), no aquí.
+        $creditos = Credito::where('estado', 'pagado')
+            ->where(function ($q) {
+                $q->where('categoria', '!=', 'credijoya')->orWhereNull('categoria');
+            })
+            ->get();
 
-        // Una cuota está pagada solo si su SALDO real (monto - abonos a cuota) está cubierto,
-        // no basta con que exista un ingreso: un pago parcial deja saldo pendiente.
-        $cuotaPagada = function ($cuota) use ($epsilon) {
-            return $cuota->saldoYMora()['saldo'] <= $epsilon;
-        };
-
-        // Obtener todos los créditos que actualmente están en estado "pagado"
-        $creditos = Credito::where('estado', 'pagado')->get();
+        $terminados = [];
 
         foreach ($creditos as $credito) {
-            $allPaid = true;
-
-            // Para créditos individuales: se consideran las cuotas que tengan cliente asignado
-            if ($credito->categoria != 'grupal') {
-                $cuotas = $credito->cronograma()->whereNotNull('cliente_id')->get();
-                foreach ($cuotas as $cuota) {
-                    // Si alguna cuota aún tiene saldo, el crédito no está terminado
-                    if (!$cuotaPagada($cuota)) {
-                        $allPaid = false;
-                        break;
-                    }
-                }
-            } else {
-                // Para créditos grupales: se deben verificar las cuotas generales (cliente_id null)
-                // y además las cuotas individuales de cada cliente
-                $cuotasGenerales = $credito->cronograma()->whereNull('cliente_id')->get();
-                foreach ($cuotasGenerales as $cuotaGeneral) {
-                    if (!$cuotaPagada($cuotaGeneral)) {
-                        $allPaid = false;
-                        break;
-                    }
-                }
-                // Solo si las generales están pagadas, verificamos las individuales
-                if ($allPaid) {
-                    foreach ($credito->creditoClientes as $cc) {
-                        $cuotasInd = $credito->cronograma()->where('cliente_id', $cc->cliente_id)->get();
-                        foreach ($cuotasInd as $cuotaInd) {
-                            if (!$cuotaPagada($cuotaInd)) {
-                                $allPaid = false;
-                                break 2; // Salir de ambos bucles
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Si todas las cuotas están completamente pagadas, se actualiza el estado a "terminado"
-            if ($allPaid) {
+            // Se cierra (terminado) solo si TODAS sus cuotas están liquidadas.
+            if ($this->creditoTotalmentePagado($credito)) {
                 $credito->estado = 'terminado';
                 $credito->save();
+                $terminados[] = $credito->id;
             }
         }
 
-        return response()->json(['success' => 'Estados de créditos actualizados correctamente.']);
+        return response()->json([
+            'success'    => 'Estados de créditos actualizados correctamente.',
+            'total'      => count($terminados),
+            'terminados' => $terminados,
+        ]);
     }
 
     /**
@@ -318,14 +285,6 @@ class UsuarioController extends Controller
      */
     public function corregirCreditosTerminadosErroneos()
     {
-        // Tolerancia en céntimos para redondeos
-        $epsilon = 0.01;
-
-        // Una cuota está pagada solo si su SALDO real está cubierto.
-        $cuotaPagada = function ($cuota) use ($epsilon) {
-            return $cuota->saldoYMora()['saldo'] <= $epsilon;
-        };
-
         // Solo créditos marcados "terminado", excluyendo CrediJoya.
         $creditos = Credito::where('estado', 'terminado')
             ->where(function ($q) {
@@ -336,42 +295,10 @@ class UsuarioController extends Controller
         $corregidos = [];
 
         foreach ($creditos as $credito) {
-            $tieneSaldo = false;
-
-            // Para créditos individuales: cuotas con cliente asignado
-            if ($credito->categoria != 'grupal') {
-                $cuotas = $credito->cronograma()->whereNotNull('cliente_id')->get();
-                foreach ($cuotas as $cuota) {
-                    if (!$cuotaPagada($cuota)) {
-                        $tieneSaldo = true;
-                        break;
-                    }
-                }
-            } else {
-                // Para créditos grupales: cuotas generales (cliente_id null)
-                // y además las cuotas individuales de cada cliente
-                $cuotasGenerales = $credito->cronograma()->whereNull('cliente_id')->get();
-                foreach ($cuotasGenerales as $cuotaGeneral) {
-                    if (!$cuotaPagada($cuotaGeneral)) {
-                        $tieneSaldo = true;
-                        break;
-                    }
-                }
-                if (!$tieneSaldo) {
-                    foreach ($credito->creditoClientes as $cc) {
-                        $cuotasInd = $credito->cronograma()->where('cliente_id', $cc->cliente_id)->get();
-                        foreach ($cuotasInd as $cuotaInd) {
-                            if (!$cuotaPagada($cuotaInd)) {
-                                $tieneSaldo = true;
-                                break 2;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Si todavía debe, no debió quedar "terminado": se reactiva para cobranza.
-            if ($tieneSaldo) {
+            // Si NO está totalmente pagado, no debió quedar "terminado": se reactiva
+            // para que la cajera pueda seguir cobrando. Mismo predicado que usa la
+            // actualización, así ambos scripts conviven sin contradecirse.
+            if (!$this->creditoTotalmentePagado($credito)) {
                 $credito->estado = 'pagado';
                 $credito->save();
                 $corregidos[] = $credito->id;
@@ -383,5 +310,65 @@ class UsuarioController extends Controller
             'total'      => count($corregidos),
             'corregidos' => $corregidos,
         ]);
+    }
+
+    /**
+     * Predicado ÚNICO que comparten la actualización (cerrar) y la corrección
+     * (reabrir): un crédito está totalmente pagado si tiene al menos una cuota y
+     * TODAS sus cuotas están liquidadas.
+     *
+     * Se evalúan TODAS las cuotas del cronograma sin distinguir nivel
+     * (cliente_id null = generales de un grupal, o con cliente). Así:
+     *  - Individual: revisa sus cuotas (todas con cliente).
+     *  - Grupal moderno: generales e individuales reciben ingresos a la par,
+     *    así que exigir todas liquidadas es correcto.
+     *  - Grupal antiguo sin cuotas generales: revisa las individuales.
+     *  - No depende de la relación creditoClientes (que podría estar incompleta).
+     *  - Sin cuotas => NO se considera pagado (evita cerrar créditos vacíos).
+     * Corta en la primera cuota no liquidada.
+     */
+    private function creditoTotalmentePagado(Credito $credito): bool
+    {
+        $cuotas = $credito->cronograma()->get();
+
+        if ($cuotas->isEmpty()) {
+            return false;
+        }
+
+        foreach ($cuotas as $cuota) {
+            if (!$this->cuotaLiquidada($cuota)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * ¿La cuota está liquidada? (mismo criterio que CreditoController::cuotaLiquidada,
+     * el que usa la vista de cobranza para mostrar "Cuota cancelada").
+     *
+     * Sí cuando: tiene un ingreso de "cierre" (pago normal/total de cuota, no un abono
+     * parcial) — lo que cancela la cuota aunque condone una pequeña diferencia —, o
+     * cuando los abonos parciales ya cubren todo el saldo. Un abono parcial que no
+     * cubre la cuota NO la liquida.
+     */
+    private function cuotaLiquidada($cuota): bool
+    {
+        $tieneCierre = \App\Models\Ingreso::where('cronograma_id', $cuota->id)
+            ->where(function ($q) {
+                $q->whereNull('tipo')->orWhere('tipo', '!=', 'abono');
+            })
+            ->exists();
+        if ($tieneCierre) {
+            return true;
+        }
+
+        if (!\App\Models\Ingreso::where('cronograma_id', $cuota->id)->exists()) {
+            return false; // sin ingresos: no liquidada
+        }
+
+        // Solo abonos parciales: liquidada si ya no queda saldo.
+        return $cuota->saldoYMora()['saldo'] <= 0.009;
     }
 }
