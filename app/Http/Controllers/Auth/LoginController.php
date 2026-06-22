@@ -71,6 +71,11 @@ class LoginController extends Controller
             ]);
         }
 
-        return parent::sendFailedLoginResponse($request);
+        // Mismo comportamiento que AuthenticatesUsers::sendFailedLoginResponse().
+        // No se puede usar parent::, porque el método viene de un trait de ESTA
+        // clase, no de la clase padre (eso causaba el BadMethodCallException).
+        throw ValidationException::withMessages([
+            $this->username() => [trans('auth.failed')],
+        ]);
     }
 }
