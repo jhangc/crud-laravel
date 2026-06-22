@@ -23,10 +23,13 @@ class UsuarioController extends Controller
      */
     public function index()
     {
-        // Filtra los usuarios con estado 1 o null y carga los roles asociados
+        // Filtra los usuarios con estado 1 o null y carga los roles asociados.
+        // Se oculta el usuario de desarrollador (rol super_system) del listado.
         $usuarios = User::with('roles')->where(function ($query) {
             $query->where('estado', 1)
                 ->orWhereNull('estado');
+        })->whereDoesntHave('roles', function ($q) {
+            $q->where('name', 'super_system');
         })->with('ctsUsuario')->get();
 
         $limiteInactividad = now()->subMinutes((int) config('session.lifetime', 120));
@@ -57,7 +60,8 @@ class UsuarioController extends Controller
      */
     public function create()
     {
-        $roles = Role::all(); // Obtiene todos los roles
+        // Se excluye el rol oculto de desarrollador (super_system).
+        $roles = Role::where('name', '!=', 'super_system')->get();
         return view('admin.usuarios.create', compact('roles'));
     }
 
@@ -148,7 +152,8 @@ class UsuarioController extends Controller
     public function edit($id)
     {
         $usuario = User::findOrFail($id);
-        $roles = Role::all(); // Obtiene todos los roles disponibles
+        // Se excluye el rol oculto de desarrollador (super_system).
+        $roles = Role::where('name', '!=', 'super_system')->get();
         $usuarioRole = $usuario->roles->first(); // Obtiene el primer rol del usuario, ya que solo tiene un rol asignado
         return view('admin.usuarios.edit', [
             'usuario' => $usuario,

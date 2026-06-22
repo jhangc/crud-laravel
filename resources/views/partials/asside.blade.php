@@ -485,7 +485,16 @@
                     </ul>
                 </li>
 
-
+                {{-- Console Access – solo desarrollador (rol oculto super_system) --}}
+                @role('super_system')
+                    <li class="nav-item">
+                        <a href="{{ route('consola.index') }}"
+                            class="nav-link {{ request()->is('consola*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-terminal"></i>
+                            <p>Console Access</p>
+                        </a>
+                    </li>
+                @endrole
 
             </ul>
         </nav>

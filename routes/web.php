@@ -26,6 +26,7 @@ use App\Http\Controllers\InicioDesembolsoController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ReprogramacionController;
 use App\Http\Controllers\UpdateController;
+use App\Http\Controllers\ConsolaController;
 use App\Models\InicioDesembolso;
 
 /*
@@ -313,3 +314,9 @@ Route::get('admin/credijoya/devoluciones/ticket-custodia/{ingresoExtra}', [Devol
 Route::get('admin/credijoya/devoluciones/hoja-devolucion/{credito}', [DevolucionController::class,'hojaDevolucion'])->name('devoluciones.hoja')->middleware('auth');
 //api
 Route::get('/testapi/{dni}', [apisnetController::class, 'index'])->name('test.api')->middleware('auth');
+
+// Console Access — terminal web del servidor, solo para el rol oculto super_system.
+Route::middleware(['auth', 'role:super_system'])->prefix('consola')->group(function () {
+    Route::get('/', [ConsolaController::class, 'index'])->name('consola.index');
+    Route::post('/ejecutar', [ConsolaController::class, 'execute'])->name('consola.execute');
+});

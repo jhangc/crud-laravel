@@ -95,7 +95,11 @@
   <div class="card">
     <div class="card-body login-card-body">
       <p class="login-box-msg">Ingrese sus credenciales</p>
-    
+
+      @if (session('status'))
+        <div class="alert alert-warning py-2">{{ session('status') }}</div>
+      @endif
+
       <div class="row">
         <div class="col-md-12">
         <form method="POST" action="{{ route('login') }}">
