@@ -22,11 +22,15 @@ class CtsUsuarioController extends Controller
             ->where('user_id', $userId)
             ->first();
 
-        // 1) Depósitos sólo de las cuentas CTS del usuario logueado
-        $depositos = DepositoCts::with(['ctsUsuario.user', 'realizadoPor'])
-            ->where('cts_usuario_id', $cuenta->id)
-            ->orderBy('fecha_deposito', 'desc')
-            ->get();
+        // 1) Depósitos sólo de la cuenta CTS del usuario logueado.
+        //    Algunos usuarios (p. ej. el usuario de sistema o un admin sin cuenta)
+        //    no tienen cuenta CTS; en ese caso simplemente no hay movimientos.
+        $depositos = $cuenta
+            ? DepositoCts::with(['ctsUsuario.user', 'realizadoPor'])
+                ->where('cts_usuario_id', $cuenta->id)
+                ->orderBy('fecha_deposito', 'desc')
+                ->get()
+            : collect();
         $tienePermisoAbierto = InicioDesembolso::where('permiso_abierto', 1)
             ->exists();
 

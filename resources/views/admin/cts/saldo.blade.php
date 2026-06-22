@@ -7,6 +7,7 @@
     <div class="page-content">
         <div class="container-fluid">
             <div class="row mb-4">
+                @if ($cuenta)
                 <div class="col-12 col-md-4">
                     <div class="card text-white shadow-lg rounded-lg"
                         style="background: linear-gradient(135deg, #007bff 0%, #00c6ff 100%);">
@@ -20,6 +21,13 @@
                         </div>
                     </div>
                 </div>
+                @else
+                <div class="col-12">
+                    <div class="alert alert-info mb-0">
+                        Este usuario no tiene una cuenta CTS asignada.
+                    </div>
+                </div>
+                @endif
 
 
             </div>
@@ -31,6 +39,7 @@
                         <div class="card-header bg-secondary text-white"
                             style="display: flex; justify-content: space-between;">
                             <h3 class="mb-0">Movimientos CTS</h3>
+                            @if ($cuenta)
                             @if ($tienePermisoAbierto)
                                 {{-- Botón real: dispara el modal --}}
                                 <button id="btnSolicitarRetiro" type="button" class="btn btn-warning btn-sm"
@@ -43,6 +52,7 @@
                                     onclick="Swal.fire('Error','No hay autorización para solicitar retiro','error')">
                                     Solicitar retiro
                                 </button>
+                            @endif
                             @endif
 
                         </div>
@@ -145,6 +155,7 @@
             });
         });
 
+        @if ($cuenta)
         $('#btnGuardarRetiro').on('click', function() {
             let monto = parseFloat($('#montoRetiro').val());
             let saldo = parseFloat('{{ $cuenta->saldo_disponible }}');
@@ -175,5 +186,6 @@
                 }
             });
         });
+        @endif
     </script>
 @endsection
