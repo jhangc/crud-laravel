@@ -32,13 +32,15 @@ class ClienteController extends Controller
                 0 => 'id',
                 1 => 'nombre',
                 2 => 'documento_identidad',
-                3 => 'profesion',
-                4 => 'estado_civil',
-                5 => 'conyugue',
-                6 => 'dni_conyugue',
-                7 => 'id',
-                8 => 'id',
+                3 => 'fecha_nacimiento',
+                4 => 'fecha_nacimiento', // "Edad" se ordena por la fecha de nacimiento
+                5 => 'profesion',
+                6 => 'estado_civil',
+                7 => 'conyugue',
+                8 => 'dni_conyugue',
                 9 => 'id',
+                10 => 'id',
+                11 => 'id',
             ];
 
             $orderColumn = $columnMap[$orderColumnIndex] ?? 'id';
@@ -67,6 +69,7 @@ class ClienteController extends Controller
                     'id',
                     'nombre',
                     'documento_identidad',
+                    'fecha_nacimiento',
                     'profesion',
                     'estado_civil',
                     'conyugue',
@@ -76,10 +79,16 @@ class ClienteController extends Controller
                 ]);
 
             $data = $clientes->map(function ($cliente) {
+                $fechaNacimiento = $cliente->fecha_nacimiento
+                    ? Carbon::parse($cliente->fecha_nacimiento)
+                    : null;
+
                 return [
                     'id' => $cliente->id,
                     'nombre' => $cliente->nombre,
                     'documento_identidad' => $cliente->documento_identidad,
+                    'fecha_nacimiento' => $fechaNacimiento ? $fechaNacimiento->format('d/m/Y') : null,
+                    'edad' => $fechaNacimiento ? $fechaNacimiento->age : null,
                     'profesion' => $cliente->profesion,
                     'estado_civil' => $cliente->estado_civil,
                     'conyugue' => $cliente->conyugue,

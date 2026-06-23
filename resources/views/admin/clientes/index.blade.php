@@ -33,23 +33,11 @@
                             <th>
                                 <center>Dni</center>
                             </th>
-                            {{-- <<th>
-                                <center>Teléfono</center>
+                            <th>
+                                <center>Fecha de Nacimiento</center>
                             </th>
                             <th>
-                                <center>Email</center>
-                            </th>
-                            <th>
-                                <center>Dirección de Domicilio</center>
-                            </th>
-                            th>
-                                <center>Dirección Laboral</center>
-                            </th>
-                            <th>
-                                <center>Lugar de Nacimiento</center>
-                            </th>
-                            <th>
-                                <center>Fecha de Nacimiento</center> --}}
+                                <center>Edad</center>
                             </th>
                             <th>
                                 <center>Profesión</center>
@@ -109,6 +97,20 @@
                 },
                 { data: 'nombre' },
                 { data: 'documento_identidad' },
+                {
+                    data: 'fecha_nacimiento',
+                    render: function(data) {
+                        return data ? data : '—';
+                    }
+                },
+                {
+                    data: 'edad',
+                    orderable: false,
+                    searchable: false,
+                    render: function(data) {
+                        return (data || data === 0) ? data + ' años' : '—';
+                    }
+                },
                 { data: 'profesion' },
                 { data: 'estado_civil' },
                 { data: 'conyugue' },
