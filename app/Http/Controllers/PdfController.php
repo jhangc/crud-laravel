@@ -491,9 +491,10 @@ class PdfController extends Controller
         // Obtener o generar el correlativo
         $correlativo = CorrelativoPagare::generateCorrelativo($id);
 
-        // Filtrar todas las cuotas vencidas: fecha anterior a hoy y sin ingresos registrados
+        // Cuotas vencidas que AÚN deben: fecha anterior a hoy y NO liquidadas.
+        // (Un abono parcial deja ingreso pero no cancela la cuota.)
         $cuotasVencidas = $cuotas->filter(function ($cuota) {
-            return $cuota->fecha < Carbon::now()->toDateString() && $cuota->ingresos->isEmpty();
+            return $cuota->fecha < Carbon::now()->toDateString() && !$cuota->liquidada();
         });
 
         // Cantidad de cuotas vencidas
@@ -583,9 +584,10 @@ class PdfController extends Controller
         // Generar o obtener el correlativo
         $correlativo = CorrelativoPagare::generateCorrelativo($id);
 
-        // Filtrar todas las cuotas vencidas: fecha anterior a hoy y sin ingresos registrados
+        // Cuotas vencidas que AÚN deben: fecha anterior a hoy y NO liquidadas.
+        // (Un abono parcial deja ingreso pero no cancela la cuota.)
         $cuotasVencidas = $cuotas->filter(function ($cuota) {
-            return $cuota->fecha < Carbon::now()->toDateString() && $cuota->ingresos->isEmpty();
+            return $cuota->fecha < Carbon::now()->toDateString() && !$cuota->liquidada();
         });
 
         // Cantidad de cuotas vencidas

@@ -1038,21 +1038,8 @@ class CreditoController extends Controller
      */
     private function cuotaLiquidada(Cronograma $cuota): bool
     {
-        $tieneCierre = Ingreso::where('cronograma_id', $cuota->id)
-            ->where(function ($q) {
-                $q->whereNull('tipo')->orWhere('tipo', '!=', 'abono');
-            })
-            ->exists();
-        if ($tieneCierre) {
-            return true;
-        }
-
-        if (!Ingreso::where('cronograma_id', $cuota->id)->exists()) {
-            return false; // sin ingresos: no liquidada
-        }
-
-        // Solo abonos parciales: liquidada si ya no queda saldo.
-        return $cuota->saldoYMora()['saldo'] <= 0.009;
+        // Fuente de verdad única: App\Models\Cronograma::liquidada().
+        return $cuota->liquidada();
     }
 
     public function verpagocuota($id)
@@ -2948,8 +2935,10 @@ class CreditoController extends Controller
                 ->where('activo', 1)
                 ->where('estado', '!=', 'terminado')
                 ->whereHas('cronograma', function ($query) use ($today) {
-                    $query->where('fecha', '<', $today)
-                        ->whereDoesntHave('ingresos');
+                    // Precandidatos: con alguna cuota ya vencida. El que aún
+                    // debe se decide en PHP con cuotaLiquidada() (abonos parciales
+                    // NO cancelan la cuota).
+                    $query->where('fecha', '<', $today);
                 })
                 ->get();
         } else {
@@ -2967,8 +2956,10 @@ class CreditoController extends Controller
                 ->where('estado', '!=', 'terminado')
                 ->where('user_id', $user->id)
                 ->whereHas('cronograma', function ($query) use ($today) {
-                    $query->where('fecha', '<', $today)
-                        ->whereDoesntHave('ingresos');
+                    // Precandidatos: con alguna cuota ya vencida. El que aún
+                    // debe se decide en PHP con cuotaLiquidada() (abonos parciales
+                    // NO cancelan la cuota).
+                    $query->where('fecha', '<', $today);
                 })
                 ->get();
         }
@@ -2976,10 +2967,13 @@ class CreditoController extends Controller
 
 
         $result = $creditos->map(function ($credito) use ($today) {
-            // Filtrar todas las cuotas vencidas del cronograma
+            // Cuota vencida que AÚN debe: pasada de fecha y NO liquidada.
+            // (Un abono parcial deja un ingreso pero no cancela la cuota, por eso
+            // ya no basta con $cuota->ingresos->isEmpty().)
+            // unique('numero') evita repetir la cuota por cada integrante en grupales.
             $cuotasVencidas = $credito->cronograma->filter(function ($cuota) use ($today) {
-                return $cuota->fecha < $today && $cuota->ingresos->isEmpty();
-            });
+                return $cuota->fecha < $today && !$this->cuotaLiquidada($cuota);
+            })->unique('numero')->values();
 
             if ($cuotasVencidas->isNotEmpty()) {
                 return [

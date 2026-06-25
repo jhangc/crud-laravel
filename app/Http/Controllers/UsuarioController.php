@@ -360,20 +360,7 @@ class UsuarioController extends Controller
      */
     private function cuotaLiquidada($cuota): bool
     {
-        $tieneCierre = \App\Models\Ingreso::where('cronograma_id', $cuota->id)
-            ->where(function ($q) {
-                $q->whereNull('tipo')->orWhere('tipo', '!=', 'abono');
-            })
-            ->exists();
-        if ($tieneCierre) {
-            return true;
-        }
-
-        if (!\App\Models\Ingreso::where('cronograma_id', $cuota->id)->exists()) {
-            return false; // sin ingresos: no liquidada
-        }
-
-        // Solo abonos parciales: liquidada si ya no queda saldo.
-        return $cuota->saldoYMora()['saldo'] <= 0.009;
+        // Fuente de verdad única: App\Models\Cronograma::liquidada().
+        return $cuota->liquidada();
     }
 }

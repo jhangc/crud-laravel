@@ -50,6 +50,35 @@ class Cronograma extends Model
     }
 
     /**
+     * ¿La cuota está liquidada? Fuente de verdad ÚNICA del sistema (cobranza,
+     * carta de cobranza, actualización/corrección de estados).
+     *
+     * Sí cuando: tiene un ingreso de "cierre" (pago normal/total de cuota, no un
+     * abono parcial) — lo que cancela la cuota aunque condone una pequeña
+     * diferencia, p. ej. interés por pago anticipado —, o cuando los abonos
+     * parciales ya cubren todo el saldo. Un abono parcial que no cubre la cuota
+     * NO la liquida.
+     */
+    public function liquidada(): bool
+    {
+        $tieneCierre = $this->ingresos()
+            ->where(function ($q) {
+                $q->whereNull('tipo')->orWhere('tipo', '!=', 'abono');
+            })
+            ->exists();
+        if ($tieneCierre) {
+            return true;
+        }
+
+        if (!$this->ingresos()->exists()) {
+            return false; // sin ingresos: no liquidada
+        }
+
+        // Solo abonos parciales: liquidada si ya no queda saldo.
+        return $this->saldoYMora()['saldo'] <= 0.009;
+    }
+
+    /**
      * Saldo y mora vigente de la cuota, derivados del historial de Ingresos.
      *
      * La mora corre sobre el saldo que va quedando: en cada abono se reinicia el
