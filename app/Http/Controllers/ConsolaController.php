@@ -20,6 +20,14 @@ class ConsolaController extends Controller
     /** Tiempo máximo (segundos) por comando. */
     private const TIMEOUT = 120;
 
+    /**
+     * Comandos DESTRUCTIVOS que pueden borrar toda la base de datos o archivos.
+     * Se bloquean por defecto; para forzarlos hay que anteponer "FORCE " al comando,
+     * tras verificar el directorio/.env correcto. Esto evita catástrofes como correr
+     * `migrate:fresh` apuntando a la base equivocada.
+     */
+    private const DANGEROUS = '/(\bmigrate:(fresh|reset|refresh|rollback)\b|\bdb:wipe\b|\bdrop\s+database\b|\bdrop\s+table\b|\btruncate\b|\brm\s+-[rf])/i';
+
     public function index()
     {
         $cwd = $this->currentDir();
@@ -38,7 +46,29 @@ class ConsolaController extends Controller
         $command = trim($request->input('command'));
         $cwd     = $this->currentDir();
 
-        $this->audit($command, $cwd);
+        // Confirmación explícita: anteponer "FORCE " permite ejecutar un comando destructivo.
+        $forced = false;
+        if (stripos($command, 'FORCE ') === 0) {
+            $command = trim(substr($command, 6));
+            $forced  = true;
+        }
+
+        $this->audit(($forced ? 'FORCE ' : '') . $command, $cwd);
+
+        // Escudo anti-catástrofes: bloquea comandos que borran datos hasta confirmar.
+        if (! $forced && preg_match(self::DANGEROUS, $command)) {
+            return response()->json([
+                'cwd'    => $cwd,
+                'output' => "⛔ COMANDO BLOQUEADO POR SEGURIDAD\n\n"
+                    . "Este comando puede BORRAR datos de la base/archivos del proyecto en:\n"
+                    . "    {$cwd}\n\n"
+                    . "Antes de ejecutarlo, verifica que estás en el proyecto correcto y revisa su base de datos:\n"
+                    . "    cat .env | grep DB_DATABASE\n\n"
+                    . "Si de verdad quieres ejecutarlo, vuelve a escribirlo anteponiendo FORCE:\n"
+                    . "    FORCE {$command}",
+                'error'  => true,
+            ]);
+        }
 
         // Comandos especiales que se manejan en PHP (no en el shell).
         if (preg_match('/^cd(?:\s+(.*))?$/i', $command, $m)) {
@@ -173,8 +203,10 @@ class ConsolaController extends Controller
 
         if (function_exists('shell_exec')) {
             $prev = getcwd();
-            if (isset($env['PATH'])) {
-                putenv('PATH=' . $env['PATH']);
+            // Aplica el mismo entorno aislado: setea PATH y ELIMINA (putenv sin '=')
+            // las variables del .env de esta app, para no contaminar el proyecto hijo.
+            foreach ($env as $key => $val) {
+                putenv($val === false ? $key : "{$key}={$val}");
             }
             @chdir($cwd);
             $out = @shell_exec($command . ' 2>&1');
@@ -230,7 +262,48 @@ class ConsolaController extends Controller
             }
         }
 
-        return ['PATH' => $path];
+        $env = ['PATH' => $path];
+
+        // CRÍTICO — aislamiento del .env por proyecto.
+        // Laravel publica las variables de su .env como variables de entorno del
+        // proceso (putenv), y Symfony Process las HEREDA al proceso hijo. Como el
+        // .env de Laravel es inmutable, un `php artisan` ejecutado en OTRO proyecto
+        // NO puede sobrescribir esas variables ya presentes y termina usando la BASE
+        // DE DATOS de ESTA app (la consola) en lugar de la suya.
+        // Eso provocó que `migrate:fresh` corriera contra la BD equivocada.
+        // Solución: eliminar (unset) en el hijo todas las claves del .env de esta app,
+        // para que cada proyecto lea su PROPIO .env.
+        foreach ($this->hostEnvKeys() as $key) {
+            $env[$key] = false; // En Symfony Process, false elimina la variable en el hijo.
+        }
+
+        return $env;
+    }
+
+    /** Claves del .env de ESTA app, que NO deben filtrarse a los procesos hijos. */
+    private function hostEnvKeys(): array
+    {
+        $keys    = [];
+        $envFile = base_path('.env');
+
+        if (is_file($envFile)) {
+            foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+                $line = ltrim($line);
+                if ($line === '' || $line[0] === '#') {
+                    continue;
+                }
+                if (preg_match('/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=/', $line, $m)) {
+                    $keys[] = $m[1];
+                }
+            }
+        }
+
+        // Respaldo (por si el .env no es legible): las variables que más daño causan.
+        return array_values(array_unique(array_merge($keys, [
+            'APP_NAME', 'APP_ENV', 'APP_KEY', 'APP_DEBUG', 'APP_URL',
+            'DB_CONNECTION', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD',
+            'CACHE_DRIVER', 'SESSION_DRIVER', 'QUEUE_CONNECTION', 'BROADCAST_DRIVER', 'FILESYSTEM_DISK',
+        ])));
     }
 
     /** Registra cada comando ejecutado para auditoría. */
