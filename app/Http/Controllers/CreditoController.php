@@ -1346,6 +1346,146 @@ class CreditoController extends Controller
     }
 
 
+    /**
+     * Detalle del pago total (adelantado) de un credito, cuota por cuota.
+     *
+     * Regla de negocio: al cancelar todo el credito solo se cobra el interes ya
+     * devengado, nunca los meses que faltan por correr.
+     *  - Cuota vencida: su saldo completo (capital + interes del periodo) + mora.
+     *  - Cuota en curso (la primera que aun no vence): capital + interes
+     *    proporcional a los dias transcurridos del periodo.
+     *  - Cuotas posteriores: solo capital (amortizacion), sin interes.
+     * Los abonos parciales ya registrados se descuentan de cada cuota.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function detallePagoTotal($prestamo_id, $numero_cuota): array
+    {
+        $hoy = Carbon::now()->startOfDay();
+
+        $cuotas = Cronograma::where('id_prestamo', $prestamo_id)
+            ->where('numero', '>=', $numero_cuota)
+            ->whereNotNull('cliente_id')
+            ->orderBy('numero')
+            ->get();
+
+        // Vencimiento de cada numero de cuota, para saber donde arranca el periodo.
+        $fechasPorNumero = Cronograma::where('id_prestamo', $prestamo_id)
+            ->selectRaw('numero, MIN(fecha) as fecha')
+            ->groupBy('numero')
+            ->pluck('fecha', 'numero')
+            ->toArray();
+
+        $credito = Credito::find($prestamo_id);
+
+        // La cuota en curso es la primera pendiente que todavia no vence: es la
+        // unica que devenga interes parcial.
+        $numeroEnCurso = null;
+        foreach ($cuotas as $cuota) {
+            if ($this->cuotaLiquidada($cuota)) {
+                continue;
+            }
+            if (!$hoy->greaterThan(Carbon::parse($cuota->fecha)->startOfDay())) {
+                $numeroEnCurso = (int) $cuota->numero;
+                break;
+            }
+        }
+
+        $filas = [];
+
+        foreach ($cuotas as $cuota) {
+            if ($this->cuotaLiquidada($cuota)) {
+                continue;
+            }
+
+            $est   = $cuota->saldoYMora();
+            $saldo = (float) $est['saldo'];
+            $mora  = (float) $est['mora'];
+            $dias  = (int) $est['dias'];
+
+            // Lo ya abonado a esta cuota (los abonos cubren primero la mora).
+            $pagado = max(0.0, round((float) $cuota->monto - $saldo, 2));
+
+            $vencida = $hoy->greaterThan(Carbon::parse($cuota->fecha)->startOfDay());
+
+            $interesDevengado = 0.0;
+            $diasInteres      = 0;
+            $diasPeriodo      = 0;
+
+            if ($vencida) {
+                // El periodo ya corrio completo: se cobra la cuota tal cual.
+                $base = $saldo;
+            } else {
+                if ((int) $cuota->numero === $numeroEnCurso) {
+                    $inicio      = $this->inicioPeriodoCuota($cuota, $fechasPorNumero, $credito);
+                    $vence       = Carbon::parse($cuota->fecha)->startOfDay();
+                    $diasPeriodo = (int) $inicio->diffInDays($vence);
+
+                    if ($diasPeriodo > 0) {
+                        $diasInteres      = min($diasPeriodo, max(0, (int) $inicio->diffInDays($hoy)));
+                        $interesDevengado = round((float) $cuota->interes * $diasInteres / $diasPeriodo, 2);
+                    } else {
+                        // Sin periodo medible: cobrar el interes de la cuota tal cual.
+                        $interesDevengado = (float) $cuota->interes;
+                    }
+                }
+
+                $base = max(0.0, round((float) $cuota->amortizacion + $interesDevengado - $pagado, 2));
+            }
+
+            $base  = round(min($base, $saldo), 2);
+            $mora  = round($mora, 2);
+            $total = round($base + $mora, 2);
+
+            if ($total <= 0) {
+                continue;
+            }
+
+            $filas[] = [
+                'cuota'             => $cuota,
+                'numero'            => (int) $cuota->numero,
+                'fecha'             => $cuota->fecha,
+                'monto'             => $base,
+                'interes_devengado' => round($interesDevengado, 2),
+                'dias_interes'      => $diasInteres,
+                'dias_periodo'      => $diasPeriodo,
+                'monto_mora'        => $mora,
+                'dias_mora'         => $dias,
+                'porcentaje_mora'   => (float) $est['porcentaje'],
+                'total_pagar'       => $total,
+            ];
+        }
+
+        return $filas;
+    }
+
+    /**
+     * Fecha en la que arranca el periodo de una cuota: el vencimiento de la cuota
+     * anterior o, para la primera, el desembolso mas el periodo de gracia.
+     */
+    private function inicioPeriodoCuota($cuota, array $fechasPorNumero, $credito): Carbon
+    {
+        $numero = (int) $cuota->numero;
+
+        if (!empty($fechasPorNumero[$numero - 1])) {
+            return Carbon::parse($fechasPorNumero[$numero - 1])->startOfDay();
+        }
+
+        if ($credito && $credito->fecha_desembolso) {
+            return Carbon::parse($credito->fecha_desembolso)->startOfDay()
+                ->addDays((int) ($credito->periodo_gracia_dias ?? 0));
+        }
+
+        // Sin referencia: asumir el mismo intervalo que hay hasta la cuota siguiente.
+        $vence = Carbon::parse($cuota->fecha)->startOfDay();
+        $dias  = 30;
+        if (!empty($fechasPorNumero[$numero + 1])) {
+            $dias = (int) $vence->diffInDays(Carbon::parse($fechasPorNumero[$numero + 1])->startOfDay());
+        }
+
+        return $vence->copy()->subDays($dias > 0 ? $dias : 30);
+    }
+
     public function verpagototalindividual(Request $request)
     {
         $prestamo_id = $request->prestamo_id;
@@ -1363,48 +1503,30 @@ class CreditoController extends Controller
 
         $detalleCuotas = [];
         $totalPagar = 0;
+        $interesDevengado = 0;
+        $diasInteres = 0;
 
-        // Obtener todas las cuotas restantes a partir de la cuota actual
-        $cuotasRestantes = Cronograma::where('id_prestamo', $prestamo_id)
-            ->where('numero', '>=', $numero_cuota)
-            ->whereNotNull('cliente_id')
-            ->orderBy('numero')
-            ->get();
-
-        foreach ($cuotasRestantes as $index => $cuota) {
-            if ($this->cuotaLiquidada($cuota)) {
-                continue;
-            }
-
-            $est = $cuota->saldoYMora();
-            $saldo = (float) $est['saldo'];
-            $mora = (float) $est['mora'];
-            $dias = (int) $est['dias'];
-            $vencida = now()->greaterThan(Carbon::parse($cuota->fecha));
-
-            // Para cuotas futuras en pago total: solo amortizacion (sin mora), salvo cuota actual.
-            $base = ($vencida || $index === 0) ? $saldo : (float) $cuota->amortizacion;
-            $moraAplicada = ($vencida || $index === 0) ? $mora : 0.0;
-            $diasAplicados = ($vencida || $index === 0) ? $dias : 0;
-
-            $totalCuota = round($base + $moraAplicada, 2);
-
+        foreach ($this->detallePagoTotal($prestamo_id, $numero_cuota) as $fila) {
             $detalleCuotas[] = [
-                'numero' => $cuota->numero,
-                'monto' => round($base, 2),
-                'dias_mora' => $diasAplicados,
-                'monto_mora' => round($moraAplicada, 2),
-                'total_pagar' => $totalCuota,
-                'fecha' => $cuota->fecha
+                'numero' => $fila['numero'],
+                'monto' => $fila['monto'],
+                'dias_mora' => $fila['dias_mora'],
+                'monto_mora' => $fila['monto_mora'],
+                'total_pagar' => $fila['total_pagar'],
+                'fecha' => $fila['fecha'],
             ];
 
-            $totalPagar += $totalCuota;
+            $totalPagar += $fila['total_pagar'];
+            $interesDevengado += $fila['interes_devengado'];
+            $diasInteres = max($diasInteres, $fila['dias_interes']);
         }
 
         // Devolver los datos al usuario
         return response()->json([
             'detalle_cuotas' => $detalleCuotas,
-            'total_pagar' => $totalPagar
+            'total_pagar' => round($totalPagar, 2),
+            'interes_devengado' => round($interesDevengado, 2),
+            'dias_interes' => $diasInteres,
         ]);
     }
 
@@ -1413,68 +1535,44 @@ class CreditoController extends Controller
         $prestamo_id = $request->prestamo_id;
         $numero_cuota = $request->numero_cuota;
 
-        $detalleCuotas = [];
+        // En grupal se agrupan las cuotas individuales por numero de cuota.
+        $porNumero = [];
         $totalPagar = 0;
+        $interesDevengado = 0;
+        $diasInteres = 0;
 
-        // En grupal el calculo se hace sobre cuotas individuales para respetar abonos previos.
-        $numeros = Cronograma::where('id_prestamo', $prestamo_id)
-            ->where('numero', '>=', $numero_cuota)
-            ->whereNotNull('cliente_id')
-            ->select('numero')
-            ->distinct()
-            ->orderBy('numero')
-            ->pluck('numero');
+        foreach ($this->detallePagoTotal($prestamo_id, $numero_cuota) as $fila) {
+            $num = $fila['numero'];
 
-        foreach ($numeros as $num) {
-            $cuotasNumero = Cronograma::where('id_prestamo', $prestamo_id)
-                ->where('numero', $num)
-                ->whereNotNull('cliente_id')
-                ->get();
-
-            $baseNumero = 0.0;
-            $moraNumero = 0.0;
-            $diasNumero = 0;
-
-            foreach ($cuotasNumero as $cuota) {
-                if ($this->cuotaLiquidada($cuota)) {
-                    continue;
-                }
-
-                $est = $cuota->saldoYMora();
-                $vencida = now()->greaterThan(Carbon::parse($cuota->fecha));
-
-                if ($vencida || (int) $num === (int) $numero_cuota) {
-                    $baseNumero += (float) $est['saldo'];
-                    $moraNumero += (float) $est['mora'];
-                    $diasNumero = max($diasNumero, (int) $est['dias']);
-                } else {
-                    $baseNumero += (float) $cuota->amortizacion;
-                }
+            if (!isset($porNumero[$num])) {
+                $porNumero[$num] = [
+                    'numero' => $num,
+                    'monto' => 0.0,
+                    'dias_mora' => 0,
+                    'monto_mora' => 0.0,
+                    'total_pagar' => 0.0,
+                    'fecha' => $fila['fecha'],
+                ];
             }
 
-            $baseNumero = round($baseNumero, 2);
-            $moraNumero = round($moraNumero, 2);
-            $totalCuota = round($baseNumero + $moraNumero, 2);
-            if ($totalCuota <= 0) {
-                continue;
-            }
+            $porNumero[$num]['monto'] = round($porNumero[$num]['monto'] + $fila['monto'], 2);
+            $porNumero[$num]['monto_mora'] = round($porNumero[$num]['monto_mora'] + $fila['monto_mora'], 2);
+            $porNumero[$num]['total_pagar'] = round($porNumero[$num]['total_pagar'] + $fila['total_pagar'], 2);
+            $porNumero[$num]['dias_mora'] = max($porNumero[$num]['dias_mora'], $fila['dias_mora']);
 
-            $detalleCuotas[] = [
-                'numero' => (int) $num,
-                'monto' => $baseNumero,
-                'dias_mora' => $diasNumero,
-                'monto_mora' => $moraNumero,
-                'total_pagar' => $totalCuota,
-                'fecha' => optional($cuotasNumero->first())->fecha
-            ];
-
-            $totalPagar += $totalCuota;
+            $totalPagar += $fila['total_pagar'];
+            $interesDevengado += $fila['interes_devengado'];
+            $diasInteres = max($diasInteres, $fila['dias_interes']);
         }
+
+        ksort($porNumero);
 
         // Devolver los datos al usuario
         return response()->json([
-            'detalle_cuotas' => $detalleCuotas,
-            'total_pagar' => $totalPagar
+            'detalle_cuotas' => array_values($porNumero),
+            'total_pagar' => round($totalPagar, 2),
+            'interes_devengado' => round($interesDevengado, 2),
+            'dias_interes' => $diasInteres,
         ]);
     }
 
@@ -1866,53 +1964,19 @@ class CreditoController extends Controller
         $prestamo_id = $request->prestamo_id;
         $numero_cuota = $request->numero_cuota;
 
-        // Obtener la cuota actual y las restantes
-        $cuotas = Cronograma::where('id_prestamo', $prestamo_id)
-            ->where('numero', '>=', $numero_cuota)
-            ->whereNotNull('cliente_id')
-            ->get();
-
         $ingreso_ids = [];
         $totalPago = 0; // Para actualizar la caja con el total ingresado
 
         DB::beginTransaction();
         try {
-            foreach ($cuotas as $cuota) {
-                // Saltar las cuotas ya liquidadas (incluye las saldadas por abonos parciales).
-                if ($this->cuotaLiquidada($cuota)) {
-                    continue;
-                }
-
-                $porcentaje_mora = 1.5; // 0.3% de mora por día por cada mil soles
-                $dias_mora = 0;
-                $monto_mora = 0;
-
-                $fecha_cuota = Carbon::parse($cuota->fecha);
-                $vencida = Carbon::now()->greaterThan($fecha_cuota);
-
-                if ($cuota->ingresos()->exists()) {
-                    // Cuota con abonos parciales: pagar el saldo restante + mora rodante.
-                    $est        = $cuota->saldoYMora();
-                    $monto_pago = (float) $est['saldo'];
-                    $monto_mora = (float) $est['mora'];
-                    $dias_mora  = (int) $est['dias'];
-                } else {
-                    if ($vencida) {
-                        $dias_mora = Carbon::now()->diffInDays($fecha_cuota);
-                        $monto_mora = round(($cuota->monto * $porcentaje_mora / 1000) * $dias_mora, 2);
-                    }
-
-                    // Si la cuota está vencida, se paga toda la cuota más la mora
-                    // Si no está vencida, solo se paga la cuota (sin mora)
-                    // Para cuotas futuras, se paga solo la amortización
-                    if ($cuota->numero == $numero_cuota || $vencida) {
-                        $monto_pago = $cuota->monto;
-                    } else {
-                        $monto_pago = $cuota->amortizacion;
-                    }
-                }
-
-                $totalPagar = round($monto_pago + $monto_mora, 2);
+            // Mismo calculo que muestra el modal "Pagar Todo": en el pago adelantado
+            // solo se cobra el interes de los dias ya corridos.
+            foreach ($this->detallePagoTotal($prestamo_id, $numero_cuota) as $fila) {
+                $cuota           = $fila['cuota'];
+                $monto_mora      = $fila['monto_mora'];
+                $dias_mora       = $fila['dias_mora'];
+                $porcentaje_mora = $fila['porcentaje_mora'];
+                $totalPagar      = $fila['total_pagar'];
 
                 // Registrar el ingreso (pago de cierre de la cuota)
                 $ingreso = Ingreso::create([
@@ -1928,7 +1992,7 @@ class CreditoController extends Controller
                     'fecha_pago' => now()->toDateString(),
                     'hora_pago' => now()->toTimeString(),
                     'sucursal_id' => $user->sucursal_id,
-                    'monto_total_pago_final' => $totalPagar,
+                    'monto_total_pago_final' => $fila['monto'], // lo aplicado a la cuota (sin mora)
                 ]);
 
                 $ingreso_ids[] = $ingreso->id;
@@ -1966,40 +2030,20 @@ class CreditoController extends Controller
         $prestamo_id = $request->prestamo_id;
         $numero_cuota = $request->numero_cuota;
 
-        // En grupal se paga sobre cuotas individuales (no filas generales),
-        // para respetar abonos previos y saldos reales por integrante.
-        $cuotas = Cronograma::where('id_prestamo', $prestamo_id)
-            ->where('numero', '>=', $numero_cuota)
-            ->whereNotNull('cliente_id')
-            ->orderBy('numero')
-            ->get();
-
         $ingreso_ids = [];
         $ingreso_ids_generales = [];
         $resumenGenerales = [];
 
         DB::beginTransaction();
         try {
-            foreach ($cuotas as $cuota) {
-                // Saltar las cuotas ya liquidadas (incluye las saldadas por abonos parciales).
-                if ($this->cuotaLiquidada($cuota)) {
-                    continue;
-                }
-
-                $fecha_cuota = Carbon::parse($cuota->fecha);
-                $vencida = Carbon::now()->greaterThan($fecha_cuota);
-
-                $est        = $cuota->saldoYMora();
-                $monto_mora = ($vencida || $cuota->numero == $numero_cuota) ? (float) $est['mora'] : 0.0;
-                $dias_mora  = ($vencida || $cuota->numero == $numero_cuota) ? (int) $est['dias'] : 0;
-                $monto_pago = ($vencida || $cuota->numero == $numero_cuota)
-                    ? (float) $est['saldo']
-                    : (float) $cuota->amortizacion;
-
-                $totalPagar = round($monto_pago + $monto_mora, 2);
-                if ($totalPagar <= 0) {
-                    continue;
-                }
+            // En grupal se paga sobre cuotas individuales (no filas generales), para
+            // respetar abonos previos. Mismo calculo que muestra el modal "Pagar Todo".
+            foreach ($this->detallePagoTotal($prestamo_id, $numero_cuota) as $fila) {
+                $cuota      = $fila['cuota'];
+                $monto_pago = $fila['monto'];
+                $monto_mora = $fila['monto_mora'];
+                $dias_mora  = $fila['dias_mora'];
+                $totalPagar = $fila['total_pagar'];
 
                 $ingreso = Ingreso::create([
                     'transaccion_id' => $ultimaTransaccion->id,
@@ -2010,7 +2054,7 @@ class CreditoController extends Controller
                     'monto' => $totalPagar,
                     'monto_mora' => $monto_mora,
                     'dias_mora' => $dias_mora,
-                    'porcentaje_mora' => (float) $est['porcentaje'],
+                    'porcentaje_mora' => $fila['porcentaje_mora'],
                     'fecha_pago' => now()->toDateString(),
                     'hora_pago' => now()->toTimeString(),
                     'sucursal_id' => $user->sucursal_id,

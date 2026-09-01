@@ -444,6 +444,7 @@
                             </tbody>
                         </table>
                         <h4>Total a Pagar: <span id="totalPagarTodo"></span></h4>
+                        <p id="detalleInteresPagoTodo" class="text-muted mb-0"></p>
                     </div>
                     <div class="modal-footer">
                     </div>
@@ -904,6 +905,13 @@
                     // Mostrar el total a pagar
                     $('#totalPagarTodo').text(`S/. ${totalPagar.toFixed(2)}`);
 
+                    // Al adelantar el pago solo se cobra el interes de los dias corridos
+                    var interesDevengado = parseFloat(response.interes_devengado) || 0;
+                    var diasInteres = parseInt(response.dias_interes) || 0;
+                    $('#detalleInteresPagoTodo').text(interesDevengado > 0 ?
+                        `Incluye S/. ${interesDevengado.toFixed(2)} de interés por ${diasInteres} día(s) transcurridos. Las cuotas por vencer se cobran solo a capital.` :
+                        'Las cuotas por vencer se cobran solo a capital, sin intereses futuros.');
+
                     // Añadir botón de pagar
                     var botonPagar = `<button class="btn btn-warning" onclick="confirmarpagarTodogrupal(event,'${prestamo_id}','${fecha}','${numero_cuota}')">Pagar Todo</button>
                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>`;
@@ -947,6 +955,13 @@
                     $('#detallePagoTodo').html(detalle);
                     // Mostrar el total a pagar
                     $('#totalPagarTodo').text(`S/. ${totalPagar.toFixed(2)}`);
+
+                    // Al adelantar el pago solo se cobra el interes de los dias corridos
+                    var interesDevengado = parseFloat(response.interes_devengado) || 0;
+                    var diasInteres = parseInt(response.dias_interes) || 0;
+                    $('#detalleInteresPagoTodo').text(interesDevengado > 0 ?
+                        `Incluye S/. ${interesDevengado.toFixed(2)} de interés por ${diasInteres} día(s) transcurridos. Las cuotas por vencer se cobran solo a capital.` :
+                        'Las cuotas por vencer se cobran solo a capital, sin intereses futuros.');
 
                     // Añadir botón de pagar
                     var botonPagar = `<button class="btn btn-warning" onclick="confirmarpagarTodoindividual(event,'${prestamo_id}','${fecha}','${numero_cuota}')">Pagar Todo</button>

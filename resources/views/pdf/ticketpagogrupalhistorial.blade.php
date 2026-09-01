@@ -55,7 +55,7 @@
                 <thead>
                     <tr>
                         <th>Fecha</th>
-                        <th>Cap.</th>
+                        <th>A cuota</th>
                         <th>Mora</th>
                         <th>Total</th>
                     </tr>
@@ -75,7 +75,7 @@
             <hr>
 
             <table class="kv">
-                <tr><td class="l">Capital abonado</td><td class="r">S/ {{ number_format((float) $grupo['capital'], 2) }}</td></tr>
+                <tr><td class="l">Abonado a cuota</td><td class="r">S/ {{ number_format((float) $grupo['capital'], 2) }}</td></tr>
                 <tr><td class="l">Mora pagada</td><td class="r">S/ {{ number_format((float) $grupo['mora_pagada'], 2) }}</td></tr>
                 <tr class="tot"><td class="l">Total abonado</td><td class="r">S/ {{ number_format((float) $grupo['total_abonado'], 2) }}</td></tr>
             </table>
@@ -112,7 +112,7 @@
                 <thead>
                     <tr>
                         <th>Fecha</th>
-                        <th>Cap.</th>
+                        <th>A cuota</th>
                         <th>Mora</th>
                         <th>Total</th>
                     </tr>
@@ -133,7 +133,7 @@
 
             <div class="tag">Resumen de Cuota</div>
             <table class="kv">
-                <tr><td class="l">Capital abonado</td><td class="r">S/ {{ number_format((float) $resumen['capital'], 2) }}</td></tr>
+                <tr><td class="l">Abonado a cuota</td><td class="r">S/ {{ number_format((float) $resumen['capital'], 2) }}</td></tr>
                 <tr><td class="l">Mora pagada</td><td class="r">S/ {{ number_format((float) $resumen['mora'], 2) }}</td></tr>
                 <tr class="tot"><td class="l">Total abonado</td><td class="r">S/ {{ number_format((float) $resumen['total'], 2) }}</td></tr>
             </table>
@@ -141,7 +141,7 @@
             <hr>
 
             <table class="kv">
-                <tr><td class="l">Saldo capital actual</td><td class="r">S/ {{ number_format((float) $resumen['saldo_actual'], 2) }}</td></tr>
+                <tr><td class="l">Saldo actual</td><td class="r">S/ {{ number_format((float) $resumen['saldo_actual'], 2) }}</td></tr>
                 <tr><td class="l">Mora vigente actual</td><td class="r">S/ {{ number_format((float) $resumen['mora_actual'], 2) }}</td></tr>
                 <tr class="tot"><td class="l">Pendiente actual</td><td class="r">S/ {{ number_format((float) $resumen['pendiente_actual'], 2) }}</td></tr>
             </table>
@@ -161,7 +161,7 @@
         <table class="kv">
             <tr><td class="l">Cr&eacute;dito</td><td class="r">#{{ $prestamo->id }}</td></tr>
             <tr><td class="l">N&deg; Cuota</td><td class="r">{{ $cuotaGeneral->numero }}</td></tr>
-            <tr><td class="l">Capital abonado</td><td class="r">S/ {{ number_format((float) $resumen['capital'], 2) }}</td></tr>
+            <tr><td class="l">Abonado a cuota</td><td class="r">S/ {{ number_format((float) $resumen['capital'], 2) }}</td></tr>
             <tr><td class="l">Mora pagada</td><td class="r">S/ {{ number_format((float) $resumen['mora'], 2) }}</td></tr>
             <tr class="tot"><td class="l">Total abonado</td><td class="r">S/ {{ number_format((float) $resumen['total'], 2) }}</td></tr>
         </table>
@@ -169,7 +169,7 @@
         <hr>
 
         <table class="kv">
-            <tr><td class="l">Saldo capital actual</td><td class="r">S/ {{ number_format((float) $resumen['saldo_actual'], 2) }}</td></tr>
+            <tr><td class="l">Saldo actual</td><td class="r">S/ {{ number_format((float) $resumen['saldo_actual'], 2) }}</td></tr>
             <tr><td class="l">Mora vigente actual</td><td class="r">S/ {{ number_format((float) $resumen['mora_actual'], 2) }}</td></tr>
             <tr class="tot"><td class="l">Pendiente actual</td><td class="r">S/ {{ number_format((float) $resumen['pendiente_actual'], 2) }}</td></tr>
         </table>

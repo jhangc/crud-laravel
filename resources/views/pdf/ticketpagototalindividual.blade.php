@@ -67,10 +67,10 @@
         <hr>
 
         <table class="kv">
-            <tr><td class="l">Pago a cr&eacute;dito</td><td class="r">S/ {{ number_format($total_final_pago, 2) }}</td></tr>
+            <tr><td class="l">Capital</td><td class="r">S/ {{ number_format($total_capital, 2) }}</td></tr>
+            <tr><td class="l">Inter&eacute;s</td><td class="r">S/ {{ number_format($total_intereses, 2) }}</td></tr>
             <tr><td class="l">D&iacute;as de mora</td><td class="r">{{ $ingreso->dias_mora }}</td></tr>
             <tr><td class="l">Mora</td><td class="r">S/ {{ number_format($total_mora, 2) }}</td></tr>
-            <tr><td class="l">Inter&eacute;s</td><td class="r">S/ {{ number_format($total_intereses, 2) }}</td></tr>
             <tr class="tot"><td class="l">Total pagado</td><td class="r">S/ {{ number_format($total_pago, 2) }}</td></tr>
         </table>
 

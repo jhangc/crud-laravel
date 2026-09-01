@@ -2169,24 +2169,36 @@ class PdfController extends Controller
         // dd($ingreso);
         $prestamo = \App\Models\Credito::find($ingreso->prestamo_id);
         $cliente = \App\Models\Cliente::find($ingreso->cliente_id);
-        $total_pago = $ingresos->sum('monto');
-        $total_mora = $ingresos->sum('monto_mora');
-        $total_final_pago = $ingresos->sum('monto_total_pago_final');
-        $total_intereses = 0;
+        $total_pago = round((float) $ingresos->sum('monto'), 2);
+        $total_mora = round((float) $ingresos->sum('monto_mora'), 2);
+
+        // Desglose real de lo cobrado: lo aplicado a cada cuota cubre primero su
+        // amortización (capital) y lo que sobra es interés devengado. En un pago
+        // adelantado las cuotas por vencer se cobran solo a capital, así que el
+        // interés que sale aquí es únicamente el de los días ya corridos.
+        $total_capital = 0.0;
+        $total_intereses = 0.0;
 
         foreach ($ingresos as $ingreso1) {
             $cronograma1 = \App\Models\Cronograma::find($ingreso1->cronograma_id);
-            if ($cronograma1->fecha < $ingreso->fecha_pago) {
-                $total_intereses += $cronograma1->interes;
-            }
+            $aplicadoCuota = round((float) $ingreso1->monto - (float) $ingreso1->monto_mora, 2);
+            $amortizacion = $cronograma1 ? (float) $cronograma1->amortizacion : 0.0;
+
+            $capital = round(min($aplicadoCuota, $amortizacion), 2);
+            $total_capital += $capital;
+            $total_intereses += round($aplicadoCuota - $capital, 2);
         }
+
+        $total_capital = round($total_capital, 2);
+        $total_intereses = round($total_intereses, 2);
+
         $pdf = Pdf::loadView('pdf.ticketpagototalindividual', compact(
             'prestamo',
             'cliente',
             'ingreso',
             'total_pago',
             'total_mora',
-            'total_final_pago',
+            'total_capital',
             'total_intereses'
         ))->setPaper([0, 0, 200, 400]);
         return $pdf->stream('tickets.pdf');

@@ -97,6 +97,23 @@ class Cronograma extends Model
             ->orderBy('id')
             ->get();
 
+        // Un pago de cierre cancela la cuota aunque condone una diferencia (p. ej. el
+        // interés no devengado cuando el cliente adelanta el pago total): a partir de
+        // ahí no queda saldo ni mora, y así lo ven la tabla de cuotas y los tickets.
+        $cierre = $ingresos->first(function ($ing) {
+            return $ing->tipo === null || $ing->tipo !== 'abono';
+        });
+
+        if ($cierre) {
+            return [
+                'saldo'       => 0.0,
+                'mora'        => 0.0,
+                'dias'        => 0,
+                'porcentaje'  => $porMil,
+                'fecha_corte' => \Carbon\Carbon::parse($cierre->fecha_pago)->toDateString(),
+            ];
+        }
+
         $balance       = $monto;
         $moraPendiente = 0.0;
         $cursor        = $vto->copy();
