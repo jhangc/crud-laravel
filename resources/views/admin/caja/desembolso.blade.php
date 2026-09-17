@@ -56,6 +56,10 @@
                 <button type="button" class="btn btn-primary btn-block" onclick="generarcartilla()">Generar
                     Cartilla</button>
             </div>
+            <div class="col-md-4 text-center mb-3">
+                <button type="button" class="btn btn-primary btn-block" onclick="generardeclaracionjurada()">Generar
+                    Declaración Jurada</button>
+            </div>
         </div>
     @endif
 
@@ -112,6 +116,11 @@
 
             // Abre la URL en una nueva pestaña
             window.open(url, '_blank');
+        }
+
+        function generardeclaracionjurada() {
+            var prestamoId = '{{ $prestamo->id }}';
+            window.open("{{ url('/generar-declaracionjuradagrupal') }}" + '/' + prestamoId, '_blank');
         }
 
         function generarcontratogrupal() {

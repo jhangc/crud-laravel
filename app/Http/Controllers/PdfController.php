@@ -247,6 +247,24 @@ class PdfController extends Controller
 
 
 
+    public function generatedeclaracionjuradagrupalPDF(Request $request, $id)
+    {
+        $prestamo = Credito::find($id);
+        if (!$prestamo) {
+            return response()->json(['error' => 'Crédito no encontrado'], 404);
+        }
+
+        $fechaDocumento = Carbon::now()->format('d/m/Y');
+        $fechaContrato = $prestamo->fecha_desembolso
+            ? Carbon::parse($prestamo->fecha_desembolso)->format('d/m/Y')
+            : $fechaDocumento;
+
+        $data = compact('prestamo', 'fechaDocumento', 'fechaContrato');
+
+        $pdf = Pdf::loadView('pdf.declaracionjuradagrupal', $data)->setPaper('a4');
+        return $pdf->stream('declaracionjuradagrupal.pdf');
+    }
+
     public function generatecrontratoindividualPDF(Request $request, $id)
     {
         $prestamo = Credito::find($id);
@@ -259,12 +277,28 @@ class PdfController extends Controller
         // Formatea la fecha con la configuración regional establecida
         $formattedDate = $date->translatedFormat(' d \d\í\a\s \d\e\l \m\e\s \d\e F \d\e Y');
 
+        $montoEnLetras = (new NumeroALetras())->toMoney((float) $prestamo->monto_total, 2, 'soles', 'centimos');
+
+        $unidades = [
+            'mensual' => ['mes', 'meses'],
+            'quincenal' => ['quincena', 'quincenas'],
+            'catorcenal' => ['catorcena', 'catorcenas'],
+            'veinteochenal' => ['periodo de 28 días', 'periodos de 28 días'],
+            'anual' => ['año', 'años'],
+            'semanal' => ['semana', 'semanas'],
+        ];
+        $tiempo = (int) $prestamo->tiempo;
+        $unidad = $unidades[strtolower((string) $prestamo->recurrencia)] ?? ['cuota', 'cuotas'];
+        $plazoTexto = $tiempo . ' ' . ($tiempo === 1 ? $unidad[0] : $unidad[1]);
+
         $data = compact(
             'prestamo',
             //'responsable',
             'cuotas',
             'credito_cliente',
-            'formattedDate'
+            'formattedDate',
+            'montoEnLetras',
+            'plazoTexto'
         );
 
         $pdf = Pdf::loadView('pdf.contratoindividual', $data)->setPaper('a4');
@@ -439,10 +473,12 @@ class PdfController extends Controller
 
         // Convertir monto a letras
         $formatter = new NumeroALetras();
-        $montoEnLetras = $formatter->toMoney($prestamo->monto, 2, 'soles', 'centimos');
+        $montoEnLetras = $formatter->toMoney((float) $prestamo->monto_total, 2, 'soles', 'centimos');
 
         // Generar o obtener el correlativo
         $correlativo = CorrelativoPagare::generateCorrelativo($id);
+
+        $fechaDocumento = $date->format('d/m/Y');
 
         $data = compact(
             'prestamo',
@@ -452,7 +488,8 @@ class PdfController extends Controller
             'formattedDate',
             'montoEnLetras',
             'tasadiaria',
-            'correlativo'
+            'correlativo',
+            'fechaDocumento'
         );
 
         // Generar y retornar el PDF

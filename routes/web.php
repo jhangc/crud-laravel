@@ -161,6 +161,7 @@ Route::get('/generar-cronogramaindividual/{id}', [PdfController::class, 'generat
 Route::get('/generar-cronogramagrupal/{id}', [PdfController::class, 'generatecronogramagrupalPDF'])->name('generar-cronograma-grupal');
 
 Route::get('/generar-contratogrupal/{id}', [PdfController::class, 'generatecontratogrupalPDF'])->name('generar-contrato-grupal');
+Route::get('/generar-declaracionjuradagrupal/{id}', [PdfController::class, 'generatedeclaracionjuradagrupalPDF'])->name('generar-declaracion-jurada-grupal');
 Route::get('/generar-contratoindividual/{id}', [PdfController::class, 'generatecrontratoindividualPDF'])->name('generar-contrato-individual');
 
 Route::get('/generar-cronogramacredijoya/{id}', [PdfController::class, 'generatecronogramaindividualC'])->name('generar-cronograma-credijoya');
