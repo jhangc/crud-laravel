@@ -3764,10 +3764,15 @@ class CreditoController extends Controller
     {
         $fechaLimite = Carbon::now()->subDays(30)->toDateString();
         // whereHas filtra las filas padre (Ingreso); el with() solo precarga la relacion.
-        // Solo creditos NO grupales (individual / microempresa).
+        // Todos los creditos NO grupales (individual, microempresa, consumo, comercio,
+        // agricola...). Se excluyen grupal y credijoya porque tienen su propia vista de
+        // reversion (credijoya ademas debe restaurar las joyas al reversar).
         $pagos = Ingreso::whereHas('prestamo', function ($query) {
-            $query->whereIn('producto', ['individual', 'microempresa'])
-                ->where('categoria', '!=', 'grupal');
+            $query->where('producto', '!=', 'grupal')
+                ->where('categoria', '!=', 'grupal')
+                ->where(function ($q) {
+                    $q->whereNull('subproducto')->orWhere('subproducto', '!=', 'credijoya');
+                });
         })
             ->with(['prestamo', 'cliente'])
             ->whereNotNull('cliente_id')
