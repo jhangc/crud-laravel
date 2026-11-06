@@ -107,5 +107,48 @@ class Credito extends Model
         return $q->where('activo', 1);
     }
 
+    /** Estados del crédito con su nombre para mostrar en filtros. */
+    public const ESTADOS = [
+        'pendiente'             => 'Pendiente',
+        'revisado'              => 'Revisado',
+        'observado'             => 'Observado',
+        'aprobado'              => 'Aprobado',
+        'pagado'                => 'Activo (desembolsado)',
+        'mora'                  => 'Mora',
+        'terminado'             => 'Terminado',
+        'rechazado'             => 'Rechazado',
+        'rechazado por sistema' => 'Rechazado por sistema',
+    ];
+
+    /**
+     * Filtros de los listados de créditos (?estado, ?categoria, ?mes=YYYY-MM, ?desde, ?hasta).
+     * Las fechas filtran por fecha de desembolso.
+     */
+    public function scopeFiltrar($q, array $f)
+    {
+        $esFecha = fn ($v) => is_string($v) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $v);
+
+        return $q
+            ->when($f['estado'] ?? null, fn ($q, $v) => $q->where('estado', $v))
+            ->when($f['categoria'] ?? null, fn ($q, $v) => $q->where('categoria', $v))
+            ->when(
+                isset($f['mes']) && is_string($f['mes']) && preg_match('/^\d{4}-\d{2}$/', $f['mes']),
+                function ($q) use ($f) {
+                    [$anio, $mes] = explode('-', $f['mes']);
+                    $q->whereYear('fecha_desembolso', (int) $anio)->whereMonth('fecha_desembolso', (int) $mes);
+                }
+            )
+            ->when($esFecha($f['desde'] ?? null), fn ($q) => $q->whereDate('fecha_desembolso', '>=', $f['desde']))
+            ->when($esFecha($f['hasta'] ?? null), fn ($q) => $q->whereDate('fecha_desembolso', '<=', $f['hasta']));
+    }
+
+    /** Más recientes primero por fecha de desembolso. */
+    public function scopeRecientesPorDesembolso($q)
+    {
+        return $q->orderByRaw('fecha_desembolso IS NULL')
+            ->orderByDesc('fecha_desembolso')
+            ->orderByDesc('id');
+    }
+
 
 }

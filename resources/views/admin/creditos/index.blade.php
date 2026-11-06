@@ -33,6 +33,7 @@
                 </div>
             </div>
 
+            @include('admin.creditos.partials.filtros', ['accion' => route('creditos.index'), 'mostrarResumen' => false])
 
             <div class="card-body">
                 <div class="table-responsive">
@@ -52,6 +53,7 @@
                                 <th>Tasa (%)</th>
                                 <th>Tiempo</th> --}}
                                 <th>Monto (S/.)</th>
+                                <th>Desembolso</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -87,6 +89,9 @@
                                     <td>{{ $credito->tasa }}</td>
                                     <td>{{ $credito->tiempo }}</td> --}}
                                     <td>{{ $credito->monto_total }}</td>
+                                    <td data-order="{{ $credito->fecha_desembolso ? \Carbon\Carbon::parse($credito->fecha_desembolso)->format('Y-m-d') : '' }}">
+                                        {{ $credito->fecha_desembolso ? \Carbon\Carbon::parse($credito->fecha_desembolso)->format('d/m/Y') : '—' }}
+                                    </td>
                                     <td>
                                         @if ($credito->estado == 'pendiente')
                                             <span
@@ -130,6 +135,16 @@
                                             <a href="{{ route('creditos.verpagocuota', ['id' => $credito->id]) }}"
                                                 class="btn btn-primary mr-2" title="Ver Pago de Cuotas">
                                                 <i class="bi bi-cash-stack"></i>
+                                            </a>
+                                        @endif
+                                        @if (in_array($credito->estado, ['pagado', 'mora', 'terminado']))
+                                            <a href="{{ route('creditos.estadocuenta.ver', $credito->id) }}"
+                                                class="btn btn-info mr-2" title="Ver Estado de Cuenta">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ route('creditos.estadocuenta', $credito->id) }}" target="_blank"
+                                                class="btn btn-outline-info mr-2" title="Estado de Cuenta (PDF)">
+                                                <i class="bi bi-file-earmark-pdf"></i>
                                             </a>
                                         @endif
                                         <a href="{{ route('creditos.proyecciones', ['id' => $credito->id]) }}"
@@ -218,7 +233,9 @@
                 "info": true,
                 "language": spanish,
                 "autoWidth": true,
-                "pageLength": 20
+                "pageLength": 20,
+                // Respetar el orden del servidor: fecha de desembolso, el más reciente primero.
+                "order": []
             });
         });
 

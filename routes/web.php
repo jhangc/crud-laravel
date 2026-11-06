@@ -19,6 +19,8 @@ use App\Http\Controllers\CtsUsuarioController;
 use App\Http\Controllers\CuentasController;
 use App\Http\Controllers\DepositoCtsController;
 use App\Http\Controllers\DevolucionController;
+use App\Http\Controllers\EstadoCuentaController;
+use App\Http\Controllers\OperacionesAsesorController;
 use App\Http\Controllers\ExcelController;
 use App\Http\Controllers\GoldPriceController;
 use App\Http\Controllers\HomeController;
@@ -142,6 +144,14 @@ Route::get('/admin/cobranza/generarnotificacion', [CreditoController::class, 'vi
 Route::get('/admin/reportes/creditoindividual', [ReporteController::class, 'viewreportecreditoindividual'])->name('reporte.creditoindividual')->middleware('auth');
 Route::get('/admin/reportes/creditogrupal', [ReporteController::class, 'viewreportecreditogrupal'])->name('reporte.creditogrupal')->middleware('auth');
 Route::get('/admin/reportes/interesesmensual', [ReporteController::class, 'viewreporteinteresesmensual'])->name('ReporteController.interesesmensual')->middleware('auth');
+
+// Operaciones desembolsadas por asesor (con total de agencia)
+Route::get('/admin/reportes/operaciones-asesor', [OperacionesAsesorController::class, 'index'])->name('reporte.operacionesasesor')->middleware(['auth', 'role:Administrador|Asesor de creditos']);
+
+// Estado de cuenta del crédito (PDF) y buscador en Reportes
+Route::get('/admin/reportes/estadocuenta', [EstadoCuentaController::class, 'index'])->name('reporte.estadocuenta')->middleware(['auth', 'role:Administrador|Asesor de creditos']);
+Route::get('/admin/creditos/{id}/estado-cuenta', [EstadoCuentaController::class, 'pdf'])->name('creditos.estadocuenta')->middleware('auth');
+Route::get('/admin/creditos/{id}/estado-cuenta/ver', [EstadoCuentaController::class, 'ver'])->name('creditos.estadocuenta.ver')->middleware('auth');
 
 Route::get('/admin/reportes/prestamosactivos', [ReporteController::class, 'viewprestamosactivos'])->name('reporte.prestamosactivos')->middleware('auth');
 Route::get('/admin/reportes/prestamosvencidos', [ReporteController::class, 'viewprestamosvencidos'])->name('reporte.prestamosvencidos')->middleware('auth');

@@ -150,6 +150,16 @@
                         @endswitch
                     @endif
                 @endrole
+                <div class="btn-group mb-2 mb-sm-0 mr-sm-2">
+                    <a href="{{ route('creditos.estadocuenta.ver', $credito->id) }}"
+                        class="btn btn-info" title="Ver el estado de cuenta en el sistema">
+                        <i class="bi bi-eye"></i> Estado de Cuenta
+                    </a>
+                    <a href="{{ route('creditos.estadocuenta', $credito->id) }}" target="_blank"
+                        class="btn btn-outline-info" title="Estado de cuenta en PDF">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF
+                    </a>
+                </div>
                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#amortizarCapitalModal"
                     onclick="calcularcuotapendiente()">
                     Pago Capital
@@ -292,7 +302,21 @@
 
         @foreach ($clientesCredito as $clienteCredito)
             <br><br>
-            <h3>Cliente: {{ $clienteCredito->clientes->nombre }}</h3>
+            <h3>
+                Cliente: {{ $clienteCredito->clientes->nombre }}
+                @if ($credito->categoria == 'grupal')
+                    <span class="btn-group btn-group-sm ml-2">
+                        <a href="{{ route('creditos.estadocuenta.ver', ['id' => $credito->id, 'cliente' => $clienteCredito->cliente_id]) }}"
+                            class="btn btn-outline-info" title="Ver estado de cuenta de este integrante">
+                            <i class="bi bi-eye"></i> Estado de cuenta
+                        </a>
+                        <a href="{{ route('creditos.estadocuenta', ['id' => $credito->id, 'cliente' => $clienteCredito->cliente_id]) }}"
+                            target="_blank" class="btn btn-outline-info" title="PDF de este integrante">
+                            <i class="bi bi-file-earmark-pdf"></i> PDF
+                        </a>
+                    </span>
+                @endif
+            </h3>
             <div class="cuotas-table-wrap">
             <table class="table table-striped table-sm table-hover">
                 <thead>

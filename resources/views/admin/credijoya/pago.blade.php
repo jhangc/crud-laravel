@@ -20,7 +20,17 @@
   @media (max-width:768px){ .segmented{grid-template-columns:1fr 1fr} }
 </style>
 
-<h3 class="mb-3">Pago de Crédito — CrediJoya</h3>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Pago de Crédito — CrediJoya</h3>
+  <div class="btn-group">
+    <a href="{{ route('creditos.estadocuenta.ver', $credito->id) }}" class="btn btn-info" title="Ver estado de cuenta en el sistema">
+      <i class="bi bi-eye"></i> Estado de Cuenta
+    </a>
+    <a href="{{ route('creditos.estadocuenta', $credito->id) }}" target="_blank" class="btn btn-outline-info" title="Estado de cuenta en PDF">
+      <i class="bi bi-file-earmark-pdf"></i> PDF
+    </a>
+  </div>
+</div>
 
 {{-- HEADER --}}
 <div class="card shadow-sm mb-3">

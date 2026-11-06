@@ -28,7 +28,7 @@ class CreditoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         // Obtener el usuario autenticado
         $user = Auth::user();
@@ -36,17 +36,22 @@ class CreditoController extends Controller
         // Obtener todos los roles del usuario autenticado
         $roles = $user->roles->pluck('name');
 
-        // Verificar si el usuario tiene alguno de los roles
-        if ($roles->contains('Administrador')) {
-            // Si es administrador o cajera, obtener todos los créditos activos
-            $creditos = Credito::with('clientes')->where('activo', 1)->get();
-        } else {
-            // Si no es administrador, obtener solo los créditos registrados por el usuario
-            $creditos = Credito::with('clientes')->where('activo', 1)->where('user_id', $user->id)->get();
-        }
+        $filtros = $request->only(['estado', 'categoria', 'mes', 'desde', 'hasta']);
 
-        // Pasar los créditos a la vista
-        return view('admin.creditos.index', ['creditos' => $creditos]);
+        $creditos = Credito::with('clientes')
+            ->where('activo', 1)
+            // Si no es administrador, solo los créditos registrados por el usuario
+            ->when(!$roles->contains('Administrador'), fn ($q) => $q->where('user_id', $user->id))
+            ->filtrar($filtros)
+            ->recientesPorDesembolso()
+            ->get();
+
+        return view('admin.creditos.index', [
+            'creditos'   => $creditos,
+            'filtros'    => $filtros,
+            'estados'    => Credito::ESTADOS,
+            'categorias' => Credito::where('activo', 1)->whereNotNull('categoria')->distinct()->orderBy('categoria')->pluck('categoria'),
+        ]);
     }
 
 

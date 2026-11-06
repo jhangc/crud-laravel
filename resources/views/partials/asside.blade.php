@@ -416,6 +416,24 @@
                                 </a>
                             </li>
 
+                            {{-- Operaciones desembolsadas por asesor --}}
+                            <li class="nav-item">
+                                <a href="{{ route('reporte.operacionesasesor') }}"
+                                    class="nav-link {{ request()->is('admin/reportes/operaciones-asesor') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Operaciones por asesor</p>
+                                </a>
+                            </li>
+
+                            {{-- Estado de Cuenta (PDF por crédito / integrante) --}}
+                            <li class="nav-item">
+                                <a href="{{ route('reporte.estadocuenta') }}"
+                                    class="nav-link {{ request()->is('admin/reportes/estadocuenta') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Estado de Cuenta</p>
+                                </a>
+                            </li>
+
                             {{-- Total de Interés Mensual (solo Admin) --}}
                             @role('Administrador')
                                 <li class="nav-item">
