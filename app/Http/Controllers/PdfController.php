@@ -622,10 +622,15 @@ class PdfController extends Controller
         $correlativo = CorrelativoPagare::generateCorrelativo($id);
 
         // Cuotas vencidas que AÚN deben: fecha anterior a hoy y NO liquidadas.
+        // Se juzga con las cuotas de las integrantes (la "general" puede quedar con
+        // un abono parcial aunque todas ya pagaron), igual que la pantalla de cobro.
         // (Un abono parcial deja ingreso pero no cancela la cuota.)
-        $cuotasVencidas = $cuotas->filter(function ($cuota) {
+        $impagas = $prestamo->cuotasParaCobranza()->filter(function ($cuota) {
             return $cuota->fecha < Carbon::now()->toDateString() && !$cuota->liquidada();
         });
+
+        // Una cuota del grupo por número (aunque deban varias integrantes).
+        $cuotasVencidas = $impagas->unique('numero')->values();
 
         // Cantidad de cuotas vencidas
         $cantidad_cuotas_vencidas = $cuotasVencidas->count();
@@ -638,18 +643,19 @@ class PdfController extends Controller
             $dias_mora_primera = 0;
         }
 
-        // Calcular la mora y el monto total de cada cuota vencida de forma individual
-        $porcentaje_mora = 1.5; // 0.3% por día de mora por cada mil soles
+        // Deuda vencida = lo que falta de cada integrante + su mora (misma regla
+        // de saldo y mora que usa caja; sin abonos equivale a cuota * 1.5‰ * días).
         $total_mora = 0;
         $total_monto_con_mora = 0;
 
-        foreach ($cuotasVencidas as $cuota) {
-            $diasAtraso = Carbon::now()->diffInDays(Carbon::parse($cuota->fecha));
-            $mora_individual = round($cuota->monto * ($porcentaje_mora / 1000) * $diasAtraso, 2);
-            $monto_con_mora = $cuota->monto + $mora_individual;
-            $total_mora += $mora_individual;
-            $total_monto_con_mora += $monto_con_mora;
+        foreach ($impagas as $cuota) {
+            $est = $cuota->saldoYMora();
+            $total_mora += (float) $est['mora'];
+            $total_monto_con_mora += (float) $est['saldo'] + (float) $est['mora'];
         }
+
+        $total_mora = round($total_mora, 2);
+        $total_monto_con_mora = round($total_monto_con_mora, 2);
 
         $data = compact(
             'prestamo',

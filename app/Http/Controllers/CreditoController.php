@@ -3020,7 +3020,9 @@ class CreditoController extends Controller
             // (Un abono parcial deja un ingreso pero no cancela la cuota, por eso
             // ya no basta con $cuota->ingresos->isEmpty().)
             // unique('numero') evita repetir la cuota por cada integrante en grupales.
-            $cuotasVencidas = $credito->cronograma->filter(function ($cuota) use ($today) {
+            // En grupal se juzga con las cuotas de las integrantes (no la "general"),
+            // igual que la pantalla de cobro.
+            $cuotasVencidas = $credito->cuotasParaCobranza($credito->cronograma)->filter(function ($cuota) use ($today) {
                 return $cuota->fecha < $today && !$this->cuotaLiquidada($cuota);
             })->unique('numero')->values();
 

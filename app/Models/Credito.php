@@ -107,6 +107,35 @@ class Credito extends Model
         return $q->where('activo', 1);
     }
 
+    public function esGrupal(): bool
+    {
+        return $this->categoria === 'grupal' || $this->producto === 'grupal';
+    }
+
+    /**
+     * Cuotas con las que se decide si el crédito DEBE (cobranza, cartas).
+     *
+     * En grupal se usan las cuotas de cada integrante, igual que la pantalla de
+     * cobro: la cuota "general" (cliente_id null) puede quedar con un abono
+     * parcial aunque todas las integrantes ya pagaron, y no refleja la deuda real.
+     * Un grupal antiguo sin cuotas por integrante usa las generales.
+     *
+     * @param \Illuminate\Support\Collection|null $cronograma cuotas ya cargadas (opcional)
+     */
+    public function cuotasParaCobranza($cronograma = null)
+    {
+        $filas = $cronograma ?? $this->cronograma()->get();
+
+        if ($this->esGrupal()) {
+            $integrantes = $filas->whereNotNull('cliente_id');
+            if ($integrantes->isNotEmpty()) {
+                return $integrantes->values();
+            }
+        }
+
+        return $filas->values();
+    }
+
     /** Estados del crédito con su nombre para mostrar en filtros. */
     public const ESTADOS = [
         'pendiente'             => 'Pendiente',
