@@ -107,6 +107,67 @@ class Credito extends Model
         return $q->where('activo', 1);
     }
 
+    public function esCrediJoya(): bool
+    {
+        return $this->categoria === 'credijoya' || $this->subproducto === 'credijoya';
+    }
+
+    /**
+     * ¿El crédito está totalmente pagado? Tiene al menos una cuota y TODAS las
+     * cuotas que reflejan la deuda real están liquidadas (Cronograma::liquidada()).
+     * Mismo criterio que cuotasParaCobranza(): en un grupal se miran las cuotas de
+     * cada integrante (la fila "general" puede quedar con un abono parcial aunque
+     * todas ya pagaron); un grupal antiguo sin cuotas por integrante usa las generales.
+     * Optimizado: solo evalúa en detalle las cuotas sin un ingreso de cierre.
+     */
+    public function estaTotalmentePagado(): bool
+    {
+        if (!$this->cronograma()->exists()) {
+            return false;
+        }
+
+        $soloIntegrantes = $this->esGrupal()
+            && $this->cronograma()->whereNotNull('cliente_id')->exists();
+
+        $sinCierre = $this->cronograma()
+            ->when($soloIntegrantes, fn ($q) => $q->whereNotNull('cliente_id'))
+            ->whereDoesntHave('ingresos', function ($q) {
+                $q->where(function ($w) {
+                    $w->whereNull('tipo')->orWhere('tipo', '!=', 'abono');
+                });
+            })
+            ->get();
+
+        foreach ($sinCierre as $cuota) {
+            if (!$cuota->liquidada()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Sincroniza el estado tras registrar/revertir un pago:
+     *  - Activo ("pagado") o en mora y totalmente pagado  => "terminado".
+     *  - "terminado" pero con saldo pendiente (p. ej. reversión) => "pagado".
+     * Los CrediJoya se excluyen: tienen su propio flujo de cierre/renovación.
+     */
+    public function sincronizarEstadoPorPagos(): void
+    {
+        if ($this->esCrediJoya()) {
+            return;
+        }
+
+        if (in_array($this->estado, ['pagado', 'mora'], true) && $this->estaTotalmentePagado()) {
+            $this->estado = 'terminado';
+            $this->save();
+        } elseif ($this->estado === 'terminado' && !$this->estaTotalmentePagado()) {
+            $this->estado = 'pagado';
+            $this->save();
+        }
+    }
+
     public function esGrupal(): bool
     {
         return $this->categoria === 'grupal' || $this->producto === 'grupal';

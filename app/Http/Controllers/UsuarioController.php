@@ -334,19 +334,8 @@ class UsuarioController extends Controller
      */
     private function creditoTotalmentePagado(Credito $credito): bool
     {
-        $cuotas = $credito->cronograma()->get();
-
-        if ($cuotas->isEmpty()) {
-            return false;
-        }
-
-        foreach ($cuotas as $cuota) {
-            if (!$this->cuotaLiquidada($cuota)) {
-                return false;
-            }
-        }
-
-        return true;
+        // Fuente de verdad única (la misma que usa el cierre automático al pagar).
+        return $credito->estaTotalmentePagado();
     }
 
     /**
